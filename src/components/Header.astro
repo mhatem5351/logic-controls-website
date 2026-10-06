@@ -2,8 +2,8 @@
 /**
  * Site header.
  *  - Utility bar (≥1024px): "Setting up in Egypt?" link, phone, email, full language list. Scrolls away.
- *  - Main bar (sticky): logo, 5 nav items, quick Arabic/English switch, language menu (< 1024px only), "Request a quote",
- *    menu button.
+ *  - Main bar (sticky): logo, 5 nav items, quick Arabic/English switch, language menu (< 1024px; icon-only on phones),
+ *    "Request a quote", menu button.
  *  - Mobile drawer: native <dialog> (focus trap, Esc, inert page) opened by a tiny script.
  * `heroDark`: starts transparent over a dark hero, turns solid once the page scrolls.
  */
@@ -24,7 +24,9 @@ const { locale, path, heroDark = false } = Astro.props;
 const t = getMessages(locale).ui;
 const email = prefersEmail(locale);
 // Egyptian phones set to English land on /en/: keep a one-tap Arabic switch visible on English pages;
-// Arabic, Chinese and Turkish pages get a one-tap English switch (what foreign visitors reach for). Desktop shows only this quick switch + the utility-bar list; the globe menu is mobile-only.
+// Arabic, Chinese and Turkish pages get a one-tap English switch (what foreign visitors reach for).
+// Below 1024px the globe menu sits next to it (icon-only on phones), so every language is one tap + one choice away
+// on every page; from 1024px the utility bar lists all four languages.
 const quick = languageLinks(path).find((l) => l.locale === (locale === "en" ? "ar" : "en"));
 const foreignState = currentState(FOREIGN_PATH, path);
 ---
@@ -118,7 +120,7 @@ const foreignState = currentState(FOREIGN_PATH, path);
               dir={quick.dir}
               data-set-lang={quick.locale}
               class:list={[
-                "inline-flex h-10 items-center border border-white/20 px-3 font-semibold whitespace-nowrap text-white transition-colors hover:border-signal-400 hover:text-signal-200 lg:max-xl:hidden",
+                "inline-flex h-10 items-center border border-white/20 px-3 font-semibold whitespace-nowrap text-white transition-colors hover:border-signal-400 hover:text-signal-200 max-[22rem]:hidden lg:max-xl:hidden",
                 quick.locale === "ar" ? "text-[1.0625rem]" : "text-sm",
               ]}
             >
@@ -126,7 +128,7 @@ const foreignState = currentState(FOREIGN_PATH, path);
             </a>
           )
         }
-        <LanguageSwitcher locale={locale} path={path} variant="menu" class:list={["lg:hidden", quick && "max-sm:hidden"]} />
+        <LanguageSwitcher locale={locale} path={path} variant="menu" class="lg:hidden" />
         <Button href={href(locale, QUOTE_PATH)} size="sm" class="max-sm:hidden lg:min-h-10">
           {t.cta.quote}
         </Button>

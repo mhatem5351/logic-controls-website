@@ -8,9 +8,13 @@
  * Motion: scroll reveal (.lc-reveal), hover lift / edge trace / image zoom, and `data-vt-href` on the media so the
  * art or photo morphs into the detail page's hero (view transition, see BaseLayout + motion.css).
  * Put an illustration component in `<Fragment slot="media">…</Fragment>` to replace the photo.
+ * Text: title / text go through html() (src/lib/text.ts); `wrap-anywhere` is the last-resort safety net so no word
+ * or code can ever overflow a narrow card (only kicks in when a single piece is wider than the card).
  */
 import type { ImageMetadata } from "astro";
 import { Picture } from "astro:assets";
+import type { Locale } from "~/i18n";
+import { html, techLabel } from "~/lib/text";
 import Icon, { type IconName } from "./Icon.astro";
 import Chips from "./Chips.astro";
 
@@ -32,6 +36,8 @@ interface Props {
   /** Load the image eagerly (above the fold). */
   eager?: boolean;
   class?: string;
+  /** Page locale (defaults to the route's locale); drives line breaking / bidi of title and text. */
+  locale?: Locale;
 }
 
 const {
@@ -49,6 +55,13 @@ const {
   eager = false,
   class: className,
 } = Astro.props;
+const locale = (Astro.props.locale ?? Astro.currentLocale) as Locale | undefined;
+/* Title / text are plain text: html() escapes them and keeps codes and brand names whole ("S7-1200",
+   "Schneider Electric"), isolates Latin runs on Arabic pages and breaks Chinese only between words. */
+const titleHtml = html(locale, title);
+const textHtml = text ? html(locale, text) : "";
+/* Technology strings from projects.ts are English: show the localised name where messages have one. */
+const chips = tags.map((s) => techLabel(locale, s));
 
 const hasMedia = Astro.slots.has("media");
 const sizes = variant === "industry" ? "(min-width: 1024px) 25vw, (min-width: 640px) 50vw, 100vw" : "(min-width: 1024px) 33vw, (min-width: 640px) 50vw, 100vw";
@@ -61,7 +74,7 @@ const titleLinkVisible = "after:absolute after:inset-0 after:z-10 after:content-
   variant === "service" && (
     <article
       class:list={[
-        "lc-reveal group relative flex h-full flex-col border border-charcoal-200 bg-white p-6 transition-[translate,border-color,box-shadow,background-color] duration-(--dur-ui) ease-mech sm:p-7",
+        "lc-reveal wrap-anywhere group relative flex h-full flex-col border border-charcoal-200 bg-white p-6 transition-[translate,border-color,box-shadow,background-color] duration-(--dur-ui) ease-mech sm:p-7",
         "hover:-translate-y-(--move-lift) hover:border-royal-300 hover:shadow-lift",
         "has-[a:focus-visible]:outline-2 has-[a:focus-visible]:outline-offset-4 has-[a:focus-visible]:outline-(--focus)",
         "in-[.on-dark]:border-white/10 in-[.on-dark]:bg-white/[0.03] in-[.on-dark]:hover:border-royal-400/50",
@@ -82,15 +95,13 @@ const titleLinkVisible = "after:absolute after:inset-0 after:z-10 after:content-
       )}
       <H class="type-h3 text-navy-950 in-[.on-dark]:text-white">
         {href ? (
-          <a href={href} class={titleLink}>
-            {title}
-          </a>
+          <a href={href} class={titleLink} set:html={titleHtml} />
         ) : (
-          title
+          <Fragment set:html={titleHtml} />
         )}
       </H>
-      {text && <p class="mt-3 text-charcoal-600 in-[.on-dark]:text-navy-200">{text}</p>}
-      {tags.length > 0 && <Chips items={tags} size="sm" class="mt-5" />}
+      {text && <p class="mt-3 text-charcoal-600 in-[.on-dark]:text-navy-200" set:html={textHtml} />}
+      {chips.length > 0 && <Chips items={chips} size="sm" class="mt-5" locale={locale} />}
       {cta && (
         <span class="mt-auto inline-flex items-center gap-2 pt-6 text-sm font-bold text-royal-600 in-[.on-dark]:text-royal-300" aria-hidden="true">
           {cta}
@@ -105,7 +116,7 @@ const titleLinkVisible = "after:absolute after:inset-0 after:z-10 after:content-
   variant === "industry" && (
     <article
       class:list={[
-        "lc-reveal on-dark group relative isolate flex aspect-[4/5] flex-col justify-end overflow-hidden bg-navy-950 text-white chamfer-lg transition-[translate] duration-(--dur-ui) ease-mech hover:-translate-y-(--move-lift)",
+        "lc-reveal wrap-anywhere on-dark group relative isolate flex aspect-[4/5] flex-col justify-end overflow-hidden bg-navy-950 text-white chamfer-lg transition-[translate] duration-(--dur-ui) ease-mech hover:-translate-y-(--move-lift)",
         className,
       ]}
     >
@@ -139,16 +150,16 @@ const titleLinkVisible = "after:absolute after:inset-0 after:z-10 after:content-
             <Icon name={icon} size={22} />
           </span>
         )}
-        <H class="type-h3 text-white">
+        {/* Arabic titles run ~6% larger (root size) and the 4-up tiles are narrow: one step down so two-word lines
+            fit ("الأغذية والمشروبات / والألبان", not three lines). */}
+        <H class="type-h3 text-white [&:lang(ar)]:text-[calc(var(--text-h3)*0.9)]">
           {href ? (
-            <a href={href} class={titleLinkVisible}>
-              {title}
-            </a>
+            <a href={href} class={titleLinkVisible} set:html={titleHtml} />
           ) : (
-            title
+            <Fragment set:html={titleHtml} />
           )}
         </H>
-        {text && <p class="mt-2 text-sm text-navy-100">{text}</p>}
+        {text && <p class="mt-2 text-sm text-navy-100" set:html={textHtml} />}
         {cta && (
           <span class="mt-4 inline-flex items-center gap-2 text-sm font-bold text-royal-300 transition-colors duration-(--dur-micro) ease-mech group-hover:text-white" aria-hidden="true">
             {cta}
@@ -164,7 +175,7 @@ const titleLinkVisible = "after:absolute after:inset-0 after:z-10 after:content-
   variant === "project" && (
     <article
       class:list={[
-        "lc-reveal group relative flex h-full flex-col bg-white",
+        "lc-reveal wrap-anywhere group relative flex h-full flex-col bg-white",
         "has-[a:focus-visible]:outline-2 has-[a:focus-visible]:outline-offset-4 has-[a:focus-visible]:outline-(--focus)",
         className,
       ]}
@@ -205,15 +216,13 @@ const titleLinkVisible = "after:absolute after:inset-0 after:z-10 after:content-
         )}
         <H class="mt-2 type-h3 text-navy-950 transition-colors duration-(--dur-micro) ease-mech group-hover:text-royal-700">
           {href ? (
-            <a href={href} class={titleLink}>
-              {title}
-            </a>
+              <a href={href} class={titleLink} set:html={titleHtml} />
           ) : (
-            title
+            <Fragment set:html={titleHtml} />
           )}
         </H>
-        {text && <p class="mt-2 text-charcoal-600">{text}</p>}
-        {tags.length > 0 && <Chips items={tags} size="sm" class="mt-4" />}
+        {text && <p class="mt-2 text-charcoal-600" set:html={textHtml} />}
+        {chips.length > 0 && <Chips items={chips} size="sm" class="mt-4" locale={locale} />}
         {cta && (
           <span class="mt-auto inline-flex items-center gap-2 pt-5 text-sm font-bold text-royal-600" aria-hidden="true">
             {cta}

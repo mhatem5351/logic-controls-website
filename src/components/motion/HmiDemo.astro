@@ -35,9 +35,14 @@ const u = uid("hmi");
 const quote = `${localePath(locale, "contact")}#quote`;
 const R = RECIPES.milk;
 
+// Mode chip in the status bar (hmi.mode.*; falls back to the classic HMI abbreviations).
+const modeT = (t as { mode?: { auto?: string; manual?: string } }).mode;
+const mode = { auto: modeT?.auto ?? "AUTO", manual: modeT?.manual ?? "MAN" };
+
 // Strings the runtime needs (keeps the intro/loop copy out of the attribute).
 const runtime = {
   status: t.status,
+  mode,
   mimic: { forward: t.mimic.forward, divert: t.mimic.divert, storage: t.mimic.storage, drain: t.mimic.drain },
   recipe: t.recipe,
   perm: t.perm,
@@ -154,7 +159,7 @@ const TAGS = [
           </div>
           <div class="hs-unit"><span dir="auto">{t.status.unit}</span><span class="hs-screen" dir="auto">{t.status.screen}</span></div>
           <div class="hs-right">
-            <span class="hs-chip hs-mode" data-v="mode">AUTO</span>
+            <span class="hs-chip hs-mode" data-v="mode">{mode.auto}</span>
             <span class="hs-chip hs-state" data-v="state">{t.status.ready}</span>
             <span class="hs-chip hs-alm" data-v="almCount" title={t.alarms.unacked}>0</span>
             <span class="hs-sim">{t.status.sim}</span>
@@ -807,17 +812,25 @@ const TAGS = [
     width: auto;
     height: 22px;
   }
+  /* unit name + screen name: a flex gap, not an inline margin (in Arabic the dir="auto" spans are RTL and an
+     inline-start margin landed on the wrong side: "…HTST-01نظرة عامة") */
   .hs-unit {
     flex: 1;
+    display: flex;
+    align-items: baseline;
+    gap: 10px;
     min-width: 0;
     overflow: hidden;
-    text-overflow: ellipsis;
     padding-inline-start: 14px;
     border-inline-start: 1px solid #45464e;
     font-weight: 600;
   }
+  .hs-unit > span {
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
   .hs-screen {
-    margin-inline-start: 10px;
     color: #9a9ca5;
     font-weight: 500;
   }
@@ -840,6 +853,11 @@ const TAGS = [
   .hs-mode {
     font-family: var(--font-mono);
     letter-spacing: 0.06em;
+  }
+  /* localised mode words (آلي / 自动) use the page's script font, not the Latin mono face */
+  .hs-mode:where(:lang(ar), :lang(zh-Hans)) {
+    font-family: inherit;
+    letter-spacing: 0;
   }
   .lc-hmi-screen[data-mode="manual"] .hs-mode,
   .lc-hmi-screen:not([data-cip="-1"]) .hs-mode {
@@ -1830,9 +1848,10 @@ const TAGS = [
     display: flex;
   }
   .hs-box .hs-seg button {
-    flex: 1;
+    flex: 1 1 auto;
     min-height: 32px;
     padding: 0 8px;
+    text-wrap: balance;
   }
   .lc-hmi-screen .hs-fault[aria-pressed="true"] {
     border-color: #a85d00;

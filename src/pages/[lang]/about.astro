@@ -1,8 +1,9 @@
 ---
 /**
  * About — section order from src/i18n/CONTENT.md §4:
- * hero → story + mission → numbers → founder (only when about.founder exists) → values → why → platforms →
- * how we work → where we are (zones) → closing CTA.
+ * hero → story + mission → numbers → founder (only when about.founder exists) → values & why (one section:
+ * value cards + the "why choose us" points the home page does not already make) + platforms → how we work →
+ * where we are (zones) → closing CTA.
  */
 import BaseLayout from "~/layouts/BaseLayout.astro";
 import Hero from "~/components/Hero.astro";
@@ -44,7 +45,6 @@ const I = {
   story: idx(),
   founder: hasFounder ? idx() : undefined,
   values: idx(),
-  why: idx(),
   process: idx(),
   location: idx(),
 };
@@ -52,6 +52,9 @@ const I = {
 const heroAlt = (t.projects.items["shampoo-filling-delta-wecon"]?.imageAlts as Record<string, string> | undefined)?.panel ?? "";
 const stats = STATS.map((s) => ({ value: s.value, label: c.stats[s.key].label }));
 const valueIcons: IconName[] = ["check", "file", "shield", "map-pin"];
+/* "Why choose us": items 4–5 (testing; written scope) repeat the "Safety first" and "Honest engineering" values
+   shown beside them, so only the first four are rendered (the keys stay in about.json). */
+const whyPoints = a.why.items.slice(0, 4);
 const processIcons: IconName[] = ["map-pin", "file", "panel", "check", "gauge", "users"];
 
 const pageUrl = new URL(localePath(locale, "about"), SITE.url).href;
@@ -126,62 +129,58 @@ const jsonLd = {
   {/* ---------- founder (optional copy) ---------- */}
   {hasFounder && <FounderBlock locale={locale} founder={founder} index={I.founder} />}
 
-  {/* ---------- values ---------- */}
+  {/* ---------- values + why (one section) ---------- */}
   <Section variant="muted" aria-labelledby="values-title">
-    <SectionHeading id="values-title" index={I.values} eyebrow={a.eyebrows.values} title={html(locale, a.values.title)} />
-    <ul role="list" class="mt-12 grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
-      {
-        a.values.items.map((v, i) => (
-          <li class="group relative flex flex-col border border-charcoal-200 bg-white p-6 transition duration-300 hover:-translate-y-0.5 hover:border-royal-300 hover:shadow-lift sm:p-7">
-            <span aria-hidden="true" class="absolute -top-px start-6 h-1 w-10 skew-x-[-10deg] bg-royal-600 transition-[width] duration-300 group-hover:w-20 sm:start-7 rtl:skew-x-[10deg]" />
-            <div class="flex items-center justify-between">
-              <span class="chamfer inline-grid size-12 place-items-center bg-navy-950 text-royal-300 [--chamfer:10px]">
-                <Icon name={valueIcons[i] ?? "check"} size={24} />
-              </span>
-              <span aria-hidden="true" class="font-mono text-xs text-charcoal-600 ltr" dir="ltr">{String(i + 1).padStart(2, "0")}</span>
-            </div>
-            <h3 class="mt-6 type-h3 text-navy-950">{v.title}</h3>
-            <p class="mt-3 text-charcoal-600" set:html={html(locale, v.text)} />
-          </li>
-        ))
-      }
-    </ul>
-  </Section>
-
-  {/* ---------- why + platforms ---------- */}
-  <Section aria-labelledby="why-title">
     <div class="grid gap-10 lg:grid-cols-12 lg:gap-14">
-      <div class="lg:col-span-4">
-        <SectionHeading id="why-title" index={I.why} eyebrow={a.eyebrows.why} title={html(locale, a.why.title)} swoosh />
+      <div class="lg:col-span-5">
+        <SectionHeading id="values-title" index={I.values} eyebrow={a.eyebrows.values} title={html(locale, a.values.title)} swoosh />
+        <h3 class="mt-8 type-label text-charcoal-600">{a.why.title}</h3>
+        <ul role="list" class="mt-3 border-t border-charcoal-200">
+          {
+            whyPoints.map((item) => (
+              <li class="flex items-start gap-3.5 border-b border-charcoal-200 py-3.5">
+                <span class="mt-0.5 grid size-6 shrink-0 place-items-center bg-royal-600 text-white" aria-hidden="true">
+                  <Icon name="check" size={14} strokeWidth={2.5} />
+                </span>
+                <span class="font-semibold text-navy-950" set:html={html(locale, item)} />
+              </li>
+            ))
+          }
+        </ul>
         <Button href={href(locale, "contact/#quote")} class="mt-8" iconEnd="arrow">{t.ui.cta.quote}</Button>
       </div>
-      <ul role="list" class="grid content-start gap-x-8 sm:grid-cols-2 lg:col-span-8">
+      <ul role="list" class="grid content-start gap-4 sm:grid-cols-2 sm:gap-5 lg:col-span-7">
         {
-          a.why.items.map((item) => (
-            <li class="flex items-start gap-4 border-b border-charcoal-200 py-5">
-              <span class="mt-0.5 grid size-7 shrink-0 place-items-center bg-royal-600 text-white" aria-hidden="true">
-                <Icon name="check" size={16} strokeWidth={2.5} />
-              </span>
-              <span class="font-semibold text-navy-950" set:html={html(locale, item)} />
+          a.values.items.map((v, i) => (
+            <li class="lc-reveal group relative flex flex-col border border-charcoal-200 bg-white p-6 transition duration-300 hover:-translate-y-0.5 hover:border-royal-300 hover:shadow-lift sm:p-7">
+              <span aria-hidden="true" class="absolute -top-px start-6 h-1 w-10 skew-x-[-10deg] bg-royal-600 transition-[width] duration-300 group-hover:w-20 sm:start-7 rtl:skew-x-[10deg]" />
+              <div class="flex items-center justify-between">
+                <span class="chamfer inline-grid size-11 place-items-center bg-navy-950 text-royal-300 [--chamfer:9px]">
+                  <Icon name={valueIcons[i] ?? "check"} size={22} />
+                </span>
+                <span aria-hidden="true" class="font-mono text-xs text-charcoal-600 ltr" dir="ltr">{String(i + 1).padStart(2, "0")}</span>
+              </div>
+              <h3 class="mt-5 type-h3 text-navy-950">{v.title}</h3>
+              <p class="mt-2.5 text-charcoal-600" set:html={html(locale, v.text)} />
             </li>
           ))
         }
       </ul>
     </div>
-    <div class="mt-10 border-t border-charcoal-200 pt-10 sm:mt-16 sm:pt-12">
+    <div class="mt-12 border-t border-charcoal-200 pt-10 sm:mt-16 sm:pt-12">
       <LogoWall locale={locale} class="[&_li]:text-charcoal-600" />
       <Button href={href(locale, "technologies")} variant="ghost" class="mt-3 -ms-1">{c.platforms.cta}</Button>
     </div>
   </Section>
 
   {/* ---------- how we work ---------- */}
-  <Section variant="muted" aria-labelledby="process-title">
+  <Section aria-labelledby="process-title">
     <SectionHeading id="process-title" index={I.process} eyebrow={a.eyebrows.process} title={html(locale, c.process.title)} lead={html(locale, c.process.intro)} />
     <ProcessSteps class="mt-14" locale={locale} steps={c.process.steps.map((s, i) => ({ ...s, icon: processIcons[i] }))} />
   </Section>
 
   {/* ---------- where we are ---------- */}
-  <Section aria-labelledby="location-title">
+  <Section variant="muted" aria-labelledby="location-title">
     <div class="flex flex-wrap items-end justify-between gap-6">
       <SectionHeading id="location-title" index={I.location} eyebrow={c.labels.location} title={html(locale, a.location.title)} lead={html(locale, a.location.text)} />
       <p class="flex max-w-sm items-start gap-3 border-s-2 border-signal-400 ps-4 text-sm text-charcoal-700">

@@ -9,6 +9,7 @@ import { SITE } from "~/data/site";
 import Icon from "~/components/Icon.astro";
 import Button from "~/components/Button.astro";
 import ZoneMap from "./ZoneMap.astro";
+import { colon } from "./rich";
 import { whatsappLink, mailtoLink, prefersEmail } from "~/components/nav";
 
 interface Props {
@@ -63,7 +64,7 @@ const iconCls = "grid size-10 shrink-0 place-items-center border border-charcoal
         <span class={iconCls}><Icon name="phone" size={20} /></span>
         <div class="min-w-0">
           <a href={`tel:${SITE.phone.tel}`} class="font-bold text-navy-950 after:absolute after:inset-0 after:content-[''] hover:text-royal-700">
-            <span class="sr-only">{ch.phone.label}: </span><span class="ltr" dir="ltr">{SITE.phone.display}</span>
+            <span class="sr-only">{ch.phone.label}{colon(locale)}</span><span class="ltr" dir="ltr">{SITE.phone.display}</span>
           </a>
           <p class="mt-0.5 text-sm text-charcoal-600">{ch.phone.text}</p>
         </div>
@@ -74,7 +75,7 @@ const iconCls = "grid size-10 shrink-0 place-items-center border border-charcoal
             <span class={iconCls}><Icon name="mail" size={20} /></span>
             <div class="min-w-0">
               <a href={mailtoLink(t.ui.email.subject)} class="font-bold break-all text-navy-950 after:absolute after:inset-0 after:content-[''] hover:text-royal-700">
-                <span class="sr-only">{ch.email.label}: </span><span class="ltr" dir="ltr">{SITE.email}</span>
+                <span class="sr-only">{ch.email.label}{colon(locale)}</span><span class="ltr" dir="ltr">{SITE.email}</span>
               </a>
               <p class="mt-0.5 text-sm text-charcoal-600">{ch.email.text}</p>
             </div>

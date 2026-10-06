@@ -1,7 +1,8 @@
 ---
 /**
  * Site footer: logo, pitch, nav columns, NAP (name/address/phone — identical everywhere for local SEO),
- * WhatsApp (email on zh), Facebook, industrial zones, language list, © year.
+ * WhatsApp (email on zh), Facebook, industrial zones, language list, © year. Service / industry columns end with an
+ * "All services" / "All industries" link so the footer never dead-ends at four items.
  */
 import { getMessages, type Locale } from "~/i18n";
 import { SITE } from "~/data/site";
@@ -9,6 +10,8 @@ import Logo from "./Logo.astro";
 import Icon from "./Icon.astro";
 import LanguageSwitcher from "./LanguageSwitcher.astro";
 import { SERVICE_LINKS, INDUSTRY_LINKS, FOREIGN_PATH, href, whatsappLink, prefersEmail } from "./nav";
+import { colon } from "./sections/main/rich";
+import { html } from "~/lib/text";
 
 interface Props {
   locale: Locale;
@@ -27,6 +30,12 @@ const company = [
   { label: t.nav.privacy, path: "privacy" },
 ];
 const linkCls = "inline-flex min-h-8 items-center text-navy-200 transition-colors hover:text-white";
+/** Closing "All services" / "All industries" link of a column (falls back to the nav label). */
+const allCls = "group inline-flex min-h-8 items-center gap-1.5 font-semibold text-royal-300 transition-colors hover:text-white";
+const allServices = (t.footer as Record<string, string>).allServices ?? t.nav.services;
+const allIndustries = (t.footer as Record<string, string>).allIndustries ?? t.nav.industries;
+/* "© 2026 Logic Controls. All rights reserved." — Chinese runs on without the Latin full stop: "Logic Controls 版权所有". */
+const rights = locale === "zh" ? `${SITE.name} ${t.footer.rights}` : `${SITE.name}. ${t.footer.rights}`;
 const headCls = "mb-4 type-label text-navy-300";
 ---
 
@@ -34,8 +43,8 @@ const headCls = "mb-4 type-label text-navy-300";
   <div aria-hidden="true" class="pointer-events-none absolute inset-0 -z-10 bg-blueprint [mask-image:linear-gradient(to_bottom,#000,transparent_70%)]"></div>
   <div aria-hidden="true" class="h-1 bg-[linear-gradient(90deg,var(--color-royal-600),var(--color-navy-800)_45%,transparent)] rtl:bg-[linear-gradient(-90deg,var(--color-royal-600),var(--color-navy-800)_45%,transparent)]"></div>
 
-  <div class="wrap pt-16 lg:pt-20">
-    <div class="grid gap-12 lg:grid-cols-12 lg:gap-8">
+  <div class="wrap pt-12 sm:pt-16 lg:pt-20">
+    <div class="grid gap-10 sm:gap-12 lg:grid-cols-12 lg:gap-8">
       <div class="lg:col-span-3">
         <a href={href(locale)} aria-label={t.a11y.homeLink} class="inline-block">
           <Logo variant="dark" width={150} alt="" />
@@ -53,17 +62,29 @@ const headCls = "mb-4 type-label text-navy-300";
           <h2 class={headCls}>{t.footer.servicesTitle}</h2>
           <ul role="list" class="space-y-1">
             {SERVICE_LINKS.map((l) => <li><a href={href(locale, l.path)} class={linkCls} aria-current={l.path === path ? "page" : undefined}>{t.nav.servicesList[l.key]}</a></li>)}
+            <li>
+              <a href={href(locale, "services")} class={allCls} aria-current={path === "services" ? "page" : undefined}>
+                {allServices}
+                <Icon name="arrow" size={14} class="transition-transform group-hover:translate-x-0.5 rtl:group-hover:-translate-x-0.5" />
+              </a>
+            </li>
           </ul>
         </div>
         <div>
           <h2 class={headCls}>{t.footer.industriesTitle}</h2>
           <ul role="list" class="space-y-1">
             {INDUSTRY_LINKS.map((l) => <li><a href={href(locale, l.path)} class={linkCls} aria-current={l.path === path ? "page" : undefined}>{t.nav.industriesList[l.key]}</a></li>)}
+            <li>
+              <a href={href(locale, "industries")} class={allCls} aria-current={path === "industries" ? "page" : undefined}>
+                {allIndustries}
+                <Icon name="arrow" size={14} class="transition-transform group-hover:translate-x-0.5 rtl:group-hover:-translate-x-0.5" />
+              </a>
+            </li>
           </ul>
         </div>
-        <div>
+        <div class="max-sm:col-span-2">
           <h2 class={headCls}>{t.footer.companyTitle}</h2>
-          <ul role="list" class="space-y-1">
+          <ul role="list" class="grid grid-cols-2 gap-x-8 gap-y-1 sm:grid-cols-1">
             {company.map((l) => <li><a href={href(locale, l.path)} class={linkCls} aria-current={l.path === path ? "page" : undefined}>{l.label}</a></li>)}
           </ul>
         </div>
@@ -83,14 +104,14 @@ const headCls = "mb-4 type-label text-navy-300";
             <li>
               <a href={`tel:${SITE.phone.tel}`} class="flex min-h-8 items-center gap-3 transition-colors hover:text-white">
                 <Icon name="phone" size={18} class="text-royal-300" />
-                <span class="sr-only">{t.contact.phone}:</span>
+                <span class="sr-only">{t.contact.phone}{colon(locale)}</span>
                 <span class="ltr" dir="ltr">{SITE.phone.display}</span>
               </a>
             </li>
             <li>
               <a href={`mailto:${SITE.email}`} class="flex min-h-8 items-center gap-3 transition-colors hover:text-white">
                 <Icon name="mail" size={18} class="text-royal-300" />
-                <span class="sr-only">{t.contact.email}:</span>
+                <span class="sr-only">{t.contact.email}{colon(locale)}</span>
                 <span class="ltr" dir="ltr">{SITE.email}</span>
               </a>
             </li>
@@ -111,8 +132,8 @@ const headCls = "mb-4 type-label text-navy-300";
       <p class="flex items-start gap-3 text-navy-200">
         <Icon name="factory" size={18} class="mt-0.5 text-signal-400" />
         <span>
-          <span class="font-semibold text-white">{t.footer.zonesTitle}{locale === "zh" ? "：" : ":"}</span>{locale === "zh" ? "" : " "}
-          {t.footer.zones}
+          <span class="font-semibold text-white">{t.footer.zonesTitle}{colon(locale).trimEnd()}</span>{locale === "zh" ? "" : " "}
+          <Fragment set:html={html(locale, t.footer.zones)} />
         </span>
       </p>
       <LanguageSwitcher locale={locale} path={path} variant="inline" class="-ms-2 flex-wrap" />
@@ -120,7 +141,7 @@ const headCls = "mb-4 type-label text-navy-300";
 
     <div class="mt-8 flex flex-wrap items-center justify-between gap-4 border-t border-white/10 pt-6 text-xs text-navy-300">
       <p>
-        © <span class="ltr" dir="ltr">{year}</span> {SITE.name}. {t.footer.rights}
+        © <span class="ltr" dir="ltr">{year}</span> {rights}
       </p>
       <p class="font-mono tracking-wider ltr" dir="ltr">PLC · HMI · SCADA · VFD</p>
     </div>

@@ -4,7 +4,18 @@
  * - `items` as separate chips (tags), or `joined` to render one chip "PLC · HMI · VFD".
  * - `led` adds a status lamp to the first chip ("amber" default, "green" = running, "blue").
  * Text inside chips is never translated if it is a technical code; wrap codes in the data, not here.
+ *
+ * Typography (src/lib/text.ts):
+ * - Chips keep the source casing (mono label look via letter-spacing, no uppercase): "PLCs", "WinCC" and the
+ *   Turkish dotted İ stay correct.
+ * - Only technical codes / brand names ("PLC", "24 VDC", "Siemens S7-1200 PLC", "Yaskawa VFDs") get
+ *   lang="en" dir="ltr"; ordinary words keep the page language.
+ * - Codes and brand names never wrap inside; in a joined chip each short item (a name of up to 3 words) stays whole
+ *   and the "·" separator is glued to the item before it, so a line never starts with "·".
  */
+import type { Locale } from "~/i18n";
+import { html, isCode } from "~/lib/text";
+
 interface Props {
   items: string[];
   joined?: boolean;
@@ -13,26 +24,38 @@ interface Props {
   class?: string;
   /** Accessible name for the list (e.g. "Technologies used"). */
   label?: string;
+  /** Page locale (defaults to the route's locale). */
+  locale?: Locale;
 }
 const { items, joined = false, led = false, size = "md", class: className, label } = Astro.props;
+const locale = (Astro.props.locale ?? Astro.currentLocale) as Locale | undefined;
 const ledColor = led === true || led === "amber" ? "var(--color-signal-400)" : led === "green" ? "#2bd47d" : led === "blue" ? "var(--color-royal-400)" : null;
 const chipBase = [
-  "inline-flex items-center gap-2 rounded-xs border type-label",
+  "inline-flex items-center gap-2 rounded-xs border type-label normal-case tracking-[0.04em]",
   size === "sm" ? "px-2 py-1 text-[0.6875rem]" : "px-2.5 py-1.5",
   "border-charcoal-200 bg-charcoal-50 text-charcoal-700",
   "in-[.on-dark]:border-white/12 in-[.on-dark]:bg-white/[0.04] in-[.on-dark]:text-navy-200",
 ];
-const list = joined ? [items.join(" · ")] : items;
-/** Latin-only technical codes (PLC, 24 VDC, LS XGB…) keep the mono HMI look and LTR order on every locale. */
-const isCode = (s: string) => /^[\x20-\x7E·]+$/.test(s);
+/** Items of a joined chip that never wrap inside: names of up to 3 words / 20 characters ("Schneider Electric"). */
+const atomic = (s: string) => s.length <= 20 && s.trim().split(/\s+/).length <= 3;
+const render = (s: string, code: boolean) => html(code ? "en" : locale, s);
+const chips = joined
+  ? [
+      (() => {
+        const code = items.every(isCode);
+        const parts = items.map((s) => (items.length > 1 && atomic(s) ? `<span class="lc-nw">${render(s, code)}</span>` : render(s, code)));
+        return { code, html: parts.join("&nbsp;· ") };
+      })(),
+    ]
+  : items.map((s) => ({ code: isCode(s), html: render(s, isCode(s)) }));
 ---
 
 <ul class:list={["flex flex-wrap gap-2", className]} aria-label={label} role="list">
   {
-    list.map((item, i) => (
-      <li class:list={chipBase} lang={isCode(item) ? "en" : undefined} dir={isCode(item) ? "ltr" : undefined}>
+    chips.map((chip, i) => (
+      <li class:list={chipBase} lang={chip.code ? "en" : undefined} dir={chip.code ? "ltr" : undefined}>
         {ledColor && i === 0 && <span class="lc-led" style={`--led:${ledColor}`} aria-hidden="true" />}
-        <span>{item}</span>
+        <span set:html={chip.html} />
       </li>
     ))
   }

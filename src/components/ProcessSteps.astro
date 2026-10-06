@@ -3,8 +3,11 @@
  * Numbered process ("how we work"): ring nodes on a circuit-trace bus — horizontal on desktop,
  * vertical (inline-start rail) on mobile. Adapts to dark sections.
  * Motion (motion.css): on scroll each node switches on and its trace draws to the next one, step after step.
+ * Titles / texts are plain text rendered through html() (src/lib/text.ts: codes whole, Arabic Latin runs and
+ * "(Loop check)" glosses isolated, Chinese breaks between words).
  */
 import { getMessages, type Locale } from "~/i18n";
+import { colon, html } from "~/lib/text";
 import Icon, { type IconName } from "./Icon.astro";
 
 interface Step {
@@ -45,10 +48,10 @@ const cols = { 3: "lg:grid-cols-3", 4: "lg:grid-cols-4", 5: "lg:grid-cols-5", 6:
         <div class="lc-step-body">
           {s.icon && <Icon name={s.icon} size={22} class="mb-3 text-royal-600 in-[.on-dark]:text-signal-300" />}
           <h3 class="type-h4 text-navy-950 in-[.on-dark]:text-white">
-            <span class="sr-only">{t.process.step} {i + 1}: </span>
-            {s.title}
+            <span class="sr-only">{t.process.step} {i + 1}{colon(locale)}</span>
+            <Fragment set:html={html(locale, s.title)} />
           </h3>
-          {s.text && <p class="mt-2 text-sm text-charcoal-600 in-[.on-dark]:text-navy-200">{s.text}</p>}
+          {s.text && <p class="mt-2 text-sm text-charcoal-600 in-[.on-dark]:text-navy-200" set:html={html(locale, s.text)} />}
         </div>
       </li>
     ))

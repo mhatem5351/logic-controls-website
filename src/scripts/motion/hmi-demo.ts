@@ -13,6 +13,8 @@ type Dict = { [k: string]: string };
 interface I18n {
   perm: Dict;
   status: Dict;
+  /** Status-bar mode chip (hmi.mode.auto / .manual). */
+  mode?: Dict;
   mimic: Dict;
   recipe: Dict;
   trend: Dict;
@@ -179,7 +181,7 @@ export function initHmi(fig: HTMLElement): void {
     set("minHold", `${R.hold} s`);
     set("fdvTxt", s.fwd ? T.mimic.forward : T.mimic.divert);
     set("outLbl", cip ? T.mimic.drain : T.mimic.storage);
-    set("mode", cip ? "CIP" : s.manual ? "MAN" : "AUTO");
+    set("mode", cip ? "CIP" : s.manual ? (T.mode?.manual ?? "MAN") : (T.mode?.auto ?? "AUTO"));
     set(
       "state",
       cip ? T.status.cip : !s.running ? (s.q > 0 ? T.status.stopped : stickyKey === "idle" ? T.status.ready : T.status.stopped) : s.fwd ? T.status.forward : s.produced ? T.status.divert : T.status.heating,

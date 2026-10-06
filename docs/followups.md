@@ -56,46 +56,52 @@
 - [x] projects.*.solution → split into 2-paragraph arrays (template change needed). → done: arrays of 2 paragraphs (syrup: 3), same count in all locales; renderer in src/pages/[lang]/projects/[slug].astro accepts string | string[].
 
 ## Round 2 — UX changes (pages/components; after motion director)
-- [ ] Mobile language access: show all-4 language menu on mobile and for zh/tr visitors (not only the quick switch).
-- [ ] Contact page: drop self-linking CTA band; move "What we need to quote" checklist beside the form.
-- [ ] Mobile home ~25,000px: compact service rows on mobile; move featured projects up.
-- [ ] Service pages: merge quote-checklist block + CTA band (duplicate buttons).
-- [ ] Section index labels "01 —" missing text on service/industry/project pages; home section 05 label missing.
-- [ ] Case study mobile: move gallery right after meta row.
-- [ ] Home: foreign pitch appears 3× — differentiate the dark band (e.g. feature commissioning case).
-- [ ] Chips: stop uppercasing (PLCs → PLCS bug).
-- [ ] 404: add Services/Projects/Quote links; services index: add case studies; footer: "All services"/"All industries". → strings ready: ui.notFound.links.{title,services,projects,quote}, ui.footer.{allServices,allIndustries} (wiring pending).
-- [ ] Hero stats: lead with "50+ projects" + "15 case studies" (data-driven count) instead of "4+ years". → label ready: common.stats.caseStudies.label (wiring pending).
-- [ ] About: merge "What we stand for" and "Why choose us" overlap.
-- [ ] Foreign page: second CTA "Email an engineer".
-- [ ] Founder photo APPROVED by user 2026-10-06 → `src/assets/people/founder.jpg` (800×800, light-grey bg). Use on About founder block + small founder strip on home and foreign-manufacturers pages. → copy ready: common.founderStrip.{eyebrow,title,text,cta} (cta → about/).
+- [x] Mobile language access: show all-4 language menu on mobile and for zh/tr visitors (not only the quick switch). → globe menu now on every page below 1024px (icon-only on phones, next to the quick switch; quick switch hides below 352px); ≥1024px the utility bar lists all four.
+- [x] Contact page: drop self-linking CTA band; move "What we need to quote" checklist beside the form. → new ChecklistPanel (light) at the top of the sidebar; collapsed right under the form below 1024px.
+- [x] Mobile home ~25,000px: compact service rows on mobile; move featured projects up. → en 24,950 → 15,149px at 390 (ar 26,424 → 16,164 · zh 23,624 → 14,210 · tr 25,469 → 15,519): projects right after the doors (swipe row on phones), service rows + industry tiles below 768px, compact zone chips, HMI "what you are seeing" points hidden on phones, checklist collapsed, section rhythm token ~50px on phones. 12k would need dropping a section (process / zones / HMI) — not done.
+- [x] Service pages: merge quote-checklist block + CTA band (duplicate buttons). → one QuoteCta band (service pitch + buttons | checklist).
+- [x] Section index labels "01 —" missing text on service/industry/project pages; home section 05 label missing. → rule: an index only with eyebrow text; detail pages show titles only; home 05 eyebrow = services.index.processEyebrow.
+- [x] Case study mobile: move gallery right after meta row. → media block first in DOM (2-up photos on phones, vertical reel above "At a glance"); `lg:order-last` keeps desktop story-first.
+- [x] Home: foreign pitch appears 3× — differentiate the dark band (e.g. feature commissioning case). → anaerobic waste-treatment commissioning case (HMI + panel photos, S7-200 SMART / MCGS chips, highlights, case link) + "For foreign manufacturers" CTA.
+- [x] Chips: stop uppercasing (PLCs → PLCS bug). → chips keep source casing (mono + 0.04em tracking), all locales.
+- [x] 404: add Services/Projects/Quote links; services index: add case studies; footer: "All services"/"All industries". → wired (404 per-language "popular pages" row; services index "Recent work" strip of the 3 newest case studies; footer column links).
+- [x] Hero stats: lead with "50+ projects" + "15 case studies" (data-driven count) instead of "4+ years". → home hero: projects · case studies (PROJECTS.length) · years · industries.
+- [x] About: merge "What we stand for" and "Why choose us" overlap. → one section (values 2×2 + first four "why" points + platforms); about.why.items[4–5] and about.eyebrows.why no longer rendered (keys kept).
+- [x] Foreign page: second CTA "Email an engineer".
+- [x] Founder photo APPROVED by user 2026-10-06 → `src/assets/people/founder.jpg` (800×800, light-grey bg). Use on About founder block + small founder strip on home and foreign-manufacturers pages. → FounderBlock photo (chamfered frame) + new FounderStrip (home "why us", foreign "experience"), link → about/#founder.
 
 ## Round 2 — zh layout fixes (from native zh review; screenshots scratchpad/review-zh/shots/)
-- [ ] catalog.ts `html()`/`keepCodes()` must use rich.ts zh word-wrap helper for H1/H2, FAQ questions, card titles (zh headings break mid-word: 维⏎护, 个人护⏎理).
-- [ ] `src/pages/[lang]/index.astro` featured cards: apply `keepCodes()` ("Siemens S7-⏎1200").
-- [ ] `text-wrap: balance` on ProjectNav `.type-h4`; `text-wrap: pretty` on FAQ `.prose-lc`.
-- [ ] rich.ts `zhWords()`: glue digit runs to following measure word ("50⏎多个项目").
-- [ ] Chips.astro: join with " · " so "·" never starts a line.
-- [ ] Tech chips on case studies come from projects.ts `technologies[]` in English and uppercase ("YASKAWA VFDS") — localise generic terms (VFDs, Motion control…) via messages; keep brand/model Latin; stop uppercase. → strings ready: messages/<locale>/tech.json items{English → localised}, 43 strings incl. technologies.ts products + PROTOCOLS; `Messages.tech` typed (wiring pending).
-- [ ] Field.astro optional marker: localise brackets (zh （选填）).
-- [ ] Footer.astro:123 `". "` join → locale-aware (zh "Logic Controls 版权所有").
-- [ ] QuoteCta extra space after 。; ASCII colons in sr-only labels (Footer, QuoteCta, ContactChannels) → localise.
+- [x] catalog.ts `html()`/`keepCodes()` must use rich.ts zh word-wrap helper for H1/H2, FAQ questions, card titles (zh headings break mid-word: 维⏎护, 个人护⏎理). → one engine `src/lib/text.ts` (rich.ts + catalog.ts delegate); Card title/summary, FAQ question, ProjectNav, ProcessSteps render through it.
+- [x] `src/pages/[lang]/index.astro` featured cards: apply `keepCodes()` ("Siemens S7-⏎1200"). → fixed inside Card (no page edit).
+- [x] `text-wrap: balance` on ProjectNav `.type-h4`; `text-wrap: pretty` on FAQ `.prose-lc`.
+- [x] rich.ts `zhWords()`: glue digit runs to following measure word ("50⏎多个项目").
+- [x] Chips.astro: join with " · " so "·" never starts a line. → "&nbsp;· " join + whole short items; html() also glues " · " in any message (Footer zones line still renders raw text, see typography follow-ups).
+- [x] Tech chips on case studies come from projects.ts `technologies[]` in English and uppercase ("YASKAWA VFDS") — localise generic terms (VFDs, Motion control…) via messages; keep brand/model Latin; stop uppercase. → strings ready: messages/<locale>/tech.json items{English → localised}, 43 strings incl. technologies.ts products + PROTOCOLS; `Messages.tech` typed. Wired: `techLabel()` (src/lib/text.ts) in Card tags (home featured, ProjectCard) and TechStack.
+- [x] Field.astro optional marker: localise brackets (zh （选填）).
+- [x] Footer.astro:123 `". "` join → locale-aware (zh "Logic Controls 版权所有").
+- [x] QuoteCta extra space after 。; ASCII colons in sr-only labels (Footer, QuoteCta, ContactChannels) → localise. (also contact hero pills, thanks, privacy, language button; ProcessSteps.astro sr-only "{step} {n}: " now uses colon(locale) → zh "：")
 - [x] Borg El Arab zh = 阿拉伯堡 (zh.wikipedia langlink) — fixed.
 
 ## Round 2 — tr layout fixes (from native tr review; screenshots scratchpad/review-tr/slices/)
-- [ ] Chips.astro `isCode()` treats any basic-Latin text as English code → wrong Turkish uppercase (i→I not İ). Only real codes (model numbers, abbreviations) should get lang="en".
-- [ ] (same as zh) project technology chips from projects.ts are English-only ("Yaskawa VFDs", "Motion control", "VFD-driven fans and drum", "MEAN WELL power supply", "…with expansion module") — localise. → see tech.json (wiring pending).
-- [ ] Home hero foreign-box (index.astro ~l.159) squeezes into two narrow columns at 390px + WhatsApp FAB overlaps — stack on mobile.
-- [ ] Card summaries split "S7-1200" at hyphen — use non-breaking hyphen / keepCodes in summaries too.
-- [ ] HMI demo: "Meyve suyu" recipe button wraps on desktop (minor).
+- [x] Chips.astro `isCode()` treats any basic-Latin text as English code → wrong Turkish uppercase (i→I not İ). Only real codes (model numbers, abbreviations) should get lang="en". → `isCode()` in src/lib/text.ts: acronyms, tokens with digits, units, known brands only.
+- [x] (same as zh) project technology chips from projects.ts are English-only ("Yaskawa VFDs", "Motion control", "VFD-driven fans and drum", "MEAN WELL power supply", "…with expansion module") — localise. → see tech.json. Wired via techLabel().
+- [x] Home hero foreign-box (index.astro ~l.159) squeezes into two narrow columns at 390px + WhatsApp FAB overlaps — stack on mobile. (stacked below 640px, data-fab-avoid)
+- [x] Card summaries split "S7-1200" at hyphen — use non-breaking hyphen / keepCodes in summaries too. → Card renders summaries through html() (nowrap code spans).
+- [x] HMI demo: "Meyve suyu" recipe button wraps on desktop (minor). → recipe buttons size to their label (flex auto; balanced 2 lines only when really narrow).
 - [x] GLOSSARY TR additions: set değeri, lojik, Tag, Engellendi, Ham ürün tankı.
 
 ## Round 2 — ar layout fixes (from native ar review; screenshots scratchpad/review-ar/)
-- [ ] HmiDemo status bar "…HTST-01نظرة عامة" no gap: `.hs-screen` margin-inline-start lands wrong in RTL span → use flex gap.
-- [ ] Latin names split inside <bdi> ("IEC | 60204-1", "Schneider | Electric", "WinCC | Professional", "LS | Electric", "Logic | Controls"): `[dir=rtl] bdi { white-space: nowrap }` + add  ‑ to LATIN_RUN in rich.ts.
-- [ ] Parenthesised Latin glosses wrap with inverted brackets ("ضغط Pressure)" / "(switch"): in rich.ts html(), wrap "(" + run + ")" in nowrap span.
-- [ ] Project & service cards skip html()/keepCodes → "S7-" / "1200" breaks (same as zh/tr item).
-- [ ] Industry tiles: text-wrap: balance on titles (AR wraps to 3 lines with orphan).
-- [ ] HMI mode chip hard-coded "AUTO/MAN" (hmi-demo.ts:182) → localise via hmi.json keys (all 4 locales). → keys ready: hmi.mode.{auto,manual} (AUTO/MAN · آلي/يدوي · 自动/手动 · OTO/MAN); CIP state can reuse hmi.controls.cip (wiring pending).
-- [ ] Mobile hero brand chip breaks inside brand names.
-- [ ] Header logo overlaps utility link (check after motion director).
+- [x] HmiDemo status bar "…HTST-01نظرة عامة" no gap: `.hs-screen` margin-inline-start lands wrong in RTL span → use flex gap.
+- [x] Latin names split inside <bdi> ("IEC | 60204-1", "Schneider | Electric", "WinCC | Professional", "LS | Electric", "Logic | Controls"): `[dir=rtl] bdi { white-space: nowrap }` + add  ‑ to LATIN_RUN in rich.ts. → only atoms stay whole (codes, standards, numbers+units, names ≤3 words / ≤20 chars); multi-token runs (`bdi.lc-wrap`) wrap between tokens, never across "و"/"and"/commas.
+- [x] Parenthesised Latin glosses wrap with inverted brackets ("ضغط Pressure)" / "(switch"): in rich.ts html(), wrap "(" + run + ")" in nowrap span. → brackets go inside the LTR isolate (`<bdi>(Pressure switch)</bdi>`): one-token glosses never wrap, longer ones wrap with correct brackets (glyph orientation verified).
+- [x] Project & service cards skip html()/keepCodes → "S7-" / "1200" breaks (same as zh/tr item).
+- [x] Industry tiles: text-wrap: balance on titles (AR wraps to 3 lines with orphan). → balance was already on; AR tile titles one step smaller (0.9×) so "الأغذية والمشروبات / والألبان" is 2 lines at 1280–1440.
+- [x] HMI mode chip hard-coded "AUTO/MAN" (hmi-demo.ts:182) → localise via hmi.json keys (all 4 locales). → keys ready: hmi.mode.{auto,manual} (AUTO/MAN · آلي/يدوي · 自动/手动 · OTO/MAN); CIP state can reuse hmi.controls.cip. Wired (HmiDemo runtime + hmi-demo.ts; localised words use the page font, no tracking).
+- [x] Mobile hero brand chip breaks inside brand names. → joined chip keeps each brand whole, "·" glued.
+- [x] Header logo overlaps utility link (check after motion director). → measured 1024/1100/1280/1440 × en/ar/zh/tr: no overlap.
+
+## Round 2 — typography follow-ups (after src/lib/text.ts; page/component owners)
+- [ ] Footer.astro:135 `{t.footer.zones}` renders raw text → TR 390px "6 Ekim ⏎· 10. Ramazan": render with `set:html={html(locale, t.footer.zones)}` (rich.ts) so the "·" sticks to the item before it.
+- [ ] LinkTiles.astro:36 `{it.title}` (and :40 `{it.text}`) plain → zh 390px "设备自动化、驱⏎动与运动控制": render through html(locale, …) like Card (locale via prop or Astro.currentLocale).
+- [ ] Font swap: metric-matched fallbacks + preloads give CLS 0 on load (all locales, 1440/390). Only when fonts land after first paint can the 390px TR / AR hero H1 re-wrap by one line (stress test, fonts delayed 600 ms: /tr/ 0.036, /ar/industries/food-beverage/ 0.032; desktop ≤ 0.001). If field data shows it, set `display: "optional"` on both families in astro.config.mjs.
+- [ ] Android has no Arial/Tahoma: the fallback faces resolve to nothing and the stack falls through to system-ui (unadjusted). Add Roboto / Noto Sans Arabic faces once measured on a device.

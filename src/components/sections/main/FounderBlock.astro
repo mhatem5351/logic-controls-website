@@ -2,12 +2,15 @@
 /**
  * Leadership / founder block for the About page. Renders nothing unless `founder` is passed
  * (about.founder is optional copy: { eyebrow, title, name, role, bio: string[], highlights: [{ value, label }] }).
- * No photo: a navy "nameplate" tile with a monogram (Latin names) or the brand mark (other scripts).
+ * Navy "nameplate" tile with the founder's photo (client-approved, src/assets/people/founder.jpg) in a chamfered
+ * frame: a small square beside the name on phones, a 4:5 portrait above it from 1024px.
  */
+import { Picture } from "astro:assets";
 import type { Locale } from "~/i18n";
 import BrandMark from "~/components/BrandMark.astro";
 import SectionHeading from "~/components/SectionHeading.astro";
 import { html } from "./rich";
+import founderPhoto from "~/assets/people/founder.jpg";
 
 export interface Founder {
   eyebrow?: string;
@@ -29,9 +32,7 @@ interface Props {
 
 const { locale, founder, index, id = "founder", class: className } = Astro.props;
 const name = founder?.name?.trim() ?? "";
-const latin = /^[A-Za-z]/.test(name);
-const words = name.split(/\s+/).filter(Boolean);
-const initials = latin && words.length ? `${words[0]![0]}${words.length > 1 ? words[words.length - 1]![0] : ""}`.toUpperCase() : "";
+const alt = [name, founder?.role].filter(Boolean).join(", ");
 const bio = (founder?.bio ?? []).filter(Boolean);
 const highlights = (founder?.highlights ?? []).filter((h) => h && h.value && h.label);
 const titleId = `${id}-title`;
@@ -49,14 +50,19 @@ const titleId = `${id}-title`;
             <BrandMark tone="mono" class="pointer-events-none absolute -end-10 -bottom-10 -z-10 h-56 w-auto text-white/[0.05]" />
             <span class="lc-led absolute end-8 top-8 max-lg:hidden" aria-hidden="true" />
             <div class="flex items-center gap-5 lg:block">
-              <div aria-hidden="true" class="grid aspect-square w-20 shrink-0 place-items-center border border-royal-400/40 bg-navy-900/70 sm:w-24 lg:mt-6 lg:w-36">
-                {initials ? (
-                  <span class="text-[2rem] leading-none font-extrabold tracking-[-0.04em] text-white italic sm:text-[2.5rem] lg:text-[3.25rem] ltr" lang="en" dir="ltr">
-                    {initials.split("").map((ch, i) => (i === initials.length - 1 && initials.length > 1 ? <span class="text-royal-300">{ch}</span> : ch))}
-                  </span>
-                ) : (
-                  <BrandMark tone="dark" class="h-10 w-auto sm:h-12 lg:h-16" />
-                )}
+              <div class="chamfer w-24 shrink-0 bg-royal-400/45 p-px [--chamfer:15px] sm:w-28 lg:mt-6 lg:w-full lg:[--chamfer:25px]">
+                <div class="chamfer relative aspect-square overflow-hidden bg-charcoal-100 [--chamfer:14px] lg:aspect-[4/5] lg:[--chamfer:24px]">
+                  <Picture
+                    src={founderPhoto}
+                    alt={alt}
+                    formats={["avif", "webp"]}
+                    widths={[192, 320, 480, 640]}
+                    sizes="(min-width: 1024px) 22rem, 7rem"
+                    layout="full-width"
+                    class="size-full object-cover object-[50%_22%] max-lg:origin-[50%_30%] max-lg:scale-[1.2]"
+                  />
+                  <span aria-hidden="true" class="absolute inset-x-0 bottom-0 h-1/4 bg-gradient-to-t from-navy-950/35 to-transparent max-lg:hidden" />
+                </div>
               </div>
               <div class="min-w-0 lg:mt-8">
                 <p class="type-h3 text-white">{name}</p>

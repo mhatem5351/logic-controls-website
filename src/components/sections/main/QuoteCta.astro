@@ -2,7 +2,9 @@
 /**
  * Closing CTA with the "What we need to quote" checklist (common.quoteChecklist).
  * Same visual language as <CtaBand> (navy, angled top, blueprint, gear watermark) in two columns:
- * pitch + buttons + contact line | checklist card. On zh the drawings hint points to email (WhatsApp is blocked).
+ * pitch + buttons + contact line | checklist card (<ChecklistPanel>, collapsed below 1024px so the buttons stay close
+ * to the pitch). Also the single closing block of the service pages (pitch, buttons and checklist in one band).
+ * On zh the drawings hint points to email (WhatsApp is blocked).
  */
 import { getMessages, type Locale } from "~/i18n";
 import { SITE } from "~/data/site";
@@ -11,7 +13,8 @@ import BrandMark from "~/components/BrandMark.astro";
 import Icon from "~/components/Icon.astro";
 import Swoosh from "~/components/Swoosh.astro";
 import { href as lhref, QUOTE_PATH, whatsappLink, mailtoLink, prefersEmail } from "~/components/nav";
-import { html } from "./rich";
+import ChecklistPanel from "./ChecklistPanel.astro";
+import { html, colon } from "./rich";
 
 interface Cta {
   label: string;
@@ -34,7 +37,6 @@ interface Props {
 const { locale, title, text, eyebrow, id, class: className } = Astro.props;
 const t = getMessages(locale);
 const email = prefersEmail(locale);
-const q = t.common.quoteChecklist;
 const {
   primary = { label: t.ui.cta.quote, href: lhref(locale, QUOTE_PATH) },
   secondary = email
@@ -83,54 +85,19 @@ const secondaryIsWa = secondary && secondary.href.startsWith("https://wa.me");
       <p class="mt-8 flex flex-wrap items-center gap-x-6 gap-y-2 text-sm text-navy-200">
         <a href={`tel:${SITE.phone.tel}`} class="inline-flex min-h-6 items-center gap-2 hover:text-white">
           <Icon name="phone" size={16} class="text-royal-300" />
-          <span class="sr-only">{t.common.labels.phone}:</span>
+          <span class="sr-only">{t.common.labels.phone}{colon(locale)}</span>
           <span class="ltr" dir="ltr">{SITE.phone.display}</span>
         </a>
         <a href={`mailto:${SITE.email}`} class="inline-flex min-h-6 items-center gap-2 hover:text-white">
           <Icon name="mail" size={16} class="text-royal-300" />
-          <span class="sr-only">{t.common.labels.email}:</span>
+          <span class="sr-only">{t.common.labels.email}{colon(locale)}</span>
           <span class="ltr" dir="ltr">{SITE.email}</span>
         </a>
       </p>
     </div>
 
     <div class="lg:col-span-6">
-      <div class="chamfer-lg relative border border-white/10 bg-white/[0.04] p-6 backdrop-blur-sm sm:p-8">
-        <span aria-hidden="true" class="absolute -top-px start-8 h-1 w-14 skew-x-[-10deg] bg-signal-400 rtl:skew-x-[10deg]"></span>
-        <h3 class="flex items-center gap-3 type-h3 text-white">
-          <Icon name="file" size={24} class="text-signal-300" />
-          {q.title}
-        </h3>
-        <p class="mt-3 text-sm text-navy-200">{q.intro}</p>
-        <ol role="list" class="mt-6 divide-y divide-white/8 border-y border-white/8">
-          {
-            q.items.map((item, i) => (
-              <li class="flex gap-4 py-3">
-                <span aria-hidden="true" class="mt-0.5 shrink-0 font-mono text-xs text-royal-300 ltr" dir="ltr">
-                  {String(i + 1).padStart(2, "0")}
-                </span>
-                <span class="text-[0.9375rem] text-navy-100" set:html={html(locale, item)} />
-              </li>
-            ))
-          }
-        </ol>
-        {
-          email ? (
-            <a href={mailtoLink(t.ui.email.subject)} class="mt-6 inline-flex min-h-11 items-center gap-3 font-semibold text-royal-300 underline-offset-4 hover:text-white hover:underline">
-              <Icon name="mail" size={20} />
-              <span>
-                {t.contact.channels.email.text} <span class="ltr" dir="ltr">{SITE.email}</span>
-              </span>
-            </a>
-          ) : (
-            <a href={whatsappLink(whatsappMessage)} target="_blank" rel="noopener" class="mt-6 inline-flex min-h-11 items-center gap-3 font-semibold text-navy-100 underline-offset-4 hover:text-white hover:underline">
-              <Icon name="whatsapp" size={20} class="text-[#25d366]" />
-              <span>{q.whatsappHint}</span>
-              <span class="sr-only">({t.ui.a11y.newTab})</span>
-            </a>
-          )
-        }
-      </div>
+      <ChecklistPanel locale={locale} tone="dark" whatsappMessage={whatsappMessage} />
     </div>
   </div>
 </section>

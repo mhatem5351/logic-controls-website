@@ -3,12 +3,14 @@
  * Language switcher — native names (العربية / English / 中文 / Türkçe), keeps the current page,
  * remembers the choice in the `lang` cookie (read by the Worker on "/").
  *
- * variant: "inline" (row of links: utility bar, footer) · "menu" (globe button + popover list) · "grid" (2×2, mobile drawer)
+ * variant: "inline" (row of links: utility bar, footer) · "menu" (globe button + popover list; icon-only on phones) ·
+ *          "grid" (2×2, mobile drawer)
  */
 import { getMessages, type Locale } from "~/i18n";
 import Icon from "./Icon.astro";
 import { languageLinks } from "./nav";
 import { uid } from "./uid";
+import { colon } from "./sections/main/rich";
 
 interface Props {
   locale: Locale;
@@ -62,8 +64,8 @@ const SHORT: Record<Locale, string> = { en: "EN", ar: "ع", zh: "中", tr: "TR" 
         style={`anchor-name: --${popId}`}
       >
         <Icon name="globe" size={18} />
-        <span aria-hidden="true">{SHORT[locale]}</span>
-        <span class="sr-only">{t.a11y.language}: {links.find((l) => l.locale === locale)?.native}</span>
+        <span aria-hidden="true" class="max-sm:hidden">{SHORT[locale]}</span>
+        <span class="sr-only">{t.a11y.language}{colon(locale)}{links.find((l) => l.locale === locale)?.native}</span>
       </button>
       <div
         id={popId}

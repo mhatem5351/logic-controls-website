@@ -5,7 +5,7 @@
 import type { ProjectData } from "~/data/projects";
 import { getMessages, localePath, type Locale } from "~/i18n";
 import Icon from "~/components/Icon.astro";
-import { industryCopy, keepCodes, projectCopy } from "./catalog";
+import { html, industryCopy, projectCopy } from "./catalog";
 
 interface Props {
   locale: Locale;
@@ -41,7 +41,7 @@ const links = [
           {label}
           {dir === "next" && <Icon name="arrow" size={16} class="transition-transform group-hover:translate-x-1 rtl:group-hover:-translate-x-1" />}
         </span>
-        <span class="type-h4 text-navy-950 group-hover:text-royal-700">{keepCodes(projectCopy(locale, p.slug)?.cardTitle ?? "", locale)}</span>
+        <span class="lc-balance type-h4 text-navy-950 group-hover:text-royal-700" set:html={html(projectCopy(locale, p.slug)?.cardTitle ?? "", locale)} />
         <span class="type-label text-charcoal-600">{meta(p)}</span>
       </a>
     ))

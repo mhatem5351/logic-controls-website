@@ -1,8 +1,9 @@
 ---
 /**
  * Contact / RFQ. Compact dark header, then the two-step quote form overlapping it (form-first above the fold),
- * sidebar with WhatsApp drawings (email on zh), channels, next steps and the address card; closing band with
- * the "what we need to quote" checklist. Turnstile is loaded on this page only.
+ * sidebar: "What we need to quote" checklist (beside the form on desktop; collapsed right under the form on phones),
+ * WhatsApp drawings (email on zh), channels, next steps and the address card. No closing CTA band: every action on
+ * it would point back to this page. Turnstile is loaded on this page only.
  */
 import BaseLayout from "~/layouts/BaseLayout.astro";
 import Hero from "~/components/Hero.astro";
@@ -11,8 +12,8 @@ import Icon from "~/components/Icon.astro";
 import RfqForm from "~/components/sections/main/RfqForm.astro";
 import ContactChannels from "~/components/sections/main/ContactChannels.astro";
 import NextSteps from "~/components/sections/main/NextSteps.astro";
-import QuoteCta from "~/components/sections/main/QuoteCta.astro";
-import { html } from "~/components/sections/main/rich";
+import ChecklistPanel from "~/components/sections/main/ChecklistPanel.astro";
+import { html, colon } from "~/components/sections/main/rich";
 import { getMessages, localeStaticPaths, localePath, LOCALE_META, type Locale } from "~/i18n";
 import { SITE } from "~/data/site";
 import { whatsappLink, mailtoLink, prefersEmail } from "~/components/nav";
@@ -86,7 +87,7 @@ if (email) pills.reverse();
               <Icon name={p.icon} size={18} class={p.iconClass} />
               {p.value ? (
                 <>
-                  <span class="sr-only">{p.label}: </span>
+                  <span class="sr-only">{p.label}{colon(locale)}</span>
                   <span class="ltr font-semibold" dir="ltr">{p.value}</span>
                 </>
               ) : (
@@ -106,18 +107,14 @@ if (email) pills.reverse();
         <RfqForm locale={locale} />
         <NextSteps locale={locale} class="mt-10 hidden border border-charcoal-200 bg-navy-50/60 p-6 sm:p-8 lg:block" />
       </div>
-      <aside class="lg:col-span-5 lg:pt-10" aria-label={c.channels.title}>
-        <ContactChannels locale={locale} />
-        <NextSteps locale={locale} class="mt-6 border border-charcoal-200 bg-navy-50/60 p-6 lg:hidden" />
-      </aside>
+      <div class="lg:col-span-5 lg:pt-10">
+        <ChecklistPanel locale={locale} tone="light" hint={false} headingLevel="h2" class="mb-6" />
+        <aside aria-label={c.channels.title}>
+          <ContactChannels locale={locale} />
+          <NextSteps locale={locale} class="mt-6 border border-charcoal-200 bg-navy-50/60 p-6 lg:hidden" />
+        </aside>
+      </div>
     </div>
   </section>
 
-  <QuoteCta
-    locale={locale}
-    title={t.common.ctaBand.default.title}
-    text={t.common.ctaBand.default.text}
-    primary={{ label: t.ui.cta.quote, href: "#quote" }}
-    whatsappMessage={t.common.whatsapp.drawings}
-  />
 </BaseLayout>

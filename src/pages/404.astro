@@ -6,8 +6,33 @@ import Icon from "~/components/Icon.astro";
 import CircuitTraces from "~/components/CircuitTraces.astro";
 import { Font } from "astro:assets";
 import { LOCALES, LOCALE_META, getMessages, localePath } from "~/i18n";
+import { QUOTE_PATH, href } from "~/components/nav";
 
-const blocks = (["ar", "en", "zh", "tr"] as const).filter((l) => LOCALES.includes(l)).map((l) => ({ locale: l, meta: LOCALE_META[l], t: getMessages(l).ui.notFound }));
+/* Each language block: message, homepage link, then the three pages people most often look for (ui.notFound.links,
+   falling back to the nav labels) so a broken link never ends the visit. */
+interface NotFoundLinks {
+  title?: string;
+  services?: string;
+  projects?: string;
+  quote?: string;
+}
+const blocks = (["ar", "en", "zh", "tr"] as const)
+  .filter((l) => LOCALES.includes(l))
+  .map((l) => {
+    const ui = getMessages(l).ui;
+    const nf = ui.notFound as typeof ui.notFound & { links?: NotFoundLinks };
+    return {
+      locale: l,
+      meta: LOCALE_META[l],
+      t: nf,
+      linksTitle: nf.links?.title,
+      links: [
+        { label: nf.links?.services ?? ui.nav.services, href: localePath(l, "services") },
+        { label: nf.links?.projects ?? ui.nav.projects, href: localePath(l, "projects") },
+        { label: nf.links?.quote ?? ui.cta.quote, href: href(l, QUOTE_PATH) },
+      ],
+    };
+  });
 ---
 
 <BaseLayout locale="en" title="404 — Page not found" path="404" noindex alternates={false} canonical={false} chrome={false}>
@@ -25,18 +50,30 @@ const blocks = (["ar", "en", "zh", "tr"] as const).filter((l) => LOCALES.include
         </h1>
         <ul role="list" class="mt-10 grid gap-px overflow-hidden border border-white/10 bg-white/10 sm:grid-cols-2">
           {
-            blocks.map(({ locale, meta, t }) => (
-              <li lang={meta.htmlLang} dir={meta.dir} class="bg-navy-950 p-6 sm:p-8">
+            blocks.map(({ locale, meta, t, linksTitle, links }) => (
+              <li lang={meta.htmlLang} dir={meta.dir} class="flex flex-col bg-navy-950 p-6 sm:p-8">
                 <h2 class="type-h3 text-white">{t.title}</h2>
                 <p class="mt-2 text-navy-200">{t.body}</p>
                 <a
                   href={localePath(locale)}
                   hreflang={meta.hreflang}
-                  class="mt-5 inline-flex min-h-10 items-center gap-2 font-bold text-royal-300 hover:text-white"
+                  class="group mt-5 inline-flex min-h-10 items-center gap-2 self-start font-bold text-royal-300 hover:text-white"
                 >
                   {t.home}
-                  <Icon name="arrow" size={18} />
+                  <Icon name="arrow" size={18} class="transition-transform group-hover:translate-x-0.5 rtl:group-hover:-translate-x-0.5" />
                 </a>
+                <nav aria-label={linksTitle ?? t.title} class="mt-auto border-t border-white/10 pt-4">
+                  {linksTitle && <p class="mb-2 type-label text-navy-300">{linksTitle}</p>}
+                  <ul role="list" class="flex flex-wrap gap-x-5 gap-y-1">
+                    {links.map((l) => (
+                      <li>
+                        <a href={l.href} hreflang={meta.hreflang} class="inline-flex min-h-10 items-center gap-1.5 text-sm font-semibold text-navy-100 underline decoration-white/25 underline-offset-4 hover:text-white hover:decoration-signal-400">
+                          {l.label}
+                        </a>
+                      </li>
+                    ))}
+                  </ul>
+                </nav>
               </li>
             ))
           }

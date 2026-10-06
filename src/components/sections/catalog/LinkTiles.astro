@@ -4,6 +4,8 @@
  * One link per tile (stretched), icon chip, title, optional one-line summary and a trailing arrow.
  */
 import Icon, { type IconName } from "~/components/Icon.astro";
+import { html } from "~/lib/text";
+import type { Locale } from "~/i18n";
 
 interface Tile {
   href: string;
@@ -20,6 +22,7 @@ interface Props {
   class?: string;
 }
 const { items, headingLevel: H = "h3", columns = 4, class: className } = Astro.props;
+const locale = Astro.currentLocale as Locale | undefined;
 const grid = { 2: "sm:grid-cols-2", 3: "sm:grid-cols-2 lg:grid-cols-3", 4: "sm:grid-cols-2 lg:grid-cols-4" }[columns];
 ---
 
@@ -33,11 +36,11 @@ const grid = { 2: "sm:grid-cols-2", 3: "sm:grid-cols-2 lg:grid-cols-3", 4: "sm:g
         <span class="min-w-0 flex-1">
           <H class="type-h4 text-navy-950 transition-colors duration-(--dur-micro) ease-mech group-hover:text-royal-700 in-[.on-dark]:text-white">
             <a href={it.href} class="after:absolute after:inset-0 after:content-[''] focus-visible:outline-none">
-              {it.title}
+              <Fragment set:html={html(locale, it.title)} />
             </a>
           </H>
           {it.meta && <span class="mt-1 block type-label text-charcoal-600 in-[.on-dark]:text-navy-300">{it.meta}</span>}
-          {it.text && <span class="mt-2 block text-sm text-charcoal-600 in-[.on-dark]:text-navy-200">{it.text}</span>}
+          {it.text && <span class="mt-2 block text-sm text-charcoal-600 in-[.on-dark]:text-navy-200" set:html={html(locale, it.text)} />}
         </span>
         <Icon name="arrow" size={18} class="mt-1 text-royal-600 transition-[translate] duration-(--dur-ui) ease-mech group-hover:translate-x-1 rtl:group-hover:-translate-x-1" />
       </li>

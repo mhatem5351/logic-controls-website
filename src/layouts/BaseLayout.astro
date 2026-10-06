@@ -56,11 +56,19 @@ const {
 
 const meta = LOCALE_META[locale];
 const t = getMessages(locale).ui;
+/* Preload exactly the font files the first screen uses (the hero H1 is Montserrat italic, the lead upright):
+   Turkish needs latin-ext too (ş ğ ı İ), Arabic pages use Alexandria's Arabic + Latin files ("PLC" in the H1).
+   Fonts that arrive late swap in without moving the layout (metric-matched fallbacks, global.css). */
 const latinPreload =
   locale === "ar"
     ? false
     : locale === "tr"
-      ? [{ subset: "latin", style: "normal" }, { subset: "latin-ext", style: "normal" }]
+      ? [
+          { subset: "latin", style: "normal" },
+          { subset: "latin", style: "italic" },
+          { subset: "latin-ext", style: "normal" },
+          { subset: "latin-ext", style: "italic" },
+        ]
       : [{ subset: "latin", style: "normal" }, { subset: "latin", style: "italic" }];
 const beacon = JSON.stringify({ token: SITE.webAnalyticsToken });
 ---
@@ -171,7 +179,7 @@ const beacon = JSON.stringify({ token: SITE.webAnalyticsToken });
       )
     }
     <Font cssVariable="--font-latin" preload={latinPreload} />
-    {locale === "ar" && <Font cssVariable="--font-arabic" preload={[{ subset: "arabic" }]} />}
+    {locale === "ar" && <Font cssVariable="--font-arabic" preload={[{ subset: "arabic" }, { subset: "latin" }]} />}
     <noscript><style>.lc-header[data-hero] .lc-header-bg{background:rgb(4 14 39/.94)!important}</style></noscript>
     <slot name="head" />
   </head>

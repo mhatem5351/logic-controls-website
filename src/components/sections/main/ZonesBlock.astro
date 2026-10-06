@@ -3,6 +3,7 @@
  * "Where we work": schematic zone map (navy panel) + the zone list grouped by region, numbered like the pins.
  * Hovering / focusing a list item lights its pin. Content: common.zones + ZONES.
  * Put a <SectionHeading> before it (the block itself has no heading).
+ * `compact` (home page): below 768px each region's zones wrap as numbered chips (names only) instead of ruled rows.
  */
 import { getMessages, type Locale } from "~/i18n";
 import { ZONES, type ZoneRegion } from "~/data/zones";
@@ -16,15 +17,17 @@ interface Props {
   headingLevel?: "h3" | "h4";
   /** Show common.zones.note under the list. */
   note?: boolean;
+  /** Phones: zones as wrapped chips (names only). */
+  compact?: boolean;
   class?: string;
 }
-const { locale, headingLevel: H = "h3", note = true, class: className } = Astro.props;
+const { locale, headingLevel: H = "h3", note = true, compact = false, class: className } = Astro.props;
 const t = getMessages(locale).common.zones;
 const regions = [...new Set(ZONES.map((z) => z.region))] as ZoneRegion[];
 const numbered = ZONES.map((z, i) => ({ ...z, n: i + 1 }));
 ---
 
-<div class:list={["lc-zones grid items-start gap-10 lg:grid-cols-12 lg:gap-12", className]} data-zones>
+<div class:list={["lc-zones grid items-start gap-8 sm:gap-10 lg:grid-cols-12 lg:gap-12", className]} data-zones>
   <div class="on-dark chamfer-lg relative isolate overflow-hidden bg-navy-950 p-4 sm:p-6 lg:sticky lg:top-[calc(var(--header-h)+1.5rem)] lg:col-span-7">
     <div aria-hidden="true" class="pointer-events-none absolute inset-0 -z-10 bg-blueprint opacity-70"></div>
     <ZoneMap />
@@ -34,7 +37,7 @@ const numbered = ZONES.map((z, i) => ({ ...z, n: i + 1 }));
   </div>
 
   <div class="lg:col-span-5">
-    <div class="grid gap-7 sm:grid-cols-2 lg:grid-cols-1">
+    <div class="grid gap-5 sm:grid-cols-2 sm:gap-7 lg:grid-cols-1">
       {
         regions.map((r) => (
           <div>
@@ -42,11 +45,20 @@ const numbered = ZONES.map((z, i) => ({ ...z, n: i + 1 }));
               <span class="slant-bar text-royal-600" aria-hidden="true" />
               {t.regions[r]}
             </H>
-            <ul role="list" class="divide-y divide-charcoal-200 border-y border-charcoal-200">
+            <ul
+              role="list"
+              class:list={["divide-y divide-charcoal-200 border-y border-charcoal-200", compact && "max-md:flex max-md:flex-wrap max-md:gap-1.5 max-md:divide-y-0 max-md:border-0"]}
+            >
               {numbered
                 .filter((z) => z.region === r)
                 .map((z) => (
-                  <li class="lc-zone-item flex items-center gap-3 py-2.5" data-zone={z.slug}>
+                  <li
+                    class:list={[
+                      "lc-zone-item flex items-center gap-3 py-2 sm:py-2.5",
+                      compact && "max-md:gap-2 max-md:rounded-xs max-md:border max-md:border-charcoal-200 max-md:bg-white max-md:py-1 max-md:ps-1 max-md:pe-2.5",
+                    ]}
+                    data-zone={z.slug}
+                  >
                     <span
                       aria-hidden="true"
                       class:list={[
@@ -57,18 +69,18 @@ const numbered = ZONES.map((z, i) => ({ ...z, n: i + 1 }));
                     >
                       {z.n}
                     </span>
-                    <span class="min-w-0 flex-1">
-                      <span class="block font-semibold text-navy-950">{t.items[z.slug].name}</span>
-                      <span class="block text-sm text-charcoal-600">{t.items[z.slug].governorate}</span>
+                    <span class:list={["min-w-0 flex-1", compact && "max-md:flex-none"]}>
+                      <span class:list={["block font-semibold text-navy-950", compact && "max-md:text-sm"]}>{t.items[z.slug].name}</span>
+                      <span class:list={["block text-[0.8125rem] leading-snug text-charcoal-600 sm:text-sm", compact && "max-md:hidden"]}>{t.items[z.slug].governorate}</span>
                     </span>
                     {z.home && (
-                      <span class="inline-flex shrink-0 items-center gap-1.5 rounded-xs border border-signal-600/30 bg-signal-50 px-2 py-0.5 text-xs font-semibold text-signal-800">
+                      <span class:list={["inline-flex shrink-0 items-center gap-1.5 rounded-xs border border-signal-600/30 bg-signal-50 px-2 py-0.5 text-xs font-semibold text-signal-800", compact && "max-md:hidden"]}>
                         <Icon name="map-pin" size={13} />
                         {t.homeBase}
                       </span>
                     )}
                     {z.sczone && (
-                      <span class="shrink-0 rounded-xs border border-charcoal-200 bg-charcoal-50 px-2 py-0.5 font-mono text-[0.6875rem] tracking-wider text-charcoal-700 ltr" lang="en" dir="ltr">
+                      <span class:list={["shrink-0 rounded-xs border border-charcoal-200 bg-charcoal-50 px-2 py-0.5 font-mono text-[0.6875rem] tracking-wider text-charcoal-700 ltr", compact && "max-md:hidden"]} lang="en" dir="ltr">
                         {t.sczone}
                       </span>
                     )}

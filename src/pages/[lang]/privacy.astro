@@ -10,7 +10,7 @@ import Section from "~/components/Section.astro";
 import Breadcrumbs from "~/components/Breadcrumbs.astro";
 import CtaBand from "~/components/CtaBand.astro";
 import Icon from "~/components/Icon.astro";
-import { html, rich, ltr } from "~/components/sections/main/rich";
+import { html, rich, ltr, colon } from "~/components/sections/main/rich";
 import { getMessages, localeStaticPaths, type Locale } from "~/i18n";
 import { SITE } from "~/data/site";
 
@@ -96,12 +96,12 @@ const tocTitle = c.labels.onThisPage;
           <div class="mt-8 border-t border-charcoal-200 pt-6 text-sm">
             <a href={`mailto:${SITE.email}`} class="flex min-h-10 items-center gap-3 text-charcoal-700 hover:text-royal-700">
               <Icon name="mail" size={18} class="text-royal-600" />
-              <span class="sr-only">{c.labels.email}:</span>
+              <span class="sr-only">{c.labels.email}{colon(locale)}</span>
               <span class="ltr" dir="ltr">{SITE.email}</span>
             </a>
             <a href={`tel:${SITE.phone.tel}`} class="flex min-h-10 items-center gap-3 text-charcoal-700 hover:text-royal-700">
               <Icon name="phone" size={18} class="text-royal-600" />
-              <span class="sr-only">{c.labels.phone}:</span>
+              <span class="sr-only">{c.labels.phone}{colon(locale)}</span>
               <span class="ltr" dir="ltr">{SITE.phone.display}</span>
             </a>
           </div>

@@ -18,6 +18,9 @@ export default defineConfig({
       filter: (page) => !page.includes("/thanks/") && !page.includes("/styleguide/") && !page.includes("/lab/") && page !== "https://logic-controls.com/",
     }),
   ],
+  // Fallbacks: metric-matched local faces defined in src/styles/global.css ("metric-matched font fallbacks"), one size
+  // per weight band and script, so the font swap does not re-wrap text (CLS). Astro's generated fallback is turned off:
+  // it used a single size for every weight and Latin metrics for Arabic.
   fonts: [
     {
       provider: fontProviders.fontsource(),
@@ -26,7 +29,8 @@ export default defineConfig({
       weights: ["300 900"],
       styles: ["normal", "italic"],
       subsets: ["latin", "latin-ext"],
-      fallbacks: ["system-ui", "sans-serif"],
+      fallbacks: ["LC Montserrat Fallback", "system-ui", "sans-serif"],
+      optimizedFallbacks: false,
     },
     {
       provider: fontProviders.fontsource(),
@@ -35,7 +39,8 @@ export default defineConfig({
       weights: ["300 900"],
       styles: ["normal"],
       subsets: ["arabic", "latin"],
-      fallbacks: ["Segoe UI", "Tahoma", "sans-serif"],
+      fallbacks: ["LC Alexandria Fallback", "Segoe UI", "Tahoma", "sans-serif"],
+      optimizedFallbacks: false,
     },
   ],
   image: { layout: "constrained", responsiveStyles: true },

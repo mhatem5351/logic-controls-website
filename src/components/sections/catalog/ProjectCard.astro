@@ -2,13 +2,15 @@
 /**
  * Project card for the catalog pages: cover photo (astro:assets <Picture>), "Video" badge when the case study
  * has a film, meta line (primary industry / year), card title, first technologies as chips, "Read case study".
+ * Title and chips are passed as plain text: Card renders them through src/lib/text.ts (codes stay whole, Chinese
+ * breaks between words, Arabic isolates Latin runs) and localises the technology names (tech.json).
  */
 import { Picture } from "astro:assets";
 import Card from "~/components/Card.astro";
 import Icon from "~/components/Icon.astro";
 import type { ProjectData } from "~/data/projects";
 import { getMessages, localePath, type Locale } from "~/i18n";
-import { imageAlt, industryCopy, keepCodes, projectCopy } from "./catalog";
+import { imageAlt, industryCopy, projectCopy } from "./catalog";
 
 interface Props {
   project: ProjectData;
@@ -33,13 +35,14 @@ const meta = [industry?.navTitle, String(p.year)].filter((m): m is string => !!m
   c && (
     <Card
       variant="project"
-      title={keepCodes(c.cardTitle, locale)}
+      title={c.cardTitle}
       href={localePath(locale, `projects/${p.slug}`)}
       meta={meta}
       tags={p.technologies.slice(0, maxTags)}
       cta={t.labels.readCaseStudy}
       headingLevel={headingLevel}
       class={className}
+      locale={locale}
     >
       <Fragment slot="media">
         <Picture

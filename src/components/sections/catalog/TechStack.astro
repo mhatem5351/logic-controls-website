@@ -2,9 +2,11 @@
 /**
  * Technologies of a case study, grouped PLC / HMI / SCADA / drives / other (derived from the strings in projects.ts).
  * Laid out like an I/O table: group label in the first column, chips in the second.
+ * Grouping uses the English strings; the chips show the localised names (tech.json, see techLabel()).
  */
 import { getMessages, type Locale } from "~/i18n";
 import Chips from "~/components/Chips.astro";
+import { techLabel } from "~/lib/text";
 import { groupTechnologies, type TechGroup } from "./catalog";
 
 interface Props {
@@ -25,7 +27,7 @@ const groups = groupTechnologies(technologies);
       <div class="grid gap-2 py-4 sm:grid-cols-[11rem_minmax(0,1fr)] sm:items-center sm:gap-6">
         <dt class="type-label text-charcoal-600">{groupsT[g.group] ?? g.group.toUpperCase()}</dt>
         <dd>
-          <Chips items={g.items} label={groupsT[g.group]} />
+          <Chips items={g.items.map((s) => techLabel(locale, s))} label={groupsT[g.group]} locale={locale} />
         </dd>
       </div>
     ))

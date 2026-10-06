@@ -1,0 +1,115 @@
+---
+/**
+ * "What we need to quote" (common.quoteChecklist) as a disclosure panel.
+ *   tone="dark":  glass card for navy bands (<QuoteCta>): amber tab, file icon, numbered list, WhatsApp hint.
+ *   tone="light": HMI-style panel for light pages (contact sidebar): navy title bar with a status LED, white list.
+ * Native <details> (works without JS, FAQ open/close motion via .lc-faq). Rendered open; below 1024px a tiny script
+ * collapses it on load, because there it sits under a form or a pair of CTAs and would push them apart.
+ * On zh the hint points to email (WhatsApp is blocked in mainland China).
+ */
+import { getMessages, type Locale } from "~/i18n";
+import { SITE } from "~/data/site";
+import Icon from "~/components/Icon.astro";
+import { whatsappLink, mailtoLink, prefersEmail } from "~/components/nav";
+import { html } from "./rich";
+
+interface Props {
+  locale: Locale;
+  tone?: "dark" | "light";
+  /** Show the "send it on WhatsApp" (zh: email) hint under the list. */
+  hint?: boolean;
+  /** WhatsApp message for the hint. */
+  whatsappMessage?: string;
+  headingLevel?: "h2" | "h3";
+  class?: string;
+}
+const { locale, tone = "dark", hint = true, headingLevel: H = "h3", class: className } = Astro.props;
+const t = getMessages(locale);
+const q = t.common.quoteChecklist;
+const email = prefersEmail(locale);
+const { whatsappMessage = t.common.whatsapp.drawings } = Astro.props;
+const dark = tone === "dark";
+const pad = (i: number) => String(i + 1).padStart(2, "0");
+/* No space after a CJK full stop ("…正式需求。info@…"). */
+const join = (text: string) => (/[　-〿＀-￯]$/.test(text) ? "" : " ");
+const summaryCls = "flex cursor-pointer list-none items-center gap-4 marker:hidden [&::-webkit-details-marker]:hidden";
+const toggle = (cls: string) => `relative grid shrink-0 place-items-center border transition-colors duration-(--dur-ui) ease-mech ${cls}`;
+---
+
+<div
+  class:list={[
+    "lc-faq relative",
+    dark ? "chamfer-lg border border-white/10 bg-white/[0.04] p-6 backdrop-blur-sm sm:p-8" : "border border-charcoal-200 bg-white shadow-card",
+    className,
+  ]}
+>
+  {dark && <span aria-hidden="true" class="absolute -top-px start-8 h-1 w-14 skew-x-[-10deg] bg-signal-400 rtl:skew-x-[10deg]" />}
+  <details open data-collapse-sm class="group">
+    {
+      dark ? (
+        <summary class={summaryCls}>
+          <H class="flex flex-1 items-center gap-3 type-h3 text-white">
+            <Icon name="file" size={24} class="shrink-0 text-signal-300" />
+            {q.title}
+          </H>
+          <span aria-hidden="true" class={toggle("size-7 border-white/25 text-royal-300 group-open:border-royal-400 group-open:bg-royal-600 group-open:text-white")}>
+            <Icon name="plus" size={16} class="transition-[rotate] duration-(--dur-ui) ease-mech group-open:rotate-45" />
+          </span>
+        </summary>
+      ) : (
+        <summary class:list={[summaryCls, "chamfer bg-navy-950 px-5 py-3.5 text-navy-100 [--chamfer:12px] sm:px-6"]}>
+          <span class="lc-led" style="--led:#2bd47d" aria-hidden="true" />
+          <H class="flex-1 type-label text-navy-100">{q.title}</H>
+          <span aria-hidden="true" class={toggle("size-6 border-white/25 text-royal-300 group-open:border-royal-400 group-open:text-white")}>
+            <Icon name="plus" size={14} class="transition-[rotate] duration-(--dur-ui) ease-mech group-open:rotate-45" />
+          </span>
+        </summary>
+      )
+    }
+    <div class:list={[!dark && "px-5 pb-2 sm:px-6"]}>
+      <p class:list={["text-sm", dark ? "mt-3 text-navy-200" : "pt-4 text-charcoal-600"]}>{q.intro}</p>
+      <ol role="list" class:list={["divide-y", dark ? "mt-6 divide-white/8 border-y border-white/8" : "mt-3 divide-charcoal-200"]}>
+        {
+          q.items.map((item, i) => (
+            <li class:list={["flex gap-4", dark ? "py-3" : "py-2.5"]}>
+              <span aria-hidden="true" class:list={["mt-0.5 shrink-0 font-mono text-xs ltr", dark ? "text-royal-300" : "font-semibold text-royal-600"]} dir="ltr">
+                {pad(i)}
+              </span>
+              <span class:list={[dark ? "text-[0.9375rem] text-navy-100" : "text-sm text-charcoal-800"]} set:html={html(locale, item)} />
+            </li>
+          ))
+        }
+      </ol>
+    </div>
+  </details>
+  {
+    hint &&
+      (email ? (
+        <a
+          href={mailtoLink(t.ui.email.subject)}
+          class:list={["mt-5 inline-flex min-h-11 items-center gap-3 font-semibold underline-offset-4 hover:underline", dark ? "text-royal-300 hover:text-white" : "mx-5 mb-3 text-royal-700 sm:mx-6"]}
+        >
+          <Icon name="mail" size={20} class="shrink-0" />
+          <span>{t.contact.channels.email.text}{join(t.contact.channels.email.text)}<span class="ltr" dir="ltr">{SITE.email}</span></span>
+        </a>
+      ) : (
+        <a
+          href={whatsappLink(whatsappMessage)}
+          target="_blank"
+          rel="noopener"
+          class:list={["mt-5 inline-flex min-h-11 items-center gap-3 font-semibold underline-offset-4 hover:underline", dark ? "text-navy-100 hover:text-white" : "mx-5 mb-3 text-navy-950 sm:mx-6"]}
+        >
+          <Icon name="whatsapp" size={20} class={dark ? "shrink-0 text-[#25d366]" : "shrink-0 text-[#128c4a]"} />
+          <span>{q.whatsappHint}</span>
+          <span class="sr-only">({t.ui.a11y.newTab})</span>
+        </a>
+      ))
+  }
+</div>
+
+<script>
+  // Below 1024px the panel starts collapsed (one tap opens it); from 1024px it stays open as rendered.
+  if (!matchMedia("(min-width: 64rem)").matches) {
+    for (const d of document.querySelectorAll<HTMLDetailsElement>("details[data-collapse-sm]")) d.open = false;
+  }
+</script>

@@ -3,7 +3,11 @@
  * Visible FAQ built on <details>/<summary> (works without JS). Answers may contain simple HTML.
  * `exclusive` makes it an accordion (one open at a time) via the native `name` attribute.
  * Motion (motion.css): answers open/close smoothly where `interpolate-size` + `::details-content` exist.
+ * Questions are plain text, rendered through html() (src/lib/text.ts): Chinese breaks between words, codes and
+ * brand names stay whole, Latin runs are isolated on Arabic pages. Answers (`.prose-lc`) use text-wrap: pretty.
  */
+import type { Locale } from "~/i18n";
+import { html } from "~/lib/text";
 import Icon from "./Icon.astro";
 import { uid } from "./uid";
 
@@ -19,8 +23,11 @@ interface Props {
   /** Open the first item by default. */
   openFirst?: boolean;
   class?: string;
+  /** Page locale (defaults to the route's locale). */
+  locale?: Locale;
 }
 const { items, headingLevel: H = "h3", exclusive = false, openFirst = false, class: className } = Astro.props;
+const locale = (Astro.props.locale ?? Astro.currentLocale) as Locale | undefined;
 const group = exclusive ? uid("faq") : undefined;
 ---
 
@@ -29,7 +36,7 @@ const group = exclusive ? uid("faq") : undefined;
     items.map((item, i) => (
       <details name={group} open={openFirst && i === 0} class="group border-b border-charcoal-200 in-[.on-dark]:border-white/10">
         <summary class="flex cursor-pointer list-none items-start gap-4 py-5 text-start marker:hidden [&::-webkit-details-marker]:hidden">
-          <H class="type-h4 flex-1 text-navy-950 transition-colors duration-(--dur-micro) ease-mech group-hover:text-royal-700 in-[.on-dark]:text-white in-[.on-dark]:group-hover:text-royal-300">{item.q}</H>
+          <H class="type-h4 flex-1 text-navy-950 transition-colors duration-(--dur-micro) ease-mech group-hover:text-royal-700 in-[.on-dark]:text-white in-[.on-dark]:group-hover:text-royal-300" set:html={html(locale, item.q)} />
           <span class="relative mt-0.5 grid size-7 shrink-0 place-items-center border border-charcoal-300 text-royal-600 transition-colors duration-(--dur-ui) ease-mech group-open:border-royal-600 group-open:bg-royal-600 group-open:text-white in-[.on-dark]:border-white/25 in-[.on-dark]:text-royal-300" aria-hidden="true">
             <Icon name="plus" size={16} class="transition-[rotate] duration-(--dur-ui) ease-mech group-open:rotate-45" />
           </span>

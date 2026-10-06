@@ -1,7 +1,7 @@
 ---
 /**
- * Services overview: hero → service cards (animated art) → how the pieces fit (control loop)
- * → ways to work with us → how we work → FAQ → CTA band.
+ * Services overview: hero → service cards (animated art) → recent case studies (proof right after the offer) →
+ * how the pieces fit (control loop) → ways to work with us → how we work → FAQ → CTA band.
  */
 import BaseLayout from "~/layouts/BaseLayout.astro";
 import Hero from "~/components/Hero.astro";
@@ -15,7 +15,8 @@ import ProcessSteps from "~/components/ProcessSteps.astro";
 import ServiceArt from "~/components/illustrations/ServiceArt.astro";
 import ControlLoop from "~/components/motion/ControlLoop.astro";
 import FeatureGrid from "~/components/sections/catalog/FeatureGrid.astro";
-import { absUrl, html, quoteHref, secondaryCta, serviceCopy, serviceSlugs } from "~/components/sections/catalog/catalog";
+import RelatedProjects from "~/components/sections/catalog/RelatedProjects.astro";
+import { absUrl, html, projectsFor, quoteHref, secondaryCta, serviceCopy, serviceSlugs } from "~/components/sections/catalog/catalog";
 import { getMessages, localePath, localeStaticPaths, type Locale } from "~/i18n";
 import { STATS } from "~/data/stats";
 
@@ -25,6 +26,7 @@ const m = getMessages(locale);
 const idx = m.services.index;
 const L = m.common.labels;
 const slugs = serviceSlugs(locale);
+const recent = projectsFor(locale); /* newest first */
 const wa = m.common.whatsapp.quote;
 const proof = STATS.filter((st) => st.key === "projects" || st.key === "experience" || st.key === "platforms").map((st) => ({
   value: st.value,
@@ -80,8 +82,20 @@ const jsonLd = {
     </ul>
   </Section>
 
+  {/* Recent case studies */}
+  <RelatedProjects
+    locale={locale}
+    projects={recent}
+    id="recent-projects"
+    variant="muted"
+    eyebrow={m.common.breadcrumbs.projects}
+    title={m.home.projects.title}
+    lead={m.home.projects.intro}
+    all={{ href: localePath(locale, "projects"), label: L.allProjects, count: recent.length }}
+  />
+
   {/* How the pieces fit */}
-  <Section variant="muted" id="control-loop">
+  <Section id="control-loop">
     <ControlLoop locale={locale} />
   </Section>
 

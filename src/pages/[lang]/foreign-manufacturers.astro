@@ -2,7 +2,9 @@
 /**
  * Foreign manufacturers (investor landing page; the key page for /zh/ and /tr/ visitors).
  * Hero → what a new plant needs (need → how we close the gap) → services → when to involve us →
- * standards & documentation → experience with imported lines → languages → zones → FAQ → CTA.
+ * standards & documentation → experience with imported lines (+ founder strip) → languages → zones → FAQ → CTA.
+ * Hero CTAs: quote + "Email an engineer" (documents and formal requests travel by email for foreign teams);
+ * WhatsApp stays in the closing band.
  */
 import { Picture } from "astro:assets";
 import BaseLayout from "~/layouts/BaseLayout.astro";
@@ -17,11 +19,12 @@ import LogoWall from "~/components/LogoWall.astro";
 import FAQ from "~/components/FAQ.astro";
 import CtaBand from "~/components/CtaBand.astro";
 import ZonesBlock from "~/components/sections/main/ZonesBlock.astro";
+import FounderStrip from "~/components/sections/main/FounderStrip.astro";
 import { html, emphasize } from "~/components/sections/main/rich";
 import { getMessages, localeStaticPaths, localePath, LOCALE_META, type Locale } from "~/i18n";
 import { SITE } from "~/data/site";
 import { STATS } from "~/data/stats";
-import { href, whatsappLink, prefersEmail } from "~/components/nav";
+import { href, whatsappLink, mailtoLink, prefersEmail } from "~/components/nav";
 import heroImage from "~/assets/projects/tablet-coating-scada/machine.jpg";
 import proofHmi from "~/assets/projects/anaerobic-waste-treatment-commissioning/hmi.jpg";
 import proofPanel from "~/assets/projects/anaerobic-waste-treatment-commissioning/panel.jpg";
@@ -77,7 +80,7 @@ const jsonLd = {
     imageAlt={heroAlt}
     priority
     primary={{ label: f.hero.ctaPrimary, href: quoteHref }}
-    secondary={email ? undefined : { label: f.hero.ctaSecondary, href: whatsappLink(c.whatsapp.foreign) }}
+    secondary={{ label: t.ui.cta.emailEngineer, href: mailtoLink(t.ui.email.subject) }}
   >
     <Breadcrumbs slot="breadcrumbs" locale={locale} items={[{ label: c.breadcrumbs.foreign }]} />
     <ul role="list" class="lc-rise mt-9 grid max-w-xl gap-2.5 border-t border-white/10 pt-6" style="--i:3" data-fab-avoid>
@@ -235,6 +238,7 @@ const jsonLd = {
       </div>
     </div>
     <LogoWall locale={locale} class="mt-20 [&_li]:text-charcoal-600" />
+    <FounderStrip locale={locale} class="mt-14 lg:mt-16" />
   </Section>
 
   {/* ---------- 06 languages ---------- */}

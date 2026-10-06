@@ -14,46 +14,24 @@ import type enServices from "~/i18n/messages/en/services.json";
 import type enIndustries from "~/i18n/messages/en/industries.json";
 import type enProjects from "~/i18n/messages/en/projects.json";
 import { fmt, mailtoLink, prefersEmail } from "~/components/nav";
+import { esc, html as renderHtml, plain } from "~/lib/text";
 
-/* ------------------------------------------------------------------ text */
+/* ------------------------------------------------------------------ text (rules live in src/lib/text.ts) */
 
-const ESC: Record<string, string> = { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" };
-export const escapeHtml = (s: string) => s.replace(/[&<>"']/g, (c) => ESC[c]!);
-
-/** Model codes with hyphens ("S7-1200", "DVP-12SC", "4-20") — never split across lines. */
-const CODE = /[A-Za-z0-9]+(?:-[A-Za-z0-9]+)+/g;
-/**
- * Latin / digit runs ("Wecon PLC", "S7-1200", "21 CFR Part 11", "380 V") inside Arabic sentences are
- * isolated in <bdi> so the bidi algorithm never reorders their parts. Runs never swallow sentence
- * punctuation (a trailing "." or "،" stays in the Arabic flow). \uE000/\uE001 are the code markers below.
- */
-const LATIN_RUN =
-  /[A-Za-z0-9\uE000](?:[A-Za-z0-9.+\-/·&°×\uE000\uE001]*[A-Za-z0-9+°\uE001])?(?:[ \u00A0][A-Za-z0-9\uE000](?:[A-Za-z0-9.+\-/·&°×\uE000\uE001]*[A-Za-z0-9+°\uE001])?)*/g;
+export const escapeHtml = esc;
 
 /**
- * Plain-text message → safe HTML for components that use set:html (titles, leads, FAQ answers).
- * Marks codes and (Arabic) Latin runs with private-use markers on the raw text, escapes, then turns the
- * markers into tags, so entities and tags can never be split.
+ * Plain-text message → safe HTML for components that use set:html (titles, leads, FAQ answers): codes and brand
+ * names never wrap inside, Latin runs are isolated on Arabic pages, Chinese breaks only between words.
+ * Same as rich.ts html(), with the catalog pages' (text, locale) argument order.
  */
-export function html(text: string, locale: Locale): string {
-  let t = text.replace(CODE, (m) => `\uE000${m}\uE001`);
-  if (locale === "ar") t = t.replace(LATIN_RUN, (m) => `\uE002${m}\uE003`);
-  return escapeHtml(t)
-    .replaceAll("\uE000", '<span class="whitespace-nowrap">')
-    .replaceAll("\uE001", "</span>")
-    .replaceAll("\uE002", "<bdi>")
-    .replaceAll("\uE003", "</bdi>");
-}
+export const html = (text: string, locale: Locale): string => renderHtml(locale, text);
 
 /**
- * For text-only props (card titles, breadcrumb labels): non-breaking hyphen (U+2011) inside model codes, and on
- * Arabic pages each Latin run is wrapped in LRI…PDI isolates (the plain-text equivalent of <bdi>).
+ * For text-only props (breadcrumb labels, attributes): the plain-text equivalent of html() — no-break spaces and
+ * word joiners inside codes/brand names, LRI…PDI isolates around Latin runs on Arabic pages.
  */
-export function keepCodes(text: string, locale?: Locale): string {
-  let t = text.replace(CODE, (m) => `\uE000${m}\uE001`);
-  if (locale === "ar") t = t.replace(LATIN_RUN, (m) => `\u2066${m}\u2069`);
-  return t.replace(/\uE000([^\uE001]*)\uE001/g, (_, c: string) => c.replaceAll("-", "\u2011"));
-}
+export const keepCodes = (text: string, locale?: Locale): string => plain(locale, text);
 
 /* ------------------------------------------------------------------ icons (data suggests Lucide names; map to our set) */
 

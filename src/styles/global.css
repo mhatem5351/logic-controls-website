@@ -125,7 +125,8 @@
   --shadow-glow: 0 0 0 1px rgb(95 164 250 / 0.28), 0 12px 32px -12px rgb(37 122 224 / 0.6);
   --shadow-header: 0 1px 0 rgb(255 255 255 / 0.06), 0 10px 30px -12px rgb(0 0 0 / 0.55);
 
-  --spacing-section: clamp(4rem, 2.9rem + 4.9vw, 7.5rem);
+  /* ~50px between sections on a 390px phone, ~115px at 1440px (desktop rhythm unchanged, phones tighter). */
+  --spacing-section: clamp(3rem, 1.6rem + 6.2vw, 7.5rem);
   --spacing-gutter: clamp(1rem, 0.55rem + 2vw, 2.5rem);
   --container-site: 78rem;
   --container-prose: 42rem;
@@ -815,3 +816,56 @@
     width: 100%;
   }
 }
+
+/* ------------------------------------------------------------------ multilingual typography
+   Line-breaking + bidi hooks emitted by src/lib/text.ts (html()) and used by Card, Chips, FAQ, ProjectNav.
+   Rules: codes / brand names never split, Arabic Latin runs never split or invert, Chinese breaks between words
+   (`break-keep` + <wbr>), titles balance, prose avoids one-word last lines. */
+@layer components {
+  /* Atoms: model codes (S7-1200), standards (IEC 60204-1), numbers with units (4-20 mA), multi-word names. */
+  .lc-nw {
+    white-space: nowrap;
+  }
+  /* Latin runs isolated inside Arabic text stay on one line ("Schneider Electric", "(Pressure switch)", phone
+     numbers). Long runs (.lc-wrap, more than 24 characters) may still wrap, between their atoms. */
+  [dir="rtl"] bdi:not(.lc-wrap) {
+    white-space: nowrap;
+  }
+  .prose-lc {
+    text-wrap: pretty;
+  }
+  .lc-balance {
+    text-wrap: balance;
+  }
+}
+
+/* ------------------------------------------------------------------ metric-matched font fallbacks (no CLS on font swap)
+   Shown until Montserrat / Alexandria arrive (font-display: swap); sized so the text wraps the same way, so the
+   swap does not move the layout. astro.config.mjs lists these families as the fallbacks (optimizedFallbacks: false):
+   Astro's generated fallback had one size for every weight (calibrated on the variable font's Thin default), so bold /
+   italic headings and all Arabic text (Alexandria Arabic is ~40% wider than Arial Arabic) re-wrapped on swap.
+   size-adjust = width of the site's own copy (src/i18n/messages, en+tr / ar) in the web font ÷ the same copy in the
+   local face, measured per weight band in Chrome (the Arabic 700 band on headings, which is where a re-wrap moves the
+   page); ascent/descent = the web fonts' 0.968 / 0.251 em ÷ size-adjust.
+   Arabic uses Tahoma (closest Arabic widths on Windows + macOS), Latin uses Arial. */
+@font-face { font-family: "LC Montserrat Fallback"; src: local("Arial"), local("ArialMT"); font-style: normal; font-weight: 100 449; size-adjust: 112.40%; ascent-override: 86.12%; descent-override: 22.33%; line-gap-override: 0%; }
+@font-face { font-family: "LC Montserrat Fallback"; src: local("Arial"), local("ArialMT"); font-style: normal; font-weight: 450 549; size-adjust: 114.10%; ascent-override: 84.84%; descent-override: 22.00%; line-gap-override: 0%; }
+@font-face { font-family: "LC Montserrat Fallback"; src: local("Arial Bold"), local("Arial-BoldMT"); font-style: normal; font-weight: 550 649; size-adjust: 107.90%; ascent-override: 89.71%; descent-override: 23.26%; line-gap-override: 0%; }
+@font-face { font-family: "LC Montserrat Fallback"; src: local("Arial Bold"), local("Arial-BoldMT"); font-style: normal; font-weight: 650 749; size-adjust: 110.00%; ascent-override: 88.00%; descent-override: 22.82%; line-gap-override: 0%; }
+@font-face { font-family: "LC Montserrat Fallback"; src: local("Arial Bold"), local("Arial-BoldMT"); font-style: normal; font-weight: 750 849; size-adjust: 112.20%; ascent-override: 86.27%; descent-override: 22.37%; line-gap-override: 0%; }
+@font-face { font-family: "LC Montserrat Fallback"; src: local("Arial Bold"), local("Arial-BoldMT"); font-style: normal; font-weight: 850 900; size-adjust: 114.60%; ascent-override: 84.47%; descent-override: 21.90%; line-gap-override: 0%; }
+@font-face { font-family: "LC Montserrat Fallback"; src: local("Arial Italic"), local("Arial-ItalicMT"); font-style: italic; font-weight: 100 449; size-adjust: 113.80%; ascent-override: 85.06%; descent-override: 22.06%; line-gap-override: 0%; }
+@font-face { font-family: "LC Montserrat Fallback"; src: local("Arial Italic"), local("Arial-ItalicMT"); font-style: italic; font-weight: 450 549; size-adjust: 115.50%; ascent-override: 83.81%; descent-override: 21.73%; line-gap-override: 0%; }
+@font-face { font-family: "LC Montserrat Fallback"; src: local("Arial Bold Italic"), local("Arial-BoldItalicMT"); font-style: italic; font-weight: 550 649; size-adjust: 109.10%; ascent-override: 88.73%; descent-override: 23.01%; line-gap-override: 0%; }
+@font-face { font-family: "LC Montserrat Fallback"; src: local("Arial Bold Italic"), local("Arial-BoldItalicMT"); font-style: italic; font-weight: 650 749; size-adjust: 111.10%; ascent-override: 87.13%; descent-override: 22.59%; line-gap-override: 0%; }
+@font-face { font-family: "LC Montserrat Fallback"; src: local("Arial Bold Italic"), local("Arial-BoldItalicMT"); font-style: italic; font-weight: 750 900; size-adjust: 113.20%; ascent-override: 85.51%; descent-override: 22.17%; line-gap-override: 0%; }
+@font-face { font-family: "LC Alexandria Fallback"; src: local("Tahoma"); font-style: normal; font-weight: 100 449; size-adjust: 107.70%; ascent-override: 89.88%; descent-override: 23.31%; line-gap-override: 0%; unicode-range: U+0600-06FF, U+0750-077F, U+0870-088E, U+0890-0891, U+0897-08E1, U+08E3-08FF, U+FB50-FDFF, U+FE70-FE74, U+FE76-FEFC; }
+@font-face { font-family: "LC Alexandria Fallback"; src: local("Tahoma"); font-style: normal; font-weight: 450 549; size-adjust: 110.30%; ascent-override: 87.76%; descent-override: 22.76%; line-gap-override: 0%; unicode-range: U+0600-06FF, U+0750-077F, U+0870-088E, U+0890-0891, U+0897-08E1, U+08E3-08FF, U+FB50-FDFF, U+FE70-FE74, U+FE76-FEFC; }
+@font-face { font-family: "LC Alexandria Fallback"; src: local("Tahoma Bold"), local("Tahoma-Bold"); font-style: normal; font-weight: 550 649; size-adjust: 100.20%; ascent-override: 96.61%; descent-override: 25.05%; line-gap-override: 0%; unicode-range: U+0600-06FF, U+0750-077F, U+0870-088E, U+0890-0891, U+0897-08E1, U+08E3-08FF, U+FB50-FDFF, U+FE70-FE74, U+FE76-FEFC; }
+@font-face { font-family: "LC Alexandria Fallback"; src: local("Tahoma Bold"), local("Tahoma-Bold"); font-style: normal; font-weight: 650 749; size-adjust: 104.70%; ascent-override: 92.45%; descent-override: 23.97%; line-gap-override: 0%; unicode-range: U+0600-06FF, U+0750-077F, U+0870-088E, U+0890-0891, U+0897-08E1, U+08E3-08FF, U+FB50-FDFF, U+FE70-FE74, U+FE76-FEFC; }
+@font-face { font-family: "LC Alexandria Fallback"; src: local("Tahoma Bold"), local("Tahoma-Bold"); font-style: normal; font-weight: 750 900; size-adjust: 107.20%; ascent-override: 90.30%; descent-override: 23.41%; line-gap-override: 0%; unicode-range: U+0600-06FF, U+0750-077F, U+0870-088E, U+0890-0891, U+0897-08E1, U+08E3-08FF, U+FB50-FDFF, U+FE70-FE74, U+FE76-FEFC; }
+@font-face { font-family: "LC Alexandria Fallback"; src: local("Arial"), local("ArialMT"); font-style: normal; font-weight: 100 449; size-adjust: 107.00%; ascent-override: 90.47%; descent-override: 23.46%; line-gap-override: 0%; unicode-range: U+0000-05FF, U+0780-086F, U+1E00-1EFF, U+2000-206F, U+20A0-20C0, U+2100-218F, U+2190-21FF, U+2200-22FF, U+FEFF, U+FFFD; }
+@font-face { font-family: "LC Alexandria Fallback"; src: local("Arial"), local("ArialMT"); font-style: normal; font-weight: 450 549; size-adjust: 107.70%; ascent-override: 89.88%; descent-override: 23.31%; line-gap-override: 0%; unicode-range: U+0000-05FF, U+0780-086F, U+1E00-1EFF, U+2000-206F, U+20A0-20C0, U+2100-218F, U+2190-21FF, U+2200-22FF, U+FEFF, U+FFFD; }
+@font-face { font-family: "LC Alexandria Fallback"; src: local("Arial Bold"), local("Arial-BoldMT"); font-style: normal; font-weight: 550 649; size-adjust: 104.10%; ascent-override: 92.99%; descent-override: 24.11%; line-gap-override: 0%; unicode-range: U+0000-05FF, U+0780-086F, U+1E00-1EFF, U+2000-206F, U+20A0-20C0, U+2100-218F, U+2190-21FF, U+2200-22FF, U+FEFF, U+FFFD; }
+@font-face { font-family: "LC Alexandria Fallback"; src: local("Arial Bold"), local("Arial-BoldMT"); font-style: normal; font-weight: 650 749; size-adjust: 105.10%; ascent-override: 92.10%; descent-override: 23.88%; line-gap-override: 0%; unicode-range: U+0000-05FF, U+0780-086F, U+1E00-1EFF, U+2000-206F, U+20A0-20C0, U+2100-218F, U+2190-21FF, U+2200-22FF, U+FEFF, U+FFFD; }
+@font-face { font-family: "LC Alexandria Fallback"; src: local("Arial Bold"), local("Arial-BoldMT"); font-style: normal; font-weight: 750 900; size-adjust: 106.10%; ascent-override: 91.23%; descent-override: 23.66%; line-gap-override: 0%; unicode-range: U+0000-05FF, U+0780-086F, U+1E00-1EFF, U+2000-206F, U+20A0-20C0, U+2100-218F, U+2190-21FF, U+2200-22FF, U+FEFF, U+FFFD; }
