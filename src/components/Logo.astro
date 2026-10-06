@@ -18,6 +18,8 @@ interface Props {
 
 const { variant = "light", width = 124, alt = "Logic Controls", class: className, loading = "lazy" } = Astro.props;
 const src = variant === "dark" ? logoDark : logoLight;
+/* Emit each class once (callers may repeat the defaults, e.g. "h-auto"). */
+const classes = [...new Set(["block", "h-auto", "select-none", ...(className ?? "").split(/\s+/)].filter(Boolean))].join(" ");
 ---
 
 <Image
@@ -29,5 +31,5 @@ const src = variant === "dark" ? logoDark : logoLight;
   quality={90}
   loading={loading}
   decoding="async"
-  class:list={["block h-auto select-none", className]}
+  class={classes}
 />

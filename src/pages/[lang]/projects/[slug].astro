@@ -81,7 +81,11 @@ const next = list[(at + 1) % list.length]!;
 const related = projectsFor(locale, relatedProjects(slug, 3));
 
 const wa = fmt(m.common.whatsapp.project, { project: c.cardTitle });
-const og = await getImage({ src: p.cover.image, width: 1200, height: 630, fit: "cover", format: "jpg", quality: 80 });
+/* Social card: 1.91:1, 1200×630 when the photo allows. Images are never enlarged, so for smaller covers crop the
+   largest 1.91:1 box that fits (and report its real size in og:image:width/height). */
+const ogW = Math.min(1200, p.cover.image.width, Math.floor((p.cover.image.height * 1200) / 630));
+const ogH = Math.round((ogW * 630) / 1200);
+const og = await getImage({ src: p.cover.image, width: ogW, height: ogH, fit: "cover", format: "jpg", quality: 80 });
 const industryName = industryCopy(locale, p.industries[0] ?? "")?.navTitle;
 
 
@@ -111,13 +115,14 @@ const jsonLd = {
           description: c.summary,
           thumbnailUrl: absUrl(video.poster),
           contentUrl: absUrl(video.src),
+          uploadDate: video.uploadDate,
         },
       }
     : {}),
 };
 ---
 
-<BaseLayout locale={locale} title={c.seoTitle} description={c.seoDescription} path={path} heroDark jsonLd={jsonLd} ogImage={og.src} whatsappMessage={wa}>
+<BaseLayout locale={locale} title={c.seoTitle} description={c.seoDescription} path={path} heroDark jsonLd={jsonLd} ogImage={og.src} ogImageSize={{ width: ogW, height: ogH }} whatsappMessage={wa}>
   <Hero
     locale={locale}
     size="page"

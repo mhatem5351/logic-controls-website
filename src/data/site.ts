@@ -7,7 +7,8 @@ export const SITE = {
   url: "https://logic-controls.com",
   email: "info@logic-controls.com",
   salesEmail: "sales@logic-controls.com",
-  phone: { display: "+20 110 319 7233", local: "011 0319 7233", tel: "+201103197233" },
+  /** `display` uses no-break spaces (U+00A0) so the number never wraps across lines. */
+  phone: { display: "+20\u00a0110\u00a0319\u00a07233", local: "011\u00a00319\u00a07233", tel: "+201103197233" },
   whatsapp: "201103197233",
   facebook: "https://www.facebook.com/profile.php?id=61585359185472",
   address: {

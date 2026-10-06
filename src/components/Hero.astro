@@ -85,7 +85,10 @@ const angled = angle ?? home;
 const hasMediaSlot = Astro.slots.has("media");
 const hasMedia = hasMediaSlot || !!video || !!image;
 const secondaryIsWa = secondary && secondary.href.startsWith("https://wa.me");
-const posterSrcset = video?.posterSmall ? `${video.posterSmall} 640w, ${video.poster} ${video.width ?? 1280}w` : undefined;
+/* Below 1024px the poster sits behind the copy under an 85% navy scrim, so phones and tablets get the small file
+   (art direction, not srcset: a 3× phone would otherwise pick the full 1280px poster). BaseLayout preloads the large
+   file for ≥1024px only — keep the breakpoint in sync with the home page's `preloadImage.media`. */
+const POSTER_SMALL_MEDIA = "(max-width: 1023.98px)";
 ---
 
 <section
@@ -102,22 +105,24 @@ const posterSrcset = video?.posterSmall ? `${video.posterSmall} 640w, ${video.po
           <slot name="media" />
         ) : video ? (
           <>
-            <img
-              src={video.poster}
-              srcset={posterSrcset}
-              sizes={posterSrcset ? "(min-width: 1024px) 56vw, 100vw" : undefined}
-              width={video.width ?? 1280}
-              height={video.height ?? 720}
-              alt=""
-              loading="eager"
-              decoding="async"
-              fetchpriority={priority ? "high" : "auto"}
-              class="absolute inset-0 size-full object-cover"
-            />
+            <picture>
+              {video.posterSmall && <source media={POSTER_SMALL_MEDIA} srcset={video.posterSmall} width={640} height={360} />}
+              <img
+                src={video.poster}
+                width={video.width ?? 1280}
+                height={video.height ?? 720}
+                alt=""
+                loading="eager"
+                decoding="async"
+                fetchpriority={priority && !video.posterSmall ? "high" : "auto"}
+                class="absolute inset-0 size-full object-cover"
+              />
+            </picture>
+            {/* no poster attribute: the image above is the poster (the video stays transparent until it plays), and a
+                poster would make phones — which never play the loop — download the large file */}
             <video
               class="lc-hero-video absolute inset-0 size-full object-cover opacity-0 transition-opacity duration-1000 ease-inout"
               data-src={video.src}
-              poster={video.poster}
               muted
               loop
               playsinline

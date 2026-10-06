@@ -76,11 +76,9 @@ const caseService = t.services.items["testing-commissioning"]?.navTitle;
 const whyIcons: IconName[] = ["users", "layers", "hmi", "shield"];
 const processIcons: IconName[] = ["map-pin", "file", "panel", "check", "gauge", "users"];
 
-const poster = {
-  href: "/media/hero-filling-poster.webp",
-  srcset: "/media/hero-filling-poster-640.webp 640w, /media/hero-filling-poster.webp 1280w",
-  sizes: "(min-width: 1024px) 56vw, 100vw",
-};
+/* Desktop only: there the poster is the visible media panel (LCP). Below 1024px it is a dimmed backdrop in its small
+   variant (Hero.astro), and a high-priority preload would only compete with the CSS and fonts the H1 needs. */
+const poster = { href: "/media/hero-filling-poster.webp", media: "(min-width: 1024px)" };
 
 /* ---------- structured data: Organization + LocalBusiness (ProfessionalService) + WebSite ---------- */
 const orgId = `${SITE.url}/#organization`;
@@ -292,14 +290,14 @@ const jsonLd = {
               <span class="chamfer inline-grid size-11 shrink-0 place-items-center bg-navy-950 text-royal-300 [--chamfer:9px]" aria-hidden="true">
                 <Icon name={serviceIcon(slug)} size={22} />
               </span>
-              <span class="min-w-0 flex-1">
+              <div class="min-w-0 flex-1">
                 <h3 class="type-h4 text-navy-950">
                   <a href={href(locale, `services/${slug}`)} class="after:absolute after:inset-0 after:content-[''] focus-visible:outline-none">
                     {keepCodes(s.navTitle, locale)}
                   </a>
                 </h3>
                 <p class="mt-0.5 line-clamp-2 text-sm text-charcoal-600">{keepCodes(s.summary, locale)}</p>
-              </span>
+              </div>
               <Icon name="chevron-right" size={18} class="shrink-0 text-royal-600" />
             </li>
           );

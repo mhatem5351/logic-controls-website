@@ -94,11 +94,9 @@ const jsonLd = {
           {a.story.paragraphs.map((p) => <p set:html={html(locale, p)} />)}
         </div>
       </div>
-      <figure class="lg:col-span-5 lg:pt-14">
-        <div class="on-dark chamfer-lg relative isolate overflow-hidden bg-navy-950 p-8 text-navy-100 sm:p-10">
-          <div aria-hidden="true" class="pointer-events-none absolute inset-0 -z-10 bg-blueprint mask-fade-edges"></div>
-          <div aria-hidden="true" class="pointer-events-none absolute inset-0 -z-20 bg-[radial-gradient(ellipse_80%_70%_at_0%_100%,rgb(5_86_173/0.45),transparent_70%)] rtl:bg-[radial-gradient(ellipse_80%_70%_at_100%_100%,rgb(5_86_173/0.45),transparent_70%)]"></div>
-          <BrandMark tone="mono" class="pointer-events-none absolute -end-12 -top-8 -z-10 h-64 w-auto text-white/[0.04]" />
+      <div class="lg:col-span-5 lg:pt-14">
+        {/* figcaption must be the figure's first (or last) child: the absolutely positioned decoration follows it */}
+        <figure class="on-dark chamfer-lg relative isolate overflow-hidden bg-navy-950 p-8 text-navy-100 sm:p-10">
           <figcaption class="flex items-center gap-3 type-label text-signal-300">
             <span class="lc-led" aria-hidden="true"></span>
             {a.mission.title}
@@ -107,8 +105,11 @@ const jsonLd = {
             <p class="type-h3 text-white" style="font-size: clamp(1.25rem, 1.05rem + 0.75vw, 1.75rem); line-height: 1.35" set:html={html(locale, a.mission.text)} />
           </blockquote>
           <Swoosh tone="light" class="mt-8 w-36" />
-        </div>
-      </figure>
+          <div aria-hidden="true" class="pointer-events-none absolute inset-0 -z-10 bg-blueprint mask-fade-edges"></div>
+          <div aria-hidden="true" class="pointer-events-none absolute inset-0 -z-20 bg-[radial-gradient(ellipse_80%_70%_at_0%_100%,rgb(5_86_173/0.45),transparent_70%)] rtl:bg-[radial-gradient(ellipse_80%_70%_at_100%_100%,rgb(5_86_173/0.45),transparent_70%)]"></div>
+          <BrandMark tone="mono" class="pointer-events-none absolute -end-12 -top-8 -z-10 h-64 w-auto text-white/[0.04]" />
+        </figure>
+      </div>
     </div>
   </Section>
 

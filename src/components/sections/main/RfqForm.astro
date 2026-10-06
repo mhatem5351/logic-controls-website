@@ -80,8 +80,8 @@ const optional = f.optional;
       <h2 id="rfq-title" class="type-h3 text-navy-950">{f.title}</h2>
       <p class="text-sm text-charcoal-600">{f.requiredNote}</p>
     </div>
-    {/* step indicator (JS only) */}
-    <div class="lc-stepper mt-5" data-stepper hidden>
+    {/* step indicator (JS only: .lc-js shows it from the first paint when html.js is set, so the form never shifts) */}
+    <div class="lc-stepper lc-js mt-5" data-stepper>
       <p class="sr-only" aria-live="polite" data-step-live>{counter(1)}</p>
       <ol role="list" class="grid grid-cols-2 gap-2">
         {

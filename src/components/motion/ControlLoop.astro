@@ -52,14 +52,14 @@ const icon = { sensor: "thermometer", plc: "plc", hmi: "hmi", process: "factory"
                 <Icon name={icon[n.k]} size={26} />
               )}
             </span>
-            <span class="lc-loop-txt">
+            <div class="lc-loop-txt">
               <N class="lc-loop-l">
                 <span class="lc-loop-n">{String(i + 1).padStart(2, "0")}</span>
                 {n.label}
               </N>
               <span class="lc-loop-t">{n.text}</span>
               <span class="lc-loop-spec" dir="ltr">{n.spec}</span>
-            </span>
+            </div>
             <span class="lc-loop-wire" aria-hidden="true">
               {i < 4 && <i />}
             </span>

@@ -1,7 +1,7 @@
 ---
 /**
  * Base page shell: <html lang dir>, SEO head, fonts, skip link, header, <main>, footer, floating contact button,
- * Cloudflare Web Analytics beacon (production builds only).
+ * Cloudflare Web Analytics beacon (production builds, live hostname only).
  */
 import { Font } from "astro:assets";
 import "~/styles/global.css";
@@ -23,9 +23,11 @@ interface Props {
   jsonLd?: Record<string, unknown> | Array<Record<string, unknown>>;
   /** The page starts with a dark <Hero>: header is transparent until scrolled. */
   heroDark?: boolean;
-  /** Preload the LCP image (home hero poster). */
-  preloadImage?: { href: string; srcset?: string; sizes?: string };
+  /** Preload the LCP image (home hero poster); `media` limits it to the viewports where it is the LCP. */
+  preloadImage?: { href: string; srcset?: string; sizes?: string; media?: string };
   ogImage?: string;
+  /** Real pixel size of `ogImage` (default 1200×630). */
+  ogImageSize?: { width: number; height: number };
   /** Pre-filled WhatsApp message for the floating button (defaults to the generic one). */
   whatsappMessage?: string;
   /** Render header/footer/floating button (false for bare pages such as 404). */
@@ -47,6 +49,7 @@ const {
   heroDark = false,
   preloadImage,
   ogImage,
+  ogImageSize,
   whatsappMessage,
   chrome = true,
   alternates = true,
@@ -71,6 +74,8 @@ const latinPreload =
         ]
       : [{ subset: "latin", style: "normal" }, { subset: "latin", style: "italic" }];
 const beacon = JSON.stringify({ token: SITE.webAnalyticsToken });
+/** /^(www\.)?logic-controls\.com$/ as source text for the inline loader below. */
+const beaconHost = `/^(www\\.)?${new URL(SITE.url).hostname.replace(/\./g, "\\.")}$/`;
 ---
 
 <!doctype html>
@@ -158,6 +163,7 @@ const beacon = JSON.stringify({ token: SITE.webAnalyticsToken });
       canonical={canonical}
       jsonLd={jsonLd}
       ogImage={ogImage}
+      ogImageSize={ogImageSize}
     />
     <meta name="theme-color" content="#040e27" />
     <meta name="color-scheme" content="light" />
@@ -174,6 +180,7 @@ const beacon = JSON.stringify({ token: SITE.webAnalyticsToken });
           href={preloadImage.href}
           imagesrcset={preloadImage.srcset}
           imagesizes={preloadImage.sizes}
+          media={preloadImage.media}
           fetchpriority="high"
         />
       )
@@ -186,7 +193,7 @@ const beacon = JSON.stringify({ token: SITE.webAnalyticsToken });
   <body class:list={["min-h-dvh bg-white", bodyClass]}>
     <a
       href="#main"
-      class="sr-only z-[100] bg-signal-400 px-4 py-3 font-bold text-navy-950 focus:not-sr-only focus:fixed focus:start-4 focus:top-4"
+      class="sr-only z-[100] bg-signal-400 font-bold text-navy-950 focus:not-sr-only focus:fixed focus:start-4 focus:top-4 focus:px-4 focus:py-3"
     >
       {t.a11y.skip}
     </a>
@@ -196,9 +203,14 @@ const beacon = JSON.stringify({ token: SITE.webAnalyticsToken });
     </main>
     {chrome && <Footer locale={locale} path={path} />}
     {chrome && <WhatsAppButton locale={locale} message={whatsappMessage} />}
+    {/* Analytics only on the live hostname (and www): local `wrangler dev` previews and *.workers.dev builds serve the
+        same production bundle, and the beacon's reports would fail CORS there (console errors, no data anyway). */}
     {
       import.meta.env.PROD && SITE.webAnalyticsToken && (
-        <script is:inline defer src="https://static.cloudflareinsights.com/beacon.min.js" data-cf-beacon={beacon} />
+        <script
+          is:inline
+          set:html={`if(${beaconHost}.test(location.hostname)){var s=document.createElement("script");s.defer=true;s.src="https://static.cloudflareinsights.com/beacon.min.js";s.setAttribute("data-cf-beacon",${JSON.stringify(beacon)});document.body.appendChild(s)}`}
+        />
       )
     }
   </body>

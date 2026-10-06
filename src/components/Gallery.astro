@@ -78,8 +78,8 @@ const total = images.length;
         </button>
       </div>
       <figure class="relative grid min-h-0 place-items-center px-14 sm:px-20">
-        <img data-image alt="" class="max-h-full max-w-full object-contain" />
-        <figcaption data-caption class="absolute inset-x-0 bottom-0 mx-auto w-fit max-w-[90%] bg-navy-950/85 px-4 py-2 text-center text-sm text-navy-100 empty:hidden"></figcaption>
+        {/* src is replaced on open; lazy, so the closed (display:none) dialog never downloads it */}
+        <img data-image src={full[0]?.src} alt="" loading="lazy" decoding="async" class="max-h-full max-w-full object-contain" />
         <button type="button" data-prev class="absolute start-2 top-1/2 inline-flex size-11 -translate-y-1/2 items-center justify-center border border-white/25 bg-navy-950/60 hover:border-white/60 sm:start-4">
           <Icon name="chevron-left" size={24} />
           <span class="sr-only">{t.gallery.prev}</span>
@@ -88,6 +88,7 @@ const total = images.length;
           <Icon name="chevron-right" size={24} />
           <span class="sr-only">{t.gallery.next}</span>
         </button>
+        <figcaption data-caption class="absolute inset-x-0 bottom-0 mx-auto w-fit max-w-[90%] bg-navy-950/85 px-4 py-2 text-center text-sm text-navy-100 empty:hidden"></figcaption>
       </figure>
       <div class="h-4"></div>
     </div>

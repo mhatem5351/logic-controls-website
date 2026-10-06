@@ -66,6 +66,8 @@ const DIRECTIONAL = new Set<IconName>(["arrow", "chevron-right", "chevron-left",
 
 const { name, size = 24, title, class: className = "", strokeWidth = 1.75 } = Astro.props;
 const flip = DIRECTIONAL.has(name) ? "rtl:-scale-x-100" : "";
+/* Callers often pass "shrink-0" too: emit each class once. */
+const classes = [...new Set(["shrink-0", flip, ...className.split(/\s+/)].filter(Boolean))].join(" ");
 ---
 
 <svg
@@ -78,7 +80,7 @@ const flip = DIRECTIONAL.has(name) ? "rtl:-scale-x-100" : "";
   stroke-width={strokeWidth}
   stroke-linecap="round"
   stroke-linejoin="round"
-  class:list={["shrink-0", flip, className]}
+  class={classes}
   aria-hidden={title ? undefined : "true"}
   role={title ? "img" : undefined}
   aria-label={title}

@@ -91,6 +91,8 @@ export interface ProjectVideo {
   poster: string;
   width: number;
   height: number;
+  /** Date the clip was first published (ISO 8601) — VideoObject.uploadDate (required by Google for video results). */
+  uploadDate: string;
   /** Internal note for the page-builder / client sign-off. Never render. */
   note?: string;
 }
@@ -140,6 +142,7 @@ export const PROJECTS: readonly ProjectData[] = [
     gallery: [],
     video: {
       src: "/media/shampoo-filling-line.mp4",
+      uploadDate: "2026-09-15",
       poster: "/media/shampoo-filling-line-poster.webp",
       width: 1280,
       height: 720,
@@ -159,6 +162,7 @@ export const PROJECTS: readonly ProjectData[] = [
     gallery: [],
     video: {
       src: "/media/bottle-printing-retrofit.mp4",
+      uploadDate: "2026-07-29",
       poster: "/media/bottle-printing-retrofit-poster.webp",
       width: 1280,
       height: 720,
@@ -190,6 +194,7 @@ export const PROJECTS: readonly ProjectData[] = [
     gallery: [],
     video: {
       src: "/media/hotel-laundry-hmi.mp4",
+      uploadDate: "2026-06-16",
       poster: "/media/hotel-laundry-hmi-poster.webp",
       width: 540,
       height: 960,
