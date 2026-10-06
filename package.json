@@ -12,7 +12,8 @@
     "preview": "npm run build && wrangler dev",
     "check": "astro check && node scripts/check-i18n.mjs",
     "deploy": "npm run build && wrangler deploy",
-    "qa:html": "html-validate \"dist/**/*.html\""
+    "qa:html": "html-validate \"dist/**/*.html\"",
+    "indexnow": "node --env-file=.env scripts/indexnow.mjs"
   },
   "dependencies": {
     "@astrojs/sitemap": "^3.7.4",
