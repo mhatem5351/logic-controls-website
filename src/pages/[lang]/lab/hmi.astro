@@ -9,7 +9,8 @@ import HmiDemo from "~/components/motion/HmiDemo.astro";
 import ControlLoop from "~/components/motion/ControlLoop.astro";
 import { localeStaticPaths, LOCALES, LOCALE_META, localePath, type Locale } from "~/i18n";
 
-export const getStaticPaths = localeStaticPaths;
+// Internal page: generated in dev only, never shipped to production.
+export const getStaticPaths = () => (import.meta.env.DEV ? localeStaticPaths() : []);
 const locale = Astro.params.lang as Locale;
 ---
 

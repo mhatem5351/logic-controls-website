@@ -124,9 +124,11 @@ async function handleRfq(req: Request, env: Env): Promise<Response> {
   for (const [key] of FIELDS) {
     data[key] = String(form.get(key) ?? "").trim().slice(0, MAX_LEN[key] ?? 300);
   }
-  if (!data.name || !data.phone || !data.message || (data.email && !EMAIL_RE.test(data.email))) {
+  if (!data.name || !data.phone || (data.email && !EMAIL_RE.test(data.email))) {
     return reply(req, locale, false, 422, "invalid");
   }
+  // Step 2 (details) is optional — fall back to the selected service/industry so the email is never empty.
+  if (!data.message) data.message = [data.service, data.industry].filter(Boolean).join(" · ") || "(no details provided)";
 
   const token = String(form.get("cf-turnstile-response") ?? "");
   if (!token || !(await verifyTurnstile(env, token, req.headers.get("CF-Connecting-IP")))) {

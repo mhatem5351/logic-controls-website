@@ -27,27 +27,25 @@ import CircuitTraces from "~/components/CircuitTraces.astro";
 import { INDUSTRY_LINKS, SERVICE_LINKS, href } from "~/components/nav";
 import { getMessages, localeStaticPaths, type Locale } from "~/i18n";
 
-export const getStaticPaths = localeStaticPaths;
+// Internal page: generated in dev only, never shipped to production.
+export const getStaticPaths = () => (import.meta.env.DEV ? localeStaticPaths() : []);
 const locale = Astro.params.lang as Locale;
 const t = getMessages(locale).ui;
 
-/* Client photos (optional): only used when client-data/ is present. */
-const photoFiles = import.meta.glob<{ default: ImageMetadata }>(
-  "/client-data/facebook/photos/photo-{122107453653178639,122107453587178639,122126403375178639,122106295155178639,122128513203178639,122128513245178639,122107457697178639,122107477467178639,122126403471178639,122136605433178639}.jpg",
-  { eager: true },
-);
-const photo = (id: string) => photoFiles[`/client-data/facebook/photos/photo-${id}.jpg`]?.default;
+/* Project photos: the cleaned, published copies in src/assets/projects (never the raw client-data originals). */
+const photoFiles = import.meta.glob<{ default: ImageMetadata }>("/src/assets/projects/*/*.jpg", { eager: true });
+const photo = (path: string) => photoFiles[`/src/assets/projects/${path}.jpg`]?.default;
 const P = {
-  panelVfd: photo("122107453653178639"),
-  filler: photo("122107453587178639"),
-  hmiLabel: photo("122126403375178639"),
-  panelPlc: photo("122106295155178639"),
-  hmiMachine: photo("122128513203178639"),
-  hmiLamps: photo("122128513245178639"),
-  pharma: photo("122107457697178639"),
-  autoclave: photo("122107477467178639"),
-  panelLamps: photo("122126403471178639"),
-  panelWide: photo("122136605433178639"),
+  panelVfd: photo("shampoo-filling-delta-wecon/panel"),
+  filler: photo("shampoo-filling-delta-wecon/machine"),
+  hmiLabel: photo("labeling-machine-delta-wecon/recipes"),
+  panelPlc: photo("milk-pasteurizer/panel"),
+  hmiMachine: photo("pasteurizer-cip-recipes/settings-timers"),
+  hmiLamps: photo("pasteurizer-cip-recipes/hmi"),
+  pharma: photo("tablet-coating-scada/machine"),
+  autoclave: photo("olive-autoclave-sterilization/machine"),
+  panelLamps: photo("labeling-machine-delta-wecon/panel"),
+  panelWide: photo("anaerobic-waste-treatment-commissioning/panel"),
 };
 
 const DEMO = {

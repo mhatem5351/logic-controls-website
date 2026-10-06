@@ -23,9 +23,9 @@ interface Props {
 const { locale, path, heroDark = false } = Astro.props;
 const t = getMessages(locale).ui;
 const email = prefersEmail(locale);
-// Egyptian phones set to English land on /en/: keep a one-tap Arabic switch visible on every non-Arabic page
-// (and English on /ar/). Desktop shows only this quick switch + the utility-bar list; the globe menu is mobile-only.
-const quick = languageLinks(path).find((l) => l.locale === (locale === "ar" ? "en" : "ar"));
+// Egyptian phones set to English land on /en/: keep a one-tap Arabic switch visible on English pages;
+// Arabic, Chinese and Turkish pages get a one-tap English switch (what foreign visitors reach for). Desktop shows only this quick switch + the utility-bar list; the globe menu is mobile-only.
+const quick = languageLinks(path).find((l) => l.locale === (locale === "en" ? "ar" : "en"));
 const foreignState = currentState(FOREIGN_PATH, path);
 ---
 

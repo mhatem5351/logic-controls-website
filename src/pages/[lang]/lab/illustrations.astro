@@ -11,7 +11,8 @@ import ServiceArt from "~/components/illustrations/ServiceArt.astro";
 import IndustryArt from "~/components/illustrations/IndustryArt.astro";
 import FactoryLine from "~/components/illustrations/FactoryLine.astro";
 
-export const getStaticPaths = localeStaticPaths;
+// Internal page: generated in dev only, never shipped to production.
+export const getStaticPaths = () => (import.meta.env.DEV ? localeStaticPaths() : []);
 const locale = Astro.params.lang as Locale;
 const hero = ["control-panels", "plc-hmi-programming"] as const;
 ---
