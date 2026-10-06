@@ -219,6 +219,25 @@
         "name": "东塞得港",
         "governorate": "塞得港省"
       }
+    },
+    "map": {
+      "label": "我们服务的工业区地图",
+      "hint": "选择工业区查看详情",
+      "distance": "距公司所在地约 {km} 公里（直线距离）",
+      "cta": "在{zone}规划项目",
+      "homeCta": "联系我们的团队",
+      "close": "关闭",
+      "selected": "已选择{zone}",
+      "short": {
+        "obour": "奥布尔城",
+        "badr": "巴德尔城",
+        "10th-of-ramadan": "斋月十日城",
+        "sadat-city": "萨达特城",
+        "borg-el-arab": "阿拉伯堡",
+        "ain-sokhna": "艾因苏赫纳",
+        "qantara-west": "西坎塔拉",
+        "east-port-said": "东塞得港"
+      }
     }
   },
   "locations": {

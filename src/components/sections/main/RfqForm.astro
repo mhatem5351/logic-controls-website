@@ -627,7 +627,7 @@ const optional = f.optional;
     $("[data-stepper]")!.hidden = false;
     message.required = false;
 
-    // Context: the page that sent the visitor here, and ?service= / ?industry= preselection.
+    // Context: the page that sent the visitor here, and ?service= / ?industry= / ?location= preselection.
     const params = new URLSearchParams(location.search);
     const pageField = $<HTMLInputElement>("[data-page-field]")!;
     try {
@@ -642,6 +642,7 @@ const optional = f.optional;
     };
     preselect("service", params.get("service"));
     preselect("industry", params.get("industry"));
+    preselect("location", params.get("location"));
 
     /* ---------- validation ---------- */
     const toLatinDigits = (s: string) =>

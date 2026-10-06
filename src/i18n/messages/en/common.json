@@ -219,6 +219,25 @@
         "name": "East Port Said",
         "governorate": "Port Said"
       }
+    },
+    "map": {
+      "label": "Map of the industrial zones we work across",
+      "hint": "Select a zone for details",
+      "distance": "About {km} km from our base (straight line)",
+      "cta": "Plan a project in {zone}",
+      "homeCta": "Contact our team",
+      "close": "Close",
+      "selected": "{zone} selected",
+      "short": {
+        "obour": "Obour City",
+        "badr": "Badr City",
+        "10th-of-ramadan": "10th of Ramadan",
+        "sadat-city": "Sadat City",
+        "borg-el-arab": "Borg El Arab",
+        "ain-sokhna": "Ain Sokhna",
+        "qantara-west": "Qantara West",
+        "east-port-said": "East Port Said"
+      }
     }
   },
   "locations": {

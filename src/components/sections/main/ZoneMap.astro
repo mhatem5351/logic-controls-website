@@ -5,33 +5,28 @@
  * the same numbers as the zone list next to it). Self-drawn, so no map tiles or third-party requests (zh-safe).
  *
  *   <ZoneMap />                    all zones, numbered, home base pulsing
+ *   <ZoneMap interactive />        + selection rings, the amber signal pulse and the arrival ping (ZonesBlock drives
+ *                                  them from src/scripts/zones-map.ts; the HTML pin buttons sit over this SVG)
  *   <ZoneMap only="home" />        our base highlighted, the other zones as faint dots (contact address card)
  *
- * Projection: equirectangular around 30°N — x = (lon − 28.8) × 86.6, y = (31.8 − lat) × 100 → viewBox 380×260.
+ * Projection and pin positions: ./zone-geo.ts.
  */
-import { ZONES, type ZoneSlug } from "~/data/zones";
+import { ZONES } from "~/data/zones";
 import { uid } from "~/components/uid";
+import { PIN, BASE } from "./zone-geo";
 
 interface Props {
   only?: "home";
+  /** Hooks for ZonesBlock's interactive layer (data-zone / data-region on links and pins, rings, signal path). */
+  interactive?: boolean;
   /** Accessible name. Without it the map is decorative (the zone list carries the content). */
   label?: string;
   class?: string;
 }
-const { only, label, class: className } = Astro.props;
+const { only, interactive = false, label, class: className } = Astro.props;
 
-const P: Record<ZoneSlug, [number, number]> = {
-  "6th-of-october": [184.5, 186],
-  obour: [231, 157],
-  badr: [250, 170],
-  "10th-of-ramadan": [257, 149],
-  "sadat-city": [150, 143],
-  "borg-el-arab": [74, 93],
-  "ain-sokhna": [306, 218],
-  "qantara-west": [297, 95],
-  "east-port-said": [316, 61],
-};
-const pins = ZONES.map((z, i) => ({ ...z, n: i + 1, x: P[z.slug][0], y: P[z.slug][1] }));
+const pins = ZONES.map((z, i) => ({ ...z, n: i + 1, x: PIN[z.slug][0], y: PIN[z.slug][1] }));
+const region = (z: (typeof pins)[number]) => (interactive ? { "data-region": z.region } : {});
 const u = uid("map");
 const a11y = label ? { role: "img" as const, "aria-label": label } : { "aria-hidden": "true" as const };
 ---
@@ -81,8 +76,18 @@ const a11y = label ? { role: "img" as const, "aria-label": label } : { "aria-hid
         {pins
           .filter((z) => !z.home)
           .map((z) => (
-            <path d={`M184.5 186L${z.x} ${z.y}`} />
+            <path d={`M${BASE[0]} ${BASE[1]}L${z.x} ${z.y}`} data-zone={interactive ? z.slug : undefined} {...region(z)} />
           ))}
+      </g>
+    )
+  }
+
+  {/* the amber signal travelling from our base to the zone in focus, and its arrival ping (zones-map.ts) */}
+  {
+    interactive && (
+      <g>
+        <path class="lc-map-sig" d={`M${BASE[0]} ${BASE[1]}L${BASE[0]} ${BASE[1]}`} fill="none" />
+        <circle class="lc-map-ping" cx={BASE[0]} cy={BASE[1]} r="8" fill="none" />
       </g>
     )
   }
@@ -91,8 +96,9 @@ const a11y = label ? { role: "img" as const, "aria-label": label } : { "aria-hid
   {
     pins.map((z) =>
       z.home ? (
-        <g class="lc-map-pin lc-map-home" data-zone={z.slug}>
+        <g class="lc-map-pin lc-map-home" data-zone={z.slug} {...region(z)} style={interactive ? `--i:${z.n - 1}` : undefined}>
           <circle cx={z.x} cy={z.y} r={only ? 30 : 22} fill={`url(#${u}-glow)`} class="lc-map-pulse" />
+          {interactive && <circle cx={z.x} cy={z.y} r="13" class="lc-map-ring" />}
           <circle cx={z.x} cy={z.y} r={only ? 7 : 8.5} class="lc-map-home-dot" />
           {!only && (
             <text x={z.x} y={z.y + 3.3} text-anchor="middle" class="lc-map-num lc-map-num-home">
@@ -103,7 +109,8 @@ const a11y = label ? { role: "img" as const, "aria-label": label } : { "aria-hid
       ) : only ? (
         <circle cx={z.x} cy={z.y} r="3" class="lc-map-dim" />
       ) : (
-        <g class="lc-map-pin" data-zone={z.slug}>
+        <g class="lc-map-pin" data-zone={z.slug} {...region(z)} style={interactive ? `--i:${z.n - 1}` : undefined}>
+          {interactive && <circle cx={z.x} cy={z.y} r="11" class="lc-map-ring" />}
           <circle cx={z.x} cy={z.y} r="7" class="lc-map-dot" />
           <text x={z.x} y={z.y + 3} text-anchor="middle" class="lc-map-num">
             {z.n}
@@ -169,10 +176,6 @@ const a11y = label ? { role: "img" as const, "aria-label": label } : { "aria-hid
   .lc-map-dim {
     fill: var(--color-royal-400);
     opacity: 0.55;
-  }
-  .lc-map-pin[data-active] .lc-map-dot {
-    fill: var(--color-royal-500);
-    stroke: var(--color-white);
   }
   .lc-map-pulse {
     transform-box: fill-box;

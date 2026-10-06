@@ -219,6 +219,25 @@
         "name": "Doğu Port Said",
         "governorate": "Port Said"
       }
+    },
+    "map": {
+      "label": "Çalıştığımız sanayi bölgeleri haritası",
+      "hint": "Ayrıntılar için bir bölge seçin",
+      "distance": "Merkezimize kuş uçuşu yaklaşık {km} km",
+      "cta": "{zone} için proje planlayın",
+      "homeCta": "Ekibimize ulaşın",
+      "close": "Kapat",
+      "selected": "{zone} seçildi",
+      "short": {
+        "obour": "Obour Şehri",
+        "badr": "Badr Şehri",
+        "10th-of-ramadan": "10. Ramazan Şehri",
+        "sadat-city": "Sadat Şehri",
+        "borg-el-arab": "Burg El Arab",
+        "ain-sokhna": "Ain Sokhna",
+        "qantara-west": "Batı Kantara",
+        "east-port-said": "Doğu Port Said"
+      }
     }
   },
   "locations": {
