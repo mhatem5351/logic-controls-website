@@ -1,0 +1,96 @@
+{
+  "$comment": "Byte limits = measured values + 10% headroom, rounded up to 1 KB. Re-baseline on purpose with `npm run test:budget -- --update` and review the diff.",
+  "pageTypes": {
+    "404": {
+      "html": 6144,
+      "css": 25600,
+      "js": 0,
+      "images": 26624
+    },
+    "about": {
+      "html": 40960,
+      "css": 27648,
+      "js": 0,
+      "images": 230400
+    },
+    "contact": {
+      "html": 23552,
+      "css": 27648,
+      "js": 3072,
+      "images": 60416
+    },
+    "thanks": {
+      "html": 14336,
+      "css": 25600,
+      "js": 0,
+      "images": 60416
+    },
+    "foreign-manufacturers": {
+      "html": 39936,
+      "css": 27648,
+      "js": 0,
+      "images": 193536
+    },
+    "home": {
+      "html": 92160,
+      "css": 34816,
+      "js": 8192,
+      "images": 297984
+    },
+    "industry": {
+      "html": 27648,
+      "css": 25600,
+      "js": 0,
+      "images": 235520
+    },
+    "industries-index": {
+      "html": 33792,
+      "css": 25600,
+      "js": 0,
+      "images": 60416
+    },
+    "privacy": {
+      "html": 20480,
+      "css": 25600,
+      "js": 0,
+      "images": 60416
+    },
+    "project": {
+      "html": 24576,
+      "css": 25600,
+      "js": 0,
+      "images": 766976
+    },
+    "projects-index": {
+      "html": 27648,
+      "css": 25600,
+      "js": 0,
+      "images": 608256
+    },
+    "service": {
+      "html": 41984,
+      "css": 32768,
+      "js": 8192,
+      "images": 194560
+    },
+    "services-index": {
+      "html": 45056,
+      "css": 27648,
+      "js": 0,
+      "images": 169984
+    },
+    "technologies": {
+      "html": 35840,
+      "css": 33792,
+      "js": 8192,
+      "images": 181248
+    }
+  },
+  "files": {
+    "cssGz": 25600,
+    "jsGz": 8192,
+    "font": 44032,
+    "image": 570368,
+    "video": 7440384
+  }
+}

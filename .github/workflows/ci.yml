@@ -1,0 +1,105 @@
+# CI: build + unit / static / budget checks + Playwright E2E against the real Workers runtime (wrangler dev).
+# No deploy and no Cloudflare secrets: the E2E run uses Cloudflare's PUBLIC Turnstile test keys and wrangler's local
+# simulation of every binding (send_email writes to .wrangler/tmp/email).
+# Cost: GitHub Free includes 2,000 Actions minutes / month for private repos; one run is ≈ 8–10 min on the 2-vCPU
+# runner (cached), superseded runs are cancelled, and docs-only changes do not run at all.
+name: CI
+
+on:
+  push:
+    branches: [main]
+    paths-ignore: ["**/*.md", "docs/**", "research/**", "client-data/**", ".github/ISSUE_TEMPLATE/**", "LICENSE"]
+  pull_request:
+    paths-ignore: ["**/*.md", "docs/**", "research/**", "client-data/**", ".github/ISSUE_TEMPLATE/**", "LICENSE"]
+  workflow_dispatch:
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+env:
+  CI: "true"
+  NODE_VERSION: "24"
+  # wrangler: never prompt, never send usage metrics from CI
+  WRANGLER_SEND_METRICS: "false"
+  ASTRO_TELEMETRY_DISABLED: "1"
+
+jobs:
+  test:
+    name: Build, checks and E2E
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: actions/setup-node@v7
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci --no-audit --no-fund
+
+      # Astro's image + font cache (node_modules/.astro): ~800 AVIF/WebP/JPEG variants take minutes to encode cold.
+      # Astro keys entries by content, so any older cache is a safe starting point (restore-keys).
+      - name: Restore Astro asset cache
+        uses: actions/cache@v6
+        with:
+          path: node_modules/.astro
+          key: astro-${{ runner.os }}-${{ hashFiles('package-lock.json', 'astro.config.mjs') }}-${{ hashFiles('src/assets/**', 'public/**') }}
+          restore-keys: |
+            astro-${{ runner.os }}-${{ hashFiles('package-lock.json', 'astro.config.mjs') }}-
+            astro-${{ runner.os }}-
+
+      - name: Build
+        run: npm run build
+
+      - name: Unit + static checks (vitest, i18n, astro check, html-validate, dist crawl)
+        run: npm run test
+
+      - name: Performance budgets
+        run: npm run test:budget
+
+      - name: Read Playwright version
+        id: pw
+        run: echo "version=$(node -p "require('@playwright/test/package.json').version")" >> "$GITHUB_OUTPUT"
+
+      - name: Cache Playwright browsers
+        id: pw-cache
+        uses: actions/cache@v6
+        with:
+          path: ~/.cache/ms-playwright
+          key: playwright-${{ runner.os }}-${{ steps.pw.outputs.version }}-chromium-webkit
+
+      - name: Install Playwright browsers (chromium, webkit) and system deps
+        if: steps.pw-cache.outputs.cache-hit != 'true'
+        run: npx playwright install --with-deps chromium webkit
+
+      - name: Install Playwright system deps (browsers cached)
+        if: steps.pw-cache.outputs.cache-hit == 'true'
+        run: npx playwright install-deps chromium webkit
+
+      # Cloudflare's public always-pass Turnstile TEST secret (not a secret):
+      # https://developers.cloudflare.com/turnstile/troubleshooting/testing/
+      - name: Local Worker vars for wrangler dev
+        run: |
+          printf '%s\n' \
+            'TURNSTILE_SECRET=1x0000000000000000000000000000000AA' \
+            'ALLOWED_HOSTNAMES=logic-controls.com,www.logic-controls.com,example.com,localhost,127.0.0.1' > .dev.vars
+
+      - name: E2E (chromium desktop + mobile, webkit mobile)
+        run: npm run test:e2e
+
+      - name: Upload Playwright report
+        if: failure()
+        uses: actions/upload-artifact@v7
+        with:
+          name: playwright-report
+          path: |
+            playwright-report/
+            test-results/
+          retention-days: 7
+          if-no-files-found: ignore

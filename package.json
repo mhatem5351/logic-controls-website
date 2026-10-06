@@ -13,7 +13,14 @@
     "check": "astro check && node scripts/check-i18n.mjs",
     "deploy": "npm run build && wrangler deploy",
     "qa:html": "html-validate \"dist/**/*.html\"",
-    "indexnow": "node --env-file=.env scripts/indexnow.mjs"
+    "indexnow": "node --env-file=.env scripts/indexnow.mjs",
+    "test": "npm run test:unit && npm run test:static",
+    "test:unit": "vitest run",
+    "test:static": "node scripts/check-i18n.mjs && astro check && npm run qa:html && node tests/static/check-dist.mjs",
+    "test:budget": "node tests/static/check-budgets.mjs",
+    "test:e2e": "playwright test",
+    "test:visual": "VISUAL=1 playwright test --grep @visual --project=chromium-desktop",
+    "test:all": "npm run build && npm run test && npm run test:budget && npm run test:e2e"
   },
   "dependencies": {
     "@astrojs/sitemap": "^3.7.4",
@@ -26,10 +33,13 @@
     "@astrojs/check": "^0.9.10",
     "@axe-core/playwright": "^4.13.0",
     "@cloudflare/workers-types": "^5.20261006.1",
+    "@playwright/test": "^1.63.0",
     "html-validate": "^11.16.2",
     "lighthouse": "^13.5.0",
+    "node-html-parser": "^9.0.4",
     "playwright": "^1.63.0",
     "typescript": "^6.0.3",
+    "vitest": "^5.0.3",
     "wrangler": "^4.147.0"
   }
 }

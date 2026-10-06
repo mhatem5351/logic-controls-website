@@ -12,3 +12,9 @@ dist/
 /*.png
 /*.jpg
 /client-data/
+# test output (Playwright / Lighthouse); visual baselines are machine-local
+/test-results/
+/playwright-report/
+/blob-report/
+/tests/e2e/__screenshots__/
+/.lighthouseci/
