@@ -1,0 +1,35 @@
+---
+/**
+ * Internal lab page for the interactive HMI demo + control-loop explainer (noindex, excluded from the sitemap).
+ * Shows: HmiDemo (full, on a dark band) · ControlLoop (light) · HmiDemo compact (muted band).
+ */
+import BaseLayout from "~/layouts/BaseLayout.astro";
+import Section from "~/components/Section.astro";
+import HmiDemo from "~/components/motion/HmiDemo.astro";
+import ControlLoop from "~/components/motion/ControlLoop.astro";
+import { localeStaticPaths, LOCALES, LOCALE_META, localePath, type Locale } from "~/i18n";
+
+export const getStaticPaths = localeStaticPaths;
+const locale = Astro.params.lang as Locale;
+---
+
+<BaseLayout locale={locale} title="HMI lab" path="lab/hmi" noindex alternates={false}>
+  <div class="wrap flex flex-wrap items-center justify-between gap-3 pt-6 pb-2 text-sm text-charcoal-600">
+    <p class="type-label text-royal-600">Lab · noindex</p>
+    <nav class="flex gap-4">
+      {LOCALES.map((l) => <a class="text-royal-600 underline" href={localePath(l, "lab/hmi")}>{LOCALE_META[l].native}</a>)}
+    </nav>
+  </div>
+
+  <Section variant="dark" id="hmi">
+    <HmiDemo locale={locale} tone="dark" />
+  </Section>
+
+  <Section variant="light" id="loop">
+    <ControlLoop locale={locale} />
+  </Section>
+
+  <Section variant="muted" id="compact">
+    <HmiDemo locale={locale} variant="compact" headingLevel={3} />
+  </Section>
+</BaseLayout>

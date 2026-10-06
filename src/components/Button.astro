@@ -1,0 +1,62 @@
+---
+/**
+ * Button / link-button with the brand's 45° cut corner.
+ * Renders <a> when `href` is set, otherwise <button>.
+ *
+ * variant: "primary" (royal) · "secondary" (outlined, for light surfaces) · "on-dark" (outlined, for navy) · "ghost" (text link + arrow)
+ * size:    "sm" · "md" · "lg"
+ */
+import type { HTMLAttributes } from "astro/types";
+import Icon, { type IconName } from "./Icon.astro";
+
+type Props = {
+  href?: string;
+  type?: "button" | "submit" | "reset";
+  variant?: "primary" | "secondary" | "on-dark" | "ghost";
+  size?: "sm" | "md" | "lg";
+  /** Icon before the label (e.g. "whatsapp", "phone", "mail"). */
+  icon?: IconName;
+  /** Icon after the label; defaults to "arrow" for ghost buttons. Pass `false` to hide. */
+  iconEnd?: IconName | false;
+  /** Colour override for the leading icon (e.g. WhatsApp green on dark). */
+  iconClass?: string;
+  /** Opens in a new tab with rel="noopener" and an accessible hint. */
+  external?: boolean;
+  /** Full-width. */
+  block?: boolean;
+  class?: string;
+} & Omit<HTMLAttributes<"a"> & HTMLAttributes<"button">, "type" | "class">;
+
+const {
+  href,
+  type = "button",
+  variant = "primary",
+  size = "md",
+  icon,
+  iconEnd = variant === "ghost" ? "arrow" : undefined,
+  iconClass,
+  external = false,
+  block = false,
+  class: className,
+  ...rest
+} = Astro.props;
+
+const iconSize = size === "sm" ? 16 : size === "lg" ? 20 : 18;
+const Tag = href ? "a" : "button";
+const linkAttrs = href
+  ? { href, ...(external ? { target: "_blank", rel: "noopener" } : {}) }
+  : { type };
+---
+
+<Tag
+  class:list={["lc-btn", className]}
+  data-variant={variant}
+  data-size={size}
+  data-block={block ? "" : undefined}
+  {...linkAttrs}
+  {...rest}
+>
+  {icon && <Icon name={icon} size={iconSize} class={iconClass} />}
+  <span class="lc-btn-label"><slot /></span>
+  {iconEnd && <Icon name={iconEnd} size={iconSize} class="lc-btn-icon-end" />}
+</Tag>

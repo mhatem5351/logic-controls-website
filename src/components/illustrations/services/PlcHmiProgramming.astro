@@ -1,0 +1,144 @@
+---
+/* plc-hmi-programming — HMI on a pedestal showing ladder logic (left) + a tank/pump mimic (right),
+   PLC rack (PSU, CPU, DI, DO) wired to it with the brand traces.
+   Loop 8 s: command pulse HMI → CPU and an input pulse → rung 1 energises left→right → coil → DO LED,
+   pump turns, tank fills, output pulse runs to the field node → rung 2 → rung 3 timer runs, then coil 3. */
+import Frame from "../ArtFrame.astro";
+import { uid, type ArtProps } from "../types";
+const p = Astro.props as ArtProps;
+const u = uid("ph");
+const coil = (y: number) => `M129 ${y - 5}a6 6 0 0 0 0 10M133 ${y - 5}a6 6 0 0 1 0 10`;
+const bars = (y: number, xs: number[]) => xs.map((x) => `M${x} ${y - 5}V${y + 5}`).join("");
+const ladder = [
+  "M60 64V148M150 64V148",
+  "M60 72H72M78 72H94M100 72H126M136 72H150", bars(72, [72, 78, 94, 100]), coil(72),
+  "M66 72V84H72M78 84H86V72", bars(84, [72, 78]),
+  "M60 102H72M78 102H94M100 102H126M136 102H150", bars(102, [72, 78, 94, 100]), "M92 108L102 96", coil(102),
+  "M60 130H72M78 130H90M116 130H126M136 130H150", bars(130, [72, 78]), coil(130),
+].join("");
+const leds = (x: number) => `M${x} 199V237M${x + 8} 199V237`;
+---
+
+<Frame {...p} uid={u} name="ph">
+  <style is:inline>
+    .lca-ph .lad{stroke:var(--i-kl);stroke-width:1.25;opacity:.75}
+    .lca-ph .z{stroke-dasharray:100 100;stroke-width:2.25}
+    .lca-ph .p.e1{animation:phE 8s linear infinite}
+    .lca-ph .p.e2{animation:phI 8s linear infinite}
+    .lca-ph .p.e3{animation:phO 8s linear infinite}
+    .lca-ph .nd.e3,.lca-ph .pg.e3{animation:phN 8s ease-out infinite}
+    .lca-ph .r1{animation:phR1 8s linear infinite}
+    .lca-ph .r2{animation:phR2 8s linear infinite}
+    .lca-ph .r3{animation:phR3 8s linear infinite}
+    .lca-ph .r4{animation:phR4 8s linear infinite}
+    .lca-ph .di{animation:phDi 8s step-end infinite}
+    .lca-ph .c1{animation:phC1 8s step-end infinite}
+    .lca-ph .c2{animation:phC2 8s step-end infinite}
+    .lca-ph .c3{animation:phC3 8s step-end infinite}
+    .lca-ph .tm{transform-box:fill-box;transform-origin:0 50%;animation:phT 8s linear infinite}
+    .lca-ph .pm{transform-box:fill-box;transform-origin:center;animation:phPm 8s linear infinite}
+    .lca-ph .lv{transform-box:fill-box;transform-origin:50% 100%;animation:phL 8s cubic-bezier(.45,0,.55,1) infinite}
+    .lca-ph .run{animation:phB 1s step-end infinite}
+    @keyframes phE{0%{stroke-dashoffset:12}12%,100%{stroke-dashoffset:-100}}
+    @keyframes phI{0%,1%{stroke-dashoffset:12}13%,100%{stroke-dashoffset:-100}}
+    @keyframes phO{0%,18.75%{stroke-dashoffset:12}30%,100%{stroke-dashoffset:-100}}
+    @keyframes phN{0%,28%{opacity:0;transform:scale(1)}29%{opacity:1;transform:scale(1)}45%{opacity:0;transform:scale(2.4)}100%{opacity:0;transform:scale(2.4)}}
+    @keyframes phR1{0%,12.5%{stroke-dashoffset:100;opacity:1}18.75%,81%{stroke-dashoffset:0;opacity:1}83%,100%{stroke-dashoffset:0;opacity:0}}
+    @keyframes phR2{0%,28.75%{stroke-dashoffset:100;opacity:1}35%,81%{stroke-dashoffset:0;opacity:1}83%,100%{stroke-dashoffset:0;opacity:0}}
+    @keyframes phR3{0%,45%{stroke-dashoffset:100;opacity:1}48.75%,81%{stroke-dashoffset:0;opacity:1}83%,100%{stroke-dashoffset:0;opacity:0}}
+    @keyframes phR4{0%,61.25%{stroke-dashoffset:100;opacity:1}63.75%,81%{stroke-dashoffset:0;opacity:1}83%,100%{stroke-dashoffset:0;opacity:0}}
+    @keyframes phT{0%,48.75%{transform:scaleX(0)}61.25%,81%{transform:scaleX(1)}83%,100%{transform:scaleX(0)}}
+    @keyframes phDi{0%{opacity:0}12.5%{opacity:1}81.25%,100%{opacity:0}}
+    @keyframes phC1{0%{opacity:0}18.75%{opacity:1}81.25%,100%{opacity:0}}
+    @keyframes phC2{0%{opacity:0}35%{opacity:1}81.25%,100%{opacity:0}}
+    @keyframes phC3{0%{opacity:0}63.75%{opacity:1}81.25%,100%{opacity:0}}
+    @keyframes phPm{0%,18.75%{transform:rotate(0)}81.25%,100%{transform:rotate(5turn)}}
+    @keyframes phL{0%,18.75%{transform:scaleY(.18)}81.25%{transform:scaleY(1)}100%{transform:scaleY(.18)}}
+    @keyframes phB{0%,50%{opacity:1}51%,100%{opacity:.15}}
+    .lca-ph .fl2{stroke:var(--i-w);stroke-width:2;stroke-dasharray:3 5;animation:lca-fw .6s linear infinite}
+    @media (prefers-reduced-motion:reduce){.lca-ph .tm{transform:scaleX(.6)}.lca-ph .lv{transform:scaleY(.7)}}
+  </style>
+
+  <!-- shadows -->
+  <path class="sh" d="M104 258H196L184 240H112Z"></path>
+  <path class="sh" d="M256 258H392L376 242H264Z"></path>
+
+  <!-- HMI pedestal -->
+  <path class="t d" d="M104 248 112 240H180L172 248Z"></path>
+  <rect class="s d" x="104" y="248" width="68" height="10"></rect>
+  <path class="s d" d="M144 172 148 168V242L144 246Z"></path>
+  <rect class="m d" x="132" y="170" width="12" height="76"></rect>
+
+  <!-- HMI panel -->
+  <path class="t" d="M44 40 52 32H240L232 40Z"></path>
+  <path class="s" d="M236 44 244 36V164L236 172Z"></path>
+  <rect class="f" x="40" y="40" width="196" height="132" rx="5"></rect>
+  <rect class="k" x="50" y="50" width="176" height="108" rx="1.5"></rect>
+  <circle class="y n" cx="60" cy="165" r="1.6"></circle>
+  <path class="d l" d="M212 165h14"></path>
+  <!-- screen: header, divider -->
+  <rect x="50" y="50" width="176" height="7" class="n" style="fill:var(--i-kl);opacity:.16"></rect>
+  <path class="h q" d="M155 62V152" opacity=".35"></path>
+  <!-- ladder (static) -->
+  <path class="lad" d={ladder}></path>
+  <!-- ladder (energised overlays) -->
+  <g class="e">
+    <path class="z r1" pathLength="100" d="M60 72H126"></path>
+    <path class="z r2" pathLength="100" d="M60 102H126"></path>
+    <path class="z r3" pathLength="100" d="M60 130H90"></path>
+    <path class="z r4" pathLength="100" d="M116 130H126"></path>
+    <path class="c1" d={coil(72)} stroke-width="2"></path>
+    <path class="c2" d={coil(102)} stroke-width="2"></path>
+    <path class="c3" d={coil(130)} stroke-width="2"></path>
+  </g>
+  <g class="y n">
+    <circle class="c1" cx="131" cy="72" r="2.2"></circle>
+    <circle class="c2" cx="131" cy="102" r="2.2"></circle>
+    <circle class="c3" cx="131" cy="130" r="2.2"></circle>
+  </g>
+  <rect class="lad" x="90" y="124" width="26" height="12" style="opacity:1"></rect>
+  <rect class="y n tm" x="92" y="128" width="22" height="4"></rect>
+  <!-- mimic: tank + pump + pipes -->
+  <path class="lad" d="M162 142H177M191 142H206V92H198" style="opacity:1"></path>
+  <g class="c1"><path class="fl2" d="M162 142H177M191 142H206V92H198"></path></g>
+  <rect class="w n lv" x="170" y="70" width="24" height="46" rx="3" opacity=".8"></rect>
+  <path class="lad" d="M168 66V112a6 6 0 0 0 6 6h16a6 6 0 0 0 6-6V66" style="opacity:1"></path>
+  <circle class="lad" cx="184" cy="142" r="7" style="opacity:1"></circle>
+  <path class="pm" d="M184 142v-5M184 142l4.3 2.5M184 142l-4.3 2.5" style="stroke:var(--i-kl);stroke-width:1.5"></path>
+  <path class="h q" d="M213 66h7M213 74h7M213 82h7" opacity=".5"></path>
+
+  <!-- PLC rack -->
+  <rect class="m3 d" x="249" y="216" width="8" height="8"></rect>
+  <path class="t" d="M256 182 264 174H364L356 182Z"></path>
+  <path class="s" d="M356 182 364 174V250L356 258Z"></path>
+  <g class="d">
+    <rect class="m" x="256" y="182" width="20" height="76"></rect>
+    <path class="l" d="M260 190h12M260 194h12M260 198h12"></path>
+    <rect class="f" x="276" y="182" width="36" height="76"></rect>
+    <rect class="b" x="276" y="182" width="36" height="8"></rect>
+    <rect class="k" x="292" y="212" width="14" height="12"></rect>
+    <rect class="s" x="293" y="232" width="7" height="5"></rect>
+    <rect class="f" x="312" y="182" width="22" height="76"></rect>
+    <rect class="b" x="312" y="182" width="22" height="8"></rect>
+    <rect class="f" x="334" y="182" width="22" height="76"></rect>
+    <rect class="b" x="334" y="182" width="22" height="8"></rect>
+  </g>
+  <path d={`${leds(319)}${leds(341)}M283 203V209`} style="stroke:var(--i-s);stroke-width:2.6;stroke-dasharray:0 6"></path>
+  <path d="M260 250H354" style="stroke:var(--i-ink);stroke-width:2;stroke-dasharray:0 4.5"></path>
+  <circle class="y n run" cx="283" cy="197" r="1.7"></circle>
+  <circle class="y n di" cx="319" cy="199" r="1.7"></circle>
+  <circle class="y n c1" cx="341" cy="199" r="1.7"></circle>
+  <circle class="y n c2" cx="349" cy="199" r="1.7"></circle>
+  <circle class="y n c3" cx="341" cy="205" r="1.7"></circle>
+
+  <!-- brand traces: HMI → CPU (Ethernet), field input → DI, DO → field output -->
+  <path class="tr" d="M244 104H272L294 126V176M335 112V128L323 140V176M362 88V129L345 146V176"></path>
+  <circle class="rn" cx="244" cy="104" r="4.5"></circle>
+  <circle class="rn" cx="335" cy="106" r="6"></circle>
+  <circle class="rn" cx="362" cy="82" r="6"></circle>
+  <path class="p e1" pathLength="100" d="M244 104H272L294 126V176"></path>
+  <path class="p e2" pathLength="100" d="M335 112V128L323 140V176"></path>
+  <path class="p e3" pathLength="100" d="M345 176V146L362 129V88"></path>
+  <circle class="nd e3" cx="362" cy="82" r="3"></circle>
+  <circle class="pg e3" cx="362" cy="82" r="6"></circle>
+</Frame>

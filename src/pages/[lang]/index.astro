@@ -1,12 +1,73 @@
 ---
-import { Font } from "astro:assets";
-import "~/styles/global.css";
-import { getMessages, localeStaticPaths, LOCALE_META, type Locale } from "~/i18n";
+// TEMPORARY home page — proves BaseLayout + Hero in every locale. Real copy/sections come after copywriting.
+import BaseLayout from "~/layouts/BaseLayout.astro";
+import Hero from "~/components/Hero.astro";
+import Section from "~/components/Section.astro";
+import LogoWall from "~/components/LogoWall.astro";
+import CtaBand from "~/components/CtaBand.astro";
+import { getMessages, localeStaticPaths, type Locale } from "~/i18n";
+import { SITE } from "~/data/site";
+
 export const getStaticPaths = localeStaticPaths;
 const locale = Astro.params.lang as Locale;
 const t = getMessages(locale);
+
+const COPY: Record<Locale, { title: string; lead: string; proof: [string, string, string]; cta: string }> = {
+  en: {
+    title: "PLC control panels &amp; <em>machine automation</em> for factories in Egypt",
+    lead: "Designed, built, programmed and commissioned by our own engineers — for filling, food &amp; beverage, pharma and cosmetics lines.",
+    proof: ["years of experience", "automation projects", "core industries"],
+    cta: "Tell us about your machine — an engineer replies the same working day.",
+  },
+  ar: {
+    title: "لوحات تحكم PLC وأنظمة <em>أتمتة الماكينات</em> للمصانع في مصر",
+    lead: "تصميم وتصنيع وبرمجة وتشغيل بأيدي مهندسينا — لخطوط التعبئة والأغذية والمشروبات والأدوية ومستحضرات التجميل.",
+    proof: ["سنوات من الخبرة", "مشروع أتمتة", "قطاعات رئيسية"],
+    cta: "أخبرنا عن ماكينتك — يرد عليك مهندس في يوم العمل نفسه.",
+  },
+  zh: {
+    title: "您在埃及的<em>本地自动化</em>与控制合作伙伴",
+    lead: "PLC 电气控制柜设计制造、编程、现场调试与售后支持——由我们自己的工程师团队完成。",
+    proof: ["年行业经验", "自动化项目", "核心行业"],
+    cta: "告诉我们您的设备情况——工程师将在同一工作日内回复。",
+  },
+  tr: {
+    title: "Mısır'daki yerel <em>otomasyon</em> ve kontrol ortağınız",
+    lead: "PLC kontrol panoları, makine otomasyonu, devreye alma ve satış sonrası destek — kendi mühendislerimiz tarafından.",
+    proof: ["yıllık deneyim", "otomasyon projesi", "ana sektör"],
+    cta: "Makinenizi anlatın — bir mühendisimiz aynı iş günü içinde size yanıt verir.",
+  },
+};
+const c = COPY[locale];
+const poster = { href: "/media/hero-filling-poster.webp", srcset: "/media/hero-filling-poster-640.webp 640w, /media/hero-filling-poster.webp 1280w", sizes: "(min-width: 1024px) 56vw, 100vw" };
+const org = {
+  "@context": "https://schema.org",
+  "@type": "Organization",
+  name: SITE.name,
+  url: SITE.url,
+  logo: `${SITE.url}/icon-512.png`,
+  email: SITE.email,
+  telephone: SITE.phone.tel,
+  sameAs: [SITE.facebook],
+};
 ---
-<html lang={LOCALE_META[locale].htmlLang} dir={LOCALE_META[locale].dir}>
-  <head><meta charset="utf-8" /><title>{t.seo.defaultTitle}</title><Font cssVariable="--font-latin" /></head>
-  <body><h1>{t.seo.siteName}</h1><p>{t.ui.cta.quote}</p></body>
-</html>
+
+<BaseLayout locale={locale} path="" heroDark preloadImage={poster} jsonLd={org}>
+  <Hero
+    locale={locale}
+    title={c.title}
+    lead={c.lead}
+    chips={["PLC", "HMI", "SCADA", "VFD"]}
+    priority
+    video={{ src: "/media/hero-filling.mp4", poster: "/media/hero-filling-poster.webp", posterSmall: "/media/hero-filling-poster-640.webp" }}
+    proof={[
+      { value: `${SITE.experienceYears}+`, label: c.proof[0] },
+      { value: `${SITE.projectsCount}+`, label: c.proof[1] },
+      { value: "4", label: c.proof[2] },
+    ]}
+  />
+  <Section compact>
+    <LogoWall locale={locale} />
+  </Section>
+  <CtaBand locale={locale} title={t.ui.cta.quote} text={c.cta} />
+</BaseLayout>

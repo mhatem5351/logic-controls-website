@@ -1,0 +1,66 @@
+---
+/**
+ * Decorative circuit traces (the logo's 45° traces + ring nodes) with CSS-only signal pulses.
+ * Anchored to a corner at a fixed pixel size so strokes never distort. Mirrors in RTL.
+ * Motion: draw-in once, then amber pulses travel to the ring nodes; disabled for prefers-reduced-motion.
+ */
+interface Props {
+  /** "bottom-start" (default) or "top-end" bundle. */
+  corner?: "bottom-start" | "top-end";
+  /** Pulse colour. */
+  tone?: "signal" | "royal";
+  class?: string;
+}
+const { corner = "bottom-start", tone = "signal", class: className } = Astro.props;
+
+type Trace = { d: string; node: [number, number]; delay: number };
+// Flat bundle: everything lives in the bottom ~80px so it never runs under content.
+const BOTTOM: { w: number; h: number; traces: Trace[] } = {
+  w: 940,
+  h: 140,
+  traces: [
+    { d: "M0 98H136L172 62H292", node: [299.5, 62], delay: 0.6 },
+    { d: "M0 114H226L258 82H552", node: [559.5, 82], delay: 2.2 },
+    { d: "M0 126H418L450 94H704", node: [711.5, 94], delay: 3.6 },
+    { d: "M0 136H756L784 108H880", node: [887.5, 108], delay: 1.4 },
+  ],
+};
+const TOP: { w: number; h: number; traces: Trace[] } = {
+  w: 620,
+  h: 260,
+  traces: [
+    { d: "M620 36H470L430 76H310", node: [302.5, 76], delay: 1.0 },
+    { d: "M620 60H512L480 92V178", node: [480, 185.5], delay: 3.0 },
+    { d: "M620 84H556L532 108H420", node: [412.5, 108], delay: 4.6 },
+  ],
+};
+const set = corner === "top-end" ? TOP : BOTTOM;
+const pulse = tone === "signal" ? "var(--color-signal-300)" : "var(--color-royal-300)";
+const pos = corner === "top-end" ? "top-0 end-0" : "bottom-0 start-0";
+---
+
+<svg
+  class:list={["lc-traces pointer-events-none absolute", pos, className]}
+  width={set.w}
+  height={set.h}
+  viewBox={`0 0 ${set.w} ${set.h}`}
+  fill="none"
+  aria-hidden="true"
+  focusable="false"
+>
+  <g class="lc-traces-flip">
+  <g stroke="rgb(150 182 232 / 0.22)" stroke-width="1.25">
+    {set.traces.map((t, i) => <path class="trace" d={t.d} pathLength="100" style={`animation-delay:${i * 0.15}s`} />)}
+  </g>
+  <g stroke={pulse} stroke-width="2" stroke-linecap="round" style={`filter: drop-shadow(0 0 4px ${pulse})`}>
+    {set.traces.map((t) => <path class="pulse" d={t.d} pathLength="100" style={`animation-delay:${t.delay}s`} />)}
+  </g>
+  <g stroke-width="1.5">
+    {
+      set.traces.map((t) => (
+        <circle class="node" cx={t.node[0]} cy={t.node[1]} r="6.5" stroke="rgb(150 182 232 / 0.55)" fill={pulse} fill-opacity="0" style={`animation-delay:${t.delay}s`} />
+      ))
+    }
+  </g>
+  </g>
+</svg>

@@ -19,6 +19,9 @@ export const SITE = {
   foundingYear: 2025,
   experienceYears: 4,
   projectsCount: 50,
+  /** Public keys (safe to ship): Cloudflare Turnstile site key + Web Analytics beacon token. */
+  turnstileSiteKey: "0x4AAAAAAFPM3y4LCAOP7pVT",
+  webAnalyticsToken: "8a235c8b7d2f4e5ebcb2a0cf6fab5f61",
   /** Platforms the team programs and integrates. Not a partnership claim. */
   brands: ["Siemens", "Schneider Electric", "Delta", "LS Electric", "Wecon"],
 } as const;

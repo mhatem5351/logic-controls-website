@@ -15,7 +15,7 @@ export default defineConfig({
   integrations: [
     sitemap({
       i18n: { defaultLocale: "en", locales: { en: "en", ar: "ar", zh: "zh-Hans", tr: "tr" } },
-      filter: (page) => !page.includes("/thanks/") && !page.includes("/styleguide/") && page !== "https://logic-controls.com/",
+      filter: (page) => !page.includes("/thanks/") && !page.includes("/styleguide/") && !page.includes("/lab/") && page !== "https://logic-controls.com/",
     }),
   ],
   fonts: [
@@ -34,7 +34,7 @@ export default defineConfig({
       cssVariable: "--font-arabic",
       weights: ["300 900"],
       styles: ["normal"],
-      subsets: ["arabic"],
+      subsets: ["arabic", "latin"],
       fallbacks: ["Segoe UI", "Tahoma", "sans-serif"],
     },
   ],

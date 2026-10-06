@@ -11,3 +11,4 @@ dist/
 /client-data/facebook/raw/
 /*.png
 /*.jpg
+/client-data/

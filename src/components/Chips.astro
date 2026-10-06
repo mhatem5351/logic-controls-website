@@ -1,0 +1,39 @@
+---
+/**
+ * HMI-style spec chips.
+ * - `items` as separate chips (tags), or `joined` to render one chip "PLC · HMI · VFD".
+ * - `led` adds a status lamp to the first chip ("amber" default, "green" = running, "blue").
+ * Text inside chips is never translated if it is a technical code; wrap codes in the data, not here.
+ */
+interface Props {
+  items: string[];
+  joined?: boolean;
+  led?: boolean | "amber" | "green" | "blue";
+  size?: "sm" | "md";
+  class?: string;
+  /** Accessible name for the list (e.g. "Technologies used"). */
+  label?: string;
+}
+const { items, joined = false, led = false, size = "md", class: className, label } = Astro.props;
+const ledColor = led === true || led === "amber" ? "var(--color-signal-400)" : led === "green" ? "#2bd47d" : led === "blue" ? "var(--color-royal-400)" : null;
+const chipBase = [
+  "inline-flex items-center gap-2 rounded-xs border type-label",
+  size === "sm" ? "px-2 py-1 text-[0.6875rem]" : "px-2.5 py-1.5",
+  "border-charcoal-200 bg-charcoal-50 text-charcoal-700",
+  "in-[.on-dark]:border-white/12 in-[.on-dark]:bg-white/[0.04] in-[.on-dark]:text-navy-200",
+];
+const list = joined ? [items.join(" · ")] : items;
+/** Latin-only technical codes (PLC, 24 VDC, LS XGB…) keep the mono HMI look and LTR order on every locale. */
+const isCode = (s: string) => /^[\x20-\x7E·]+$/.test(s);
+---
+
+<ul class:list={["flex flex-wrap gap-2", className]} aria-label={label} role="list">
+  {
+    list.map((item, i) => (
+      <li class:list={chipBase} lang={isCode(item) ? "en" : undefined} dir={isCode(item) ? "ltr" : undefined}>
+        {ledColor && i === 0 && <span class="lc-led" style={`--led:${ledColor}`} aria-hidden="true" />}
+        <span>{item}</span>
+      </li>
+    ))
+  }
+</ul>

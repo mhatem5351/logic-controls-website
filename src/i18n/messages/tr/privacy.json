@@ -1,0 +1,125 @@
+{
+  "seo": {
+    "title": "Gizlilik Bildirimi | Logic Controls",
+    "description": "Logic Controls'un bu sitede gönderilen kişisel verileri Mısır'ın 151 sayılı Kişisel Verilerin Korunması Kanunu (2020) uyarınca nasıl işleyip koruduğu."
+  },
+  "h1": "Gizlilik bildirimi",
+  "lastUpdated": "Son güncelleme: 6 Ekim 2026",
+  "intro": [
+    "Bu bildirim, Logic Controls'un bu web sitesi üzerinden hangi kişisel verileri topladığını, bunları neden topladığını, ne kadar süre sakladığını ve haklarınızı nasıl kullanabileceğinizi açıklar.",
+    "Mısır'ın 2020 tarihli ve 151 sayılı Kişisel Verilerin Korunması Kanunu'na ve Uygulama Yönetmeliği'ne uygun hareket ederiz."
+  ],
+  "sections": [
+    {
+      "title": "Biz kimiz",
+      "paragraphs": [
+        "Logic Controls, Mısır'ın Gize iline bağlı 6 Ekim Şehri'nde yerleşik bir endüstriyel otomasyon şirketidir. Bu bildirimde açıklanan kişisel verilerden biz sorumluyuz. Bize {email} adresinden ulaşabilirsiniz."
+      ],
+      "items": []
+    },
+    {
+      "title": "Topladığımız veriler",
+      "paragraphs": [
+        "Teklif formunu gönderdiğinizde girdiğiniz bilgiler bize ulaşır:"
+      ],
+      "items": [
+        "Adınız, şirketiniz ve cep telefonu veya WhatsApp numaranız",
+        "Verdiyseniz e-posta adresiniz",
+        "Verdiyseniz sektörünüz, tesis konumunuz ve zaman planınız",
+        "Makinenizin veya projenizin açıklaması",
+        "Size nasıl ulaşılmasını tercih ettiğiniz ve kullandığınız sayfanın dili"
+      ]
+    },
+    {
+      "title": "Teknik veriler",
+      "paragraphs": [
+        "Formu spam'e karşı korumak için Cloudflare Turnstile, formu bir kişinin gönderdiğini doğrulamak amacıyla tarayıcınızdan IP adresiniz ve tarayıcı özellikleri gibi teknik bilgileri işler.",
+        "Ziyaretleri Cloudflare Web Analytics ile ölçüyoruz. Bu araç çerez kullanmaz ve ziyaretçilerin tek tek profilini oluşturmaz. Biz yalnızca sayfa görüntüleme sayısı gibi toplam rakamları görürüz."
+      ],
+      "items": []
+    },
+    {
+      "title": "Verilerinizi neden kullanıyoruz",
+      "paragraphs": [],
+      "items": [
+        "Talebinize yanıt vermek, teklif hazırlamak ve projenizi takip etmek için",
+        "Bu web sitesini ve formu spam'e ve kötüye kullanıma karşı korumak için",
+        "Ziyaretçilerin hangi sayfaları kullandığını toplam rakamlar üzerinden anlamak için"
+      ]
+    },
+    {
+      "title": "Hukuki dayanak",
+      "paragraphs": [
+        "Form üzerinden gönderdiğiniz verileri, formdaki kutucuğu işaretleyerek verdiğiniz onaya ve teklif hazırlanması gibi olası bir sözleşme öncesinde adım atmamızı talep etmenize dayanarak işleriz. Teknik verileri ise web sitesinin güvenliğini sağlamak için işleriz."
+      ],
+      "items": []
+    },
+    {
+      "title": "Verilerinizi kimler alır",
+      "paragraphs": [
+        "Talebiniz, teklifleri ve projeleri yürüten Logic Controls çalışanları tarafından okunur. Bu web sitesini işletmek ve mesajlarınızı almak için hizmet sağlayıcılardan yararlanıyoruz: Cloudflare (barındırma, form işleme, spam koruması ve ziyaret istatistikleri) ve e-posta hizmet sağlayıcımız. Bize WhatsApp üzerinden ulaşırsanız WhatsApp'ın kendi koşulları da geçerlidir.",
+        "Verilerinizi satmayız, reklam amacıyla paylaşmayız ve ayrı bir onayınız olmadan size pazarlama mesajı göndermeyiz."
+      ],
+      "items": []
+    },
+    {
+      "title": "Mısır dışına aktarım",
+      "paragraphs": [
+        "Hizmet sağlayıcılarımız verileri Mısır dışındaki sunucularda işleyebilir. Bu sağlayıcıları yalnızca bu web sitesini işletmek ve mesajlarınızı almak için kullanır, bu tür aktarımlar için kanunun öngördüğü adımları atarız."
+      ],
+      "items": []
+    },
+    {
+      "title": "Verilerinizi ne kadar süre saklıyoruz",
+      "paragraphs": [],
+      "items": [
+        "Projeye dönüşmeyen teklif talepleri: son iletişimimizden itibaren en fazla 24 ay saklanır, ardından silinir",
+        "Müşterimiz olursanız: proje, garanti ve yasal yükümlülüklerimiz için gerekli olduğu sürece"
+      ]
+    },
+    {
+      "title": "Çerezler",
+      "paragraphs": [
+        "Bu web sitesi reklam veya takip çerezleri kullanmaz.",
+        "Dil seçiciyle bir dil seçerseniz, siteyi bir sonraki ziyaretinizde sizin dilinizde açabilmek için lang adlı küçük bir işlevsel çerez saklarız. Bu çerez yalnızca dil kodunu içerir ve bir yıl sonra sona erer."
+      ],
+      "items": []
+    },
+    {
+      "title": "Haklarınız",
+      "paragraphs": [
+        "Mısır'ın Kişisel Verilerin Korunması Kanunu kapsamında şu haklara sahipsiniz:"
+      ],
+      "items": [
+        "Hakkınızda hangi kişisel verileri tuttuğumuzu öğrenmek ve bunların bir kopyasını almak",
+        "Verilerinizin düzeltilmesini veya güncellenmesini istemek",
+        "Verilerinizin silinmesini veya işlenmesinin durdurulmasını istemek",
+        "Onayınızı istediğiniz zaman geri çekmek",
+        "Verilerinizin işlenmesine itiraz etmek",
+        "Verilerinizi etkileyen bir veri ihlali olursa bilgilendirilmek",
+        "Kişisel Verileri Koruma Merkezi'ne şikâyette bulunmak"
+      ]
+    },
+    {
+      "title": "Haklarınızı nasıl kullanabilirsiniz",
+      "paragraphs": [
+        "Bize {email} adresine e-posta gönderin veya {phone} numarasını arayın. Bir talep üzerine işlem yapmadan önce kimliğinizi doğrulamanızı isteyebiliriz."
+      ],
+      "items": []
+    },
+    {
+      "title": "Güvenlik",
+      "paragraphs": [
+        "Web sitesi şifreli bağlantı (HTTPS) kullanır. Teklif taleplerine erişim yalnızca bunlara ihtiyaç duyan çalışanlarla sınırlıdır ve form otomatik spam'e karşı korunur."
+      ],
+      "items": []
+    },
+    {
+      "title": "Bu bildirimdeki değişiklikler",
+      "paragraphs": [
+        "Web sitemiz veya mevzuat değiştiğinde bu bildirimi güncelleyebiliriz. Sayfanın başındaki tarih en güncel sürümü gösterir."
+      ],
+      "items": []
+    }
+  ]
+}

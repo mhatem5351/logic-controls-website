@@ -1,5 +1,7 @@
 {
   "siteName": "Logic Controls",
-  "defaultTitle": "Logic Controls — Industrial Automation & PLC Control Systems in Egypt",
-  "defaultDescription": "Logic Controls designs, builds and commissions PLC control panels, HMI/SCADA and machine automation for factories in Egypt — food & beverage, pharma, cosmetics and packaging."
+  "defaultTitle": "Logic Controls | Mısır'da PLC ve Makine Otomasyonu",
+  "defaultDescription": "Mısır'daki fabrikalar için otomasyon panoları, PLC/HMI programlama, SCADA ve devreye alma: gıda, süt, ilaç, kozmetik, ambalaj. 50+ tamamlanmış proje.",
+  "organizationDescription": "Mısır'ın Gize iline bağlı 6 Ekim Şehri'nde endüstriyel otomasyon şirketi. Otomasyon panoları tasarlar; PLC, HMI ve SCADA programlar; makineleri ve proses hatlarını devreye alır.",
+  "ogImageAlt": "Logic Controls: Mısır'daki fabrikalar için PLC kontrol sistemleri ve makine otomasyonu"
 }

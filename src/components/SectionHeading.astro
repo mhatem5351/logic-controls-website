@@ -1,0 +1,39 @@
+---
+/**
+ * Section heading: optional index ("01"), eyebrow with the slanted bar, title, lead, optional swoosh.
+ * Colours adapt automatically inside dark sections (.on-dark).
+ */
+import Swoosh from "./Swoosh.astro";
+interface Props {
+  title: string;
+  eyebrow?: string;
+  lead?: string;
+  /** Technical-drawing style index shown before the eyebrow, e.g. "01". */
+  index?: string;
+  align?: "start" | "center";
+  as?: "h1" | "h2" | "h3";
+  /** Visual size, independent of the heading level. */
+  size?: "display" | "h1" | "h2" | "h3";
+  swoosh?: boolean;
+  id?: string;
+  class?: string;
+}
+const { title, eyebrow, lead, index, align = "start", as: Tag = "h2", size = Tag === "h1" ? "h1" : Tag === "h3" ? "h3" : "h2", swoosh = false, id, class: className } = Astro.props;
+const center = align === "center";
+---
+
+<header class:list={["max-w-3xl", center ? "mx-auto text-center" : "text-start", className]}>
+  {
+    (eyebrow || index) && (
+      <p class:list={["mb-4 flex items-center gap-3 type-label text-royal-700 in-[.on-dark]:text-navy-200", center && "justify-center"]}>
+        {index && <span class="font-mono text-charcoal-600 in-[.on-dark]:text-navy-400 ltr" dir="ltr">{index}</span>}
+        <span class="slant-bar text-royal-600 in-[.on-dark]:text-signal-400" aria-hidden="true" />
+        {eyebrow && <span>{eyebrow}</span>}
+      </p>
+    )
+  }
+  <Tag id={id} class:list={[`type-${size}`, "text-navy-950 in-[.on-dark]:text-white"]} set:html={title} />
+  {swoosh && <Swoosh class:list={["mt-4 w-36 sm:w-44", center && "mx-auto"]} />}
+  {lead && <p class="mt-5 type-lead text-charcoal-600 in-[.on-dark]:text-navy-200" set:html={lead} />}
+  <slot />
+</header>

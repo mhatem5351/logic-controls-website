@@ -1,0 +1,64 @@
+{
+  "seo": {
+    "title": "Logic Controls Hakkında | Mısır'da Otomasyon Mühendisleri",
+    "description": "Logic Controls, Mısır'ın 6 Ekim Şehri'nde bir endüstriyel otomasyon şirketidir. 2025'te, 4+ yıllık deneyime sahip mühendisler tarafından kuruldu."
+  },
+  "h1": "Logic Controls hakkında",
+  "lead": "Gize, 6 Ekim Şehri'nde endüstriyel otomasyon mühendisleriyiz. Mısır'daki fabrikalar için kontrol sistemleri tasarlıyor, programlıyor ve devreye alıyoruz.",
+  "story": {
+    "title": "Hikâyemiz",
+    "paragraphs": [
+      "Logic Controls 2025'te kuruldu. Şirketimiz genç, ancak mühendislik ekibimiz dört yılı aşkın endüstriyel otomasyon deneyimine ve 50'yi aşkın tamamlanmış projeye sahip.",
+      "Bu projeler gıda ve süt makinelerini, ilaç kaplamayı, kozmetik dolumu, etiketleme ve şişe baskıyı, beton santrallerini, otel çamaşır makinelerini ve test ekipmanlarını kapsıyor; Siemens, Schneider Electric, Delta, LS Electric ve Wecon platformlarında.",
+      "Logic Controls'u, Mısır'daki fabrikalara tüm kontrol sistemi için tek bir mühendislik ekibi sunmak amacıyla kurduk: tasarım, pano, programlama, devreye alma ve destek."
+    ]
+  },
+  "mission": {
+    "title": "Misyonumuz",
+    "text": "Mısır'daki fabrikaların işletebileceği, bakımını yapabileceği ve genişletebileceği kontrol sistemleri sunmak: güvenilir, belgelenmiş ve yerel desteği olan platformlar üzerine kurulu."
+  },
+  "values": {
+    "title": "Değerlerimiz",
+    "items": [
+      {
+        "title": "Dürüst mühendislik",
+        "text": "Neler yapabileceğimizi açıkça söyler, tam olarak teslim edeceğimiz işin teklifini veririz. Bir retrofit değmeyecekse bunu size söyleriz."
+      },
+      {
+        "title": "Belgelenmiş iş",
+        "text": "Her sistem için çizimler, I/O listeleri ve kullanım notları; böylece ekibiniz kimsenin hafızasına bağımlı kalmaz."
+      },
+      {
+        "title": "Önce güvenlik",
+        "text": "Üretimden önce kilitlemeler, acil stoplar ve testler. Zaman kazanmak için güvenlikten taviz vermeyiz."
+      },
+      {
+        "title": "Tesise yakın",
+        "text": "Mısır'da yerleşik, sahanıza gelen ve operatörlerinizin dilini konuşan mühendisler."
+      }
+    ]
+  },
+  "why": {
+    "title": "Neden bizi seçmelisiniz",
+    "items": [
+      "Elektrik tasarımından ilk çalıştırmaya ve desteğe kadar tek ekip",
+      "Alışkanlıklarımıza göre değil, ihtiyaçlarınıza göre seçilen beş PLC ve HMI platformu",
+      "Makine otomasyonu ve proses kontrolü deneyimi aynı ekipte",
+      "Arapça, İngilizce veya iki dilli HMI ekranları",
+      "Her I/O noktası, kilitleme ve alarm üretimden önce test edilir",
+      "Net kapsam ve dürüst sınırlar: kanıtlayamayacağımız iddialarda bulunmayız"
+    ]
+  },
+  "numbers": {
+    "title": "Rakamlarla"
+  },
+  "location": {
+    "title": "Neredeyiz",
+    "text": "Merkezimiz Büyük Kahire'de, Gize'ye bağlı 6 Ekim Şehri'nde. Mısır'ın sanayi bölgelerinde sahada çalışıyoruz.",
+    "note": "Toplantılar genellikle tesisinizde yapılır. Ziyaret ayarlamak için bize ulaşın."
+  },
+  "cta": {
+    "title": "Makineniz veya hattınız hakkında konuşalım",
+    "text": "Bir açıklama ve fotoğraflar gönderin ya da WhatsApp'tan bir mühendise yazın."
+  }
+}

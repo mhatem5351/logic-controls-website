@@ -1,0 +1,90 @@
+---
+/**
+ * Click-to-play self-hosted video (no third-party embeds — works from mainland China).
+ * Native <video controls preload="none"> underneath; a branded play overlay is added on top and removed on play.
+ * Captions-ready: pass `tracks` (WebVTT). Vertical (9:16) reels are centred at a phone-like width.
+ */
+import type { ImageMetadata } from "astro";
+import { getImage } from "astro:assets";
+import { getMessages, type Locale } from "~/i18n";
+import Icon from "./Icon.astro";
+import { fmt } from "./nav";
+
+interface Track {
+  src: string;
+  srclang: string;
+  label: string;
+  kind?: "captions" | "subtitles";
+  default?: boolean;
+}
+interface Props {
+  src: string;
+  poster: string | ImageMetadata;
+  /** Accessible title (also used for the play button label). */
+  title: string;
+  aspect?: "16/9" | "9/16" | "4/3" | "1/1";
+  /** Optional visible caption under the player. */
+  caption?: string;
+  /** e.g. "0:42" — shown on the overlay. */
+  duration?: string;
+  tracks?: Track[];
+  locale?: Locale;
+  class?: string;
+}
+const locale = (Astro.props.locale ?? Astro.currentLocale ?? "en") as Locale;
+const t = getMessages(locale).ui;
+const { src, poster, title, aspect = "16/9", caption, duration, tracks = [], class: className } = Astro.props;
+const posterUrl = typeof poster === "string" ? poster : (await getImage({ src: poster, width: 1280, format: "webp" })).src;
+const vertical = aspect === "9/16";
+---
+
+<figure class:list={["lc-video", vertical && "mx-auto w-full max-w-sm", className]}>
+  <div class="chamfer-lg relative overflow-hidden bg-navy-950" style={`aspect-ratio: ${aspect}`}>
+    <video class="absolute inset-0 size-full bg-navy-950 object-cover" controls preload="none" playsinline poster={posterUrl} title={title}>
+      <source src={src} type="video/mp4" />
+      {tracks.map((tr) => <track kind={tr.kind ?? "captions"} src={tr.src} srclang={tr.srclang} label={tr.label} default={tr.default} />)}
+    </video>
+    <div class="lc-video-overlay absolute inset-0 hidden">
+      <button
+        type="button"
+        class="lc-video-play group grid size-full cursor-pointer place-items-center bg-[radial-gradient(circle,rgb(4_14_39/0.15),rgb(4_14_39/0.55))] text-white"
+        aria-label={fmt(t.video.playNamed, { title })}
+      >
+        <span class="relative grid size-20 place-items-center rounded-full border border-white/40 bg-navy-950/60 backdrop-blur-sm transition duration-300 group-hover:scale-105 group-hover:border-signal-300 group-hover:bg-royal-600 sm:size-24">
+          <span class="absolute -inset-2 rounded-full border border-white/15" aria-hidden="true"></span>
+          <Icon name="play" size={30} class="translate-x-0.5 text-white" />
+        </span>
+      </button>
+      {
+        duration && (
+          <span aria-hidden="true" class="pointer-events-none absolute end-4 bottom-4 border border-white/20 bg-navy-950/70 px-2 py-1 font-mono text-xs text-white ltr" dir="ltr">
+            {duration}
+          </span>
+        )
+      }
+    </div>
+  </div>
+  {caption && <figcaption class="mt-3 text-sm text-charcoal-600 in-[.on-dark]:text-navy-200">{caption}</figcaption>}
+</figure>
+
+<style>
+  /* The overlay only appears once JS is available to remove it; without JS the native controls are used. */
+  :global(.js) .lc-video-overlay {
+    display: block;
+  }
+</style>
+
+<script>
+  document.querySelectorAll<HTMLElement>(".lc-video-overlay").forEach((overlay) => {
+    const video = overlay.parentElement?.querySelector("video");
+    const btn = overlay.querySelector("button");
+    if (!video || !btn) return;
+    video.controls = false; // native controls return on play; without JS they are always there
+    btn.addEventListener("click", () => {
+      overlay.remove();
+      video.controls = true;
+      video.play().catch(() => {});
+      video.focus();
+    });
+  });
+</script>

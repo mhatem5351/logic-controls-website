@@ -1,0 +1,11 @@
+---
+/* cosmetics-personal-care — TODO */
+import Frame from "../ArtFrame.astro";
+import { uid, type ArtProps } from "../types";
+const p = Astro.props as ArtProps;
+const u = uid("cpc");
+---
+
+<Frame {...p} uid={u} name="cpc">
+  <rect class="f" x="140" y="100" width="120" height="120"></rect>
+</Frame>

@@ -1,0 +1,151 @@
+---
+/**
+ * Language switcher — native names (العربية / English / 中文 / Türkçe), keeps the current page,
+ * remembers the choice in the `lang` cookie (read by the Worker on "/").
+ *
+ * variant: "inline" (row of links: utility bar, footer) · "menu" (globe button + popover list) · "grid" (2×2, mobile drawer)
+ */
+import { getMessages, type Locale } from "~/i18n";
+import Icon from "./Icon.astro";
+import { languageLinks } from "./nav";
+import { uid } from "./uid";
+
+interface Props {
+  locale: Locale;
+  /** Current path without the locale prefix. */
+  path: string;
+  variant?: "inline" | "menu" | "grid";
+  class?: string;
+}
+const { locale, path, variant = "inline", class: className } = Astro.props;
+const t = getMessages(locale).ui;
+const links = languageLinks(path);
+const popId = uid("lang");
+const SHORT: Record<Locale, string> = { en: "EN", ar: "ع", zh: "中", tr: "TR" };
+---
+
+{
+  variant === "inline" && (
+    <ul role="list" aria-label={t.a11y.language} class:list={["flex items-center gap-1", className]}>
+      {links.map((l) => (
+        <li>
+          <a
+            href={l.href}
+            hreflang={l.hreflang}
+            lang={l.htmlLang}
+            dir={l.dir}
+            data-set-lang={l.locale}
+            aria-current={l.locale === locale ? "true" : undefined}
+            class:list={[
+              "inline-flex min-h-6 items-center px-2 py-0.5 transition-colors",
+              l.locale === locale
+                ? "font-bold text-white underline decoration-signal-400 decoration-2 underline-offset-[6px]"
+                : "text-navy-200 hover:text-white",
+              l.locale === "ar" && "text-[1.0625em]",
+            ]}
+          >
+            {l.native}
+          </a>
+        </li>
+      ))}
+    </ul>
+  )
+}
+
+{
+  variant === "menu" && (
+    <div class:list={["lc-lang-menu relative", className]}>
+      <button
+        type="button"
+        popovertarget={popId}
+        class="inline-flex h-10 min-w-10 items-center justify-center gap-1.5 border border-white/20 px-2.5 text-sm font-semibold text-white transition-colors hover:border-white/50 hover:bg-white/5"
+        style={`anchor-name: --${popId}`}
+      >
+        <Icon name="globe" size={18} />
+        <span aria-hidden="true">{SHORT[locale]}</span>
+        <span class="sr-only">{t.a11y.language}: {links.find((l) => l.locale === locale)?.native}</span>
+      </button>
+      <div
+        id={popId}
+        popover
+        class="lc-lang-pop on-dark m-0 w-56 border border-white/12 bg-navy-900 p-1.5 text-navy-100 shadow-header"
+        style={`position-anchor: --${popId}`}
+      >
+        <p class="px-3 pt-2 pb-1 type-label text-navy-300">{t.a11y.language}</p>
+        <ul role="list">
+          {links.map((l) => (
+            <li>
+              <a
+                href={l.href}
+                hreflang={l.hreflang}
+                lang={l.htmlLang}
+                data-set-lang={l.locale}
+                aria-current={l.locale === locale ? "true" : undefined}
+                class:list={[
+                  "flex min-h-11 items-center justify-between gap-3 px-3 text-start transition-colors hover:bg-white/8",
+                  l.locale === locale ? "font-bold text-white" : "text-navy-100",
+                ]}
+              >
+                <span>{l.native}</span>
+                {l.locale === locale && <Icon name="check" size={16} class="text-signal-400" />}
+              </a>
+            </li>
+          ))}
+        </ul>
+      </div>
+    </div>
+  )
+}
+
+{
+  variant === "grid" && (
+    <ul role="list" aria-label={t.a11y.language} class:list={["grid grid-cols-2 gap-2", className]}>
+      {links.map((l) => (
+        <li>
+          <a
+            href={l.href}
+            hreflang={l.hreflang}
+            lang={l.htmlLang}
+            data-set-lang={l.locale}
+            aria-current={l.locale === locale ? "true" : undefined}
+            class:list={[
+              "flex min-h-12 items-center justify-center border px-3 text-center font-semibold transition-colors",
+              l.locale === locale
+                ? "border-signal-400 bg-signal-400/10 text-white"
+                : "border-white/15 text-navy-100 hover:border-white/40 hover:text-white",
+            ]}
+          >
+            {l.native}
+          </a>
+        </li>
+      ))}
+    </ul>
+  )
+}
+
+<style>
+  /* Popover: anchored under the button where CSS anchor positioning exists, otherwise pinned under the header. */
+  .lc-lang-pop {
+    position: fixed;
+    inset: auto;
+    top: calc(var(--header-h) + 0.25rem);
+    inset-inline-end: max(var(--spacing-gutter), calc((100vw - var(--container-site)) / 2));
+  }
+  @supports (position-anchor: --a) {
+    .lc-lang-pop {
+      top: anchor(bottom);
+      inset-inline-end: anchor(end);
+      margin-top: 0.5rem;
+    }
+  }
+</style>
+
+<script>
+  // Remember the chosen language for the "/" redirect (Worker reads the `lang` cookie).
+  document.addEventListener("click", (event) => {
+    const link = (event.target as Element | null)?.closest<HTMLAnchorElement>("a[data-set-lang]");
+    if (link?.dataset.setLang) {
+      document.cookie = `lang=${link.dataset.setLang}; path=/; max-age=31536000; samesite=lax`;
+    }
+  });
+</script>

@@ -1,0 +1,128 @@
+---
+/**
+ * Base page shell: <html lang dir>, SEO head, fonts, skip link, header, <main>, footer, floating contact button,
+ * Cloudflare Web Analytics beacon (production builds only).
+ */
+import { Font } from "astro:assets";
+import "~/styles/global.css";
+import { LOCALE_META, getMessages, type Locale } from "~/i18n";
+import { SITE } from "~/data/site";
+import Seo from "~/components/Seo.astro";
+import Header from "~/components/Header.astro";
+import Footer from "~/components/Footer.astro";
+import WhatsAppButton from "~/components/WhatsAppButton.astro";
+
+interface Props {
+  locale: Locale;
+  /** Page title without the brand suffix (omit on the home page). */
+  title?: string;
+  description?: string;
+  /** Path without the locale prefix: "" (home), "services", "services/control-panels". */
+  path?: string;
+  noindex?: boolean;
+  jsonLd?: Record<string, unknown> | Array<Record<string, unknown>>;
+  /** The page starts with a dark <Hero>: header is transparent until scrolled. */
+  heroDark?: boolean;
+  /** Preload the LCP image (home hero poster). */
+  preloadImage?: { href: string; srcset?: string; sizes?: string };
+  ogImage?: string;
+  /** Pre-filled WhatsApp message for the floating button (defaults to the generic one). */
+  whatsappMessage?: string;
+  /** Render header/footer/floating button (false for bare pages such as 404). */
+  chrome?: boolean;
+  /** Emit hreflang alternates (false for pages that only exist once, e.g. 404). */
+  alternates?: boolean;
+  /** Emit canonical + og:url (false for 404). */
+  canonical?: boolean;
+  bodyClass?: string;
+}
+
+const {
+  locale,
+  title,
+  description,
+  path = "",
+  noindex = false,
+  jsonLd,
+  heroDark = false,
+  preloadImage,
+  ogImage,
+  whatsappMessage,
+  chrome = true,
+  alternates = true,
+  canonical = true,
+  bodyClass,
+} = Astro.props;
+
+const meta = LOCALE_META[locale];
+const t = getMessages(locale).ui;
+const latinPreload =
+  locale === "ar"
+    ? false
+    : locale === "tr"
+      ? [{ subset: "latin", style: "normal" }, { subset: "latin-ext", style: "normal" }]
+      : [{ subset: "latin", style: "normal" }, { subset: "latin", style: "italic" }];
+const beacon = JSON.stringify({ token: SITE.webAnalyticsToken });
+---
+
+<!doctype html>
+<html lang={meta.htmlLang} dir={meta.dir}>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <script is:inline>document.documentElement.classList.add("js");</script>
+    <Seo
+      locale={locale}
+      title={title}
+      description={description}
+      path={path}
+      noindex={noindex}
+      alternates={alternates}
+      canonical={canonical}
+      jsonLd={jsonLd}
+      ogImage={ogImage}
+    />
+    <meta name="theme-color" content="#040e27" />
+    <meta name="color-scheme" content="light" />
+    <meta name="format-detection" content="telephone=no" />
+    <link rel="icon" href="/favicon.ico" sizes="32x32" />
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+    <link rel="manifest" href="/site.webmanifest" />
+    {
+      preloadImage && (
+        <link
+          rel="preload"
+          as="image"
+          href={preloadImage.href}
+          imagesrcset={preloadImage.srcset}
+          imagesizes={preloadImage.sizes}
+          fetchpriority="high"
+        />
+      )
+    }
+    <Font cssVariable="--font-latin" preload={latinPreload} />
+    {locale === "ar" && <Font cssVariable="--font-arabic" preload={[{ subset: "arabic" }]} />}
+    <noscript><style>.lc-header[data-hero] .lc-header-bg{background:rgb(4 14 39/.94)!important}</style></noscript>
+    <slot name="head" />
+  </head>
+  <body class:list={["min-h-dvh bg-white", bodyClass]}>
+    <a
+      href="#main"
+      class="sr-only z-[100] bg-signal-400 px-4 py-3 font-bold text-navy-950 focus:not-sr-only focus:fixed focus:start-4 focus:top-4"
+    >
+      {t.a11y.skip}
+    </a>
+    {chrome && <Header locale={locale} path={path} heroDark={heroDark} />}
+    <main id="main" tabindex="-1" class="outline-none">
+      <slot />
+    </main>
+    {chrome && <Footer locale={locale} path={path} />}
+    {chrome && <WhatsAppButton locale={locale} message={whatsappMessage} />}
+    {
+      import.meta.env.PROD && SITE.webAnalyticsToken && (
+        <script is:inline defer src="https://static.cloudflareinsights.com/beacon.min.js" data-cf-beacon={beacon} />
+      )
+    }
+  </body>
+</html>

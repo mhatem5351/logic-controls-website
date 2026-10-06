@@ -1,0 +1,621 @@
+{
+  "index": {
+    "seo": {
+      "title": "Industrial Automation Services in Egypt | Logic Controls",
+      "description": "Control panels, PLC and HMI programming, machine automation and retrofits, process control, SCADA, commissioning and support for plants in Egypt."
+    },
+    "h1": "Automation services, from design to start-up",
+    "intro": [
+      "We deliver the electrical and control side of machines and process lines: design, panels, programming, testing, commissioning and support.",
+      "Take the full scope, or only the part you need, such as programming or commissioning."
+    ],
+    "engagement": {
+      "title": "Ways to work with us",
+      "items": [
+        {
+          "title": "Complete control system",
+          "text": "Design, panel, PLC and HMI programs, testing and commissioning, delivered by one team."
+        },
+        {
+          "title": "Programming or engineering only",
+          "text": "You build the panel or the machine. We write the program, design the screens or produce the drawings."
+        },
+        {
+          "title": "Commissioning only",
+          "text": "For equipment supplied by others: instrument and I/O checks, logic tests, start-up and punch-list closure."
+        },
+        {
+          "title": "Support after start-up",
+          "text": "Troubleshooting, program changes, preventive maintenance and training, on terms agreed in writing."
+        }
+      ]
+    },
+    "faq": {
+      "title": "Common questions about our services",
+      "items": [
+        {
+          "q": "Do you work only on systems you built?",
+          "a": "No. We also program, commission, upgrade and support machines built by others, after we review the program and documents or survey the machine."
+        },
+        {
+          "q": "Do you do the mechanical work on machines?",
+          "a": "No. We handle the electrical and control side: panels, drives, sensors, PLC, HMI and SCADA. We work alongside your mechanical team or the machine builder."
+        },
+        {
+          "q": "Will we receive the program files and drawings?",
+          "a": "Drawings are part of every delivery. Program files, passwords and ownership are written into the quote, so you know before you order what you will receive."
+        },
+        {
+          "q": "Do you hold certifications such as UL or CE?",
+          "a": "No. We design following IEC 60204-1 and IEC 61439 practice, and we document our work. We do not issue UL listing or CE marking."
+        }
+      ]
+    }
+  },
+  "items": {
+    "control-panels": {
+      "title": "Electrical design and control panels",
+      "navTitle": "Control panels",
+      "summary": "Schematics, I/O lists and PLC control panels, designed, assembled, wired and tested for your machine or process.",
+      "seoTitle": "Control Panel Design & Assembly in Egypt | Logic Controls",
+      "seoDescription": "PLC control panels designed, wired and tested for machines and process lines in Egypt. Schematics, I/O list and bill of materials included.",
+      "h1": "Electrical design and PLC control panels",
+      "intro": [
+        "A control panel is only as good as its drawings. We start with the electrical design: power distribution, motor circuits, safety circuits and the full I/O list. Then we assemble, wire and label the panel and test it before it reaches your site.",
+        "We build panels for new machines, for upgrades of existing machines and for process equipment. Components are chosen for your budget and for spare parts you can buy in Egypt."
+      ],
+      "capabilities": [
+        {
+          "title": "Electrical design",
+          "text": "Schematic drawings of power and control circuits, panel layouts, cable lists and the full I/O list."
+        },
+        {
+          "title": "PLC and motor-control panels",
+          "text": "PLC, HMI, VFDs, contactors, overload relays, circuit breakers, relays and terminals in one enclosure, sized for your machine."
+        },
+        {
+          "title": "Wiring and labeling",
+          "text": "Wiring in cable ducts, ferrules and wire numbers, and labeled devices and terminals that match the drawings."
+        },
+        {
+          "title": "Safety circuits",
+          "text": "Emergency-stop and door circuits, phase monitoring and interlocks, designed into both the wiring and the control logic."
+        },
+        {
+          "title": "Testing before delivery",
+          "text": "Wiring checks, power-up tests and I/O simulation with the PLC program before the panel leaves for site."
+        },
+        {
+          "title": "Design practice",
+          "text": "Panels designed following IEC 60204-1 (electrical equipment of machines) and IEC 61439 (low-voltage assemblies) practice."
+        }
+      ],
+      "deliverables": [
+        "Schematic drawings and panel layout",
+        "I/O list and bill of materials",
+        "Assembled, wired and labeled panel",
+        "Completed pre-delivery test checklist",
+        "As-built drawings after commissioning"
+      ],
+      "situations": [
+        "A new machine needs its control panel",
+        "An old relay panel should be replaced with a PLC",
+        "A panel has no drawings and needs documenting",
+        "An imported machine needs a local panel or changes to its panel"
+      ],
+      "faq": [
+        {
+          "q": "Do you supply the components, or do we?",
+          "a": "Either. We can source the full bill of materials, or build with components you supply. We prefer brands with spare-parts support in Egypt."
+        },
+        {
+          "q": "Which brands do you use inside the panel?",
+          "a": "It depends on your budget and preference. A recent panel used a Delta PLC, an LS Electric drive, Schneider Electric circuit breakers and a MEAN WELL power supply."
+        },
+        {
+          "q": "Do your panels follow a standard?",
+          "a": "Our panels are designed following IEC 60204-1 and IEC 61439 practice. We do not issue third-party certification such as UL listing or CE marking."
+        },
+        {
+          "q": "How long does a panel take?",
+          "a": "It depends on the size of the panel and on component availability. We give a delivery date in the quote, after the design is agreed."
+        }
+      ],
+      "cta": {
+        "title": "Need a control panel?",
+        "text": "Send the machine description, the motor list or the existing drawings. We will reply with questions or a quote."
+      }
+    },
+    "plc-hmi-programming": {
+      "title": "PLC and HMI programming",
+      "navTitle": "PLC and HMI programming",
+      "summary": "Clear, commented PLC logic and HMI screens for Siemens, Schneider Electric, Delta, LS Electric and Wecon, in Arabic, English or both.",
+      "seoTitle": "PLC & HMI Programming in Egypt | Logic Controls",
+      "seoDescription": "PLC programming and HMI screen design for Siemens, Delta, LS Electric, Schneider Electric and Wecon. Sequences, interlocks, alarms, recipes, Arabic HMIs.",
+      "h1": "PLC programming and HMI design",
+      "intro": [
+        "Good PLC code can be read by the next engineer. We write structured logic for machine sequences, interlocks, alarms and recipes, and comment it so your maintenance team can follow it.",
+        "On the HMI we design screens that operators understand at a glance: a process overview, manual and automatic modes, settings, recipes and an alarm page. Screens can be in Arabic, English or both."
+      ],
+      "capabilities": [
+        {
+          "title": "Machine sequences",
+          "text": "Step-by-step logic for feeding, filling, labeling, washing, sterilizing or batching, with manual and automatic modes."
+        },
+        {
+          "title": "Interlocks and alarms",
+          "text": "Safety and process interlocks, fault detection and alarm messages that tell the operator what to check."
+        },
+        {
+          "title": "Recipes and parameters",
+          "text": "Product recipes, step programs and setpoints that operators change on the HMI, without editing the PLC program."
+        },
+        {
+          "title": "HMI screen design",
+          "text": "Process mimics, status indicators, counters, settings pages and alarm lists on the HMI brand your machine uses."
+        },
+        {
+          "title": "Arabic and bilingual HMIs",
+          "text": "Arabic screens for local operators and English screens for engineers and visiting specialists."
+        },
+        {
+          "title": "Communication",
+          "text": "Links between the PLC, HMI, drives and instruments over Modbus RTU, Modbus TCP and Ethernet."
+        }
+      ],
+      "deliverables": [
+        "Tested PLC program with comments",
+        "HMI screens in the agreed languages",
+        "Alarm list and parameter list",
+        "Operating notes for operators and maintenance staff",
+        "Program files and access as agreed in the quote"
+      ],
+      "situations": [
+        "A new machine needs its control logic and screens",
+        "An existing program needs changes or new features",
+        "Operators struggle with unclear or English-only screens",
+        "The machine runs in manual because the automatic sequence never worked well"
+      ],
+      "faq": [
+        {
+          "q": "Which PLC and HMI brands do you program?",
+          "a": "Siemens (including S7-1200 and WinCC Professional), Schneider Electric, Delta, LS Electric and Wecon. We have also commissioned systems built on other controllers, such as MCGS HMIs."
+        },
+        {
+          "q": "Can you change a program that someone else wrote?",
+          "a": "Yes, if the program can be uploaded from the PLC or you have the project files. If the program is locked or lost, we document the machine and write a new one."
+        },
+        {
+          "q": "Will we receive the program files?",
+          "a": "Program files, passwords and ownership are written into the quote, so you know before you order what you will receive."
+        },
+        {
+          "q": "Can you move a machine from one PLC brand to another?",
+          "a": "Yes. This is common when spare parts for the old PLC are hard to find. See our machine retrofit service."
+        }
+      ],
+      "cta": {
+        "title": "Need a program written or changed?",
+        "text": "Tell us the PLC and HMI models and what the machine should do. Photos of the panel and screens help."
+      }
+    },
+    "machine-automation": {
+      "title": "Machine automation, drives and motion",
+      "navTitle": "Machine automation",
+      "summary": "Complete control systems for filling, labeling, printing, washing and test machines: PLC, HMI, VFDs, stepper and motion control.",
+      "seoTitle": "Machine Automation & Motion Control | Logic Controls Egypt",
+      "seoDescription": "Control systems for filling, labeling, printing and washing machines in Egypt: PLC, HMI, VFDs, stepper and motion control. For plants and machine builders.",
+      "h1": "Machine automation, drives and motion control",
+      "intro": [
+        "We automate single machines: fillers, labelers, bottle printers, washers and test rigs. One team handles the control design, the drives and the program, so the machine works as one system.",
+        "We work for factories that want to automate a machine they own, and for machine builders who need a control partner for the machines they make."
+      ],
+      "capabilities": [
+        {
+          "title": "Machine control systems",
+          "text": "Sequence control for feeding, filling, labeling, printing, washing and testing, with manual and automatic modes."
+        },
+        {
+          "title": "Variable-speed drives",
+          "text": "VFDs for conveyors, pumps, mixers, drums and fans: selection, wiring, parameter setup and control from the PLC."
+        },
+        {
+          "title": "Stepper and motion control",
+          "text": "Positioning and synchronization for labeling and printing: label length, dispense position and product spacing."
+        },
+        {
+          "title": "Sensors and product detection",
+          "text": "Bottle, label, level and position sensors that drive the sequence and detect missing or misaligned products."
+        },
+        {
+          "title": "Fast changeover",
+          "text": "Product and size settings stored as recipes, so a changeover is a selection on the HMI."
+        },
+        {
+          "title": "Support for machine builders",
+          "text": "Control design, programs you can reuse across a machine series, and start-up at your customer's site."
+        }
+      ],
+      "deliverables": [
+        "Control design and component list",
+        "PLC and HMI programs",
+        "Drive parameter settings",
+        "Manual and automatic sequences tested on the machine",
+        "Operator guide for daily use"
+      ],
+      "situations": [
+        "A new machine from a local builder needs its controls",
+        "A manual or semi-automatic machine should run automatically",
+        "Product changeovers take too long",
+        "Speed or accuracy is below what the machine should deliver"
+      ],
+      "faq": [
+        {
+          "q": "Do you build the mechanical parts of the machine?",
+          "a": "No. We handle the electrical and control side: panel, drives, sensors, PLC and HMI. We work alongside your mechanical team or the machine builder."
+        },
+        {
+          "q": "Can you improve filling or labeling accuracy on an existing machine?",
+          "a": "Often, yes. Accuracy depends on the mechanics, the sensors and the control timing. We review all three and tune what the control system can change. On our filling projects, tuning for filling accuracy was part of commissioning."
+        },
+        {
+          "q": "Which drives have you worked with?",
+          "a": "In recent projects: LS Electric M100, Schneider Electric Altivar and VEICHI VFDs, and Schneider Electric stepper drives. We can also work with the drive brand your machine already uses."
+        }
+      ],
+      "cta": {
+        "title": "Want a machine to run automatically?",
+        "text": "Send a video or photos of the machine and describe the sequence. We will suggest a control concept and a quote."
+      }
+    },
+    "machine-retrofits": {
+      "title": "Machine retrofits and control upgrades",
+      "navTitle": "Machine retrofits",
+      "summary": "Keep a good machine and replace its old controls: new PLC, HMI, drives and motion control, documented and tested, with a planned changeover.",
+      "seoTitle": "Machine Retrofit & PLC Upgrade in Egypt | Logic Controls",
+      "seoDescription": "Upgrade old machines instead of replacing them: new PLC, HMI, drives and motion control, with drawings and testing. Retrofit services across Egypt.",
+      "h1": "Machine retrofits and control-system upgrades",
+      "intro": [
+        "Many machines are mechanically sound but their controls are not: obsolete PLCs, missing programs, relay logic, worn wiring or spare parts that are no longer sold. Replacing the whole machine is expensive. Replacing the controls usually costs far less.",
+        "We survey the machine, document what is there and design a new control system around the existing mechanics. We test the new logic before the shutdown, so the changeover on site is as short as possible."
+      ],
+      "capabilities": [
+        {
+          "title": "Survey and documentation",
+          "text": "We trace the existing wiring and I/O, record the nameplates and produce the drawings the machine never had."
+        },
+        {
+          "title": "PLC and HMI replacement",
+          "text": "Relay logic or an obsolete PLC replaced with a current PLC and touch-screen HMI, with spare parts available in Egypt."
+        },
+        {
+          "title": "Motion and drive upgrades",
+          "text": "Old drives replaced and motion re-tuned for positioning and synchronization, as in our bottle printing retrofit."
+        },
+        {
+          "title": "Brand migration",
+          "text": "Move from a discontinued or hard-to-source platform to Siemens, Schneider Electric, Delta, LS Electric or Wecon."
+        },
+        {
+          "title": "New features",
+          "text": "Recipes, counters, clear alarms and data logging added while the controls are open."
+        },
+        {
+          "title": "Planned changeover",
+          "text": "New panel and program tested before the shutdown, and a step-by-step changeover plan agreed with your production team."
+        }
+      ],
+      "deliverables": [
+        "Survey notes and I/O list of the existing machine",
+        "New electrical drawings",
+        "New PLC and HMI programs",
+        "Changeover plan and on-site commissioning",
+        "Briefing for operators and maintenance staff"
+      ],
+      "situations": [
+        "The PLC or HMI is obsolete and spare parts are hard to find",
+        "There is no program backup or no drawings",
+        "Old relays and wiring cause frequent faults",
+        "You need recipes, counters, alarms or data logging on an old machine"
+      ],
+      "faq": [
+        {
+          "q": "Is a retrofit cheaper than a new machine?",
+          "a": "Usually, if the mechanics are in good condition, because the controls are only part of a machine's value. After the survey we tell you whether a retrofit is worth it."
+        },
+        {
+          "q": "How long will the machine be stopped?",
+          "a": "It depends on the machine. We prepare and test the new panel and program before the shutdown, so the on-site work is mainly installation, I/O checks and start-up. We agree the plan with you in advance."
+        },
+        {
+          "q": "Can you retrofit an imported machine?",
+          "a": "Yes. Imported machines often have the hardest-to-find spare parts. We document the existing system first and keep what still works."
+        }
+      ],
+      "cta": {
+        "title": "Have an old machine worth keeping?",
+        "text": "Send photos of the machine, the panel and the nameplates. We will tell you what a retrofit involves."
+      }
+    },
+    "process-control": {
+      "title": "Process control: temperature, pressure, CIP and batching",
+      "navTitle": "Process control",
+      "summary": "Control of pasteurization, sterilization, cooking, coating, CIP, batching and dosing, with recipes, interlocks and data logging.",
+      "seoTitle": "Process Control & Batching Systems in Egypt | Logic Controls",
+      "seoDescription": "PLC process control for pasteurizers, autoclaves, cookers, CIP, batching and dosing in Egypt. Temperature, pressure, time and recipe control.",
+      "h1": "Process control for thermal, CIP and batching systems",
+      "intro": [
+        "In food, dairy and pharma processes the product depends on the numbers: temperature, pressure, time, flow and dose. We build control systems that hold those numbers, stop the process when they are not met, and record what happened.",
+        "Our process work includes pasteurizers with CIP, an olive sterilization autoclave, a cheese cooker, a tablet coating machine, a concrete batching plant and laundry dosing."
+      ],
+      "capabilities": [
+        {
+          "title": "Temperature and pressure control",
+          "text": "Closed-loop control of steam, hot water and heating, with setpoints for each product."
+        },
+        {
+          "title": "Time and phase control",
+          "text": "Multi-phase cycles such as heating, holding, sterilizing and cooling, with time, temperature and pressure setpoints for each phase."
+        },
+        {
+          "title": "CIP sequences",
+          "text": "Cleaning-in-place cycles with timed steps, pump and valve control, and their own screens on the HMI."
+        },
+        {
+          "title": "Batching and dosing",
+          "text": "Weighing and dosing of raw materials, water, additives and chemicals, with mix recipes and batch sequences."
+        },
+        {
+          "title": "Product-safety interlocks",
+          "text": "Logic that holds or diverts product until process conditions are met, such as a pasteurizer flow-diversion valve."
+        },
+        {
+          "title": "Recipes and records",
+          "text": "Recipes for each product, and data logging for quality records and traceability."
+        }
+      ],
+      "deliverables": [
+        "Written control description: sequences, interlocks and alarms",
+        "Instrument and I/O list",
+        "PLC and HMI or SCADA programs with recipes",
+        "Loop checks and tuning at start-up",
+        "Data logging set up as agreed"
+      ],
+      "situations": [
+        "Temperatures or times vary between batches",
+        "Operators adjust valves by hand",
+        "Your quality team needs batch records",
+        "A new process skid needs its control system"
+      ],
+      "faq": [
+        {
+          "q": "Do you supply the instruments?",
+          "a": "We specify sensors, transmitters and valves and can source them, or we work with the instruments already on your equipment. Every instrument is checked at commissioning."
+        },
+        {
+          "q": "Can the system keep records for quality audits?",
+          "a": "Yes. Our process systems log key values and events, and the format is agreed per project. We do not provide formal computer-system validation, for example to 21 CFR Part 11."
+        },
+        {
+          "q": "Can you add CIP to an existing process?",
+          "a": "Often, yes, if the valves and pumps allow it. CIP can run inside the machine program, as in our pasteurizer projects, or as a separate sequence."
+        }
+      ],
+      "cta": {
+        "title": "Need tighter process control?",
+        "text": "Describe the process, the setpoints you need to hold and the instruments you have. We will propose a control solution."
+      }
+    },
+    "scada-data-logging": {
+      "title": "SCADA, monitoring and data logging",
+      "navTitle": "SCADA and data logging",
+      "summary": "SCADA screens, alarms, recipes, reports and traceability, so you can see the process and show what was produced.",
+      "seoTitle": "SCADA & Data Logging Systems in Egypt | Logic Controls",
+      "seoDescription": "SCADA with Siemens WinCC Professional, HMI data logging, alarm history, recipes and automatic test reports for traceability. For factories in Egypt.",
+      "h1": "SCADA, monitoring and data logging",
+      "intro": [
+        "When a batch goes wrong, the first question is what happened. SCADA and data logging answer it. We build monitoring screens that show the whole process, alarm lists with time stamps, and records that link each batch to its settings.",
+        "For larger systems we use Siemens WinCC Professional with S7-1200 PLCs. For single machines the HMI itself can log data, store recipes and produce test reports."
+      ],
+      "capabilities": [
+        {
+          "title": "SCADA with WinCC Professional",
+          "text": "Process overview screens, equipment control, recipe selection and alarm handling, as in our tablet coating and concrete batching projects."
+        },
+        {
+          "title": "Alarms and events",
+          "text": "Time-stamped alarm lists and history, so faults can be traced and repeated problems found."
+        },
+        {
+          "title": "User access",
+          "text": "Operator log-in and user levels, so only authorized staff change recipes and settings."
+        },
+        {
+          "title": "Data logging and traceability",
+          "text": "Process values and batch data recorded on the HMI or SCADA for quality records."
+        },
+        {
+          "title": "Automatic reports",
+          "text": "Test and batch reports produced by the system, such as the make and break values on our pipe testing machine."
+        },
+        {
+          "title": "Production tracking",
+          "text": "Counters, cycle times and machine status for output per shift or batch."
+        }
+      ],
+      "deliverables": [
+        "SCADA or HMI project with process screens",
+        "Alarm list with texts and priorities",
+        "Recipe and user management",
+        "Logging and report setup",
+        "Training for operators and supervisors"
+      ],
+      "situations": [
+        "You cannot see what the line is doing without walking to each machine",
+        "Your quality team needs batch records",
+        "Alarms are ignored because nobody understands them",
+        "Test results are written by hand"
+      ],
+      "faq": [
+        {
+          "q": "Which SCADA software do you use?",
+          "a": "Siemens WinCC Professional in our recent SCADA projects. For single machines we often log data on the HMI itself, which avoids an extra PC."
+        },
+        {
+          "q": "Can SCADA connect machines from different brands?",
+          "a": "Usually, yes, through standard protocols such as Modbus TCP or the PLC's own Ethernet connection. We check each machine's controller before we quote."
+        },
+        {
+          "q": "Is this the same as MES or OEE software?",
+          "a": "No. We build SCADA, data logging and reports at machine and line level. Plant-wide MES and OEE platforms are outside our scope."
+        }
+      ],
+      "cta": {
+        "title": "Need to see and record your process?",
+        "text": "Tell us which machines to connect and what you need to record. We will propose screens, logging and reports."
+      }
+    },
+    "testing-commissioning": {
+      "title": "Testing and commissioning",
+      "navTitle": "Testing and commissioning",
+      "summary": "I/O and loop checks, interlock tests, start-up and tuning, for systems we build and for machines and lines supplied by others.",
+      "seoTitle": "Testing & Commissioning Services in Egypt | Logic Controls",
+      "seoDescription": "I/O testing, loop checks, interlock tests, FAT/SAT support and start-up for new machines and imported lines in Egypt, through to punch-list closure.",
+      "h1": "Testing and commissioning",
+      "intro": [
+        "Commissioning is where a project succeeds or slips. We test every signal, every interlock and every sequence before production depends on them, and we close the punch list before handover.",
+        "We commission the systems we build, and we commission equipment supplied by others: imported lines, packaged units and process systems whose supplier needs a local team."
+      ],
+      "capabilities": [
+        {
+          "title": "Pre-commissioning checks",
+          "text": "Field instruments, wiring and electrical connections checked against the drawings."
+        },
+        {
+          "title": "I/O and loop checks",
+          "text": "Every input and output tested between the field device and the control system, and every loop verified from end to end."
+        },
+        {
+          "title": "Logic and interlock tests",
+          "text": "Sequences, safety interlocks and protection functions tested under controlled conditions before start-up."
+        },
+        {
+          "title": "Start-up and tuning",
+          "text": "Gradual start-up under real operating conditions, then tuning of speeds, timings, setpoints and control loops."
+        },
+        {
+          "title": "FAT and SAT support",
+          "text": "Support for factory and site acceptance tests: test procedures, witnessing and records, alongside the machine builder."
+        },
+        {
+          "title": "Punch list and handover",
+          "text": "Commissioning observations resolved and the system handed over ready for continuous operation."
+        }
+      ],
+      "deliverables": [
+        "Commissioning checklist and I/O test record",
+        "Interlock and alarm test record",
+        "Punch list with closure status",
+        "Record of tuned parameters",
+        "Handover session with operators and maintenance staff"
+      ],
+      "situations": [
+        "A new line has arrived and the supplier's engineers are not in Egypt",
+        "A system was installed but never fully started up",
+        "You want an independent check before accepting a machine",
+        "Start-up keeps failing on the same faults"
+      ],
+      "faq": [
+        {
+          "q": "Can you commission equipment you did not build?",
+          "a": "Yes. Our waste treatment project at a food and beverage plant was commissioning only: instrument checks, I/O tests, logic validation, start-up and punch-list closure."
+        },
+        {
+          "q": "Do you work with the machine builder's engineers?",
+          "a": "Yes, on site or remotely. We follow their procedures and documents and report results in English."
+        },
+        {
+          "q": "How long does commissioning take?",
+          "a": "It depends on the number of I/O points, the process and how ready the site is. We estimate it in the quote and confirm it after a site visit."
+        }
+      ],
+      "cta": {
+        "title": "Have a line to start up?",
+        "text": "Send the I/O list or the supplier's documents and your target start-up date. We will plan the commissioning with you."
+      }
+    },
+    "maintenance-support": {
+      "title": "Troubleshooting, maintenance and support",
+      "navTitle": "Maintenance and support",
+      "summary": "Breakdown troubleshooting, program changes, preventive maintenance, operator training and help sourcing spare parts in Egypt.",
+      "seoTitle": "Automation Maintenance & Support in Egypt | Logic Controls",
+      "seoDescription": "Troubleshooting of PLC, HMI and drive faults, preventive maintenance, program changes, operator training and spare-parts sourcing for plants in Egypt.",
+      "h1": "Troubleshooting, maintenance and support",
+      "intro": [
+        "A stopped machine costs money every hour. We find control faults methodically, using PLC diagnostics, I/O status, drive fault codes and wiring checks, and we fix the cause, not only the symptom.",
+        "After start-up we stay available for program changes, new features and planned maintenance visits. Support terms are agreed in writing, so you know what to expect."
+      ],
+      "capabilities": [
+        {
+          "title": "Breakdown troubleshooting",
+          "text": "On-site diagnosis of PLC, HMI, drive, sensor and wiring faults, on machines we built and on other machines."
+        },
+        {
+          "title": "Program changes",
+          "text": "New features, sequence changes, extra alarms or recipes added to an existing program and tested before use."
+        },
+        {
+          "title": "Preventive maintenance",
+          "text": "Scheduled checks of panels, terminals, drives and cooling fans, plus program backups and an updated spare-parts list."
+        },
+        {
+          "title": "Support agreements",
+          "text": "Planned visits, response times and support hours agreed per site, in writing."
+        },
+        {
+          "title": "Spare-parts sourcing",
+          "text": "A list of critical spares for your system and help sourcing them from suppliers in Egypt."
+        },
+        {
+          "title": "Operator and maintenance training",
+          "text": "Training on your own machines: daily operation, alarms, recipes and basic fault finding, in Arabic or English."
+        }
+      ],
+      "deliverables": [
+        "Fault report with cause and corrective action",
+        "Updated program and drawings after any change",
+        "Critical spare-parts list",
+        "Maintenance checklist for each visit",
+        "Training notes in Arabic or English"
+      ],
+      "situations": [
+        "A machine stops with an alarm nobody understands",
+        "Intermittent faults keep coming back",
+        "The original supplier no longer supports the machine",
+        "New staff need training on the controls"
+      ],
+      "faq": [
+        {
+          "q": "How fast can you respond to a breakdown?",
+          "a": "It depends on your location and on the support agreement. Response times are agreed per site and written into the agreement. For urgent help, call us or send a WhatsApp message."
+        },
+        {
+          "q": "Do you keep spare parts in stock?",
+          "a": "We do not run a parts warehouse. We prepare a critical-spares list for your system and help you source parts from suppliers in Egypt, so the right spares are on your shelf."
+        },
+        {
+          "q": "Can you support a machine you did not build?",
+          "a": "Yes, if we can access the program or the machine's documents. If not, we start with a survey and document the system."
+        },
+        {
+          "q": "Do you train operators?",
+          "a": "Yes. Training takes place on your machines, in Arabic or English, for operators and maintenance staff."
+        }
+      ],
+      "cta": {
+        "title": "Machine stopped or acting up?",
+        "text": "Send the alarm text, a photo of the screen and the machine model. An engineer will tell you the next step."
+      }
+    }
+  }
+}

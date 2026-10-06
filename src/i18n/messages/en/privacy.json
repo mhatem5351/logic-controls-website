@@ -1,0 +1,125 @@
+{
+  "seo": {
+    "title": "Privacy Notice | Logic Controls",
+    "description": "How Logic Controls collects, uses and protects personal data sent through this website, in line with Egypt's Personal Data Protection Law No. 151 of 2020."
+  },
+  "h1": "Privacy notice",
+  "lastUpdated": "Last updated: 6 October 2026",
+  "intro": [
+    "This notice explains what personal data Logic Controls collects through this website, why we collect it, how long we keep it and how you can exercise your rights.",
+    "We follow Egypt's Personal Data Protection Law No. 151 of 2020 and its Executive Regulations."
+  ],
+  "sections": [
+    {
+      "title": "Who we are",
+      "paragraphs": [
+        "Logic Controls is an industrial automation company based in 6th of October City, Giza, Egypt. We are responsible for the personal data described in this notice. You can contact us at {email}."
+      ],
+      "items": []
+    },
+    {
+      "title": "What we collect",
+      "paragraphs": [
+        "When you send the quote form, we receive the details you enter:"
+      ],
+      "items": [
+        "Your name, company and mobile or WhatsApp number",
+        "Your email address, if you give it",
+        "Your industry, plant location and timeline, if you give them",
+        "The description of your machine or project",
+        "How you prefer to be contacted, and the language of the page you used"
+      ]
+    },
+    {
+      "title": "Technical data",
+      "paragraphs": [
+        "To protect the form from spam, Cloudflare Turnstile processes technical information from your browser, such as your IP address and browser characteristics, to confirm that a person is sending it.",
+        "We measure visits with Cloudflare Web Analytics. It does not use cookies and does not build profiles of individual visitors. We see only totals, such as page views."
+      ],
+      "items": []
+    },
+    {
+      "title": "Why we use your data",
+      "paragraphs": [],
+      "items": [
+        "To reply to your request, prepare a quote and follow up on your project",
+        "To protect this website and the form from spam and abuse",
+        "To understand, in total numbers, which pages visitors use"
+      ]
+    },
+    {
+      "title": "Legal basis",
+      "paragraphs": [
+        "We process the data you send through the form based on your consent, which you give by ticking the box on the form, and because you ask us to take steps before a possible contract, such as preparing a quote. We process technical data to keep the website secure."
+      ],
+      "items": []
+    },
+    {
+      "title": "Who receives your data",
+      "paragraphs": [
+        "Your request is read by the Logic Controls staff who handle quotes and projects. We use service providers to run this website and receive your messages: Cloudflare (hosting, form processing, spam protection and visit statistics) and our email provider. If you contact us on WhatsApp, WhatsApp's own terms also apply.",
+        "We do not sell your data, share it for advertising, or send you marketing messages without your separate consent."
+      ],
+      "items": []
+    },
+    {
+      "title": "Transfers outside Egypt",
+      "paragraphs": [
+        "Our service providers may process data on servers outside Egypt. We use them only to run this website and to receive your messages, and we take the steps the law requires for such transfers."
+      ],
+      "items": []
+    },
+    {
+      "title": "How long we keep your data",
+      "paragraphs": [],
+      "items": [
+        "Quote requests that do not lead to a project: up to 24 months after our last contact, then deleted",
+        "If you become a client: as long as needed for the project, the warranty and our legal obligations"
+      ]
+    },
+    {
+      "title": "Cookies",
+      "paragraphs": [
+        "This website does not use advertising or tracking cookies.",
+        "If you choose a language with the language switcher, we store a small functional cookie named lang, so the site opens in your language next time. It contains only the language code and expires after one year."
+      ],
+      "items": []
+    },
+    {
+      "title": "Your rights",
+      "paragraphs": [
+        "Under Egypt's Personal Data Protection Law you have the right to:"
+      ],
+      "items": [
+        "Know what personal data we hold about you and get a copy",
+        "Ask us to correct or update your data",
+        "Ask us to delete your data or stop processing it",
+        "Withdraw your consent at any time",
+        "Object to processing",
+        "Be told if a data breach affects your data",
+        "Complain to the Personal Data Protection Center"
+      ]
+    },
+    {
+      "title": "How to exercise your rights",
+      "paragraphs": [
+        "Email us at {email} or call {phone}. We may ask you to confirm your identity before we act on a request."
+      ],
+      "items": []
+    },
+    {
+      "title": "Security",
+      "paragraphs": [
+        "The website uses an encrypted connection (HTTPS). Access to quote requests is limited to the staff who need them, and the form is protected against automated spam."
+      ],
+      "items": []
+    },
+    {
+      "title": "Changes to this notice",
+      "paragraphs": [
+        "We may update this notice when our website or the law changes. The date at the top shows the latest version."
+      ],
+      "items": []
+    }
+  ]
+}

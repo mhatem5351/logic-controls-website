@@ -1,0 +1,81 @@
+---
+/**
+ * <head> SEO block: title template, description, canonical, hreflang alternates (+ x-default),
+ * content-language, Open Graph / Twitter, theme-color, robots and JSON-LD.
+ */
+import { LOCALES, LOCALE_META, getMessages, localePath, type Locale } from "~/i18n";
+import { SITE } from "~/data/site";
+
+interface Props {
+  locale: Locale;
+  /** Page title without the brand suffix. Omit on the home page to use seo.defaultTitle. */
+  title?: string;
+  description?: string;
+  /** Path without locale, e.g. "services/control-panels" ("" for home). */
+  path?: string;
+  noindex?: boolean;
+  /** Emit hreflang alternates (disable for pages that exist in one language only, e.g. 404). */
+  alternates?: boolean;
+  /** Emit <link rel="canonical"> and og:url (disable for 404). */
+  canonical?: boolean;
+  /** Absolute or root-relative image URL for social cards (1200×630). */
+  ogImage?: string;
+  ogType?: "website" | "article";
+  /** One JSON-LD object or an array of objects. */
+  jsonLd?: Record<string, unknown> | Array<Record<string, unknown>>;
+}
+
+const {
+  locale,
+  title,
+  description,
+  path = "",
+  noindex = false,
+  alternates = true,
+  canonical: withCanonical = true,
+  ogImage = "/og-default.png",
+  ogType = "website",
+  jsonLd,
+} = Astro.props;
+
+const t = getMessages(locale);
+const meta = LOCALE_META[locale];
+const isHome = path.replace(/^\/+|\/+$/g, "") === "";
+const brand = t.seo.siteName;
+const fullTitle = !title ? t.seo.defaultTitle : title.includes(brand) ? title : `${title} | ${brand}`;
+const desc = description ?? t.seo.defaultDescription;
+const abs = (p: string) => new URL(p, SITE.url).href;
+const canonical = abs(localePath(locale, path));
+const xDefault = isHome ? abs("/") : abs(localePath("en", path));
+const image = abs(ogImage);
+const ld = jsonLd ? (Array.isArray(jsonLd) ? jsonLd : [jsonLd]) : [];
+const ldJson = (o: unknown) => JSON.stringify(o).replace(/</g, "\\u003c");
+---
+
+<title>{fullTitle}</title>
+<meta name="description" content={desc} />
+{withCanonical && <link rel="canonical" href={canonical} />}
+<meta http-equiv="content-language" content={meta.htmlLang} />
+{noindex && <meta name="robots" content="noindex, follow" />}
+{
+  alternates &&
+    LOCALES.map((l) => <link rel="alternate" hreflang={LOCALE_META[l].hreflang} href={abs(localePath(l, path))} />)
+}
+{alternates && <link rel="alternate" hreflang="x-default" href={xDefault} />}
+
+<meta property="og:type" content={ogType} />
+<meta property="og:site_name" content={brand} />
+<meta property="og:title" content={fullTitle} />
+<meta property="og:description" content={desc} />
+{withCanonical && <meta property="og:url" content={canonical} />}
+<meta property="og:image" content={image} />
+<meta property="og:image:width" content="1200" />
+<meta property="og:image:height" content="630" />
+<meta property="og:locale" content={meta.og} />
+{alternates && LOCALES.filter((l) => l !== locale).map((l) => <meta property="og:locale:alternate" content={LOCALE_META[l].og} />)}
+<meta name="twitter:card" content="summary_large_image" />
+<meta name="twitter:title" content={fullTitle} />
+<meta name="twitter:description" content={desc} />
+<meta name="twitter:image" content={image} />
+
+{ld.map((o) => <script type="application/ld+json" set:html={ldJson(o)} />)}

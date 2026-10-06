@@ -1,0 +1,165 @@
+---
+/* commercial-laundry — hotel washer-extractor (stainless cabinet, bolted door ring + clamp frame,
+   stop button, program controller), drive motor in the open base, wall-post chemical dosing pump
+   fed from two cans. Porthole (static clip): perforated drum with lifters, linen, sloshing water.
+   Loop 10 s: fill (step 1, dosing pump runs) → wash (drum reverses) → rinse (drain + refill,
+   dosing again) → extract (water drains, linen plastered, fast spin) → stop. */
+import Frame from "../ArtFrame.astro";
+import { uid, type ArtProps } from "../types";
+const p = Astro.props as ArtProps;
+const u = uid("wx");
+const wave = `M-80 6${"q10-4 20 0t20 0".repeat(5)}V40H-80Z`;
+const t1 = "M219 50V16H314L328 30V96";
+const t2 = "M219 95V210L203 226H158";
+---
+
+<Frame {...p} uid={u} name="wx">
+  <style is:inline>
+    .lca-wx .dr{transform-box:fill-box;transform-origin:center;animation:wxR 10s infinite}
+    .lca-wx .tb{transform-box:fill-box;transform-origin:center;animation:wxTb 1.25s ease-in-out infinite alternate}
+    .lca-wx .la{animation:wxA 10s step-end infinite}
+    .lca-wx .lb{animation:wxB 10s step-end infinite}
+    .lca-wx .lv{animation:wxLv 10s ease-in-out infinite}
+    .lca-wx .wv{animation:wxWv 1.4s linear infinite}
+    .lca-wx .ro{transform-box:fill-box;transform-origin:center;animation:wxRo 10s linear infinite}
+    .lca-wx .dz{animation:wxDz 10s step-end infinite}
+    .lca-wx .pb{transform-box:fill-box;transform-origin:0 50%;animation:wxPb 10s linear infinite}
+    .lca-wx .s1{animation:wxS1 10s step-end infinite}
+    .lca-wx .s2{animation:wxS2 10s step-end infinite}
+    .lca-wx .s3{animation:wxS3 10s step-end infinite}
+    .lca-wx .s4{animation:wxS4 10s step-end infinite}
+    .lca-wx .tu{stroke:var(--i-w);stroke-width:2;stroke-dasharray:2 4;animation:lca-fw .5s linear infinite}
+    .lca-wx .p.o1{animation:wxP1 10s linear infinite}
+    .lca-wx .nd.o1,.lca-wx .pg.o1{animation:wxN1 10s ease-out infinite}
+    .lca-wx .p.o2{animation:wxP2 10s linear infinite}
+    .lca-wx .nd.o2,.lca-wx .pg.o2{animation:wxN2 10s ease-out infinite}
+    @keyframes wxR{0%{transform:rotate(0)}15%{transform:rotate(90deg)}25%,30%{transform:rotate(300deg)}40%,45%{transform:rotate(90deg)}50%{transform:rotate(270deg)}60%{transform:rotate(450deg)}70%{transform:rotate(540deg);animation-timing-function:cubic-bezier(.55,0,.45,1)}95%,100%{transform:rotate(2880deg)}}
+    @keyframes wxTb{0%{transform:rotate(-35deg)}100%{transform:rotate(45deg)}}
+    @keyframes wxA{0%{opacity:1}72%{opacity:0}96%,100%{opacity:1}}
+    @keyframes wxB{0%{opacity:0}72%{opacity:1}96%,100%{opacity:0}}
+    @keyframes wxLv{0%{transform:translateY(36px)}13%,50%{transform:translateY(0)}54%{transform:translateY(20px)}60%,68%{transform:translateY(2px)}76%,100%{transform:translateY(36px)}}
+    @keyframes wxWv{to{transform:translateX(-40px)}}
+    @keyframes wxRo{0%,5%{transform:rotate(0)}15%,55%{transform:rotate(720deg)}61%,100%{transform:rotate(1080deg)}}
+    @keyframes wxDz{0%{opacity:0}5%{opacity:1}15%{opacity:0}55%{opacity:1}61%,100%{opacity:0}}
+    @keyframes wxPb{0%{transform:scaleX(0)}95%,100%{transform:scaleX(1)}}
+    @keyframes wxS1{0%{opacity:1}15%,100%{opacity:0}}
+    @keyframes wxS2{0%{opacity:0}15%{opacity:1}50%,100%{opacity:0}}
+    @keyframes wxS3{0%{opacity:0}50%{opacity:1}70%,100%{opacity:0}}
+    @keyframes wxS4{0%{opacity:0}70%{opacity:1}95%,100%{opacity:0}}
+    @keyframes wxP1{0%{stroke-dashoffset:12}5%{stroke-dashoffset:-100}5.1%,49.9%{stroke-dashoffset:12}55%,100%{stroke-dashoffset:-100}}
+    @keyframes wxN1{0%,4.5%{opacity:0;transform:scale(1)}5%{opacity:1;transform:scale(1)}14%,54.4%{opacity:0;transform:scale(2.4)}54.5%{opacity:0;transform:scale(1)}55%{opacity:1;transform:scale(1)}64%,100%{opacity:0;transform:scale(2.4)}}
+    @keyframes wxP2{0%,65%{stroke-dashoffset:12}70%,100%{stroke-dashoffset:-100}}
+    @keyframes wxN2{0%,69.5%{opacity:0;transform:scale(1)}70%{opacity:1;transform:scale(1)}80%,100%{opacity:0;transform:scale(2.4)}}
+    @media (prefers-reduced-motion:reduce){.lca-wx .lb,.lca-wx .s1,.lca-wx .s3,.lca-wx .s4{opacity:0}.lca-wx .pb{transform:scaleX(.4)}}
+  </style>
+  <defs>
+    <clipPath id={`${u}c`}><circle r="38"></circle></clipPath>
+    <rect id={`${u}l`} x="-4" y="-38" width="8" height="9" rx="1" style="fill:var(--i-m3);stroke-width:1.25"></rect>
+  </defs>
+
+  <!-- shadows -->
+  <path class="sh" d="M86 242H278L262 258H70ZM314 258H338L334 254H318ZM334 258H392L388 254H338Z"></path>
+
+  <!-- cabinet -->
+  <path class="t" d="M70 46 86 30H256L240 46Z"></path>
+  <path class="s" d="M240 46 256 30V242L240 258Z"></path>
+  <rect class="m" x="70" y="46" width="170" height="204"></rect>
+  <rect class="s" x="70" y="250" width="170" height="8"></rect>
+  <rect class="m2 d" x="86" y="58" width="118" height="148"></rect>
+  <path class="d l" d="M86 46V58M204 46V206M70 206H240"></path>
+  <circle class="m3 d" cx="248" cy="110" r="3"></circle>
+  <!-- open base with drive motor -->
+  <rect class="s d" x="86" y="212" width="140" height="34"></rect>
+  <path class="d l" d="M190 220h28M190 226h28M190 232h28"></path>
+  <circle class="b d" cx="134" cy="222" r="9"></circle>
+  <path class="b d" d="M115.6 227.6 127.6 215.6 140.4 228.4 128.4 240.4Z"></path>
+  <circle class="m3 d" cx="122" cy="234" r="9"></circle>
+  <g transform="translate(122 234)"><path class="d dr" d="M-6 0H6M0-6V6"></path></g>
+  <circle class="h l" cx="122" cy="234" r="4.5"></circle>
+
+  <!-- stop button -->
+  <circle class="m3 d" cx="78" cy="64" r="7"></circle>
+  <circle class="b d" cx="78" cy="64" r="4.6"></circle>
+
+  <!-- door ring -->
+  <circle class="m" cx="145" cy="132" r="52"></circle>
+  <circle cx="145" cy="132" r="47" style="stroke:var(--i-ink);stroke-width:2;stroke-dasharray:0 9.84"></circle>
+  <circle class="m2 d" cx="145" cy="132" r="42"></circle>
+
+  <!-- porthole -->
+  <g transform="translate(145 132)">
+    <g clip-path={`url(#${u}c)`}>
+      <circle class="s n" r="38"></circle>
+      <g class="dr">
+        <circle r="34" style="stroke:var(--i-ln);stroke-width:1.6;stroke-dasharray:0 5.34"></circle>
+        <circle r="25" style="stroke:var(--i-ln);stroke-width:1.4;stroke-dasharray:0 5.24;opacity:.6"></circle>
+        <use href={`#${u}l`}></use><use href={`#${u}l`} transform="rotate(120)"></use><use href={`#${u}l`} transform="rotate(240)"></use>
+        <g class="lb rmh"><path d="M-24-15A28 28 0 0 1 10-26M14 24A28 28 0 0 1-12 26" stroke-width="9"></path><path d="M-24-15A28 28 0 0 1 10-26" style="stroke:var(--i-b2);stroke-width:6"></path><path d="M14 24A28 28 0 0 1-12 26" style="stroke:var(--i-f);stroke-width:6"></path></g>
+      </g>
+      <g class="la"><g class="tb">
+        <circle class="n" r="38"></circle>
+        <rect class="f d" x="-24" y="14" width="18" height="10" rx="5" transform="rotate(-12)"></rect>
+        <rect class="b2 d" x="-4" y="19" width="20" height="9" rx="4.5" transform="rotate(8)"></rect>
+        <rect class="f d" x="8" y="6" width="14" height="9" rx="4.5" transform="rotate(32)"></rect>
+      </g></g>
+      <g class="lv"><g class="wv"><path class="w n" d={wave} opacity=".55"></path><path d={wave.replace("V40H-80Z", "")} style="stroke:var(--i-w);stroke-width:1.5"></path></g></g>
+      <path d="M-24-14A28 28 0 0 1-6-27" style="stroke:var(--i-kl);stroke-width:3;opacity:.6"></path>
+    </g>
+    <circle r="38" class="d"></circle>
+  </g>
+  <!-- clamp frame + lock bar -->
+  <path d="M104 90H186M104 174H186M104 90V174M188 80V184" style="stroke:var(--i-ink);stroke-width:5.5"></path>
+  <path d="M104 90H186M104 174H186M104 90V174M188 80V184" style="stroke:var(--i-m3);stroke-width:2.5"></path>
+  <rect class="m3 d" x="92" y="124" width="10" height="16" rx="1.5"></rect>
+  <circle class="b d" cx="188" cy="132" r="4"></circle>
+
+  <!-- program controller -->
+  <path class="t d" d="M204 54 209 49H239L234 54Z"></path>
+  <path class="s d" d="M234 54 239 49V89L234 94Z"></path>
+  <rect class="f d" x="204" y="54" width="30" height="40"></rect>
+  <rect class="k n" x="208" y="58" width="22" height="13" rx="1"></rect>
+  <rect class="n pb" x="210" y="66" width="18" height="2" style="fill:var(--i-kl)"></rect>
+  <path d="M210 78H229" style="stroke:var(--i-s);stroke-width:3;stroke-dasharray:0 6.33"></path>
+  <g class="y n">
+    <circle class="s1 rmh" cx="210" cy="78" r="1.7"></circle>
+    <circle class="s2" cx="216.3" cy="78" r="1.7"></circle>
+    <circle class="s3 rmh" cx="222.7" cy="78" r="1.7"></circle>
+    <circle class="s4 rmh" cx="229" cy="78" r="1.7"></circle>
+  </g>
+  <rect class="b n" x="209" y="85" width="7" height="4" rx="1"></rect>
+  <rect class="m3 d" x="222" y="85" width="7" height="4" rx="1"></rect>
+
+  <!-- dosing station: post, pump, cans, tubes -->
+  <rect class="m3 d" x="322" y="142" width="6" height="108"></rect>
+  <rect class="s d" x="314" y="250" width="22" height="8"></rect>
+  <path class="d" d="M340 216V142M368 216V166L344 142" style="stroke:var(--i-ln)"></path>
+  <path class="d" d="M304 127H266L252 113" style="stroke:var(--i-ln);stroke-width:2.2"></path>
+  <g class="dz"><path class="tu" d="M340 216V142"></path><path class="tu" d="M304 127H266L252 113"></path></g>
+  <path class="t d" d="M300 112 306 106H356L350 112Z"></path>
+  <path class="s d" d="M350 112 356 106V136L350 142Z"></path>
+  <rect class="f d" x="300" y="112" width="50" height="30"></rect>
+  <circle class="m d" cx="314" cy="127" r="10"></circle>
+  <g class="ro"><path class="d" d="M314 120V134"></path><circle class="m3 d" cx="314" cy="120" r="2.3"></circle><circle class="m3 d" cx="314" cy="134" r="2.3"></circle></g>
+  <path class="d l" d="M331 121h13M331 126h13"></path>
+  <circle class="y n dz rms" cx="341" cy="134" r="1.7"></circle>
+  <g class="d">
+    <rect class="f" x="334" y="222" width="24" height="36" rx="3"></rect>
+    <rect class="f" x="362" y="222" width="24" height="36" rx="3"></rect>
+    <path d="M347 222v-5h7v5M375 222v-5h7v5"></path>
+    <rect class="b" x="337" y="216" width="6" height="6"></rect>
+    <rect class="b2" x="365" y="216" width="6" height="6"></rect>
+  </g>
+  <rect class="w n" x="337" y="236" width="18" height="19" rx="1.5" opacity=".4"></rect>
+  <rect class="w n" x="365" y="242" width="18" height="13" rx="1.5" opacity=".4"></rect>
+
+  <!-- brand traces: controller → dosing pump, controller → drive -->
+  <path class="tr" d={t1 + t2}></path>
+  <circle class="rn" cx="328" cy="101" r="5"></circle>
+  <circle class="rn" cx="152" cy="226" r="5"></circle>
+  <path class="p o1" pathLength="100" d={t1}></path>
+  <path class="p o2" pathLength="100" d={t2}></path>
+  <circle class="nd o1" cx="328" cy="101" r="2.5"></circle>
+  <circle class="pg o1" cx="328" cy="101" r="5"></circle>
+  <circle class="nd o2" cx="152" cy="226" r="2.5"></circle>
+  <circle class="pg o2" cx="152" cy="226" r="5"></circle>
+</Frame>

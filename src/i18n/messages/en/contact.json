@@ -1,0 +1,191 @@
+{
+  "seo": {
+    "title": "Request a Quote | Logic Controls Egypt",
+    "description": "Request a quote for control panels, PLC/HMI programming, retrofits, SCADA or commissioning in Egypt. Send details by form, WhatsApp or email."
+  },
+  "h1": "Request a quote",
+  "intro": "Tell us about your machine or project. An engineer reviews every request and replies with questions, a site visit or a quote.",
+  "form": {
+    "title": "Quote request",
+    "requiredNote": "Fields marked * are required.",
+    "optional": "optional",
+    "steps": {
+      "one": "Your details",
+      "two": "Project details",
+      "counter": "Step {current} of {total}",
+      "twoNote": "Optional, but it helps us quote faster."
+    },
+    "buttons": {
+      "next": "Continue",
+      "back": "Back",
+      "submit": "Send request",
+      "sending": "Sending…",
+      "sendNow": "Skip and send now"
+    },
+    "fields": {
+      "name": {
+        "label": "Full name"
+      },
+      "company": {
+        "label": "Company",
+        "help": "Factory or company name."
+      },
+      "phone": {
+        "label": "Mobile or WhatsApp number",
+        "help": "Include the country code, for example +20 10 1234 5678."
+      },
+      "email": {
+        "label": "Email",
+        "help": "For drawings, documents and the written quote."
+      },
+      "need": {
+        "label": "What do you need?",
+        "placeholder": "Select a service",
+        "options": {
+          "control-panels": "New control panel",
+          "plc-hmi-programming": "PLC or HMI programming",
+          "machine-automation": "Machine automation",
+          "machine-retrofits": "Retrofit or upgrade of an old machine",
+          "process-control": "Process control (temperature, CIP, batching)",
+          "scada-data-logging": "SCADA or data logging",
+          "testing-commissioning": "Testing and commissioning",
+          "maintenance-support": "Troubleshooting or maintenance",
+          "new-factory": "New factory in Egypt: full automation scope",
+          "other": "Something else"
+        }
+      },
+      "industry": {
+        "label": "Industry",
+        "placeholder": "Select your industry",
+        "options": {
+          "food-beverage": "Food, beverage and dairy",
+          "pharmaceutical": "Pharmaceutical",
+          "cosmetics-personal-care": "Cosmetics and personal care",
+          "packaging-labeling": "Packaging, labeling and printing",
+          "building-materials": "Building materials",
+          "commercial-laundry": "Hotels and commercial laundry",
+          "test-equipment": "Industrial test equipment",
+          "other": "Other industry"
+        }
+      },
+      "location": {
+        "label": "Plant location",
+        "placeholder": "Select a location",
+        "otherEgypt": "Elsewhere in Egypt",
+        "outsideEgypt": "Outside Egypt"
+      },
+      "timeline": {
+        "label": "When do you need it?",
+        "placeholder": "Select a timeline",
+        "options": {
+          "urgent": "Urgent: a machine is stopped",
+          "within-1-month": "Within 1 month",
+          "1-3-months": "In 1 to 3 months",
+          "3-months-plus": "In more than 3 months",
+          "planning": "Planning or budgeting only"
+        }
+      },
+      "message": {
+        "label": "Describe the machine or project",
+        "help": "Machine type, what it should do, current problems, and PLC or HMI brands if you know them."
+      },
+      "contactPreference": {
+        "label": "How should we contact you?",
+        "options": {
+          "whatsapp": "WhatsApp",
+          "phone": "Phone call",
+          "email": "Email"
+        }
+      },
+      "consent": {
+        "text": "I agree that Logic Controls may use these details to reply to my request, as described in the {link}.",
+        "linkText": "privacy notice"
+      }
+    },
+    "whatsappHint": {
+      "text": "Prefer WhatsApp? Send photos of the machine, the nameplates, the panel or the drawings.",
+      "cta": "Send drawings on WhatsApp"
+    },
+    "privacyNote": "We use your details only to reply to this request. We do not add you to any mailing list.",
+    "security": {
+      "label": "Security check",
+      "help": "This check confirms that a person, not a bot, is sending the form."
+    }
+  },
+  "validation": {
+    "required": "Please fill in this field.",
+    "name": "Please enter your full name.",
+    "phone": "Please enter a valid phone number, including the country code.",
+    "email": "Please enter a valid email address.",
+    "select": "Please choose an option.",
+    "consent": "Please confirm that we may use your details to reply.",
+    "messageTooLong": "Please keep the description under {max} characters.",
+    "summary": "Please check the highlighted fields."
+  },
+  "errors": {
+    "title": "Your request was not sent",
+    "invalid": "Some details are missing or not valid. Please check the form and try again.",
+    "verification": "The security check did not complete. Please try again, or contact us on WhatsApp.",
+    "send": "We could not send your request because of a technical problem. Please try again in a few minutes, or contact us on WhatsApp or by email.",
+    "unknown": "Something went wrong. Please try again, or contact us on WhatsApp or by email.",
+    "fallback": "You can also reach us directly:"
+  },
+  "channels": {
+    "title": "Other ways to reach us",
+    "phone": {
+      "label": "Phone",
+      "text": "Call to discuss your project with an engineer."
+    },
+    "whatsapp": {
+      "label": "WhatsApp",
+      "text": "Send photos, videos and drawings straight from your phone.",
+      "cta": "Send drawings on WhatsApp"
+    },
+    "email": {
+      "label": "Email",
+      "text": "For documents, drawings and formal requests."
+    },
+    "location": {
+      "label": "Location",
+      "text": "6th of October City, Giza, Egypt",
+      "note": "Site visits by appointment."
+    }
+  },
+  "nextSteps": {
+    "title": "What happens next",
+    "steps": [
+      {
+        "title": "We review your request",
+        "text": "An engineer reads your request and checks the photos and documents you sent."
+      },
+      {
+        "title": "We contact you",
+        "text": "We call or message you with questions and, if needed, arrange a site visit."
+      },
+      {
+        "title": "You receive a quote",
+        "text": "A written scope and quote, with the platforms, deliverables and schedule."
+      }
+    ]
+  },
+  "thanks": {
+    "seo": {
+      "title": "Request Sent | Logic Controls",
+      "description": "Thank you for your request. An engineer from Logic Controls will review it and contact you."
+    },
+    "h1": "Thank you. Your request has been sent.",
+    "text": "An engineer will review it and contact you on your preferred channel.",
+    "urgent": {
+      "title": "Is a machine stopped?",
+      "text": "For urgent help, call or WhatsApp us now and mention your request.",
+      "cta": "WhatsApp an engineer"
+    },
+    "more": {
+      "title": "Have photos or drawings?",
+      "text": "Send them on WhatsApp or by email. They help us prepare the quote faster.",
+      "cta": "Send drawings on WhatsApp"
+    },
+    "backHome": "Back to home",
+    "seeProjects": "See our projects"
+  }
+}

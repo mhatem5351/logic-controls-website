@@ -1,0 +1,195 @@
+{
+  "labels": {
+    "relatedProjects": "İlgili projeler",
+    "relatedServices": "İlgili hizmetler",
+    "relatedIndustries": "Sektörler",
+    "technologiesUsed": "Kullanılan teknolojiler",
+    "challenge": "İhtiyaç",
+    "solution": "Çözüm",
+    "result": "Sonuç",
+    "scope": "İş kapsamı",
+    "highlights": "Öne çıkanlar",
+    "capabilities": "Neler yapıyoruz",
+    "deliverables": "Teslim ettiklerimiz",
+    "situations": "Bizi aramanız gereken durumlar",
+    "needs": "Bu sektörde önemli olanlar",
+    "applications": "Otomasyonunu yaptığımız makineler ve prosesler",
+    "faq": "Sıkça sorulan sorular",
+    "readCaseStudy": "Projeyi inceleyin",
+    "allProjects": "Tüm projeler",
+    "allServices": "Tüm hizmetler",
+    "allIndustries": "Tüm sektörler",
+    "learnMore": "Daha fazla bilgi",
+    "viewService": "Hizmeti inceleyin",
+    "viewIndustry": "Sektörü inceleyin",
+    "industry": "Sektör",
+    "industries": "Sektörler",
+    "service": "Hizmet",
+    "services": "Hizmetler",
+    "year": "Yıl",
+    "location": "Konum",
+    "client": "Müşteri",
+    "gallery": "Proje fotoğrafları",
+    "video": "Video",
+    "watchVideo": "Makineyi çalışırken izleyin",
+    "nextProject": "Sonraki proje",
+    "previousProject": "Önceki proje",
+    "backToProjects": "Tüm projelere dön",
+    "featuredProjects": "Öne çıkan projeler",
+    "onThisPage": "Bu sayfada",
+    "contactUs": "Bize ulaşın",
+    "phone": "Telefon",
+    "whatsapp": "WhatsApp",
+    "email": "E-posta",
+    "address": "Adres",
+    "openInMaps": "Haritada aç"
+  },
+  "breadcrumbs": {
+    "label": "İçerik yolu",
+    "home": "Ana sayfa",
+    "services": "Hizmetler",
+    "industries": "Sektörler",
+    "projects": "Projeler",
+    "technologies": "Teknolojiler",
+    "about": "Hakkımızda",
+    "contact": "İletişim",
+    "thanks": "Talebiniz alındı",
+    "foreign": "Mısır'da fabrika kurulumu",
+    "privacy": "Gizlilik"
+  },
+  "filters": {
+    "label": "Projeleri filtreleyin",
+    "all": "Tümü",
+    "byIndustry": "Sektöre göre",
+    "byService": "Hizmete göre",
+    "reset": "Tüm projeleri göster",
+    "count": "{count} proje",
+    "empty": "Bu filtreye uyan bir proje henüz yok. Yine de makinenizi bize anlatın: aynı yöntemler geçerli."
+  },
+  "stats": {
+    "title": "Rakamlarla Logic Controls",
+    "projects": { "label": "tamamlanan proje" },
+    "experience": { "label": "yıllık ekip deneyimi" },
+    "platforms": { "label": "PLC ve HMI platformu" },
+    "industries": { "label": "hizmet verilen sektör" },
+    "founded": { "label": "kuruluş yılı" }
+  },
+  "platforms": {
+    "title": "Programladığımız ve entegre ettiğimiz platformlar",
+    "intro": "Makinenize, bütçenize ve Mısır'da bulabileceğiniz yedek parçalara en uygun platformu seçiyoruz.",
+    "cta": "Teknolojileri inceleyin"
+  },
+  "process": {
+    "title": "Çalışma yöntemimiz",
+    "intro": "İlk ziyaretten çalışan makineye altı adım. Süreç boyunca aynı mühendislerle görüşürsünüz.",
+    "steps": [
+      {
+        "title": "Saha ziyareti ve keşif",
+        "text": "Makineyi veya hattı yerinde görüyor, etiket plakalarını ve çizimleri inceliyor, sistemin ne yapması gerektiğini sizinle birlikte netleştiriyoruz."
+      },
+      {
+        "title": "Teklif ve tasarım",
+        "text": "Yazılı iş kapsamı ve fiyat teklifi alırsınız. Onayınızın ardından elektrik şemalarını, I/O listesini ve malzeme listesini hazırlıyoruz."
+      },
+      {
+        "title": "Pano imalatı ve programlama",
+        "text": "Otomasyon panosunu monte edip kablajını yapıyor, PLC programını yazıyor ve HMI ekranlarını tasarlıyoruz."
+      },
+      {
+        "title": "Sahaya gitmeden test",
+        "text": "Kablaj kontrolleri, I/O simülasyonu ve HMI ekranlarının tek tek gözden geçirilmesi; hepsi ekipman tesisinize ulaşmadan önce."
+      },
+      {
+        "title": "Sahada devreye alma",
+        "text": "I/O ve loop testleri, kilitleme (interlock) testleri, operatörlerinizle birlikte ilk çalıştırma ve ayarlar."
+      },
+      {
+        "title": "Teslim ve destek",
+        "text": "As-built çizimler, operatör eğitimi ve değişiklik gerektiğinde teknik destek."
+      }
+    ]
+  },
+  "quoteChecklist": {
+    "title": "Teklif için ihtiyaç duyduklarımız",
+    "intro": "Listedeki her şeye sahip olmanız gerekmez. Elinizde olanı gönderin, eksikleri biz sorarız.",
+    "items": [
+      "Makinenin veya hattın ne iş yaptığı ve neyi değiştirmek istediğiniz",
+      "Makinenin, mevcut panonun ve motor, sürücü ve PLC etiket plakalarının fotoğrafları",
+      "Varsa çizimler, I/O listesi veya mevcut program",
+      "Tercih ettiğiniz PLC ve HMI markası ya da bir tercihiniz olmadığı",
+      "Makinedeki besleme gerilimi ve frekansı, örneğin 380 V, 50 Hz",
+      "Tesisin konumu ve hedef tarih",
+      "HMI ekranları ve dokümanlar için gereken diller"
+    ],
+    "whatsappHint": "Telefondan göndermek daha mı kolay? Fotoğrafları ve çizimleri WhatsApp'tan iletin."
+  },
+  "ctaBand": {
+    "default": {
+      "title": "Makinenizi veya hattınızı anlatın",
+      "text": "Kısa bir açıklama ve birkaç fotoğraf gönderin. Bir mühendisimiz inceleyip sorularıyla ya da teklifle size dönüş yapar."
+    },
+    "service": {
+      "title": "Bu hizmete tesisinizde ihtiyacınız mı var?",
+      "text": "Makineyi veya prosesi anlatın ve fotoğraf ekleyin. Teklif hazırlamak için neye ihtiyacımız olduğunu size bildirelim."
+    },
+    "industry": {
+      "title": "Benzer bir tesis mi işletiyorsunuz?",
+      "text": "Hangi makineyi veya prosesi otomatikleştirmek, modernize etmek ya da onarmak istediğinizi bize yazın. Büyük Kahire'de ve Mısır'ın sanayi bölgelerinde çalışıyoruz."
+    },
+    "project": {
+      "title": "Benzer bir makineniz mi var?",
+      "text": "Aynı kapsamı sizin makineniz için de uygulayabilir veya ihtiyacınıza göre uyarlayabiliriz. Teklif için detayları bize gönderin."
+    },
+    "foreign": {
+      "title": "Mısır'da fabrika kurmayı mı planlıyorsunuz?",
+      "text": "Yerel bir otomasyon ekibini sürece erkenden dahil edin. Hat listenizi veya makine dokümanlarınızı ve iş takviminizi bize gönderin."
+    }
+  },
+  "whatsapp": {
+    "default": "Merhaba Logic Controls, bir otomasyon projesi hakkında bir mühendisle görüşmek istiyorum.",
+    "quote": "Merhaba Logic Controls, teklif almak istiyorum. Fotoğrafları ve çizimleri buradan gönderebilirim.",
+    "service": "Merhaba Logic Controls, şu hizmet için teklif almak istiyorum: {service}.",
+    "industry": "Merhaba Logic Controls, bir otomasyon projesi için \"{industry}\" sayfanızdan ulaşıyorum.",
+    "project": "Merhaba Logic Controls, \"{project}\" projenizi inceledim; benzer bir makinem var.",
+    "foreign": "Merhaba Logic Controls, Mısır'da fabrika kuruyoruz ve yerel bir otomasyon iş ortağına ihtiyacımız var.",
+    "drawings": "Merhaba Logic Controls, teklif için çizim ve fotoğraf gönderiyorum."
+  },
+  "zones": {
+    "title": "Çalıştığımız bölgeler",
+    "intro": "Merkezimiz Gize'deki 6 Ekim Şehri'nde. Büyük Kahire'de ve aşağıdakiler dahil Mısır'ın sanayi bölgelerinde çalışıyoruz:",
+    "note": "Tesisiniz Mısır'ın başka bir yerinde mi? Bize sorun. Saha ziyaretlerini her talep için ayrıca planlıyoruz.",
+    "homeBase": "Merkezimiz",
+    "sczone": "SCZONE",
+    "regions": {
+      "greater-cairo": "Büyük Kahire",
+      "nile-delta": "Nil Deltası",
+      "alexandria": "İskenderiye",
+      "suez-canal": "Süveyş Kanalı Ekonomik Bölgesi"
+    },
+    "items": {
+      "6th-of-october": { "name": "6 Ekim ve Yeni Ekim Şehri", "governorate": "Gize" },
+      "obour": { "name": "Obour Şehri", "governorate": "Kalyubiye" },
+      "badr": { "name": "Badr Şehri", "governorate": "Kahire" },
+      "10th-of-ramadan": { "name": "10. Ramazan Şehri", "governorate": "Şarkiye" },
+      "sadat-city": { "name": "Sadat Şehri", "governorate": "Minufiye" },
+      "borg-el-arab": { "name": "Burg El Arab ve Yeni Burg El Arab", "governorate": "İskenderiye" },
+      "ain-sokhna": { "name": "TEDA bölgesi dahil Ain Sokhna", "governorate": "Süveyş" },
+      "qantara-west": { "name": "Batı Kantara", "governorate": "İsmailiye" },
+      "east-port-said": { "name": "Doğu Port Said", "governorate": "Port Said" }
+    }
+  },
+  "locations": {
+    "egypt": "Mısır"
+  },
+  "company": {
+    "tagline": "Mısır'daki fabrikalar için PLC kontrol sistemleri ve makine otomasyonu",
+    "addressLine": "6 Ekim Şehri, Gize, Mısır",
+    "footerAbout": "6 Ekim Şehri'nde endüstriyel otomasyon mühendisleriyiz. Otomasyon panoları tasarlıyor; PLC, HMI ve SCADA programlıyor; Mısır genelinde makineleri ve proses hatlarını devreye alıyoruz."
+  },
+  "notes": {
+    "brands": "Marka adları ve ticari markalar sahiplerine aittir. Bir markanın listelenmesi, o markanın ürünlerini programlayıp entegre ettiğimiz anlamına gelir; bir iş ortaklığı anlamına gelmez.",
+    "anonymised": "Müşteri adları gizlilik nedeniyle paylaşılmamaktadır. Talep halinde, müşterinin izniyle referans görüşmesi ayarlanabilir.",
+    "preFounding": "2025'ten önceki projeler, Logic Controls kurulmadan önce mühendislerimiz tarafından gerçekleştirilmiştir.",
+    "photos": "Fotoğraflar gerçek projelerden alınmıştır. Bazı logolar ve etiket plakaları bulanıklaştırılmıştır."
+  }
+}

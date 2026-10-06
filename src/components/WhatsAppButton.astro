@@ -1,0 +1,58 @@
+---
+/**
+ * Floating contact button, bottom inline-end (bottom-left in RTL via logical inset).
+ * WhatsApp with a pre-filled message in the page language; on zh (WhatsApp blocked in mainland China)
+ * it becomes an email button.
+ */
+import { getMessages, type Locale } from "~/i18n";
+import Icon from "./Icon.astro";
+import { whatsappLink, mailtoLink, prefersEmail } from "./nav";
+
+interface Props {
+  locale: Locale;
+  /** Override the pre-filled WhatsApp message (e.g. include the page context). */
+  message?: string;
+}
+const { locale, message } = Astro.props;
+const t = getMessages(locale).ui;
+const email = prefersEmail(locale);
+const label = email ? t.email.fabLabel : t.whatsapp.fabLabel;
+const link = email ? mailtoLink(t.email.subject) : whatsappLink(message ?? t.whatsapp.message);
+---
+
+<aside aria-label={label}>
+<a
+  href={link}
+  target={email ? undefined : "_blank"}
+  rel={email ? undefined : "noopener"}
+  aria-label={label}
+  title={label}
+  class:list={[
+    "lc-fab group fixed end-4 bottom-4 z-40 grid size-14 place-items-center rounded-full text-white shadow-[0_10px_30px_-8px_rgb(4_14_39/0.55)] transition-transform duration-300 hover:-translate-y-0.5 sm:end-6 sm:bottom-6",
+    email ? "bg-royal-600 hover:bg-royal-700" : "bg-[#128c4a] hover:bg-[#0f7a40]",
+  ]}
+>
+  <span aria-hidden="true" class:list={["absolute inset-0 rounded-full", !email && "lc-fab-ring"]}></span>
+  <Icon name={email ? "mail" : "whatsapp"} size={28} />
+</a>
+</aside>
+
+<style>
+  .lc-fab:focus-visible {
+    outline: 3px solid var(--color-signal-400);
+    outline-offset: 3px;
+  }
+  .lc-fab-ring {
+    box-shadow: 0 0 0 0 rgb(37 211 102 / 0.45);
+    animation: lc-fab-ring 2.8s ease-out 3;
+  }
+  @keyframes lc-fab-ring {
+    0% {
+      box-shadow: 0 0 0 0 rgb(37 211 102 / 0.45);
+    }
+    70%,
+    100% {
+      box-shadow: 0 0 0 14px rgb(37 211 102 / 0);
+    }
+  }
+</style>

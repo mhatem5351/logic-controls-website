@@ -1,0 +1,368 @@
+{
+  "index": {
+    "seo": {
+      "title": "Industries We Serve in Egypt | Logic Controls",
+      "description": "Automation for food and dairy, pharma, cosmetics, packaging, building materials, commercial laundry and test equipment in Egypt. See our projects."
+    },
+    "h1": "Industries we serve",
+    "intro": [
+      "Each industry page shows what matters in that sector, the machines and processes we automate, and the projects we have delivered.",
+      "Your industry is not listed? The same control principles apply to most machines and processes. Tell us what you run."
+    ]
+  },
+  "items": {
+    "food-beverage": {
+      "title": "Food, beverage and dairy",
+      "navTitle": "Food and dairy",
+      "summary": "Pasteurizers with CIP, cheese cookers, sterilization autoclaves and plant utilities, controlled for food safety and consistent quality.",
+      "seoTitle": "Food & Dairy Automation in Egypt | Logic Controls",
+      "seoDescription": "PLC control for pasteurizers, CIP, cheese cookers, autoclaves and food-plant utilities in Egypt. Temperature control, interlocks, recipes, data logging.",
+      "h1": "Automation for food, beverage and dairy plants",
+      "intro": [
+        "Food safety depends on control: the right temperature for the right time, in every batch. Our food and dairy systems hold process setpoints, hold back unsafe product and keep records your quality team can use.",
+        "We have delivered control systems for two pasteurizers, a cheese cooker and an olive sterilization autoclave, and commissioned a waste treatment system at a food and beverage plant."
+      ],
+      "needs": [
+        {
+          "title": "Food safety",
+          "text": "Interlocks that hold or divert product until pasteurization or sterilization conditions are met."
+        },
+        {
+          "title": "Consistent batches",
+          "text": "Recipes for each product: temperature, time, mixing speed and mixing direction."
+        },
+        {
+          "title": "Hygiene",
+          "text": "CIP sequences built into the machine program, with their own screens and timers."
+        },
+        {
+          "title": "Records",
+          "text": "Data logging of temperatures, cycle times and alarms for audits and customer complaints."
+        }
+      ],
+      "applications": [
+        "Milk pasteurizers with plate heat exchangers",
+        "CIP (cleaning-in-place) sequences",
+        "Cheese cookers with step recipes",
+        "Autoclave and retort sterilization",
+        "Filling and packaging machines",
+        "Plant utilities such as waste and wastewater treatment"
+      ],
+      "faq": [
+        {
+          "q": "Can you add CIP to our pasteurizer?",
+          "a": "Often, yes, if the valves and pumps allow it. We review the piping and instruments first, then add the CIP sequence and screens to the program."
+        },
+        {
+          "q": "Can the system show when product ran below temperature?",
+          "a": "Yes. With data logging and alarms, low-temperature events are recorded with time and value, and hold or diversion logic stops unsafe product from moving on."
+        }
+      ],
+      "cta": {
+        "title": "Automating a food or dairy process?",
+        "text": "Tell us about the product, the process temperatures and times, and the equipment you have."
+      }
+    },
+    "pharmaceutical": {
+      "title": "Pharmaceutical",
+      "navTitle": "Pharmaceutical",
+      "summary": "Coating machines with SCADA, formulation recipes and user log-in, plus bottle printing and packaging machines for pharma lines.",
+      "seoTitle": "Pharmaceutical Machine Automation in Egypt | Logic Controls",
+      "seoDescription": "SCADA and PLC control for tablet coating, bottle printing and packaging machines in Egyptian pharma plants. Recipes, alarms, user access and records.",
+      "h1": "Automation for pharmaceutical production",
+      "intro": [
+        "Pharma production needs repeatable processes and documentation. We build control systems with formulation recipes, user access and alarm history, so every batch runs the same way and leaves a record.",
+        "Our pharma work includes a tablet coating machine on a Siemens S7-1200 PLC with WinCC Professional SCADA, and a motion-control retrofit of a printing machine for pharmaceutical and cosmetic bottles."
+      ],
+      "needs": [
+        {
+          "title": "Repeatable processes",
+          "text": "Spray rate, pan speed, air temperature and process time held to each formulation's settings."
+        },
+        {
+          "title": "Access control",
+          "text": "User log-in, so only authorized staff change recipes or settings."
+        },
+        {
+          "title": "Alarm history",
+          "text": "Time-stamped alarms with user names, for investigations and reviews."
+        },
+        {
+          "title": "Documentation",
+          "text": "Drawings, I/O lists, functional descriptions and test records to support your own qualification work."
+        }
+      ],
+      "applications": [
+        "Tablet film-coating machines",
+        "Air handling, blowers and exhaust fans on VFDs",
+        "Bottle printing and labeling machines",
+        "Liquid filling machines",
+        "Process skids with temperature and pressure control"
+      ],
+      "faq": [
+        {
+          "q": "Do you provide GMP validation or 21 CFR Part 11 compliance?",
+          "a": "No. We provide the control system and the documents your validation team needs: drawings, I/O lists, functional descriptions and test records. Formal validation stays with your quality team or a specialist."
+        },
+        {
+          "q": "Can you work with the machine builder on a new machine?",
+          "a": "Yes. We can deliver the PLC, HMI and SCADA while the machine builder delivers the mechanics."
+        }
+      ],
+      "cta": {
+        "title": "Automating a pharma process?",
+        "text": "Send the machine type, the process parameters you need to control and your documentation requirements."
+      }
+    },
+    "cosmetics-personal-care": {
+      "title": "Cosmetics and personal care",
+      "navTitle": "Cosmetics",
+      "summary": "Filling machines for shampoo and other liquids, bottle printing and labeling, with accurate fills and fast changeovers.",
+      "seoTitle": "Cosmetics Filling Automation in Egypt | Logic Controls",
+      "seoDescription": "PLC and HMI control for shampoo and liquid filling, bottle printing and labeling machines in Egypt. Filling accuracy, recipes and quick changeovers.",
+      "h1": "Automation for cosmetics and personal-care lines",
+      "intro": [
+        "Cosmetics plants run many products and bottle sizes on the same machines. Fill volume, speed and changeover time decide output and waste. We build controls that keep fills accurate and turn a changeover into a few settings on the HMI.",
+        "We have automated two shampoo filling machines, one on an LS Electric PLC and one on a Delta PLC, both with Wecon HMIs, and upgraded a bottle printing machine with motion control."
+      ],
+      "needs": [
+        {
+          "title": "Filling accuracy",
+          "text": "Fill volume, nozzle timing and speed tuned at commissioning and stored for each product."
+        },
+        {
+          "title": "Quick changeover",
+          "text": "Bottle-size and product settings saved as recipes."
+        },
+        {
+          "title": "One controlled sequence",
+          "text": "Bottle feeding, filling and discharge in one sequence, with gates and sensors."
+        },
+        {
+          "title": "Operator screens",
+          "text": "Arabic or English HMIs with counters, alarms and a manual mode for setup."
+        }
+      ],
+      "applications": [
+        "Multi-nozzle piston filling machines",
+        "Bottle printing machines",
+        "Labeling machines",
+        "Conveyors and bottle handling"
+      ],
+      "faq": [
+        {
+          "q": "Can you automate a semi-automatic filler?",
+          "a": "Often, yes. Adding bottle sensors, gates and an automatic sequence to a semi-automatic filler is a common upgrade. We check the mechanics first."
+        },
+        {
+          "q": "Can one machine handle several bottle sizes?",
+          "a": "Yes. Each product is saved with its fill volume, speed and timing, and the operator selects it on the HMI."
+        }
+      ],
+      "cta": {
+        "title": "Running a filling or packaging line?",
+        "text": "Send a short video of the machine and the list of products and bottle sizes you run."
+      }
+    },
+    "packaging-labeling": {
+      "title": "Packaging, labeling and printing",
+      "navTitle": "Packaging and labeling",
+      "summary": "Labeling, filling and bottle printing machines with synchronized motion, product detection and recipes.",
+      "seoTitle": "Packaging & Labeling Automation in Egypt | Logic Controls",
+      "seoDescription": "Controls for labeling, filling and bottle printing machines in Egypt: stepper and motion control, missing-label detection, recipes and counters.",
+      "h1": "Automation for packaging, labeling and printing machines",
+      "intro": [
+        "Packaging machines depend on timing: the label must meet the bottle, the print must meet the surface, and every product must be counted. We design the motion, sensing and logic that keep them in step with the line.",
+        "Our packaging work includes a labeling machine with a Delta PLC, Wecon HMI and Schneider Electric stepper drives, a motion-control retrofit of a bottle printing machine, and two filling machines."
+      ],
+      "needs": [
+        {
+          "title": "Synchronization",
+          "text": "Label dispensing and printing synchronized with conveyor speed and product position."
+        },
+        {
+          "title": "Quality checks",
+          "text": "Detection of missing or misaligned labels."
+        },
+        {
+          "title": "Format changes",
+          "text": "Label length, dispense length and speeds stored for each product."
+        },
+        {
+          "title": "Production tracking",
+          "text": "Counters and data logging for output per shift or batch."
+        }
+      ],
+      "applications": [
+        "Self-adhesive labeling machines",
+        "Bottle printing machines",
+        "Piston filling machines",
+        "Conveyors and product handling"
+      ],
+      "faq": [
+        {
+          "q": "Can you retrofit an old labeling or printing machine?",
+          "a": "Yes. On our bottle printing project we replaced the old controls with a PLC and motion control to improve printing accuracy and reliability, without replacing the machine."
+        },
+        {
+          "q": "Do you work with machine builders?",
+          "a": "Yes. We can design and program the controls for machines that a local builder manufactures, and support start-up at the builder's customer."
+        }
+      ],
+      "cta": {
+        "title": "Need a packaging machine in step with your line?",
+        "text": "Send the machine type, your line speed and the product formats you run."
+      }
+    },
+    "building-materials": {
+      "title": "Building materials",
+      "navTitle": "Building materials",
+      "summary": "Concrete batching plants with weighing, dosing, mixing sequences, mix recipes and SCADA monitoring.",
+      "seoTitle": "Concrete Batching Plant Automation in Egypt | Logic Controls",
+      "seoDescription": "PLC and SCADA control for concrete batching plants in Egypt: dosing of cement, aggregates, water and additives, mix recipes, monitoring and alarms.",
+      "h1": "Automation for concrete batching plants",
+      "intro": [
+        "A batching plant must produce the same mix, batch after batch. Weighing accuracy, discharge timing and mixing time decide concrete quality and material cost.",
+        "We delivered a concrete batching control system on a Siemens S7-1200 PLC with WinCC Professional SCADA: dosing of cement, aggregates, water and additives, automatic batching and mixing sequences, and recipe management for different mixes."
+      ],
+      "needs": [
+        {
+          "title": "Accurate dosing",
+          "text": "Target weights for each material, with automatic dosing and discharge."
+        },
+        {
+          "title": "Mix recipes",
+          "text": "Each concrete mix stored with its materials, weights and mixing time."
+        },
+        {
+          "title": "Plant overview",
+          "text": "A SCADA view of bins, hoppers, conveyors and mixer status."
+        },
+        {
+          "title": "Clear alarms",
+          "text": "Faults shown with plain messages, so the operator knows what to check."
+        }
+      ],
+      "applications": [
+        "Concrete batching plants",
+        "Aggregate, cement and water dosing",
+        "Additive dosing",
+        "Mixer and conveyor sequences"
+      ],
+      "faq": [
+        {
+          "q": "Can you upgrade the controls of an existing batching plant?",
+          "a": "Yes. We survey the scales, motors and existing panel, then replace or upgrade the controls and SCADA while keeping the mechanical plant."
+        },
+        {
+          "q": "Can the system save batch records?",
+          "a": "Batch data can be logged on the SCADA. The records and reports you need are defined for each project."
+        }
+      ],
+      "cta": {
+        "title": "Upgrading a batching plant?",
+        "text": "Send photos of the control room, the panel and the plant layout, and the number of materials you dose."
+      }
+    },
+    "commercial-laundry": {
+      "title": "Hotels and commercial laundry",
+      "navTitle": "Commercial laundry",
+      "summary": "Washer-extractor controls with editable wash programs, water level, temperature and chemical dosing.",
+      "seoTitle": "Laundry Washer Control Systems in Egypt | Logic Controls",
+      "seoDescription": "PLC and HMI control for hotel and commercial washer-extractors in Egypt: wash programs, water level, temperature, chemical dosing and alarms.",
+      "h1": "Control systems for hotel and commercial laundry machines",
+      "intro": [
+        "Hotel laundries wash towels, bed sheets and uniforms in different ways. A good controller lets the laundry manager set each program once and run it the same way every time.",
+        "We have delivered Wecon PLC and HMI control systems for laundry washers, with editable multi-step programs, water level and temperature control, chemical dosing and safety interlocks."
+      ],
+      "needs": [
+        {
+          "title": "Programs for each load",
+          "text": "Up to 15 steps per program: prewash, wash, rinse, drain and extract, each with its own time, level, temperature and chemicals."
+        },
+        {
+          "title": "Chemical dosing",
+          "text": "Timed dosing on up to five chemical inputs."
+        },
+        {
+          "title": "Safe operation",
+          "text": "Door-lock status, level control and interlocks that protect operators and the machine."
+        },
+        {
+          "title": "Consistent results",
+          "text": "The same program gives the same wash, with less manual work."
+        }
+      ],
+      "applications": [
+        "Washer-extractors",
+        "Hotel laundries",
+        "Chemical dosing",
+        "Controller replacement on existing washers"
+      ],
+      "faq": [
+        {
+          "q": "Can you replace the controller on our existing washers?",
+          "a": "In many cases, yes. We check the motor drive, valves, level sensing and door lock, then fit a PLC and touch screen with programs set up for your linen."
+        },
+        {
+          "q": "Can our staff edit wash programs?",
+          "a": "Yes. Programs are edited on the touch screen: step type, time, water level, temperature and chemicals, without changing the PLC program."
+        }
+      ],
+      "cta": {
+        "title": "Running a hotel or commercial laundry?",
+        "text": "Tell us the washer models and capacities, and the linen types you wash."
+      }
+    },
+    "test-equipment": {
+      "title": "Industrial test equipment",
+      "navTitle": "Test equipment",
+      "summary": "Test rigs and quality-control machines with repeatable test sequences and automatic test reports.",
+      "seoTitle": "Test Rig Automation & Reports in Egypt | Logic Controls",
+      "seoDescription": "PLC and HMI control for industrial test rigs in Egypt: repeatable test sequences, live readings and automatic test reports for QC and traceability.",
+      "h1": "Control systems for test rigs and quality-control equipment",
+      "intro": [
+        "A test is only useful if it is repeatable and recorded. We automate test rigs so that each test follows the same sequence and produces a report without manual writing.",
+        "We delivered a Wecon PLC and HMI control system for a pipe testing machine that records make and break values, in ft·lb and psi, and generates test reports automatically."
+      ],
+      "needs": [
+        {
+          "title": "Repeatable tests",
+          "text": "The same test sequence and limits every time."
+        },
+        {
+          "title": "Clear readings",
+          "text": "Live values and bar graphs on the HMI."
+        },
+        {
+          "title": "Automatic reports",
+          "text": "Results saved with every test, for quality control and traceability."
+        },
+        {
+          "title": "Documentation",
+          "text": "Records that your customers and inspectors can review."
+        }
+      ],
+      "applications": [
+        "Pipe and connection testing machines",
+        "Pressure test benches",
+        "Torque and pressure measurement",
+        "End-of-line quality-control stations"
+      ],
+      "faq": [
+        {
+          "q": "Can the test results be exported?",
+          "a": "Results can be stored on the HMI and exported in the format agreed for the project, for example as a file for your quality records."
+        },
+        {
+          "q": "Do you build the mechanical test rig?",
+          "a": "No. We supply the control system, instrument integration, HMI and reports. The mechanical rig comes from you or a machine builder."
+        }
+      ],
+      "cta": {
+        "title": "Automating a test rig?",
+        "text": "Describe the test, the values you measure and the report you need."
+      }
+    }
+  }
+}

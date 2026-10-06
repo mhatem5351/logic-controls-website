@@ -1,0 +1,130 @@
+---
+/**
+ * Responsive image grid with a lightweight <dialog> lightbox (prev/next, arrow keys — mirrored in RTL — Esc, counter).
+ * Without JS each thumbnail is a plain link to the full-size image.
+ */
+import type { ImageMetadata } from "astro";
+import { Picture, getImage } from "astro:assets";
+import { getMessages, type Locale } from "~/i18n";
+import Icon from "./Icon.astro";
+import { fmt } from "./nav";
+import { uid } from "./uid";
+
+interface Item {
+  src: ImageMetadata;
+  alt: string;
+  caption?: string;
+}
+interface Props {
+  images: Item[];
+  columns?: 2 | 3 | 4;
+  /** "square" crops thumbnails to 1:1, "landscape" to 4:3. */
+  crop?: "square" | "landscape";
+  locale?: Locale;
+  class?: string;
+}
+const locale = (Astro.props.locale ?? Astro.currentLocale ?? "en") as Locale;
+const t = getMessages(locale).ui;
+const { images, columns = 3, crop = "landscape", class: className } = Astro.props;
+const id = uid("gal");
+const full = await Promise.all(images.map((img) => getImage({ src: img.src, width: Math.min(1800, img.src.width), format: "webp", quality: 82 })));
+const grid = { 2: "sm:grid-cols-2", 3: "sm:grid-cols-2 lg:grid-cols-3", 4: "grid-cols-2 lg:grid-cols-4" }[columns];
+const total = images.length;
+---
+
+<div class:list={["lc-gallery", className]} data-gallery={id}>
+  <ul role="list" class:list={["grid gap-3 sm:gap-4", grid]}>
+    {
+      images.map((img, i) => (
+        <li>
+          <a
+            href={full[i]!.src}
+            data-index={i}
+            data-full={full[i]!.src}
+            data-caption={img.caption ?? img.alt}
+            aria-label={fmt(t.gallery.open, { n: i + 1, total })}
+            class:list={["group relative block overflow-hidden bg-navy-950", crop === "square" ? "aspect-square" : "aspect-[4/3]"]}
+          >
+            <Picture
+              src={img.src}
+              alt={img.alt}
+              formats={["avif", "webp"]}
+              widths={[320, 480, 720]}
+              sizes={columns === 4 ? "(min-width: 1024px) 25vw, 50vw" : "(min-width: 1024px) 33vw, (min-width: 640px) 50vw, 100vw"}
+              loading="lazy"
+              layout="full-width"
+              class="size-full object-cover transition duration-500 group-hover:scale-[1.04] group-hover:opacity-90"
+            />
+            <span aria-hidden="true" class="absolute end-3 top-3 grid size-9 place-items-center bg-navy-950/70 text-white opacity-0 backdrop-blur-sm transition group-hover:opacity-100 group-focus-visible:opacity-100">
+              <Icon name="plus" size={18} />
+            </span>
+          </a>
+        </li>
+      ))
+    }
+  </ul>
+
+  <dialog class="lc-lightbox on-dark m-auto size-full max-h-none max-w-none bg-transparent p-0 text-white backdrop:bg-navy-950/95" aria-label={t.gallery.label}>
+    <div class="grid size-full grid-rows-[auto_1fr_auto]">
+      <div class="flex items-center justify-between px-4 py-3 sm:px-6">
+        <p class="font-mono text-sm text-navy-200 ltr" dir="ltr" aria-live="polite" data-counter></p>
+        <button type="button" data-close class="inline-flex size-11 items-center justify-center border border-white/25 hover:border-white/60" autofocus>
+          <Icon name="close" size={22} />
+          <span class="sr-only">{t.gallery.close}</span>
+        </button>
+      </div>
+      <figure class="relative grid min-h-0 place-items-center px-14 sm:px-20">
+        <img data-image alt="" class="max-h-full max-w-full object-contain" />
+        <figcaption data-caption class="absolute inset-x-0 bottom-0 mx-auto w-fit max-w-[90%] bg-navy-950/85 px-4 py-2 text-center text-sm text-navy-100 empty:hidden"></figcaption>
+        <button type="button" data-prev class="absolute start-2 top-1/2 inline-flex size-11 -translate-y-1/2 items-center justify-center border border-white/25 bg-navy-950/60 hover:border-white/60 sm:start-4">
+          <Icon name="chevron-left" size={24} />
+          <span class="sr-only">{t.gallery.prev}</span>
+        </button>
+        <button type="button" data-next class="absolute end-2 top-1/2 inline-flex size-11 -translate-y-1/2 items-center justify-center border border-white/25 bg-navy-950/60 hover:border-white/60 sm:end-4">
+          <Icon name="chevron-right" size={24} />
+          <span class="sr-only">{t.gallery.next}</span>
+        </button>
+      </figure>
+      <div class="h-4"></div>
+    </div>
+  </dialog>
+</div>
+
+<script>
+  document.querySelectorAll<HTMLElement>("[data-gallery]").forEach((root) => {
+    const links = [...root.querySelectorAll<HTMLAnchorElement>("a[data-full]")];
+    const dialog = root.querySelector<HTMLDialogElement>(".lc-lightbox");
+    if (!dialog || !links.length) return;
+    const img = dialog.querySelector<HTMLImageElement>("[data-image]")!;
+    const cap = dialog.querySelector<HTMLElement>("[data-caption]")!;
+    const counter = dialog.querySelector<HTMLElement>("[data-counter]")!;
+    const rtl = document.documentElement.dir === "rtl";
+    let index = 0;
+    const show = (i: number) => {
+      index = (i + links.length) % links.length;
+      const a = links[index]!;
+      img.src = a.dataset.full!;
+      img.alt = a.querySelector("img")?.alt ?? "";
+      cap.textContent = a.dataset.caption ?? "";
+      counter.textContent = `${index + 1} / ${links.length}`;
+    };
+    links.forEach((a, i) =>
+      a.addEventListener("click", (e) => {
+        e.preventDefault();
+        show(i);
+        dialog.showModal();
+      }),
+    );
+    dialog.querySelector("[data-close]")?.addEventListener("click", () => dialog.close());
+    dialog.querySelector("[data-prev]")?.addEventListener("click", () => show(index - 1));
+    dialog.querySelector("[data-next]")?.addEventListener("click", () => show(index + 1));
+    dialog.addEventListener("keydown", (e) => {
+      if (e.key === "ArrowRight") show(index + (rtl ? -1 : 1));
+      if (e.key === "ArrowLeft") show(index + (rtl ? 1 : -1));
+    });
+    dialog.addEventListener("click", (e) => {
+      if (e.target === dialog) dialog.close();
+    });
+    dialog.addEventListener("close", () => links[index]?.focus());
+  });
+</script>

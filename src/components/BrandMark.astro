@@ -1,0 +1,57 @@
+---
+/**
+ * The Logic Controls icon mark (gear half + "P" + three circuit traces) as inline SVG.
+ * `tone`: "light" (original colours, for white), "dark" (lifted colours, for navy), "mono" (currentColor —
+ * use for watermarks/decoration with an opacity utility).
+ */
+import { MARK, MARK_PALETTES, MARK_VIEWBOX, MARK_VIEWBOX_SQUARE } from "./brand-mark";
+import { uid } from "./uid";
+
+interface Props {
+  tone?: "light" | "dark" | "mono";
+  square?: boolean;
+  class?: string;
+  /** Accessible name; omit when decorative. */
+  title?: string;
+}
+
+const { tone = "light", square = false, class: className, title } = Astro.props;
+const id = uid("lcm");
+const pal = tone === "mono" ? null : MARK_PALETTES[tone];
+const blue = pal ? `url(#${id}-b)` : "currentColor";
+const gray = pal ? `url(#${id}-g)` : "currentColor";
+---
+
+<svg
+  xmlns="http://www.w3.org/2000/svg"
+  viewBox={square ? MARK_VIEWBOX_SQUARE : MARK_VIEWBOX}
+  class={className}
+  role={title ? "img" : undefined}
+  aria-label={title}
+  aria-hidden={title ? undefined : "true"}
+  focusable="false"
+>
+  {
+    pal && (
+      <defs>
+        <linearGradient id={`${id}-b`} x1="0" y1="320" x2="0" y2="628" gradientUnits="userSpaceOnUse">
+          <stop offset="0" stop-color={pal.blue[0]} />
+          <stop offset="1" stop-color={pal.blue[1]} />
+        </linearGradient>
+        <linearGradient id={`${id}-g`} x1="0" y1="322" x2="0" y2="616" gradientUnits="userSpaceOnUse">
+          <stop offset="0" stop-color={pal.gray[0]} />
+          <stop offset="1" stop-color={pal.gray[1]} />
+        </linearGradient>
+      </defs>
+    )
+  }
+  <path fill={blue} d={MARK.ring} />
+  <path fill={blue} d={MARK.p} />
+  <g fill="none" stroke={gray} stroke-width={MARK.traceStroke} stroke-miterlimit="10">
+    {MARK.traces.map((d) => <path d={d} />)}
+  </g>
+  <path fill={gray} d={MARK.stub} />
+  <g fill="none" stroke={gray} stroke-width={MARK.ringStroke}>
+    {MARK.rings.map(([cx, cy]) => <circle cx={cx} cy={cy} r={MARK.ringRadius} />)}
+  </g>
+</svg>

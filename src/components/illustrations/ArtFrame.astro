@@ -1,0 +1,191 @@
+---
+/**
+ * Root of every illustration: <svg> + palette + technical grid + floor line + play-state wiring.
+ * Illustrations put their drawing (and an inline <style> with their own keyframes) in the slot.
+ * See STYLE.md in this folder for the visual language and the class vocabulary.
+ */
+import type { ArtProps } from "./types";
+
+interface Props extends ArtProps {
+  /** Per-instance id prefix (from uid()). */
+  uid: string;
+  /** Short namespace for this illustration's CSS (root gets class `lca-<name>`). */
+  name: string;
+  viewBox?: string;
+  /** y of the floor line, or false for none. */
+  floor?: number | false;
+}
+
+const { uid: u, name, variant, size, label, class: cls, viewBox = "0 0 400 300", floor = 258 } = Astro.props;
+const [, , w = 400, h = 300] = viewBox.split(/\s+/).map(Number);
+const style =
+  [
+    size != null && `inline-size:${typeof size === "number" ? `${size}px` : size}`,
+    Math.abs(w / h - 4 / 3) > 0.01 && `aspect-ratio:${w}/${h}`,
+  ]
+    .filter(Boolean)
+    .join(";") || undefined;
+const a11y = label ? { role: "img", "aria-label": label } : { "aria-hidden": "true" as const };
+---
+
+<svg class:list={["lca", `lca-${name}`, cls]} viewBox={viewBox} data-lca data-variant={variant} style={style} {...a11y}>
+  <defs>
+    <pattern id={`${u}_g`} width="100" height="100" patternUnits="userSpaceOnUse">
+      <path class="lca-g1" d="M20 0V100M40 0V100M60 0V100M80 0V100M0 20H100M0 40H100M0 60H100M0 80H100"></path>
+      <path class="lca-g2" d="M.5 0V100M0 .5H100"></path>
+    </pattern>
+    <radialGradient id={`${u}_r`} cx=".5" cy=".46" r=".62">
+      <stop offset=".35" stop-color="#fff"></stop>
+      <stop offset="1" stop-color="#fff" stop-opacity="0"></stop>
+    </radialGradient>
+    <mask id={`${u}_m`}><rect width={w} height={h} fill={`url(#${u}_r)`}></rect></mask>
+  </defs>
+  <g mask={`url(#${u}_m)`} class="n">
+    <rect width={w} height={h} fill={`url(#${u}_g)`}></rect>
+    {floor !== false && <path class="lca-fl" d={`M${w * 0.03} ${floor}H${w * 0.97}`}></path>}
+  </g>
+  <slot />
+</svg>
+
+<style is:global>
+  /* ---- palette (light = default). Tokens come from global.css @theme; hex fallbacks keep the art
+     rendering even if a token is renamed or tree-shaken. */
+  .lca {
+    --i-ink: var(--color-navy-800, #012c75);
+    --i-ln: var(--color-navy-400, #628ed3);
+    --i-f: var(--color-white, #fff);
+    --i-t: var(--color-navy-50, #f0f6fd);
+    --i-s: var(--color-navy-100, #deebfd);
+    --i-m: var(--color-charcoal-100, #f3f3f6);
+    --i-m2: var(--color-charcoal-200, #e5e6eb);
+    --i-m3: var(--color-charcoal-300, #d1d2d8);
+    --i-b: var(--color-royal-600, #0556ad);
+    --i-b2: var(--color-royal-200, #c1e0ff);
+    --i-k: var(--color-navy-900, #061b45);
+    --i-kl: var(--color-royal-300, #95c6ff);
+    --i-w: var(--color-royal-400, #5fa4fa);
+    --i-sig: var(--color-signal-500, #f79719);
+    --i-tr: var(--color-charcoal-400, #a7a7ab);
+    --i-grid: rgb(3 64 145 / 0.075);
+    --i-shd: rgb(4 14 39 / 0.07);
+
+    display: block;
+    inline-size: 100%;
+    block-size: auto;
+    aspect-ratio: 4 / 3;
+    overflow: hidden;
+    fill: none;
+    stroke: var(--i-ink);
+    stroke-width: 2;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+  }
+  .lca[data-variant="dark"],
+  .on-dark .lca:not([data-variant="light"]) {
+    --i-ink: var(--color-navy-200, #c1d6f6);
+    --i-ln: var(--color-navy-400, #628ed3);
+    --i-f: var(--color-navy-900, #061b45);
+    --i-t: #0b2a63;
+    --i-s: var(--color-navy-950, #040e27);
+    --i-m: #0f2250;
+    --i-m2: #0a1a40;
+    --i-m3: #1d3468;
+    --i-b: var(--color-royal-500, #257ae0);
+    --i-b2: #0d3a85;
+    --i-k: #020817;
+    --i-kl: var(--color-royal-300, #95c6ff);
+    --i-w: var(--color-royal-400, #5fa4fa);
+    --i-sig: var(--color-signal-400, #ffb02b);
+    --i-tr: var(--color-charcoal-500, #7e8087);
+    --i-grid: rgb(150 182 232 / 0.1);
+    --i-shd: rgb(0 0 0 / 0.28);
+  }
+
+  /* ---- vocabulary (see STYLE.md) */
+  .lca .f { fill: var(--i-f); }
+  .lca .t { fill: var(--i-t); }
+  .lca .s { fill: var(--i-s); }
+  .lca .m { fill: var(--i-m); }
+  .lca .m2 { fill: var(--i-m2); }
+  .lca .m3 { fill: var(--i-m3); }
+  .lca .b { fill: var(--i-b); }
+  .lca .b2 { fill: var(--i-b2); }
+  .lca .k { fill: var(--i-k); }
+  .lca .w { fill: var(--i-w); }
+  .lca .y { fill: var(--i-sig); }
+  .lca .ink { fill: var(--i-ink); }
+  .lca .n { stroke: none; }
+  .lca .d { stroke-width: 1.25; }
+  .lca .h { stroke-width: 0.75; }
+  .lca .l { stroke: var(--i-ln); }
+  .lca .q { stroke: var(--i-kl); }
+  .lca .e { stroke: var(--i-sig); }
+  .lca .bt { stroke-linecap: butt; }
+  .lca .sh { fill: var(--i-shd); stroke: none; }
+  .lca .lca-g1 { stroke: var(--i-grid); stroke-width: 0.6; }
+  .lca .lca-g2 { stroke: var(--i-grid); stroke-width: 1.2; }
+  .lca .lca-fl { stroke: var(--i-ln); stroke-width: 1.25; opacity: 0.45; }
+
+  /* Brand signal: grey trace with 45° bends ending in a ring node (the logo's motif). */
+  .lca .tr { stroke: var(--i-tr); stroke-width: 2.5; }
+  .lca .rn { stroke: var(--i-tr); stroke-width: 2; }
+  /* Amber pulse running along a trace. Needs pathLength="100". --t duration, --d delay. Head arrives at 50%. */
+  .lca .p {
+    stroke: var(--i-sig);
+    stroke-width: 2.5;
+    stroke-dasharray: 12 200;
+    stroke-dashoffset: 12;
+    animation: lca-p var(--t, 4s) var(--d, 0s) linear infinite;
+    transition: stroke-width 0.3s;
+  }
+  /* Node lights up when the pulse arrives (same --t/--d as its pulse). */
+  .lca .nd { fill: var(--i-sig); stroke: none; opacity: 0; animation: lca-nd var(--t, 4s) var(--d, 0s) infinite; }
+  .lca .pg {
+    stroke: var(--i-sig);
+    stroke-width: 1.5;
+    opacity: 0;
+    transform-box: fill-box;
+    transform-origin: center;
+    animation: lca-pg var(--t, 4s) var(--d, 0s) ease-out infinite;
+  }
+  .lca .sp { transform-box: fill-box; transform-origin: center; animation: lca-sp var(--t, 6s) linear infinite; }
+  .lca .fw { stroke-dasharray: 3 7; animation: lca-fw var(--t, 0.8s) linear infinite; }
+
+  @keyframes lca-p {
+    0% { stroke-dashoffset: 12; }
+    56%, 100% { stroke-dashoffset: -100; }
+  }
+  @keyframes lca-nd {
+    0%, 46% { opacity: 0; }
+    50%, 62% { opacity: 1; }
+    90%, 100% { opacity: 0; }
+  }
+  @keyframes lca-pg {
+    0%, 49% { opacity: 0; transform: scale(1); }
+    50% { opacity: 0.9; transform: scale(1); }
+    78%, 100% { opacity: 0; transform: scale(2.6); }
+  }
+  @keyframes lca-sp { to { transform: rotate(1turn); } }
+  @keyframes lca-fw { to { stroke-dashoffset: -10; } }
+
+  /* Parent card hover/focus: signal gets a touch bolder (JS also speeds the loop up smoothly). */
+  .group:is(:hover, :focus-within) .lca .p { stroke-width: 3.25; }
+
+  /* Offscreen / hidden tab (set by src/scripts/motion/play-when-visible.ts). */
+  .lca[data-play="0"] * { animation-play-state: paused !important; }
+
+  /* Reduced motion: no animation, show the most informative pose. */
+  @media (prefers-reduced-motion: reduce) {
+    .lca * { animation: none !important; }
+    .lca .p { stroke-dashoffset: -44; }
+    .lca .nd { opacity: 1; }
+    .lca .rmh { opacity: 0 !important; }
+    .lca .rms { opacity: 1 !important; }
+  }
+</style>
+
+<script>
+  import { playWhenVisible } from "~/scripts/motion/play-when-visible";
+  playWhenVisible();
+  document.addEventListener("astro:page-load", () => playWhenVisible());
+</script>

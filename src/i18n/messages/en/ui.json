@@ -6,21 +6,96 @@
     "projects": "Projects",
     "about": "About",
     "contact": "Contact",
-    "foreign": "Setting up in Egypt?"
+    "foreign": "Setting up in Egypt?",
+    "technologies": "Technologies",
+    "privacy": "Privacy",
+    "servicesList": {
+      "controlPanels": "Control panels",
+      "plcHmi": "PLC & HMI programming",
+      "machineAutomation": "Machine automation",
+      "commissioning": "Commissioning & support"
+    },
+    "industriesList": {
+      "foodBeverage": "Food & beverage",
+      "pharma": "Pharmaceutical",
+      "cosmetics": "Cosmetics & filling",
+      "packaging": "Packaging"
+    }
   },
   "cta": {
     "quote": "Request a quote",
     "whatsapp": "WhatsApp an engineer",
     "call": "Call us",
-    "email": "Email us"
+    "email": "Email us",
+    "emailEngineer": "Email an engineer",
+    "learnMore": "Learn more",
+    "viewProject": "View project",
+    "viewAll": "View all",
+    "inEgyptWhatsapp": "In Egypt? Message us on WhatsApp"
   },
   "a11y": {
     "skip": "Skip to content",
     "menu": "Menu",
     "closeMenu": "Close menu",
-    "language": "Language"
+    "language": "Language",
+    "mainNav": "Main",
+    "footerNav": "Footer",
+    "breadcrumbs": "Breadcrumb",
+    "homeLink": "Logic Controls — home page",
+    "newTab": "opens in a new tab",
+    "currentLanguage": "current language"
+  },
+  "whatsapp": {
+    "fabLabel": "Chat with an engineer on WhatsApp",
+    "message": "Hello Logic Controls, I would like to talk to an engineer about an automation project."
+  },
+  "email": {
+    "fabLabel": "Email an engineer",
+    "subject": "Automation project inquiry"
+  },
+  "contact": {
+    "phone": "Phone",
+    "email": "Email",
+    "whatsapp": "WhatsApp",
+    "address": "Address",
+    "addressValue": "6th of October City, Giza, Egypt"
   },
   "footer": {
+    "pitch": "PLC control panels, HMI/SCADA and machine automation — designed, built, programmed and commissioned by our own engineers in Egypt.",
+    "servicesTitle": "Services",
+    "industriesTitle": "Industries",
+    "companyTitle": "Company",
+    "contactTitle": "Contact",
+    "zonesTitle": "Industrial zones we serve",
+    "zones": "6th of October · 10th of Ramadan · Sadat City · Obour · Ain Sokhna (SCZONE)",
+    "facebook": "Logic Controls on Facebook",
     "rights": "All rights reserved."
+  },
+  "platforms": {
+    "title": "Platforms we program & integrate",
+    "note": "Brand names and logos belong to their owners. They are shown only to identify the hardware our engineers work with."
+  },
+  "gallery": {
+    "label": "Image viewer",
+    "open": "Open image {n} of {total}",
+    "close": "Close image viewer",
+    "prev": "Previous image",
+    "next": "Next image",
+    "counter": "{n} / {total}"
+  },
+  "video": {
+    "play": "Play video",
+    "playNamed": "Play video: {title}"
+  },
+  "faq": {
+    "title": "Frequently asked questions"
+  },
+  "process": {
+    "step": "Step"
+  },
+  "notFound": {
+    "title": "Page not found",
+    "body": "The page you are looking for does not exist or has moved.",
+    "home": "Go to the homepage"
   }
 }

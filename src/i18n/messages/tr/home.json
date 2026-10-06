@@ -1,0 +1,98 @@
+{
+  "seo": {
+    "title": "Logic Controls | Mısır'da PLC ve Makine Otomasyonu",
+    "description": "Mısır'daki gıda, süt, ilaç, kozmetik ve ambalaj tesisleri için otomasyon panoları, PLC/HMI programlama, SCADA ve devreye alma. 50+ tamamlanmış proje."
+  },
+  "hero": {
+    "eyebrow": "6 Ekim Şehri, Mısır merkezli endüstriyel otomasyon mühendisleri",
+    "title": "Mısır'daki fabrikalar için otomasyon panoları, PLC programlama ve makine otomasyonu",
+    "lead": "Kontrol sistemini tasarlıyor; PLC, HMI ve SCADA'yı programlıyor ve makineyi tesisinizde devreye alıyoruz. Gıda, süt ürünleri, ilaç, kozmetik ve ambalaj hatları için.",
+    "proof": "Endüstriyel otomasyonda 4+ yıllık deneyime sahip ekibimizle 50+ tamamlanmış proje",
+    "ctaPrimary": "Teklif isteyin",
+    "ctaSecondary": "Bir mühendise WhatsApp'tan yazın",
+    "imageAlt": "Paslanmaz çelik pastörizatör dolabındaki Wecon dokunmatik ekran; prosesi Manuel, Otomatik, CIP, Ayarlar, Reçeteler ve Alarmlar sekmeleriyle gösteriyor"
+  },
+  "audiences": {
+    "title": "Kimlerle çalışıyoruz",
+    "local": {
+      "title": "Mısır'daki fabrikalar ve makine üreticileri",
+      "text": "Yeni makineler, eski makinelerin modernizasyonu, arızalar ve proses iyileştirmeleri. Sahanıza gelen ve operatörlerinizin dilini konuşan mühendisler.",
+      "cta": "Hizmetlerimizi inceleyin"
+    },
+    "foreign": {
+      "title": "Mısır'da fabrika mı kuruyorsunuz?",
+      "text": "İthal hatlarınızı devreye alan, HMI ekranlarını operatörleriniz için Arapçaya uyarlayan ve ilk çalıştırmadan sonra tesisinize destek veren yerel bir mühendislik ekibi.",
+      "cta": "Yabancı üreticiler için"
+    }
+  },
+  "services": {
+    "title": "Neler yapıyoruz",
+    "intro": "Elektrik tasarımından ilk çalıştırmaya kadar tek ekip. Sisteminizi tasarlayan mühendisler onu programlar ve devreye de alır.",
+    "cta": "Tüm hizmetler"
+  },
+  "projects": {
+    "title": "Son projelerimiz",
+    "intro": "Projelerimizden gerçek makineler ve gerçek fotoğraflar. Müşteri adları paylaşılmamaktadır.",
+    "cta": "Tüm projeler"
+  },
+  "industries": {
+    "title": "Hizmet verdiğimiz sektörler",
+    "intro": "İşlerimizin çoğu, ürün kalitesini sıcaklığın, sürenin, dozun veya konumun belirlediği tesislerde.",
+    "cta": "Tüm sektörler"
+  },
+  "why": {
+    "title": "Tesisler neden bizimle çalışıyor",
+    "items": [
+      {
+        "title": "Tasarımdan ilk çalıştırmaya tek ekip",
+        "text": "Kontrol sisteminizi tasarlayan mühendis onu programlar ve devreye de alır. Ekipler arasında hiçbir bilgi kaybolmaz."
+      },
+      {
+        "title": "Beş platform, marka bağımlılığı yok",
+        "text": "Siemens, Schneider Electric, Delta, LS Electric ve Wecon. Bütçenize, yedek parça imkânlarınıza ve bakım ekibinize uyan platformu öneriyoruz."
+      },
+      {
+        "title": "Operatörlerinizin anladığı ekranlar",
+        "text": "Arapça, İngilizce veya iki dilli HMI ekranları; anlaşılır alarmlar, manuel ve otomatik modlar ve operatörlerin seçebildiği reçeteler."
+      },
+      {
+        "title": "Test edilmiş ve belgelenmiş",
+        "text": "Her I/O noktası, kilitleme ve alarm üretimden önce kontrol edilir. Bakım ekibinizin kullanabileceği çizimler ve notlar teslim edilir."
+      }
+    ]
+  },
+  "foreignBand": {
+    "title": "Mısır'da yeni bir tesis mi kuruyorsunuz?",
+    "text": "Yeni tesisler için yerel mühendislik ekibiyiz: ithal hatların devreye alınması, I/O ve loop testleri, yerel operatörler için Arapça HMI'lar ve ilk çalıştırma sonrası destek.",
+    "cta": "Mısır'da fabrika kurulumu"
+  },
+  "faq": {
+    "title": "Tesis yöneticilerinin sorduğu sorular",
+    "items": [
+      {
+        "q": "Hangi PLC markalarıyla çalışıyorsunuz?",
+        "a": "Siemens, Schneider Electric, Delta, LS Electric ve Wecon'u programlıyor ve entegre ediyoruz. Farklı kontrolörlerle gelen makineleri de dokümantasyonlarını inceledikten sonra devreye alıyor ve destekliyoruz."
+      },
+      {
+        "q": "Otomasyon panosunu da siz mi üretiyorsunuz?",
+        "a": "Evet. Elektrik tasarımını yapıyor, panoyu monte edip kablajını tamamlıyor ve sahaya gönderilmeden önce PLC programıyla birlikte test ediyoruz."
+      },
+      {
+        "q": "Çizimi veya programı olmayan bir makine üzerinde çalışabilir misiniz?",
+        "a": "Evet. Kablajı takip ediyor, giriş ve çıkışları belgeliyor, eski program kullanılamıyorsa yeni bir program yazıyoruz."
+      },
+      {
+        "q": "HMI ekranları Arapça olabilir mi?",
+        "a": "Evet. HMI ekranlarını Arapça, İngilizce veya iki dilli olarak tasarlıyoruz. Şampuan dolum makinelerimizden biri, yerel operatörleri için Arapça ekranlarla çalışıyor."
+      },
+      {
+        "q": "Büyük Kahire dışında da çalışıyor musunuz?",
+        "a": "Evet. Merkezimiz 6 Ekim Şehri'nde; 10. Ramazan, Sadat Şehri, Burg El Arab ve Süveyş Kanalı Ekonomik Bölgesi dahil Mısır'ın sanayi bölgelerinde çalışıyoruz."
+      },
+      {
+        "q": "Nasıl teklif alabilirim?",
+        "a": "Teklif formunu kullanın ya da makinenin, panonun ve etiket plakalarının fotoğraflarıyla birlikte kısa bir açıklamayı WhatsApp'tan gönderin. Bir mühendisimiz sorularıyla, saha ziyareti önerisiyle veya teklifle size dönüş yapar."
+      }
+    ]
+  }
+}

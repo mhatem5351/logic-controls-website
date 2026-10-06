@@ -1,0 +1,1936 @@
+---
+/**
+ * HmiDemo — a playable HTST pasteurizer HMI (process mimic + PLC logic simulated in the browser).
+ *
+ * - variant "full": intro block (title, lead, three "what you're seeing" points) + panel + caption/CTA.
+ *   variant "compact": panel + caption/CTA only (for service pages that already have their own heading).
+ * - tone: "light" (default, for white / light-grey bands) or "dark" (navy bands) — only affects the text
+ *   around the panel; the panel itself is the same device in both.
+ * - The panel is a static, fully-rendered SVG/HTML snapshot until the visitor presses a button
+ *   (~6 KB gz script, no libraries). It pauses offscreen / in hidden tabs and respects reduced motion.
+ * - The HMI screen is always LTR (process diagrams are), but every label is localised.
+ */
+import type enHmi from "~/i18n/messages/en/hmi.json";
+import { getMessages, localePath, LOCALE_META, type Locale } from "~/i18n";
+import BrandMark from "~/components/BrandMark.astro";
+import { uid } from "~/components/uid";
+import { RECIPES } from "~/scripts/motion/hmi-sim";
+
+interface Props {
+  locale: Locale;
+  variant?: "full" | "compact";
+  tone?: "light" | "dark";
+  /** Heading level of the intro title (full variant). */
+  headingLevel?: 2 | 3;
+  id?: string;
+  class?: string;
+}
+
+const { locale, variant = "full", tone = "light", headingLevel = 2, id, class: className } = Astro.props;
+const t = getMessages(locale).hmi as typeof enHmi;
+const H = headingLevel === 3 ? "h3" : "h2";
+const dir = LOCALE_META[locale].dir; // natural-language blocks inside the (always LTR) screen follow the page
+const u = uid("hmi");
+const quote = `${localePath(locale, "contact")}#quote`;
+const R = RECIPES.milk;
+
+// Strings the runtime needs (keeps the intro/loop copy out of the attribute).
+const runtime = {
+  status: t.status,
+  mimic: { forward: t.mimic.forward, divert: t.mimic.divert, storage: t.mimic.storage, drain: t.mimic.drain },
+  recipe: t.recipe,
+  trend: { show: t.trend.show, hide: t.trend.hide },
+  alarms: t.alarms,
+  msg: t.msg,
+  cip: t.cip,
+};
+
+// Holding tube, inlet → outlet, split into segments so the product temperature can travel along it.
+const HOLD: [string, number][] = [
+  ["M455 188V168H576", 141],
+  ["M576 168H700", 124],
+  ["M700 168A20 20 0 0 0 700 128", 62.8],
+  ["M700 128H590", 110],
+  ["M590 128H480", 110],
+  ["M480 128A20 20 0 0 1 480 88", 62.8],
+  ["M480 88H600", 120],
+  ["M600 88H748", 148],
+];
+const HOLD_LEN = HOLD.reduce((s, [, l]) => s + l, 0);
+let acc = 0;
+const holdSegs = HOLD.map(([d, l]) => {
+  const a = acc / HOLD_LEN;
+  acc += l;
+  return { d, a: a.toFixed(3), b: (acc / HOLD_LEN).toFixed(3) };
+});
+
+// Product / utility pipes (drawn in flow direction).
+const PIPES: [string, string][] = [
+  ["raw", "M92 246H128V190H162V214"],
+  ["feed", "M178 292V340H219"],
+  ["dis", "M232 327H318V310"],
+  ["fwd", "M760 76V44H330V188"],
+  ["div", "M772 88H792V22H194V214"],
+  ["out", "M572 214H776V234"],
+  ["hwr", "M420 310V392H442"],
+  ["hwp", "M455 379H590"],
+  ["hws", "M610 362V346H452V310"],
+  ["ice", "M508 334V310M540 310V334"],
+  ["steam", "M832 402H630"],
+];
+const tag = (x: number, y: number, a: string, n: string) => ({ x, y, a, n });
+const TAGS = [
+  tag(282, 300, "FT", "101"),
+  tag(428, 160, "TT", "101"),
+  tag(724, 64, "TT", "102"),
+  tag(626, 236, "TT", "103"),
+  tag(520, 368, "TT", "201"),
+  tag(792, 378, "PT", "201"),
+];
+---
+
+<div
+  class:list={["lc-hmi-wrap", tone === "dark" && "on-dark", className]}
+  data-variant={variant}
+  data-tone={tone}
+  id={id}
+>
+  {
+    variant === "full" && (
+      <header class="lc-hmi-intro">
+        <div>
+          <p class="lc-hmi-eyebrow type-label">
+            <span class="slant-bar" aria-hidden="true" />
+            {t.intro.eyebrow}
+          </p>
+          <H class="type-h2 lc-hmi-title">{t.intro.title}</H>
+          <p class="type-lead lc-hmi-lead">{t.intro.lead}</p>
+        </div>
+        <div class="lc-hmi-seeing">
+          <p class="type-label">{t.intro.seeing}</p>
+          <ul>
+            {t.intro.bullets.map((b, i) => (
+              <li>
+                <span class="lc-hmi-bico" aria-hidden="true">
+                  <svg viewBox="0 0 20 20" width="20" height="20">
+                    {i === 0 && <path d="M6 9V6.5a4 4 0 0 1 8 0V9M4.5 9h11v8h-11zM10 12v2" />}
+                    {i === 1 && <path d="M10 3a5 5 0 0 0-5 5v3.5L3.5 14h13L15 11.5V8a5 5 0 0 0-5-5zM8 16.5a2 2 0 0 0 4 0" />}
+                    {i === 2 && <path d="M3 3v14h14M6 13l3.5-4 3 2.5L17 6" />}
+                  </svg>
+                </span>
+                <span>
+                  <strong>{b.title}</strong> {b.text}
+                </span>
+              </li>
+            ))}
+          </ul>
+        </div>
+      </header>
+    )
+  }
+
+  <figure class="lc-hmi" data-hmi data-i18n={JSON.stringify(runtime)} aria-labelledby={`${u}-cap`}>
+    <p class="lc-hmi-try"><span class="lc-led" data-blink aria-hidden="true"></span>{t.intro.try}</p>
+    <div class="lc-hmi-dev">
+      <div
+        class="lc-hmi-screen"
+        dir="ltr"
+        role="group"
+        aria-label={t.a11y.panel}
+        data-run="0"
+        data-fdv="div"
+        data-mode="auto"
+        data-cip="-1"
+        data-fluid="milk"
+        data-recipe="milk"
+      >
+        <!-- status bar -->
+        <div class="hs-bar">
+          <div class="hs-brand">
+            <BrandMark tone="dark" class="hs-mark" />
+            <span class="hs-name">Logic Controls</span>
+          </div>
+          <div class="hs-unit"><span dir="auto">{t.status.unit}</span><span class="hs-screen" dir="auto">{t.status.screen}</span></div>
+          <div class="hs-right">
+            <span class="hs-chip hs-mode" data-v="mode">AUTO</span>
+            <span class="hs-chip hs-state" data-v="state">{t.status.ready}</span>
+            <span class="hs-chip hs-alm" data-v="almCount" title={t.alarms.unacked}>0</span>
+            <span class="hs-sim">{t.status.sim}</span>
+            <time class="hs-clock" data-v="clock">--:--:--</time>
+          </div>
+        </div>
+
+        <!-- process mimic -->
+        <div class="hs-mimic">
+          <svg viewBox="0 0 840 432" role="img" aria-label={t.a11y.mimic} focusable="false">
+            <defs>
+              <pattern id={`${u}-pl`} width="4.5" height="8" patternUnits="userSpaceOnUse">
+                <rect width="2.2" height="8" class="m-plate" />
+              </pattern>
+              <clipPath id={`${u}-raw`}><rect x="24" y="98" width="66" height="162" rx="9" /></clipPath>
+              <clipPath id={`${u}-sto`}><rect x="746" y="236" width="60" height="94" rx="6" /></clipPath>
+            </defs>
+
+            <!-- equipment: tanks -->
+            <g class="m-eq">
+              <rect x="22" y="96" width="70" height="166" rx="11" />
+              <path d="M30 262v16M84 262v16" class="m-leg" />
+              <path d="M150 206h56v70l-20 16h-16l-20-16z" />
+              <rect x="744" y="234" width="64" height="98" rx="8" />
+              <path d="M752 332v12M800 332v12" class="m-leg" />
+            </g>
+            <rect class="m-lvl" data-lvl="raw" data-y0="98" data-h="162" x="24" y="131" width="66" height="129" clip-path={`url(#${u}-raw)`} />
+            <rect class="m-lvl" data-lvl="bt" data-y0="208" data-h="66" x="152" y="241" width="52" height="33" />
+            <rect class="m-lvl" data-lvl="sto" data-y0="236" data-h="94" x="746" y="313" width="60" height="17" clip-path={`url(#${u}-sto)`} />
+
+            <!-- pipes: outer wall, then the product inside (coloured by temperature, dashes = flow) -->
+            <g class="m-pipe">
+              {PIPES.map(([, d]) => <path d={d} />)}
+              {holdSegs.map((s) => <path d={s.d} />)}
+            </g>
+            <g class="m-flow">
+              {PIPES.map(([k, d]) => <path d={d} data-p={k} />)}
+              {holdSegs.map((s) => <path d={s.d} data-p="hold" data-a={s.a} data-b={s.b} />)}
+            </g>
+
+            <!-- plate heat exchanger -->
+            <g class="m-phe">
+              <path class="m-bar" d="M292 186h286M292 312h286" />
+              <rect x="304" y="194" width="252" height="110" fill={`url(#${u}-pl)`} />
+              <rect class="m-frame" x="296" y="190" width="8" height="118" rx="1.5" />
+              <rect class="m-frame" x="556" y="190" width="10" height="118" rx="1.5" />
+              <rect class="m-frame" x="398" y="192" width="5" height="114" />
+              <rect class="m-frame" x="472" y="192" width="5" height="114" />
+              <g class="m-sec">
+                <rect x="320" y="240" width="64" height="18" rx="2" /><text x="352" y="253">{t.mimic.regen}</text>
+                <rect x="406" y="240" width="64" height="18" rx="2" /><text x="438" y="253">{t.mimic.heating}</text>
+                <rect x="482" y="240" width="64" height="18" rx="2" /><text x="514" y="253">{t.mimic.cooling}</text>
+              </g>
+            </g>
+
+            <!-- pumps -->
+            <g class="m-pump" data-pump="feed" transform="translate(232 340)">
+              <circle r="13" />
+              <g class="m-imp"><circle r="8" /><path d="M0 0V-8M0 0l7 4M0 0l-7 4" /></g>
+            </g>
+            <g class="m-pump" data-pump="hw" transform="translate(455 392)">
+              <circle r="13" />
+              <g class="m-imp"><circle r="8" /><path d="M0 0V-8M0 0l7 4M0 0l-7 4" /></g>
+            </g>
+            <!-- steam/hot-water heater -->
+            <g class="m-eq">
+              <rect x="590" y="362" width="40" height="50" rx="5" />
+              <path class="m-coil" d="M598 372h24M598 380h24M598 388h24M598 396h24M598 404h24" />
+            </g>
+
+            <!-- valves -->
+            <g class="m-valve" data-valve="lv" transform="translate(110 246)">
+              <path d="M-9-6L0 0-9 6zM9-6L0 0 9 6z" />
+            </g>
+            <g class="m-valve m-tcv" data-valve="tcv" transform="translate(700 402)">
+              <path d="M0 0v-12" class="m-stem" />
+              <path d="M-8-12a8 8 0 0 1 16 0z" class="m-act" />
+              <path d="M-9-6L0 0-9 6zM9-6L0 0 9 6z" />
+            </g>
+            <g class="m-fdv" transform="translate(760 88)">
+              <path d="M0 0v14" class="m-stem" />
+              <rect x="-9" y="14" width="18" height="9" rx="2" class="m-act" />
+              <path class="m-fin" d="M-12-7L0 0-12 7z" />
+              <path class="m-ffwd" d="M-7-12L0 0 7-12z" />
+              <path class="m-fdiv" d="M12-7L0 0 12 7z" />
+              <g class="m-lock" transform="translate(16 18)">
+                <rect x="-6" y="-2" width="12" height="9" rx="1.5" />
+                <path d="M-3.5-2v-2.5a3.5 3.5 0 0 1 7 0V-2" />
+              </g>
+            </g>
+
+            <!-- instrument bubbles (ISA-5.1) -->
+            <g class="m-tags">
+              <path d="M282 311v16M439 160h16M724 75v13M626 225v-11M520 357v-11M792 389v13" class="m-lead" />
+              {
+                TAGS.map((g) => (
+                  <g transform={`translate(${g.x} ${g.y})`}>
+                    <circle r="11" />
+                    <text y="-1.5">{g.a}</text>
+                    <text y="7">{g.n}</text>
+                  </g>
+                ))
+              }
+            </g>
+
+            <!-- readouts -->
+            <g class="m-ro">
+              <g transform="translate(36 166)"><rect width="42" height="17" rx="2" /><text x="38" y="12.5"><tspan data-v="rawLvl">82.0</tspan> %</text></g>
+              <g transform="translate(157 222)"><rect width="42" height="17" rx="2" /><text x="38" y="12.5"><tspan data-v="btLvl">50.0</tspan> %</text></g>
+              <g transform="translate(752 280)"><rect width="48" height="17" rx="2" /><text x="44" y="12.5"><tspan data-v="stoLvl">18.0</tspan> %</text></g>
+              <g transform="translate(240 268)"><rect width="66" height="17" rx="2" /><text x="62" y="12.5"><tspan data-v="flow">0</tspan> L/h</text></g>
+              <g transform="translate(352 152)" data-alm-ro="TT-101"><rect width="62" height="17" rx="2" /><text x="58" y="12.5"><tspan data-v="th">24.0</tspan> °C</text></g>
+              <g transform="translate(640 55)" data-alm-ro="TT-102"><rect width="62" height="17" rx="2" /><text x="58" y="12.5"><tspan data-v="tt102">24.0</tspan> °C</text></g>
+              <g transform="translate(642 228)"><rect width="56" height="17" rx="2" /><text x="52" y="12.5"><tspan data-v="tout">6.0</tspan> °C</text></g>
+              <g transform="translate(534 360)"><rect width="56" height="17" rx="2" /><text x="52" y="12.5"><tspan data-v="thw">70.0</tspan> °C</text></g>
+              <g transform="translate(718 370)" data-alm-ro="PT-201"><rect width="62" height="17" rx="2" /><text x="58" y="12.5"><tspan data-v="steam">3.0</tspan> bar</text></g>
+              <g transform="translate(716 410)"><rect width="50" height="15" rx="2" /><text x="46" y="11.5"><tspan data-v="valve">0</tspan> %</text></g>
+            </g>
+
+            <!-- alarm indicators next to readouts (ISA-101: shape + colour + number) -->
+            <g class="m-alm" data-p="3" data-alm-ind="TT-101" transform="translate(340 160)"><path d="M0-8L8 0 0 8-8 0z" /><text y="3.5">3</text></g>
+            <g class="m-alm" data-p="1" data-alm-ind="TT-102" transform="translate(628 63)"><path d="M-7-7h14v14h-14z" /><text y="3.5">1</text></g>
+            <g class="m-alm" data-p="2" data-alm-ind="PT-201" transform="translate(818 378)"><path d="M0-8l8 14h-16z" /><text y="4.5">2</text></g>
+
+            <!-- labels -->
+            <g class="m-lbl">
+              <text x="57" y="86">{t.mimic.raw}</text>
+              <text x="57" y="74" class="m-tagtx">T-101</text>
+              <text x="110" y="268" class="m-tagtx">LV-101</text>
+              <text x="212" y="290" class="m-tagtx m-s">B-101</text>
+              <text x="146" y="314" class="m-e">{t.mimic.balance}</text>
+              <text x="232" y="370">{t.mimic.feedPump}</text>
+              <text x="232" y="381" class="m-tagtx">P-101</text>
+              <text x="412" y="342" class="m-e">{t.mimic.phe}</text>
+              <text x="590" y="105">{t.mimic.holding}</text>
+              <text x="590" y="118" class="m-holdv"><tspan data-v="hold">0.0</tspan> s</text>
+              <text x="760" y="134" class="m-tagtx">FDV-101</text>
+              <text x="760" y="147" class="m-fdvst" data-v="fdvTxt">{t.mimic.divert}</text>
+              <text x="520" y="33" class="m-dir">{t.mimic.forward} ←</text>
+              <text x="480" y="16" class="m-dir">{t.mimic.divert} ←</text>
+              <text x="776" y="350" data-v="outLbl">{t.mimic.storage}</text>
+              <text x="776" y="360" class="m-tagtx">T-301</text>
+              <text x="455" y="418">{t.mimic.hwPump}</text>
+              <text x="638" y="356" class="m-s">{t.mimic.hotWater}</text>
+              <text x="548" y="328" class="m-s">{t.mimic.iceWater}</text>
+              <text x="834" y="424" class="m-e">{t.mimic.steam}</text>
+              <text x="700" y="378" class="m-tagtx">TCV-201</text>
+              <text x="178" y="203" class="m-cipl">{t.mimic.cipSupply}</text>
+            </g>
+
+          </svg>
+        </div>
+
+        <!-- process / recipe / manual faceplate -->
+        <div class="hs-side">
+          <section class="hs-main" aria-label={t.kpi.title}>
+            <div class="hs-k">
+              <span class="hs-tag">TT-102</span> {t.kpi.tt102}
+              <span class="hs-fdv"><span class="hs-tag">FDV</span> <b data-v="fdvTxt">{t.mimic.divert}</b></span>
+            </div>
+            <div class="hs-big" data-alm-ro="TT-102">
+              <span class="hs-bigv" data-v="tt102">24.0</span><span class="hs-u">°C</span>
+              <span class="hs-almi" aria-hidden="true">1</span>
+            </div>
+            <div class="hs-ai" aria-hidden="true">
+              <span class="hs-ai-band"></span>
+              <span class="hs-ai-lim"></span>
+              <span class="hs-ai-sp"></span>
+              <span class="hs-ai-ptr"></span>
+            </div>
+            <div class="hs-sub" dir="auto">
+              {t.kpi.limit} <b data-v="limit" dir="ltr">≥ {R.limit.toFixed(1)} °C</b> · {t.kpi.min} <b data-v="minHold" dir="ltr">{R.hold} s</b>
+            </div>
+          </section>
+          <dl class="hs-grid">
+            <div data-alm-ro="TT-101">
+              <dt><span class="hs-tag">TT-101</span> {t.kpi.tt101}</dt>
+              <dd><span data-v="th">24.0</span> °C <small>{t.kpi.sp} <span data-v="sp">{R.sp.toFixed(1)}</span></small></dd>
+            </div>
+            <div><dt>{t.kpi.hold}</dt><dd><span data-v="hold">0.0</span> s</dd></div>
+            <div><dt><span class="hs-tag">FT-101</span> {t.kpi.flow}</dt><dd><span data-v="flow">0</span> L/h</dd></div>
+            <div><dt><span class="hs-tag">TT-201</span> {t.kpi.hw}</dt><dd><span data-v="thw">70.0</span> °C</dd></div>
+            <div><dt><span class="hs-tag">TCV-201</span> {t.kpi.valve}</dt><dd><span data-v="valve">0</span> %</dd></div>
+            <div><dt>{t.kpi.batch} <span data-v="batch" class="hs-tag">B-1041</span></dt><dd><span data-v="litres">0.0</span> L</dd></div>
+          </dl>
+
+          <div class="hs-box hs-recipe" dir={dir}>
+            <p class="hs-h" id={`${u}-rcp`}>{t.recipe.title}</p>
+            <div class="hs-seg" role="group" aria-labelledby={`${u}-rcp`}>
+              <button type="button" data-c="recipe" data-r="milk" aria-pressed="true">{t.recipe.milk}</button>
+              <button type="button" data-c="recipe" data-r="cream" aria-pressed="false">{t.recipe.cream}</button>
+              <button type="button" data-c="recipe" data-r="juice" aria-pressed="false">{t.recipe.juice}</button>
+            </div>
+          </div>
+
+          <div class="hs-box hs-manual" data-show="manual" dir={dir}>
+            <p class="hs-h">{t.controls.manualTitle}</p>
+            <div class="hs-row">
+              <span class="hs-rl">{t.controls.sp}</span>
+              <div class="hs-step">
+                <button type="button" data-c="spDown" aria-label={t.controls.spDown}>−</button>
+                <span class="hs-stepv" dir="ltr"><span data-v="sp">{R.sp.toFixed(1)}</span> °C</span>
+                <button type="button" data-c="spUp" aria-label={t.controls.spUp}>+</button>
+              </div>
+            </div>
+            <div class="hs-row">
+              <span class="hs-rl" id={`${u}-fdv`}>{t.controls.fdv}</span>
+              <div class="hs-seg" role="group" aria-labelledby={`${u}-fdv`}>
+                <button type="button" data-c="fdvFwd" aria-pressed="false">{t.controls.fwd}</button>
+                <button type="button" data-c="fdvDiv" aria-pressed="true">{t.controls.div}</button>
+              </div>
+            </div>
+          </div>
+
+          <div class="hs-box hs-cip" data-show="cip" dir={dir}>
+            <p class="hs-h">{t.cip.title} <span class="hs-cipleft" data-v="cipLeft" dir="auto"></span></p>
+            <ol>
+              {(["pre", "caustic", "rinse", "acid", "final"] as const).map((k, i) => (
+                <li data-ph={i}>
+                  <span>{t.cip[k]}</span>
+                  <i />
+                </li>
+              ))}
+            </ol>
+          </div>
+        </div>
+
+        <!-- operator message line -->
+        <p class="hs-msg" data-v="msg" dir={dir}>{t.msg.idle}</p>
+
+        <!-- trend + alarm list -->
+        <div class="hs-low">
+        <div class="hs-trend" data-open="true">
+          <div class="hs-th" dir={dir}>
+            <button type="button" class="hs-tgl" aria-expanded="true" aria-controls={`${u}-trend`} data-c="trend">
+              <span>{t.trend.title}</span> <small>{t.trend.window}</small>
+            </button>
+            <span class="hs-legend" aria-hidden="true">
+              <i class="lg-pv"></i>TT-102 <i class="lg-th"></i>TT-101 <i class="lg-sp"></i>{t.trend.sp} <i class="lg-lim"></i>{t.trend.limit}
+            </span>
+          </div>
+          <div class="hs-plot" id={`${u}-trend`}>
+            <span class="hs-y" data-y="0"></span><span class="hs-y" data-y="1"></span><span class="hs-y" data-y="2"></span>
+            <svg viewBox="0 0 600 100" preserveAspectRatio="none" role="img" aria-label={t.a11y.trend}>
+              <path class="tr-grid" d="M0 0H600M0 50H600M0 100H600M150 0V100M300 0V100M450 0V100" />
+              <path class="tr-lim" d="" />
+              <path class="tr-sp" d="" />
+              <path class="tr-th" d="" />
+              <path class="tr-pv" d="" />
+            </svg>
+          </div>
+        </div>
+        <div class="hs-alarms" dir={dir}>
+          <div class="hs-ah">
+            <span>{t.alarms.title}</span>
+          </div>
+          <ol class="hs-alist" aria-label={t.alarms.title}>
+            <li class="hs-empty">{t.alarms.empty}</li>
+          </ol>
+        </div>
+        </div>
+
+        <!-- command bar (function keys) -->
+        <div class="hs-cmd">
+          <div class="hs-seg hs-run" role="group" aria-label={t.controls.run}>
+            <button type="button" data-c="start" aria-pressed="false">
+              <svg viewBox="0 0 16 16" aria-hidden="true"><path d="M4.5 3l8 5-8 5z" /></svg>{t.controls.start}
+            </button>
+            <button type="button" data-c="stop" aria-pressed="true">
+              <svg viewBox="0 0 16 16" aria-hidden="true"><rect x="4" y="4" width="8" height="8" rx="1" /></svg>{t.controls.stop}
+            </button>
+          </div>
+          <div class="hs-seg" role="group" aria-label={t.controls.mode}>
+            <button type="button" data-c="auto" aria-pressed="true">{t.controls.auto}</button>
+            <button type="button" data-c="manual" aria-pressed="false">{t.controls.manual}</button>
+          </div>
+          <button type="button" class="hs-btn" data-c="cip" aria-pressed="false">
+            <svg viewBox="0 0 16 16" aria-hidden="true"><path d="M8 2c2.6 3 4 5 4 7a4 4 0 0 1-8 0c0-2 1.4-4 4-7z" /></svg>{t.controls.cip}
+          </button>
+          <button type="button" class="hs-btn hs-fault" data-c="fault" aria-pressed="false">
+            <svg viewBox="0 0 16 16" aria-hidden="true"><path d="M9.5 1.5L3.5 9h4l-1 5.5 6-7.5h-4z" /></svg>{t.controls.fault}
+          </button>
+          <button type="button" class="hs-btn hs-ack" data-c="ack" aria-disabled="true">
+            <svg viewBox="0 0 16 16" aria-hidden="true"><path d="M8 2.2a4 4 0 0 0-4 4V9l-1.4 2.2h10.8L12 9V6.2a4 4 0 0 0-4-4zM6.4 13a1.6 1.6 0 0 0 3.2 0" /></svg>{t.controls.ack}
+          </button>
+        </div>
+      </div>
+      <div class="lc-hmi-glass" aria-hidden="true"></div>
+      <div class="lc-hmi-chin" aria-hidden="true">
+        <span class="lc-hmi-logo">Logic<b>Controls</b></span>
+        <span class="lc-hmi-leds"><i data-led="pwr"></i>PWR<i data-led="com"></i>COM<i data-led="run"></i>RUN</span>
+      </div>
+    </div>
+    <p class="lc-hmi-sr" aria-live="polite" data-live></p>
+    <figcaption class="lc-hmi-foot">
+      <p class="lc-hmi-cap" id={`${u}-cap`}>
+        <span class="lc-hmi-isa">ISA-101</span>
+        {t.caption}
+      </p>
+      <div class="lc-hmi-cta">
+        <p>{t.intro.ctaQuestion}</p>
+        <a href={quote} class="lc-hmi-btn">
+          {t.intro.cta}
+          <svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true" class="rtl:-scale-x-100"><path d="M5 12h14M12 5l7 7-7 7" /></svg>
+        </a>
+      </div>
+    </figcaption>
+  </figure>
+</div>
+
+<script>
+  import { initHmi } from "~/scripts/motion/hmi-demo";
+  document.querySelectorAll<HTMLElement>("[data-hmi]").forEach(initHmi);
+</script>
+
+<style is:global>
+  /* ----------------------------------------------------------------- section shell */
+  .lc-hmi-wrap {
+    display: grid;
+    gap: clamp(1.75rem, 1.2rem + 2vw, 3rem);
+  }
+  .lc-hmi-intro {
+    display: grid;
+    gap: 1.75rem 3rem;
+  }
+  @media (min-width: 64rem) {
+    .lc-hmi-intro {
+      grid-template-columns: 1.1fr 1fr;
+      align-items: end;
+    }
+  }
+  .lc-hmi-eyebrow {
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+    color: var(--color-royal-600);
+  }
+  .lc-hmi-title {
+    margin-top: 0.85rem;
+    color: var(--color-navy-800);
+  }
+  .lc-hmi-lead {
+    margin-top: 1rem;
+    max-width: 38rem;
+    color: var(--color-charcoal-700);
+  }
+  .lc-hmi-seeing > .type-label {
+    color: var(--color-charcoal-600);
+  }
+  .lc-hmi-seeing ul {
+    list-style: none;
+    margin: 0.9rem 0 0;
+    padding: 0;
+    display: grid;
+    gap: 0.95rem;
+  }
+  .lc-hmi-seeing li {
+    display: flex;
+    gap: 0.85rem;
+    font-size: 0.9375rem;
+    line-height: 1.55;
+    color: var(--color-charcoal-700);
+  }
+  .lc-hmi-seeing strong {
+    display: block;
+    color: var(--color-charcoal-900);
+  }
+  .lc-hmi-bico {
+    flex: none;
+    display: grid;
+    place-items: center;
+    width: 2.25rem;
+    height: 2.25rem;
+    border-radius: 8px;
+    color: var(--color-royal-600);
+    background: var(--color-royal-50);
+    border: 1px solid var(--color-royal-100);
+  }
+  .lc-hmi-bico path,
+  .lc-hmi-btn path {
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 1.7;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+  }
+  .lc-hmi {
+    margin: 0;
+    container: hmi / inline-size;
+  }
+  .lc-hmi-try {
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+    margin: 0 0 0.9rem;
+    font-size: 0.875rem;
+    color: var(--color-charcoal-600);
+  }
+  .lc-hmi-foot {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem 2.5rem;
+    margin-top: 1.25rem;
+  }
+  .lc-hmi-cap {
+    max-width: 44rem;
+    font-size: 0.875rem;
+    line-height: 1.6;
+    color: var(--color-charcoal-600);
+  }
+  .lc-hmi-isa {
+    display: inline-block;
+    margin-inline-end: 0.5rem;
+    padding: 0.1rem 0.4rem;
+    border: 1px solid currentColor;
+    border-radius: 3px;
+    font: 600 0.6875rem/1.4 var(--font-mono);
+    letter-spacing: 0.04em;
+    color: var(--color-royal-600);
+    vertical-align: 0.1em;
+  }
+  .lc-hmi-cta {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.75rem 1.25rem;
+  }
+  .lc-hmi-cta p {
+    font-weight: 700;
+    color: var(--color-navy-800);
+  }
+  .lc-hmi-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.75rem 1.25rem;
+    border-radius: var(--radius-md, 6px);
+    background: var(--color-royal-600);
+    color: #fff;
+    font-weight: 700;
+    text-decoration: none;
+    transition: background-color 0.2s;
+  }
+  .lc-hmi-btn:hover {
+    background: var(--color-royal-700);
+  }
+  .lc-hmi-sr {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
+  }
+  .lc-hmi-wrap[data-tone="dark"] .lc-hmi-title,
+  .lc-hmi-wrap[data-tone="dark"] .lc-hmi-seeing strong,
+  .lc-hmi-wrap[data-tone="dark"] .lc-hmi-cta p {
+    color: #fff;
+  }
+  .lc-hmi-wrap[data-tone="dark"] .lc-hmi-lead,
+  .lc-hmi-wrap[data-tone="dark"] .lc-hmi-seeing li,
+  .lc-hmi-wrap[data-tone="dark"] .lc-hmi-cap,
+  .lc-hmi-wrap[data-tone="dark"] .lc-hmi-try,
+  .lc-hmi-wrap[data-tone="dark"] .lc-hmi-seeing > .type-label {
+    color: var(--color-navy-200);
+  }
+  .lc-hmi-wrap[data-tone="dark"] .lc-hmi-eyebrow,
+  .lc-hmi-wrap[data-tone="dark"] .lc-hmi-isa {
+    color: var(--color-royal-300);
+  }
+  .lc-hmi-wrap[data-tone="dark"] .lc-hmi-bico {
+    color: var(--color-royal-300);
+    background: rgb(95 164 250 / 0.1);
+    border-color: rgb(95 164 250 / 0.25);
+  }
+  .lc-hmi-wrap[data-tone="dark"] .lc-hmi-btn {
+    background: #fff;
+    color: var(--color-navy-900);
+  }
+  .lc-hmi-wrap[data-tone="dark"] .lc-hmi-btn:hover {
+    background: var(--color-royal-100);
+  }
+
+  /* ----------------------------------------------------------------- the device */
+  .lc-hmi-dev {
+    position: relative;
+    padding: 16px 16px 34px;
+    border-radius: 24px;
+    background: linear-gradient(170deg, #34353d 0%, #1d1e24 45%, #141519 100%);
+    box-shadow:
+      inset 0 1px 0 rgb(255 255 255 / 0.14),
+      inset 0 0 0 1px rgb(0 0 0 / 0.7),
+      0 2px 4px rgb(4 14 39 / 0.12),
+      0 40px 70px -34px rgb(4 14 39 / 0.6);
+  }
+  .lc-hmi-glass {
+    position: absolute;
+    inset: 16px 16px 34px;
+    border-radius: 6px;
+    pointer-events: none;
+    background:
+      linear-gradient(118deg, rgb(255 255 255 / 0.13) 0%, rgb(255 255 255 / 0.05) 26%, rgb(255 255 255 / 0) 26.2%),
+      radial-gradient(120% 80% at 50% 0%, rgb(255 255 255 / 0.05), transparent 60%);
+    box-shadow: inset 0 0 0 1px rgb(255 255 255 / 0.06), inset 0 0 24px rgb(0 0 0 / 0.12);
+  }
+  .lc-hmi-chin {
+    position: absolute;
+    inset: auto 22px 9px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font: 600 10px/1 var(--font-latin);
+    letter-spacing: 0.22em;
+    text-transform: uppercase;
+    color: #8f9199;
+  }
+  .lc-hmi-logo {
+    font-style: italic;
+    letter-spacing: 0.04em;
+    text-transform: none;
+    font-size: 12px;
+    font-weight: 800;
+    color: #c9cbd2;
+  }
+  .lc-hmi-logo b {
+    margin-inline-start: 0.3em;
+    font-weight: 700;
+    font-size: 9px;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: #6aacff;
+  }
+  .lc-hmi-leds {
+    position: absolute;
+    inset-inline-end: 0;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    font-size: 8px;
+    letter-spacing: 0.08em;
+  }
+  .lc-hmi-leds i {
+    width: 5px;
+    height: 5px;
+    margin-inline-start: 6px;
+    border-radius: 50%;
+    background: #4a4b52;
+  }
+  .lc-hmi-leds [data-led="pwr"] {
+    background: #3ddc84;
+    box-shadow: 0 0 6px #3ddc84;
+  }
+  .lc-hmi[data-live-run="1"] [data-led="run"] {
+    background: #3ddc84;
+    box-shadow: 0 0 6px #3ddc84;
+  }
+  .lc-hmi[data-live-run="1"] [data-led="com"] {
+    background: #ffb02b;
+    box-shadow: 0 0 6px #ffb02b;
+    animation: hmi-blink 0.7s steps(2, jump-none) infinite;
+  }
+
+  /* ----------------------------------------------------------------- screen (ISA-101 palette) */
+  .lc-hmi-screen {
+    --h-bg: #dedfe3;
+    --h-surf: #e8e9ec;
+    --h-val: #f6f6f8;
+    --h-bd: #c3c5cc;
+    --h-line: #b4b6bd;
+    --h-eq: #74767f;
+    --h-eqf: #cdcfd5;
+    --h-dark: #4b4c55;
+    --h-tx: #202128;
+    --h-mut: #5b5d66;
+    --h-act: var(--color-royal-600, #0556ad);
+    --h-p1: #d92d20;
+    --h-p2: #ef8a00;
+    --h-p3: #e8c100;
+    --fd: 0.7s;
+    position: relative;
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) 290px;
+    grid-template-areas: "bar bar" "mimic side" "msg msg" "low low" "cmd cmd";
+    overflow: hidden;
+    border-radius: 6px;
+    background: var(--h-bg);
+    color: var(--h-tx);
+    font: 500 13px/1.35 var(--font-latin);
+    text-align: left;
+    box-shadow: 0 0 0 1px #000, 0 0 0 3px #2a2b31;
+    -webkit-tap-highlight-color: transparent;
+  }
+  .lc-hmi-screen :where(p, ol, dl, dd) {
+    margin: 0;
+  }
+  .lc-hmi-screen .hs-num,
+  .lc-hmi-screen [data-v]:not([data-v="msg"], [data-v="state"], [data-v="fdvTxt"], [data-v="outLbl"]) {
+    font-family: var(--font-mono);
+    font-variant-numeric: tabular-nums;
+  }
+
+  /* status bar */
+  .hs-bar {
+    grid-area: bar;
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    height: 40px;
+    padding: 0 12px;
+    background: #2a2b32;
+    color: #e6e7eb;
+    font-size: 12px;
+    white-space: nowrap;
+  }
+  .hs-brand {
+    display: flex;
+    align-items: center;
+    gap: 7px;
+    font-weight: 800;
+    font-style: italic;
+    letter-spacing: 0.01em;
+    font-family: var(--font-latin);
+  }
+  .hs-mark {
+    width: auto;
+    height: 22px;
+  }
+  .hs-unit {
+    flex: 1;
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    padding-inline-start: 14px;
+    border-inline-start: 1px solid #45464e;
+    font-weight: 600;
+  }
+  .hs-screen {
+    margin-inline-start: 10px;
+    color: #9a9ca5;
+    font-weight: 500;
+  }
+  .hs-right {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .hs-chip {
+    display: inline-flex;
+    align-items: center;
+    height: 22px;
+    padding: 0 8px;
+    border-radius: 3px;
+    background: #3c3d45;
+    color: #e6e7eb;
+    font-size: 11px;
+    font-weight: 600;
+  }
+  .hs-mode {
+    font-family: var(--font-mono);
+    letter-spacing: 0.06em;
+  }
+  .lc-hmi-screen[data-mode="manual"] .hs-mode,
+  .lc-hmi-screen:not([data-cip="-1"]) .hs-mode {
+    background: var(--h-act);
+    color: #fff;
+  }
+  .lc-hmi-screen[data-abn="1"] .hs-state {
+    background: var(--h-p2);
+    color: #1d1300;
+  }
+  .hs-alm {
+    display: none;
+    min-width: 22px;
+    justify-content: center;
+    background: var(--h-p1);
+    color: #fff;
+  }
+  .lc-hmi-screen[data-unack]:not([data-unack="0"]) .hs-alm {
+    display: inline-flex;
+  }
+  .hs-sim {
+    padding: 0 6px;
+    border: 1px solid #55565e;
+    border-radius: 3px;
+    font: 600 10px/20px var(--font-mono);
+    color: #a7a9b1;
+  }
+  .hs-clock {
+    min-width: 62px;
+    font-size: 12px;
+    color: #cfd1d6;
+  }
+
+  /* ----------------------------------------------------------------- mimic */
+  .hs-mimic {
+    grid-area: mimic;
+    padding: 6px 8px 2px;
+  }
+  .hs-mimic svg {
+    display: block;
+    width: 100%;
+    height: auto;
+    overflow: visible;
+  }
+  .hs-mimic text {
+    font-size: 10px;
+    font-weight: 600;
+    fill: var(--h-mut);
+    text-anchor: middle;
+  }
+  .m-eq :where(rect, path) {
+    fill: var(--h-eqf);
+    stroke: var(--h-eq);
+    stroke-width: 1.2;
+  }
+  .m-eq .m-leg,
+  .m-coil {
+    fill: none;
+    stroke: var(--h-eq);
+    stroke-width: 1.4;
+  }
+  .m-coil {
+    stroke-width: 1;
+    stroke-dasharray: 3 2;
+  }
+  .m-lvl {
+    fill: #eef1f6;
+    stroke: none;
+    transition: y 0.4s linear, height 0.4s linear;
+  }
+  .m-pipe path {
+    fill: none;
+    stroke: var(--h-line);
+    stroke-width: 7.5;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+  }
+  .m-flow path {
+    fill: none;
+    stroke: #9aa1ab;
+    stroke-width: 3.6;
+    stroke-linejoin: round;
+    opacity: 0;
+    transition: opacity 0.4s, stroke 0.6s;
+  }
+  .m-flow path[data-s="1"] {
+    opacity: 0.55;
+  }
+  .m-flow path[data-s="2"] {
+    opacity: 1;
+    stroke-dasharray: 8 5;
+    animation: hmi-flow var(--fd) linear infinite;
+  }
+  .m-flow [data-p="ice"] {
+    stroke: #6f9fd6;
+  }
+  .m-flow [data-p="steam"] {
+    stroke: #f4f5f7;
+    stroke-width: 3;
+  }
+  .m-flow path[data-p="steam"][data-s="2"] {
+    stroke-dasharray: 3 5;
+  }
+  @keyframes hmi-flow {
+    to {
+      stroke-dashoffset: -13;
+    }
+  }
+  .m-plate {
+    fill: #b5b7bf;
+  }
+  .m-phe .m-frame {
+    fill: #64666f;
+  }
+  .m-phe .m-bar {
+    fill: none;
+    stroke: #8b8d95;
+    stroke-width: 3;
+  }
+  .m-sec rect {
+    fill: var(--h-bg);
+    stroke: var(--h-bd);
+    stroke-width: 0.8;
+  }
+  .m-sec text {
+    font-size: 9px;
+    font-weight: 700;
+    fill: var(--h-tx);
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+  }
+  .m-pump circle {
+    fill: #fbfbfc;
+    stroke: var(--h-eq);
+    stroke-width: 1.4;
+  }
+  .m-imp circle {
+    fill: none;
+    stroke: none;
+  }
+  .m-imp path {
+    fill: none;
+    stroke: var(--h-eq);
+    stroke-width: 2;
+    stroke-linecap: round;
+  }
+  .m-imp {
+    transform-box: fill-box;
+    transform-origin: center;
+  }
+  .lc-hmi-screen[data-run="1"] .m-pump > circle {
+    fill: var(--h-dark);
+    stroke: var(--h-dark);
+  }
+  .lc-hmi-screen[data-run="1"] .m-imp path {
+    stroke: #fff;
+  }
+  .lc-hmi-screen[data-run="1"] .m-imp {
+    animation: hmi-spin 0.9s linear infinite;
+  }
+  @keyframes hmi-spin {
+    to {
+      transform: rotate(360deg);
+    }
+  }
+  .m-valve path,
+  .m-fdv path,
+  .m-fdv rect {
+    fill: #fbfbfc;
+    stroke: var(--h-eq);
+    stroke-width: 1.3;
+    stroke-linejoin: round;
+  }
+  .m-valve .m-stem,
+  .m-fdv .m-stem {
+    fill: none;
+  }
+  .m-valve .m-act,
+  .m-fdv .m-act {
+    fill: var(--h-eqf);
+  }
+  .lc-hmi-screen[data-lv="1"] [data-valve="lv"] path,
+  .lc-hmi-screen[data-tcv="1"] [data-valve="tcv"] > path:last-child,
+  .lc-hmi-screen[data-fdv="fwd"] :is(.m-fin, .m-ffwd),
+  .lc-hmi-screen[data-fdv="div"] :is(.m-fin, .m-fdiv) {
+    fill: var(--h-dark);
+    stroke: var(--h-dark);
+  }
+  .lc-hmi-screen[data-abn="1"] .m-fdv .m-fdiv {
+    fill: var(--h-p2);
+    stroke: #b06400;
+  }
+  .m-lock {
+    display: none;
+  }
+  .m-lock rect {
+    fill: var(--h-tx) !important;
+    stroke: none !important;
+  }
+  .m-lock path {
+    fill: none !important;
+    stroke: var(--h-tx) !important;
+    stroke-width: 1.6 !important;
+  }
+  .lc-hmi-screen[data-blocked="1"] .m-lock {
+    display: inline;
+  }
+  .m-tags circle {
+    fill: var(--h-val);
+    stroke: var(--h-eq);
+    stroke-width: 1;
+  }
+  .hs-mimic .m-tags text {
+    font: 700 7.5px/1 var(--font-mono);
+    fill: var(--h-mut);
+  }
+  .m-lead {
+    fill: none;
+    stroke: var(--h-eq);
+    stroke-width: 0.8;
+  }
+  .m-ro rect {
+    fill: var(--h-val);
+    stroke: #a6a8b0;
+    stroke-width: 0.8;
+  }
+  .hs-mimic .m-ro text {
+    font: 600 10.5px/1 var(--font-mono);
+    font-variant-numeric: tabular-nums;
+    fill: var(--h-tx);
+    text-anchor: end;
+  }
+  .m-ro [data-alm="1"] rect {
+    stroke: var(--h-p1);
+    stroke-width: 2;
+  }
+  .m-ro [data-alm="2"] rect {
+    stroke: var(--h-p2);
+    stroke-width: 2;
+  }
+  .m-ro [data-alm="3"] rect {
+    stroke: #c9a400;
+    stroke-width: 2;
+  }
+  .m-alm {
+    display: none;
+  }
+  .m-alm[data-on] {
+    display: inline;
+  }
+  .m-alm[data-on="unack"] {
+    animation: hmi-blink 1s steps(2, jump-none) infinite;
+  }
+  .m-alm path {
+    stroke: none;
+  }
+  .m-alm[data-p="1"] path {
+    fill: var(--h-p1);
+  }
+  .m-alm[data-p="2"] path {
+    fill: var(--h-p2);
+  }
+  .m-alm[data-p="3"] path {
+    fill: var(--h-p3);
+  }
+  .hs-mimic .m-alm text {
+    font: 800 9px/1 var(--font-mono);
+    fill: #fff;
+  }
+  .hs-mimic .m-alm[data-p="3"] text {
+    fill: #1d1a00;
+  }
+  .hs-mimic .m-tagtx {
+    font: 600 7.5px/1 var(--font-mono);
+    fill: #8a8c95;
+  }
+  .hs-mimic .m-e {
+    text-anchor: end;
+  }
+  .hs-mimic .m-s {
+    text-anchor: start;
+  }
+  .hs-mimic .m-dir {
+    font-size: 9px;
+    font-weight: 500;
+  }
+  .hs-mimic .m-fdvst {
+    font-size: 10px;
+    font-weight: 800;
+    fill: var(--h-tx);
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+  }
+  .hs-mimic .m-holdv {
+    font: 600 9.5px/1 var(--font-mono);
+    fill: var(--h-tx);
+  }
+  .lc-hmi-screen:lang(ar) .hs-mimic :is(.m-lbl, .m-sec) text:not(.m-tagtx, .m-holdv) {
+    direction: rtl;
+  }
+  .lc-hmi-screen:lang(ar) .hs-mimic .m-e {
+    text-anchor: start;
+  }
+  .lc-hmi-screen:lang(ar) .hs-mimic .m-s {
+    text-anchor: end;
+  }
+  .m-cipl {
+    display: none;
+  }
+  .hs-mimic .m-cipl {
+    fill: var(--h-act);
+    font-weight: 700;
+  }
+  .lc-hmi-screen:not([data-cip="-1"]) .m-cipl {
+    display: inline;
+  }
+  .lc-hmi-screen:not([data-cip="-1"]) .m-cipl + * {
+    display: none;
+  }
+
+  /* ----------------------------------------------------------------- faceplate */
+  .hs-side {
+    grid-area: side;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    padding: 12px;
+    background: var(--h-surf);
+    border-inline-start: 1px solid var(--h-bd);
+  }
+  .hs-main {
+    padding: 10px 12px 9px;
+    border: 1px solid var(--h-bd);
+    border-radius: 4px;
+    background: var(--h-val);
+  }
+  .hs-k {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 6px;
+    font-size: 11.5px;
+    color: var(--h-mut);
+  }
+  .hs-fdv {
+    margin-inline-start: auto;
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+  }
+  .hs-fdv b {
+    font-weight: 800;
+    color: var(--h-tx);
+    text-transform: uppercase;
+    font-size: 11px;
+    letter-spacing: 0.03em;
+  }
+  .lc-hmi-screen[data-abn="1"] .hs-fdv b {
+    color: #a35a00;
+  }
+  .hs-tag {
+    display: inline-block;
+    padding: 2px 4px;
+    border-radius: 2px;
+    background: #dfe1e6;
+    color: var(--h-mut);
+    font: 600 9.5px/1 var(--font-mono);
+    letter-spacing: 0.02em;
+  }
+  .hs-big {
+    display: flex;
+    align-items: baseline;
+    gap: 5px;
+    margin-top: 3px;
+  }
+  .hs-bigv {
+    font-size: 36px;
+    font-weight: 600;
+    line-height: 1.05;
+    letter-spacing: -0.03em;
+  }
+  .hs-u {
+    font-size: 15px;
+    color: var(--h-mut);
+  }
+  .hs-almi {
+    display: none;
+    place-items: center;
+    width: 18px;
+    height: 18px;
+    margin-inline-start: 6px;
+    align-self: center;
+    background: var(--h-p1);
+    color: #fff;
+    font: 800 11px/1 var(--font-mono);
+  }
+  .hs-big[data-alm="1"] .hs-almi {
+    display: inline-grid;
+  }
+  .hs-big[data-alm="1"] .hs-bigv {
+    color: var(--h-p1);
+  }
+  .hs-ai {
+    position: relative;
+    height: 10px;
+    margin: 10px 0 6px;
+    border-radius: 2px;
+    background: #d3d5db;
+  }
+  .hs-ai > span {
+    position: absolute;
+  }
+  .hs-ai-band {
+    inset-block: 0;
+    left: var(--b0, 50%);
+    width: var(--bw, 20%);
+    background: #b2b5bd;
+  }
+  .hs-ai-lim {
+    top: -3px;
+    bottom: -3px;
+    left: var(--lim, 50%);
+    width: 2px;
+    background: var(--h-tx);
+  }
+  .hs-ai-sp {
+    top: -7px;
+    left: var(--sp, 55%);
+    margin-left: -5px;
+    border: 5px solid transparent;
+    border-top: 6px solid var(--h-act);
+  }
+  .hs-ai-ptr {
+    top: -4px;
+    bottom: -4px;
+    left: var(--pv, 0%);
+    width: 4px;
+    margin-left: -2px;
+    border-radius: 1px;
+    background: var(--h-tx);
+    transition: left 0.2s linear;
+  }
+  .hs-big[data-alm="1"] + .hs-ai .hs-ai-ptr {
+    background: var(--h-p1);
+  }
+  .hs-sub {
+    font-size: 11px;
+    color: var(--h-mut);
+  }
+  .hs-sub b {
+    font-weight: 600;
+    color: var(--h-tx);
+    font-family: var(--font-mono);
+  }
+  .hs-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1px;
+    border: 1px solid var(--h-bd);
+    border-radius: 4px;
+    overflow: hidden;
+    background: var(--h-bd);
+  }
+  .hs-grid > div {
+    padding: 6px 9px 7px;
+    background: var(--h-val);
+  }
+  .hs-grid dt {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px;
+    align-items: center;
+    font-size: 10.5px;
+    color: var(--h-mut);
+    line-height: 1.3;
+  }
+  .hs-grid dd {
+    margin-top: 3px;
+    font-size: 11px;
+    color: var(--h-mut);
+  }
+  .hs-grid dd > span {
+    font-size: 15px;
+    font-weight: 600;
+    color: var(--h-tx);
+  }
+  .hs-grid small {
+    font-size: 10px;
+    white-space: nowrap;
+  }
+  .hs-grid [data-alm="3"] {
+    box-shadow: inset 3px 0 0 var(--h-p3);
+  }
+  .hs-box {
+    padding: 8px 10px 10px;
+    border: 1px solid var(--h-bd);
+    border-radius: 4px;
+    background: var(--h-val);
+  }
+  .hs-h {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 6px !important;
+    font-size: 11px;
+    font-weight: 700;
+    color: var(--h-mut);
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+  }
+  .hs-manual,
+  .hs-cip {
+    display: none;
+  }
+  .lc-hmi-screen[data-mode="manual"][data-cip="-1"] .hs-manual,
+  .lc-hmi-screen:not([data-cip="-1"]) .hs-cip {
+    display: block;
+  }
+  .lc-hmi-screen:not([data-cip="-1"]) .hs-recipe {
+    display: none;
+  }
+  .hs-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+  }
+  .hs-row + .hs-row {
+    margin-top: 6px;
+  }
+  .hs-rl {
+    font-size: 11.5px;
+    color: var(--h-mut);
+  }
+  .hs-step {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .hs-stepv {
+    min-width: 62px;
+    text-align: center;
+    font-size: 12px;
+  }
+  .hs-stepv span {
+    font-size: 15px;
+    font-weight: 600;
+  }
+  .lc-hmi-screen .hs-step button {
+    width: 32px;
+    padding: 0;
+    justify-content: center;
+    font-size: 17px;
+  }
+  .hs-cip ol {
+    list-style: none;
+    padding: 0;
+    display: grid;
+    gap: 4px;
+  }
+  .hs-cip li {
+    position: relative;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 12px;
+    color: var(--h-mut);
+  }
+  .hs-cip li::before {
+    content: "";
+    flex: none;
+    width: 8px;
+    height: 8px;
+    border: 1.5px solid var(--h-eq);
+    border-radius: 50%;
+  }
+  .hs-cip li i {
+    flex: 1;
+    height: 4px;
+    border-radius: 2px;
+    background: #d9dbe0;
+    overflow: hidden;
+  }
+  .hs-cip li i::after {
+    content: "";
+    display: block;
+    height: 100%;
+    width: var(--p, 0%);
+    background: var(--h-act);
+  }
+  .hs-cip li[data-st="done"]::before {
+    background: var(--h-dark);
+    border-color: var(--h-dark);
+  }
+  .hs-cip li[data-st="done"] i::after {
+    width: 100%;
+    background: #9a9ca5;
+  }
+  .hs-cip li[data-st="on"] {
+    color: var(--h-tx);
+    font-weight: 700;
+  }
+  .hs-cip li[data-st="on"]::before {
+    background: var(--h-act);
+    border-color: var(--h-act);
+  }
+  .hs-cipleft {
+    font-family: var(--font-mono);
+    text-transform: none;
+    letter-spacing: 0;
+    color: var(--h-act);
+  }
+
+  /* message line */
+  .hs-msg {
+    grid-area: msg;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    min-height: 34px;
+    padding: 6px 12px;
+    border-block: 1px solid var(--h-bd);
+    background: #e9eaee;
+    font-size: 12.5px;
+    font-weight: 600;
+  }
+  .hs-msg::before {
+    content: "i";
+    flex: none;
+    display: grid;
+    place-items: center;
+    width: 16px;
+    height: 16px;
+    border-radius: 50%;
+    background: var(--h-act);
+    color: #fff;
+    font: 800 10px/1 var(--font-mono);
+  }
+  .hs-msg[data-tone="warn"] {
+    background: #fbefd9;
+  }
+  .hs-msg[data-tone="warn"]::before {
+    content: "!";
+    border-radius: 2px;
+    background: var(--h-p2);
+    color: #1d1300;
+  }
+
+  /* trend */
+  .hs-low {
+    grid-area: low;
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 0.92fr);
+  }
+  .hs-trend {
+    min-width: 0;
+    padding: 8px 12px 12px;
+    border-inline-end: 1px solid var(--h-bd);
+  }
+  .hs-th {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    margin-bottom: 6px;
+  }
+  .lc-hmi-screen .hs-tgl {
+    min-height: 0;
+    padding: 0;
+    border: 0;
+    background: none;
+    box-shadow: none;
+    font-size: 11px;
+    font-weight: 700;
+    color: var(--h-mut);
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    cursor: pointer;
+  }
+  .lc-hmi-screen .hs-tgl::after {
+    content: "";
+    width: 6px;
+    height: 6px;
+    margin-inline-start: 2px;
+    border-right: 1.5px solid currentColor;
+    border-bottom: 1.5px solid currentColor;
+    transform: translateY(1px) rotate(-135deg);
+  }
+  .hs-trend[data-open="false"] .hs-tgl::after {
+    transform: translateY(-2px) rotate(45deg);
+  }
+  .hs-trend[data-open="false"] .hs-plot {
+    display: none;
+  }
+  .hs-tgl small {
+    font-weight: 500;
+    text-transform: none;
+    letter-spacing: 0;
+  }
+  .hs-legend {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    font-size: 10.5px;
+    color: var(--h-mut);
+    white-space: nowrap;
+  }
+  .hs-legend i {
+    display: inline-block;
+    width: 14px;
+    height: 0;
+    margin-inline-start: 6px;
+    border-top: 2px solid var(--h-tx);
+  }
+  .hs-legend .lg-th {
+    border-top: 1.5px solid #8b8d96;
+  }
+  .hs-legend .lg-sp {
+    border-top: 1.5px dashed var(--h-act);
+  }
+  .hs-legend .lg-lim {
+    border-top: 1.5px dashed var(--h-p1);
+  }
+  .hs-plot {
+    position: relative;
+    height: 108px;
+    margin-inline-start: 34px;
+    border: 1px solid var(--h-bd);
+    background: var(--h-val);
+  }
+  .hs-plot svg {
+    display: block;
+    width: 100%;
+    height: 100%;
+  }
+  .hs-plot path {
+    fill: none;
+    vector-effect: non-scaling-stroke;
+    stroke-linejoin: round;
+  }
+  .tr-grid {
+    stroke: #e1e3e8;
+    stroke-width: 1;
+  }
+  .tr-pv {
+    stroke: var(--h-tx);
+    stroke-width: 2;
+  }
+  .tr-th {
+    stroke: #8b8d96;
+    stroke-width: 1.25;
+  }
+  .tr-sp {
+    stroke: var(--h-act);
+    stroke-width: 1.25;
+    stroke-dasharray: 6 4;
+  }
+  .tr-lim {
+    stroke: var(--h-p1);
+    stroke-width: 1;
+    stroke-dasharray: 2 3;
+  }
+  .hs-y {
+    position: absolute;
+    right: calc(100% + 5px);
+    font: 500 10px/1 var(--font-mono);
+    color: var(--h-mut);
+    transform: translateY(-50%);
+  }
+  .hs-y[data-y="0"] {
+    top: 0;
+  }
+  .hs-y[data-y="1"] {
+    top: 50%;
+  }
+  .hs-y[data-y="2"] {
+    top: 100%;
+  }
+
+  /* alarm list */
+  .hs-alarms {
+    min-width: 0;
+    padding: 8px 12px 12px;
+  }
+  .hs-ah {
+    margin-bottom: 6px;
+    font-size: 11px;
+    font-weight: 700;
+    color: var(--h-mut);
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+  }
+  .hs-alist {
+    list-style: none;
+    padding: 0;
+    height: 108px;
+    overflow: hidden;
+    border: 1px solid var(--h-bd);
+    background: var(--h-val);
+  }
+  .hs-alist li {
+    display: grid;
+    grid-template-columns: 16px 58px 50px minmax(0, 1fr) auto;
+    align-items: center;
+    gap: 8px;
+    height: 21.6px;
+    padding: 0 8px;
+    border-bottom: 1px solid #e3e5e9;
+    font-size: 11.5px;
+    white-space: nowrap;
+  }
+  .hs-alist .hs-empty {
+    display: block;
+    height: auto;
+    padding: 8px;
+    border: 0;
+    color: var(--h-mut);
+  }
+  .hs-alist time,
+  .hs-alist .a-tag {
+    font-family: var(--font-mono);
+    font-size: 10.5px;
+    color: var(--h-mut);
+  }
+  .hs-alist .a-tx {
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .hs-alist .a-st {
+    font-size: 10.5px;
+    color: var(--h-mut);
+  }
+  .a-ic {
+    display: grid;
+    place-items: center;
+    width: 14px;
+    height: 14px;
+    font: 800 9px/1 var(--font-mono);
+    color: #fff;
+  }
+  [data-p="1"] > .a-ic {
+    background: var(--h-p1);
+  }
+  [data-p="2"] > .a-ic {
+    background: var(--h-p2);
+    clip-path: polygon(50% 0, 100% 100%, 0 100%);
+    padding-top: 4px;
+  }
+  [data-p="3"] > .a-ic {
+    background: var(--h-p3);
+    clip-path: polygon(50% 0, 100% 50%, 50% 100%, 0 50%);
+    color: #1d1a00;
+  }
+  [data-p="0"] > .a-ic {
+    border-radius: 50%;
+    background: #a3a5ad;
+  }
+  .hs-alist li[data-p="0"] {
+    color: var(--h-mut);
+  }
+  .hs-alist li[data-st="unack"] {
+    font-weight: 700;
+  }
+  .hs-alist li[data-st="unack"] > .a-ic {
+    animation: hmi-blink 1s steps(2, jump-none) infinite;
+  }
+  .hs-alist li[data-st="cleared"] > .a-ic {
+    opacity: 0.45;
+  }
+
+  /* command bar + buttons */
+  .hs-cmd {
+    grid-area: cmd;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 10px;
+    padding: 9px 12px;
+    border-top: 1px solid var(--h-bd);
+    background: #d2d4d9;
+  }
+  .lc-hmi-screen button {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    min-height: 34px;
+    padding: 0 13px;
+    border: 1px solid #a2a5ae;
+    border-radius: 4px;
+    background: linear-gradient(#fafbfc, #e7e9ed);
+    box-shadow: inset 0 1px 0 rgb(255 255 255 / 0.9), 0 1px 1px rgb(0 0 0 / 0.08);
+    color: var(--h-tx);
+    font: inherit;
+    font-size: 12.5px;
+    font-weight: 700;
+    line-height: 1.1;
+    cursor: pointer;
+    touch-action: manipulation;
+    transition: background-color 0.15s, border-color 0.15s;
+  }
+  .lc-hmi-screen button svg {
+    width: 14px;
+    height: 14px;
+    fill: currentColor;
+  }
+  .lc-hmi-screen button:hover {
+    border-color: var(--h-act);
+  }
+  .lc-hmi-screen button:focus-visible {
+    outline: 2px solid var(--h-act);
+    outline-offset: 2px;
+    border-radius: 4px;
+  }
+  .lc-hmi-screen button[aria-pressed="true"] {
+    border-color: #023378;
+    background: var(--h-act);
+    box-shadow: inset 0 2px 3px rgb(0 0 0 / 0.28);
+    color: #fff;
+  }
+  .lc-hmi-screen button[aria-disabled="true"] {
+    opacity: 0.45;
+    cursor: not-allowed;
+  }
+  .lc-hmi-screen .hs-seg {
+    display: inline-flex;
+  }
+  .lc-hmi-screen .hs-seg button {
+    border-radius: 0;
+  }
+  .lc-hmi-screen .hs-seg button + button {
+    margin-left: -1px;
+  }
+  .lc-hmi-screen .hs-seg button:first-child {
+    border-radius: 4px 0 0 4px;
+  }
+  .lc-hmi-screen .hs-seg button:last-child {
+    border-radius: 0 4px 4px 0;
+  }
+  .hs-box .hs-seg {
+    display: flex;
+  }
+  .hs-box .hs-seg button {
+    flex: 1;
+    min-height: 32px;
+    padding: 0 8px;
+  }
+  .lc-hmi-screen .hs-fault[aria-pressed="true"] {
+    border-color: #a85d00;
+    background: var(--h-p2);
+    color: #1d1300;
+  }
+  .lc-hmi-screen .hs-ack {
+    margin-left: auto;
+  }
+  .lc-hmi-screen[data-unack]:not([data-unack="0"]) .hs-ack {
+    border-color: var(--h-p1);
+    box-shadow: 0 0 0 2px rgb(217 45 32 / 0.25);
+    animation: hmi-pulse 1.4s ease-in-out infinite;
+  }
+  @keyframes hmi-blink {
+    50% {
+      opacity: 0.2;
+    }
+  }
+  @keyframes hmi-pulse {
+    50% {
+      box-shadow: 0 0 0 4px rgb(217 45 32 / 0.12);
+    }
+  }
+
+  /* paused offscreen / hidden tab */
+  .lc-hmi[data-paused="1"] *,
+  .lc-hmi[data-paused="1"] *::before,
+  .lc-hmi[data-paused="1"] *::after {
+    animation-play-state: paused !important;
+  }
+
+  /* ----------------------------------------------------------------- medium */
+  @container hmi (max-width: 1020px) {
+    .lc-hmi-screen {
+      grid-template-columns: minmax(0, 1fr) 250px;
+    }
+    .hs-sim,
+    .hs-screen {
+      display: none;
+    }
+    .hs-legend {
+      display: none;
+    }
+    .hs-bigv {
+      font-size: 30px;
+    }
+  }
+
+  /* ----------------------------------------------------------------- phone */
+  @container hmi (max-width: 700px) {
+    .lc-hmi-dev {
+      padding: 8px 8px 22px;
+      border-radius: 16px;
+    }
+    .lc-hmi-glass {
+      inset: 8px 8px 22px;
+    }
+    .lc-hmi-chin {
+      bottom: 5px;
+    }
+    .lc-hmi-leds {
+      display: none;
+    }
+    .lc-hmi-screen {
+      grid-template-columns: minmax(0, 1fr);
+      grid-template-areas: "bar" "mimic" "msg" "cmd" "side" "low";
+      font-size: 12.5px;
+    }
+    .hs-bar {
+      gap: 8px;
+      height: 36px;
+      padding: 0 8px;
+    }
+    .hs-name,
+    .hs-state {
+      display: none;
+    }
+    .hs-unit {
+      padding-inline-start: 8px;
+      font-size: 11.5px;
+    }
+    .hs-mimic {
+      padding: 4px 2px 0;
+    }
+    .m-lbl text:not(.m-fdvst),
+    .m-ro,
+    .m-tags,
+    .m-sec,
+    .m-alm {
+      display: none;
+    }
+    .hs-mimic .m-fdvst {
+      font-size: 22px;
+      translate: -40px 22px;
+    }
+    .hs-cmd {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
+      padding: 8px;
+      border-top: 0;
+      border-bottom: 1px solid var(--h-bd);
+    }
+    .hs-cmd .hs-seg {
+      display: flex;
+    }
+    .hs-cmd .hs-seg button {
+      flex: 1;
+    }
+    .lc-hmi-screen .hs-cmd button {
+      min-height: 40px;
+      padding: 0 8px;
+    }
+    .lc-hmi-screen .hs-ack {
+      margin-left: 0;
+      grid-column: 1 / -1;
+    }
+    .hs-side {
+      border-inline-start: 0;
+      padding: 8px;
+    }
+    .hs-low {
+      grid-template-columns: minmax(0, 1fr);
+    }
+    .hs-bigv {
+      font-size: 32px;
+    }
+    .hs-trend {
+      border-inline-end: 0;
+      border-top: 1px solid var(--h-bd);
+      padding: 6px 8px 8px;
+    }
+    .lc-hmi-screen .hs-tgl {
+      min-height: 32px;
+    }
+    .hs-alarms {
+      padding: 6px 8px 10px;
+      border-top: 1px solid var(--h-bd);
+    }
+    .hs-alist {
+      height: auto;
+      min-height: 44px;
+      max-height: 130px;
+    }
+    .hs-alist li {
+      grid-template-columns: 16px 54px minmax(0, 1fr) auto;
+    }
+    .hs-alist .a-tag {
+      display: none;
+    }
+    .lc-hmi-foot {
+      margin-top: 1rem;
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .lc-hmi .m-flow path[data-s="2"],
+    .lc-hmi .m-imp,
+    .lc-hmi .m-alm,
+    .lc-hmi .a-ic,
+    .lc-hmi .hs-ack,
+    .lc-hmi [data-led] {
+      animation: none !important;
+    }
+    .lc-hmi .m-flow path[data-s="2"] {
+      stroke-dasharray: none;
+    }
+    .lc-hmi .m-lvl,
+    .lc-hmi .hs-ai-ptr {
+      transition: none;
+    }
+  }
+</style>

@@ -1,0 +1,139 @@
+---
+/* machine-automation — servo gantry pick-and-place over two conveyors, photo-eye, operator station.
+   Loop 7 s: carton rides in on the infeed → photo-eye beam is broken (input pulse to the station) →
+   Z cylinder descends, vacuum grips, lifts → servo traverses (output pulse, encoder spins) → places on
+   the outfeed → releases, returns while the outfeed carries the carton away. Seamless. */
+import Frame from "../ArtFrame.astro";
+import { uid, type ArtProps } from "../types";
+const p = Astro.props as ArtProps;
+const u = uid("ma");
+const t2 = "M182 206V238L176 244H44L38 238V160";
+const t1 = "M34 117V98L28 92V86";
+---
+
+<Frame {...p} uid={u} name="ma">
+  <style is:inline>
+    .lca-ma .mx{animation:maX 7s cubic-bezier(.65,0,.35,1) infinite}
+    .lca-ma .mz{animation:maZ 7s cubic-bezier(.65,0,.35,1) infinite}
+    .lca-ma .ct{animation:maC 7s cubic-bezier(.65,0,.35,1) infinite}
+    .lca-ma .sl{stroke:var(--i-ln);stroke-width:12;stroke-dasharray:1 9}
+    .lca-ma .b1{animation:maB1 7s cubic-bezier(.65,0,.35,1) infinite}
+    .lca-ma .b2{animation:maB2 7s linear infinite}
+    .lca-ma .enc{stroke:var(--i-b);stroke-width:3;stroke-dasharray:2 2.4;transform-box:fill-box;transform-origin:center;animation:maE 7s cubic-bezier(.65,0,.35,1) infinite}
+    .lca-ma .sn{animation:maS 7s step-end infinite}
+    .lca-ma .bm{animation:maBm 7s step-end infinite}
+    .lca-ma .vac{animation:maV 7s step-end infinite}
+    .lca-ma .pr{transform-box:fill-box;transform-origin:0 50%;animation:maPr 7s linear infinite}
+    .lca-ma .p.i1{animation:maI 7s linear infinite}
+    .lca-ma .p.o1{animation:maO 7s linear infinite}
+    .lca-ma .nd{transform-box:fill-box;transform-origin:center}
+    .lca-ma .nd.i1,.lca-ma .pg.i1{animation:maN1 7s ease-out infinite}
+    .lca-ma .nd.o1,.lca-ma .pg.o1{animation:maN2 7s ease-out infinite}
+    @keyframes maX{0%,41%{transform:none}58.5%,76%{transform:translateX(144px)}93%,100%{transform:none}}
+    @keyframes maZ{0%,20%{transform:none}28.5%,33%{transform:translateY(36px)}41%,58.5%{transform:none}66%,68.5%{transform:translateY(36px)}76%,100%{transform:none}}
+    @keyframes maC{0%{transform:translate(-190px,0);opacity:1;animation-timing-function:cubic-bezier(.3,.5,.4,1)}17%,33%{transform:none}41%{transform:translate(0,-36px)}58.5%{transform:translate(144px,-36px)}66%,76%{transform:translate(144px,0);opacity:1;animation-timing-function:linear}88%{opacity:1}93%{opacity:0}100%{transform:translate(244px,0);opacity:0}}
+    @keyframes maB1{0%{stroke-dashoffset:0;animation-timing-function:cubic-bezier(.3,.5,.4,1)}17%,100%{stroke-dashoffset:-190}}
+    @keyframes maB2{0%,76%{stroke-dashoffset:0}100%{stroke-dashoffset:-100}}
+    @keyframes maE{0%,41%{transform:none}58.5%,76%{transform:rotate(2turn)}93%,100%{transform:rotate(4turn)}}
+    @keyframes maS{0%{opacity:0}17%{opacity:1}33%,100%{opacity:0}}
+    @keyframes maBm{0%{opacity:.9}17%{opacity:0}33%,100%{opacity:.9}}
+    @keyframes maV{0%{opacity:0}28.5%{opacity:1}68.5%,100%{opacity:0}}
+    @keyframes maPr{0%{transform:scaleX(0)}100%{transform:scaleX(1)}}
+    @keyframes maI{0%,17%{stroke-dashoffset:12}27%,100%{stroke-dashoffset:-100}}
+    @keyframes maO{0%,35%{stroke-dashoffset:12}41%{stroke-dashoffset:-100}41.1%,70%{stroke-dashoffset:12}76%,100%{stroke-dashoffset:-100}}
+    @keyframes maN1{0%,16.5%{opacity:0;transform:scale(1)}17%{opacity:1;transform:scale(1)}27%,100%{opacity:0;transform:scale(2.4)}}
+    @keyframes maN2{0%,40.5%{opacity:0;transform:scale(1)}41%{opacity:1;transform:scale(1)}51%,75.4%{opacity:0;transform:scale(2.4)}75.5%{opacity:0;transform:scale(1)}76%{opacity:1;transform:scale(1)}86%,100%{opacity:0;transform:scale(2.4)}}
+  </style>
+
+  <!-- shadows -->
+  <path class="sh" d="M56 258H200L208 250H64ZM230 258H374L382 250H238ZM16 258H48L54 252H22Z"></path>
+
+  <!-- gantry posts (behind the conveyors) -->
+  <path class="s d" d="M66 66 72 60V252L66 258ZM338 66 344 60V252L338 258Z"></path>
+  <rect class="m d" x="58" y="66" width="8" height="192"></rect>
+  <rect class="m d" x="330" y="66" width="8" height="192"></rect>
+
+  <!-- infeed + outfeed conveyors: rail, belt, moving slats (dash trick under a 45° skew) -->
+  <g class="m3 d">
+    <rect x="72" y="208" width="5" height="50"></rect><rect x="184" y="208" width="5" height="50"></rect>
+    <rect x="238" y="208" width="5" height="50"></rect><rect x="358" y="208" width="5" height="50"></rect>
+    <path d="M56 194 68 182H208L196 194ZM230 194 242 182H382L370 194Z"></path>
+  </g>
+  <g transform="translate(194 0) skewX(-45)">
+    <path class="sl bt b1" d="M58 188H195"></path>
+    <path class="sl bt b2" d="M232 188H369"></path>
+  </g>
+  <g class="m">
+    <rect x="56" y="194" width="140" height="14"></rect>
+    <rect x="230" y="194" width="140" height="14"></rect>
+  </g>
+  <g class="m3 d">
+    <circle cx="62" cy="201" r="4"></circle><circle cx="190" cy="201" r="4"></circle>
+    <circle cx="236" cy="201" r="4"></circle><circle cx="364" cy="201" r="4"></circle>
+  </g>
+
+  <!-- photo-eye + reflector -->
+  <rect class="m3 d" x="195" y="172" width="5" height="10"></rect>
+  <path class="e bm" d="M186 190 197 179" stroke-width="2"></path>
+  <rect class="f d" x="178" y="184" width="8" height="12" rx="1"></rect>
+  <circle class="y n sn" cx="182" cy="188.5" r="1.6"></circle>
+
+  <!-- carton -->
+  <g class="ct">
+    <path class="t" d="M140 163 148 155H180L172 163Z"></path>
+    <path class="s" d="M172 163 180 155V183L172 191Z"></path>
+    <rect class="f" x="140" y="163" width="32" height="28"></rect>
+    <path class="bt" d="M156 163V171M156 163l8-8" style="stroke:var(--i-b);stroke-width:3"></path>
+    <rect class="b2 d" x="144" y="176" width="13" height="10"></rect>
+    <path class="h" d="M161 179h7M161 183h7"></path>
+  </g>
+
+  <!-- gantry beam + servo -->
+  <path class="t" d="M46 52 56 42H362L352 52Z"></path>
+  <path class="s" d="M352 52 362 42V56L352 66Z"></path>
+  <rect class="m" x="46" y="52" width="306" height="14"></rect>
+  <path class="h l" d="M54 57H344M54 61H344"></path>
+  <circle class="b" cx="40" cy="50" r="12"></circle>
+  <path class="b" d="M19.5 53.5 31.5 41.5 48.5 58.5 36.5 70.5Z"></path>
+  <circle class="m" cx="28" cy="62" r="12"></circle>
+  <circle class="enc" cx="28" cy="62" r="7"></circle>
+  <circle class="ink n" cx="28" cy="62" r="2"></circle>
+
+  <!-- carriage + Z axis + vacuum gripper -->
+  <g class="mx">
+    <g class="mz">
+      <rect class="m3 d" x="158.5" y="64" width="3" height="48"></rect>
+      <rect class="b d" x="142" y="112" width="36" height="6"></rect>
+      <path class="m3 d" d="M146 118h8l-1.5 5h-5ZM166 118h8l-1.5 5h-5Z"></path>
+      <circle class="y n vac rmh" cx="160" cy="115" r="1.6"></circle>
+    </g>
+    <rect class="m d" x="153" y="70" width="14" height="30"></rect>
+    <rect class="m3 d" x="151" y="70" width="18" height="3"></rect>
+    <rect class="f d" x="142" y="48" width="36" height="22"></rect>
+    <rect class="b n" x="142.6" y="48.6" width="34.8" height="4"></rect>
+    <path class="ink" d="M148 64H173" style="stroke-dasharray:0 8.3"></path>
+  </g>
+
+  <!-- operator station -->
+  <path class="t d" d="M16 250 22 244H54L48 250Z"></path>
+  <rect class="s d" x="16" y="250" width="32" height="8"></rect>
+  <rect class="m d" x="27" y="158" width="6" height="92"></rect>
+  <path class="t" d="M12 120 18 114H50L44 120Z"></path>
+  <path class="s" d="M44 120 50 114V152L44 158Z"></path>
+  <rect class="f" x="12" y="120" width="32" height="38"></rect>
+  <rect class="k d" x="16" y="124" width="24" height="16"></rect>
+  <path class="h q" d="M19 128.5h9"></path>
+  <rect class="y n pr" x="19" y="134" width="18" height="2"></rect>
+  <circle class="b d" cx="19" cy="149" r="3"></circle><circle class="f d" cx="28" cy="149" r="3"></circle><circle class="m3 d" cx="37" cy="149" r="3"></circle>
+
+  <!-- brand traces: photo-eye → station (input), station → servo (output) -->
+  <path class="tr" d={`${t2}${t1}`}></path>
+  <circle class="rn" cx="182" cy="202" r="4"></circle>
+  <circle class="rn" cx="28" cy="82" r="4"></circle>
+  <path class="p i1" pathLength="100" d={t2}></path>
+  <path class="p o1" pathLength="100" d={t1}></path>
+  <circle class="nd i1" cx="182" cy="202" r="2"></circle>
+  <circle class="pg i1" cx="182" cy="202" r="4"></circle>
+  <circle class="nd o1" cx="28" cy="82" r="2"></circle>
+  <circle class="pg o1" cx="28" cy="82" r="4"></circle>
+</Frame>

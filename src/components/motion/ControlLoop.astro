@@ -1,0 +1,447 @@
+---
+/**
+ * ControlLoop — animated explainer: Sensor → PLC → HMI/SCADA → Actuator → Process → back to Sensor.
+ * Pure CSS timeline (one 7.5 s cycle, amber signal pulses hop node to node); a ~300-byte script only flips
+ * data-play when the diagram is on screen. Horizontal ≥ 60rem, vertical below. Static under reduced motion.
+ */
+import type enHmi from "~/i18n/messages/en/hmi.json";
+import { getMessages, type Locale } from "~/i18n";
+import Icon from "~/components/Icon.astro";
+
+interface Props {
+  locale: Locale;
+  /** Show eyebrow / title / lead above the diagram. */
+  intro?: boolean;
+  tone?: "light" | "dark";
+  headingLevel?: 2 | 3;
+  class?: string;
+}
+
+const { locale, intro = true, tone = "light", headingLevel = 2, class: className } = Astro.props;
+const t = (getMessages(locale).hmi as typeof enHmi).loop;
+const H = headingLevel === 3 ? "h3" : "h2";
+const N = headingLevel === 3 ? "h4" : "h3";
+const nodes = (["sensor", "plc", "hmi", "actuator", "process"] as const).map((k) => ({ k, ...t.nodes[k] }));
+const icon = { sensor: "thermometer", plc: "plc", hmi: "hmi", process: "factory" } as const;
+---
+
+<div class:list={["lc-loop", tone === "dark" && "on-dark", className]} data-loop data-play="0" data-tone={tone}>
+  {
+    intro && (
+      <header class="lc-loop-head">
+        <p class="type-label lc-loop-eyebrow">
+          <span class="slant-bar" aria-hidden="true" />
+          {t.eyebrow}
+        </p>
+        <H class="type-h2 lc-loop-title">{t.title}</H>
+        <p class="type-lead lc-loop-lead">{t.lead}</p>
+      </header>
+    )
+  }
+  <div class="lc-loop-body">
+    <ol class="lc-loop-row">
+      {
+        nodes.map((n, i) => (
+          <li class="lc-loop-node" style={`--i:${i}`}>
+            <span class="lc-loop-ic" aria-hidden="true">
+              {n.k === "actuator" ? (
+                <svg viewBox="0 0 24 24" width="26" height="26" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M3.5 11.5l8.5 5 8.5-5v9l-8.5-5-8.5 5zM12 16.5V8M7.5 8a4.5 4.5 0 0 1 9 0z" />
+                </svg>
+              ) : (
+                <Icon name={icon[n.k]} size={26} />
+              )}
+            </span>
+            <span class="lc-loop-txt">
+              <N class="lc-loop-l">
+                <span class="lc-loop-n">{String(i + 1).padStart(2, "0")}</span>
+                {n.label}
+              </N>
+              <span class="lc-loop-t">{n.text}</span>
+              <span class="lc-loop-spec" dir="ltr">{n.spec}</span>
+            </span>
+            <span class="lc-loop-wire" aria-hidden="true">
+              {i < 4 && <i />}
+            </span>
+          </li>
+        ))
+      }
+    </ol>
+    <span class="lc-loop-ret" aria-hidden="true"><i></i></span>
+  </div>
+  <p class="lc-loop-cap">{t.caption}</p>
+</div>
+
+<script>
+  const play = (el: HTMLElement) => (el.dataset.play = el.dataset.vis === "1" && !document.hidden ? "1" : "0");
+  const io = new IntersectionObserver(
+    (es) =>
+      es.forEach((e) => {
+        const el = e.target as HTMLElement;
+        el.dataset.vis = e.isIntersecting ? "1" : "0";
+        play(el);
+      }),
+    { threshold: 0.2 },
+  );
+  document.querySelectorAll<HTMLElement>("[data-loop]").forEach((el) => io.observe(el));
+  document.addEventListener("visibilitychange", () => document.querySelectorAll<HTMLElement>("[data-loop]").forEach(play));
+</script>
+
+<style is:global>
+  .lc-loop {
+    --lp-cycle: 7.5s;
+    --lp-hop: 1.5s;
+    --lp-ic: 3.5rem;
+    --lp-line: var(--color-navy-200);
+    --lp-pulse: var(--color-signal-400);
+    --lp-ink: var(--color-navy-800);
+    --lp-txt: var(--color-charcoal-600);
+    --lp-ic-bg: #fff;
+  }
+  .lc-loop[data-tone="dark"] {
+    --lp-line: rgb(150 182 232 / 0.35);
+    --lp-ink: #fff;
+    --lp-txt: var(--color-navy-200);
+    --lp-ic-bg: var(--color-navy-900);
+  }
+  .lc-loop-head {
+    max-width: 46rem;
+    margin-bottom: clamp(2rem, 1.5rem + 2vw, 3.25rem);
+  }
+  .lc-loop-eyebrow {
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+    color: var(--color-royal-600);
+  }
+  .lc-loop[data-tone="dark"] .lc-loop-eyebrow {
+    color: var(--color-royal-300);
+  }
+  .lc-loop-title {
+    margin-top: 0.85rem;
+    color: var(--lp-ink);
+  }
+  .lc-loop-lead {
+    margin-top: 1rem;
+    color: var(--lp-txt);
+  }
+  .lc-loop-body {
+    position: relative;
+  }
+  .lc-loop-row {
+    list-style: none;
+    margin: 0;
+    padding: 0 0 1.5rem;
+    padding-inline-start: 2.25rem;
+    display: grid;
+    gap: 1.75rem;
+  }
+  .lc-loop-node {
+    position: relative;
+    display: flex;
+    gap: 1rem;
+    align-items: flex-start;
+  }
+  .lc-loop-ic {
+    position: relative;
+    z-index: 1;
+    flex: none;
+    display: grid;
+    place-items: center;
+    width: var(--lp-ic);
+    height: var(--lp-ic);
+    border-radius: 50%;
+    border: 1.5px solid var(--lp-line);
+    background: var(--lp-ic-bg);
+    color: var(--color-royal-600);
+    animation: lc-loop-glow var(--lp-cycle) linear infinite;
+    animation-delay: calc(var(--i) * var(--lp-hop) - 0.6s);
+  }
+  .lc-loop[data-tone="dark"] .lc-loop-ic {
+    color: var(--color-royal-300);
+  }
+  .lc-loop-txt {
+    display: grid;
+    gap: 0.3rem;
+    padding-top: 0.2rem;
+  }
+  .lc-loop-l {
+    display: flex;
+    align-items: baseline;
+    gap: 0.5rem;
+    font-size: var(--text-h4);
+    font-weight: 700;
+    line-height: 1.3;
+    color: var(--lp-ink);
+  }
+  .lc-loop-n {
+    font: 600 0.75rem/1 var(--font-mono);
+    color: var(--color-royal-600);
+  }
+  .lc-loop[data-tone="dark"] .lc-loop-n {
+    color: var(--color-signal-300);
+  }
+  .lc-loop-t {
+    font-size: 0.9375rem;
+    line-height: 1.55;
+    color: var(--lp-txt);
+  }
+  .lc-loop-spec {
+    justify-self: start;
+    margin-top: 0.2rem;
+    padding: 0.2rem 0.5rem;
+    border-radius: 3px;
+    background: var(--color-charcoal-100);
+    color: var(--color-charcoal-700);
+    font: 500 0.75rem/1.4 var(--font-mono);
+    font-variant-numeric: tabular-nums;
+  }
+  .lc-loop[data-tone="dark"] .lc-loop-spec {
+    background: rgb(150 182 232 / 0.1);
+    color: var(--color-navy-100);
+  }
+  /* wires (vertical on phones/tablets) */
+  .lc-loop-wire {
+    position: absolute;
+    inset-inline-start: calc(var(--lp-ic) / 2 - 1px);
+    top: calc(var(--lp-ic) + 4px);
+    bottom: -1.5rem;
+    width: 2px;
+    background: var(--lp-line);
+  }
+  .lc-loop-wire::after {
+    content: "";
+    position: absolute;
+    bottom: -2px;
+    left: -4px;
+    border: 5px solid transparent;
+    border-top: 6px solid var(--lp-line);
+    border-bottom: 0;
+  }
+  .lc-loop-wire i,
+  .lc-loop-ret i {
+    position: absolute;
+    width: 10px;
+    height: 10px;
+    margin: -5px;
+    border-radius: 50%;
+    background: var(--lp-pulse);
+    box-shadow: 0 0 0 3px rgb(255 176 43 / 0.25), 0 0 12px 2px rgb(255 176 43 / 0.7);
+    opacity: 0;
+  }
+  .lc-loop-wire i {
+    left: 1px;
+    animation: lc-loop-hop-v var(--lp-cycle) linear infinite;
+    animation-delay: calc(var(--i) * var(--lp-hop));
+  }
+  /* return path: bracket on the inline-start side */
+  .lc-loop-node:last-child .lc-loop-wire::after {
+    display: none;
+  }
+  .lc-loop-ret {
+    position: absolute;
+    inset-inline-start: 0.5rem;
+    top: calc(var(--lp-ic) / 2 - 1px);
+    bottom: 0;
+    width: calc(1.75rem + var(--lp-ic) / 2);
+    border: 2px dashed var(--lp-line);
+    border-inline-end: 0;
+    border-start-start-radius: 12px;
+    border-end-start-radius: 12px;
+  }
+  .lc-loop-ret i {
+    animation: lc-loop-ret-v var(--lp-cycle) linear infinite;
+    animation-delay: calc(4 * var(--lp-hop));
+  }
+  .lc-loop-cap {
+    margin-top: 1.5rem;
+    font-size: 0.8125rem;
+    color: var(--lp-txt);
+  }
+  .lc-loop:not([data-play="1"]) * {
+    animation-play-state: paused !important;
+  }
+
+  @keyframes lc-loop-glow {
+    0%,
+    1% {
+      background: var(--lp-ic-bg);
+      color: inherit;
+      box-shadow: none;
+    }
+    3% {
+      background: var(--color-royal-600);
+      border-color: var(--color-royal-600);
+      color: #fff;
+      box-shadow: 0 0 0 6px rgb(37 122 224 / 0.18), 0 10px 26px -8px rgb(5 86 173 / 0.7);
+    }
+    16%,
+    100% {
+      background: var(--lp-ic-bg);
+      box-shadow: none;
+    }
+  }
+  @keyframes lc-loop-hop-v {
+    0% {
+      top: 0;
+      opacity: 0;
+    }
+    1% {
+      opacity: 1;
+    }
+    11% {
+      opacity: 1;
+    }
+    12%,
+    100% {
+      top: 100%;
+      opacity: 0;
+    }
+  }
+  @keyframes lc-loop-ret-v {
+    0% {
+      inset-inline-start: 100%;
+      top: 100%;
+      opacity: 0;
+    }
+    1% {
+      opacity: 1;
+    }
+    2.5% {
+      inset-inline-start: 0;
+      top: 100%;
+    }
+    9.5% {
+      inset-inline-start: 0;
+      top: 0;
+    }
+    11.5% {
+      inset-inline-start: 100%;
+      top: 0;
+      opacity: 1;
+    }
+    12%,
+    100% {
+      inset-inline-start: 100%;
+      top: 0;
+      opacity: 0;
+    }
+  }
+
+  /* ---------------------------------------------------------- horizontal */
+  @media (min-width: 60rem) {
+    .lc-loop-row {
+      grid-template-columns: repeat(5, minmax(0, 1fr));
+      gap: 1.5rem;
+      padding: 0 0 3.25rem;
+    }
+    .lc-loop-node {
+      flex-direction: column;
+      align-items: center;
+      text-align: center;
+    }
+    .lc-loop-txt {
+      justify-items: center;
+    }
+    .lc-loop-l {
+      flex-direction: column;
+      align-items: center;
+      gap: 0.35rem;
+    }
+    .lc-loop-spec {
+      justify-self: center;
+    }
+    .lc-loop-wire {
+      top: calc(var(--lp-ic) / 2 - 1px);
+      bottom: auto;
+      inset-inline-start: calc(50% + var(--lp-ic) / 2 + 10px);
+      width: calc(100% - var(--lp-ic) + 1.5rem - 20px);
+      height: 2px;
+    }
+    .lc-loop-wire::after {
+      top: -5px;
+      bottom: auto;
+      left: auto;
+      inset-inline-end: -2px;
+      border: 5px solid transparent;
+      border-inline-start: 6px solid var(--lp-line);
+      border-inline-end: 0;
+    }
+    .lc-loop-wire i {
+      top: 1px;
+      animation-name: lc-loop-hop-h;
+    }
+    .lc-loop-node:last-child .lc-loop-wire {
+      display: none;
+    }
+    .lc-loop-ret {
+      top: auto;
+      bottom: 0.5rem;
+      height: 2.5rem;
+      inset-inline: calc(10% - 0.6rem);
+      width: auto;
+      border: 2px dashed var(--lp-line);
+      border-top: 0;
+      border-radius: 0 0 14px 14px;
+    }
+    .lc-loop-ret i {
+      animation-name: lc-loop-ret-h;
+    }
+    .lc-loop-cap {
+      text-align: center;
+      margin-top: 0.75rem;
+    }
+  }
+  @keyframes lc-loop-hop-h {
+    0% {
+      inset-inline-start: 0;
+      opacity: 0;
+    }
+    1%,
+    11% {
+      opacity: 1;
+    }
+    12%,
+    100% {
+      inset-inline-start: 100%;
+      opacity: 0;
+    }
+  }
+  @keyframes lc-loop-ret-h {
+    0% {
+      inset-inline-start: 100%;
+      top: 0;
+      opacity: 0;
+    }
+    1% {
+      opacity: 1;
+    }
+    2% {
+      inset-inline-start: 100%;
+      top: 100%;
+    }
+    10% {
+      inset-inline-start: 0;
+      top: 100%;
+    }
+    11.5% {
+      inset-inline-start: 0;
+      top: 0;
+      opacity: 1;
+    }
+    12%,
+    100% {
+      inset-inline-start: 0;
+      top: 0;
+      opacity: 0;
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .lc-loop-ic,
+    .lc-loop-wire i,
+    .lc-loop-ret i {
+      animation: none !important;
+    }
+  }
+</style>

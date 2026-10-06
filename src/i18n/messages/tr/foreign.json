@@ -1,0 +1,173 @@
+{
+  "seo": {
+    "title": "Mısır'da Yeni Fabrikalar için Yerel Otomasyon Ortağı",
+    "description": "Mısır'da fabrika kuranlar için yerel otomasyon mühendisleri: ithal hatların devreye alınması, I/O testleri, FAT/SAT desteği, Arapça HMI, yerel yedek parça."
+  },
+  "hero": {
+    "eyebrow": "Mısır'da fabrika kuran veya üretimini Mısır'a taşıyan üreticiler için",
+    "title": "Mısır'daki yerel otomasyon ve kontrol ekibiniz",
+    "lead": "İthal üretim hatlarınızı devreye alıyor, HMI ekranlarını operatörleriniz için Arapçaya uyarlıyor, yedek parçaları yerel olarak temin etmenize yardımcı oluyor ve ilk çalıştırmadan sonra tesisinize destek veriyoruz. 6 Ekim Şehri merkezliyiz ve Mısır genelindeki sanayi bölgelerinde çalışıyoruz.",
+    "chips": [
+      "Çin, Türkiye ve Avrupa'dan gelen hatların devreye alınması",
+      "Yerel operatörler için Arapça HMI'lar",
+      "Talep halinde İngilizce, Çince veya Türkçe teslim dokümanları"
+    ],
+    "ctaPrimary": "Teklif isteyin",
+    "ctaSecondary": "Bir mühendise WhatsApp'tan yazın"
+  },
+  "needs": {
+    "title": "Mısır'da yeni bir tesisin yerel ekipten beklentileri",
+    "intro": "Makineleriniz Türkiye'de veya başka bir ülkede üretiliyor; tesisiniz ise Mısır'da çalışıyor. Aradaki boşlukları biz kapatıyoruz.",
+    "items": [
+      {
+        "title": "Sahada mühendisler",
+        "text": "İthal hatlar ilk çalıştırma sırasında ve sonrasında sahada insan gerektirir. Mühendislerimiz Mısır'da yerleşik ve tesisinize gelir."
+      },
+      {
+        "title": "Tedarikçinin yöntemiyle devreye alma",
+        "text": "Makine üreticisinin çizimlerini, programlarını ve prosedürlerini takip ediyor; hem ekibinize hem de tedarikçiye rapor veriyoruz."
+      },
+      {
+        "title": "Makineyi anlayan operatörler",
+        "text": "Yerel çalışanlarınız için Arapça HMI ekranları ve operatör kılavuzları."
+      },
+      {
+        "title": "Temin edilebilen yedek parçalar",
+        "text": "Kritik yedek parça listesi ve yerel tedarik; böylece arızalanan tek bir parça, ithalatı beklerken hattınızı durdurmaz."
+      },
+      {
+        "title": "Ekiplerinizin okuyabileceği dokümanlar",
+        "text": "Operatörler için Arapça. Mühendisler ve yönetim için İngilizce; talep halinde temel dokümanların Çince veya Türkçe versiyonları."
+      },
+      {
+        "title": "Tedarikçi ayrıldıktan sonra destek",
+        "text": "Tedarikçinin mühendisleri ülkelerine döndükten sonra arıza giderme, program değişiklikleri ve önleyici bakım."
+      }
+    ]
+  },
+  "services": {
+    "title": "Yeni fabrikalar için neler yapıyoruz",
+    "items": [
+      {
+        "title": "İthal hatların devreye alınması",
+        "text": "Enerji verme, I/O ve loop testleri, kilitleme testleri, ilk çalıştırma ve ayarlar; tedarikçinin mühendisleriyle birlikte veya onlar adına."
+      },
+      {
+        "title": "I/O ve loop testleri",
+        "text": "Saha cihazı ile kontrolör arasındaki her sinyal test edilir; kabul dosyanız için yazılı kayıt tutulur."
+      },
+      {
+        "title": "FAT ve SAT desteği",
+        "text": "Fabrika kabul testi prosedürünü ve sonuçlarını inceliyor, saha kabul testini ekibinizle birlikte yürütüyor veya teste tanıklık ediyoruz."
+      },
+      {
+        "title": "HMI ekranlarının Arapçaya uyarlanması",
+        "text": "Ekranlar, alarmlar ve mesajlar Arapçaya çevrilir ve makine üzerinde test edilir; mühendisler için İngilizce korunur."
+      },
+      {
+        "title": "Saha elektrik kontrolleri",
+        "text": "Enerji vermeden önce besleme gerilimi, koruma ve topraklama saha koşullarına göre kontrol edilir; gerektiğinde panoda değişiklik yapılır."
+      },
+      {
+        "title": "Yerel yedek parça tedariki",
+        "text": "Makine dokümanlarınızdan kritik yedek parçaları listeliyor, hangilerinin Mısır'da bulunabileceğini ve hangilerinin ithal edilmesi gerektiğini belirliyoruz."
+      },
+      {
+        "title": "Operatör ve bakım eğitimi",
+        "text": "Kendi makinelerinizde Arapça eğitim: günlük çalıştırma, alarmlar, reçeteler ve temel arıza bulma."
+      },
+      {
+        "title": "Teknik destek sözleşmeleri",
+        "text": "Planlı bakım ziyaretleri, program değişiklikleri ve arıza giderme; müdahale süreleri yazılı olarak belirlenir."
+      }
+    ]
+  },
+  "timeline": {
+    "title": "Bizi ne zaman dahil etmelisiniz",
+    "intro": "Ne kadar erken katılırsak sahada o kadar az sürprizle karşılaşırsınız.",
+    "steps": [
+      {
+        "title": "Hat spesifikasyonu",
+        "text": "Siparişten önce elektrik spesifikasyonlarını, PLC ve HMI markalarını ve HMI dillerini inceliyoruz. Mısır'da desteği olan platformlar ileride zaman kazandırır."
+      },
+      {
+        "title": "Fabrika kabul testi",
+        "text": "FAT prosedürünü ve sonuçlarını sizinle birlikte inceliyor, makineler sevk edilmeden önce açık noktaları listeliyoruz."
+      },
+      {
+        "title": "Montaj",
+        "text": "Kablo ve bağlantı (terminasyon) kontrolleri, enerji verme ve güvenlik devresi testleri."
+      },
+      {
+        "title": "Devreye alma ve SAT",
+        "text": "Tedarikçiyle birlikte I/O ve loop testleri, ilk çalıştırma, ayarlar ve saha kabul testi."
+      },
+      {
+        "title": "Üretim ve destek",
+        "text": "Operatör eğitimi, Arapça operatör dokümanları, yedek parça listesi ve teknik destek sözleşmesi."
+      }
+    ]
+  },
+  "standards": {
+    "title": "Standartlar ve dokümantasyon",
+    "paragraphs": [
+      "Otomasyon panolarımız ve makine elektrik işlerimiz, IEC 60204-1 (makinelerin elektrik donanımı) ve IEC 61439 (alçak gerilim anahtarlama ve kontrol düzeni panoları) uygulamaları esas alınarak tasarlanır.",
+      "Her proje belgelenir: elektrik şemaları, I/O listesi, malzeme listesi, test kayıtları ve as-built çizimler. CE işaretlemesi veya UL listelemesi yapmıyoruz. Makineleriniz veya ürünleriniz bunları gerektiriyorsa, belgelendirme kuruluşunuzun istediği elektrik dokümantasyonunu sağlıyoruz."
+    ],
+    "items": [
+      "IEC 60204-1 ve IEC 61439 uygulamaları esas alınarak tasarım",
+      "Elektrik şemaları, I/O listesi ve malzeme listesi",
+      "I/O, kilitleme ve devreye alma test kayıtları",
+      "Teslimde as-built çizimler"
+    ]
+  },
+  "proof": {
+    "title": "İthal hatlara uygun deneyim",
+    "paragraphs": [
+      "Çin menşeli bir PLC ve HMI markası olan Wecon ile her gün çalışıyoruz. Çin'de üretilen makinelerde yaygın bir kombinasyon olan Siemens S7-200 SMART PLC ve MCGS HMI ile kurulmuş bir sistemi de devreye aldık.",
+      "Siemens, Schneider Electric, Delta, LS Electric ve Wecon'u programlıyor ve entegre ediyoruz; Mısır'daki gıda, süt ürünleri, ilaç, kozmetik, ambalaj ve diğer tesislerde 50'den fazla proje tamamladık."
+    ],
+    "cta": "Devreye alma projesini inceleyin"
+  },
+  "languages": {
+    "title": "Çok dilli çalışma",
+    "text": "Mühendislerimiz Arapça ve İngilizce çalışır. Bize bu sitenin Çince veya Türkçe sayfaları üzerinden ulaşabilirsiniz. Teknik çalışmalar İngilizce yürütülür, operatör materyalleri Arapçadır; temel dokümanların Çince veya Türkçe versiyonları talep halinde sağlanır."
+  },
+  "faq": {
+    "title": "Mısır'da fabrika kuran üreticilerin soruları",
+    "items": [
+      {
+        "q": "Çin, Türkiye veya Avrupa'da üretilmiş bir hattı devreye alabilir misiniz?",
+        "a": "Evet. Tedarikçinin çizimleri, I/O listeleri ve programları üzerinden çalışıyor, sahada her sinyali kontrol ediyor ve hattı tedarikçinin mühendisleriyle birlikte, sahada veya uzaktan devreye alıyoruz."
+      },
+      {
+        "q": "HMI ekranlarını Arapçaya çevirebilir misiniz?",
+        "a": "Evet; HMI proje dosyası tedarikçiden temin edilebiliyorsa. Ekranları, alarmları ve mesajları çeviriyor ve makine üzerinde test ediyoruz. Değişiklik tedarikçinin garantisini etkiliyorsa önce tedarikçiyle mutabık kalıyoruz."
+      },
+      {
+        "q": "Mühendisleriniz Çince veya Türkçe konuşuyor mu?",
+        "a": "Mühendislerimiz Arapça ve İngilizce çalışır. Bu site üzerinden bize Çince veya Türkçe yazabilirsiniz. Teknik çalışmalar İngilizce yürütülür; temel dokümanların Çince veya Türkçe versiyonları talep halinde sağlanır."
+      },
+      {
+        "q": "Mısır'da yedek parça tedarik edebilir misiniz?",
+        "a": "Makine dokümanlarınızdan kritik yedek parça listesi hazırlıyor, hangi parçaların Mısır'daki tedarikçilerden bulunabileceğini ve hangilerinin ithal edilmesi gerektiğini belirliyoruz; böylece siparişlerinizi önceden verebilirsiniz. Yedek parça stoku tutmuyoruz."
+      },
+      {
+        "q": "Hangi standartlara göre çalışıyorsunuz?",
+        "a": "Tasarımlarımızda IEC 60204-1 ve IEC 61439 uygulamalarını esas alıyor ve her sistemi belgeliyoruz. CE işaretlemesi veya UL listelemesi yapmıyoruz, ancak belgelendirme kuruluşunun ihtiyaç duyduğu elektrik dokümanlarını sağlıyoruz."
+      },
+      {
+        "q": "Sizinle ne zaman iletişime geçmeliyiz?",
+        "a": "Makineler sevk edilmeden önce; ideal olarak hat spesifikasyonlarını netleştirirken. Elektrik spesifikasyonlarının, PLC markalarının ve HMI dillerinin erken incelenmesi sahada değişiklik ihtiyacını önler."
+      },
+      {
+        "q": "İlk çalıştırmadan sonra tesise destek veriyor musunuz?",
+        "a": "Evet. Teknik destek sözleşmesi kapsamında arıza giderme, program değişiklikleri, önleyici bakım ve eğitim sunuyoruz; müdahale süreleri yazılı olarak belirlenir."
+      },
+      {
+        "q": "Lisans, gümrük veya şirket kuruluşu konularında yardımcı olabilir misiniz?",
+        "a": "Hayır. Otomasyona odaklanan bir mühendislik şirketiyiz. Yatırım işlemleri için Mısır Yatırım ve Serbest Bölgeler Genel Kurumu (GAFI), SCZONE tek durak ofisi veya bir hukuk danışmanıyla görüşün."
+      }
+    ]
+  }
+}

@@ -1,0 +1,173 @@
+{
+  "seo": {
+    "title": "Local Automation Partner for New Factories in Egypt",
+    "description": "Local automation engineers for factories setting up in Egypt: commissioning of imported lines, I/O checks, FAT/SAT support, Arabic HMIs, local spares."
+  },
+  "hero": {
+    "eyebrow": "For manufacturers setting up or relocating a factory in Egypt",
+    "title": "Your local automation and controls team in Egypt",
+    "lead": "We commission imported production lines, put HMI screens in Arabic for your operators, help you source spare parts locally and support your plant after start-up. Based in 6th of October City, working across Egypt's industrial zones.",
+    "chips": [
+      "Commissioning of lines from China, Türkiye and Europe",
+      "Arabic HMIs for local operators",
+      "Handover documents in English, Chinese or Turkish on request"
+    ],
+    "ctaPrimary": "Request a quote",
+    "ctaSecondary": "WhatsApp an engineer"
+  },
+  "needs": {
+    "title": "What a new plant in Egypt needs from a local team",
+    "intro": "Your machines are built abroad. Your plant runs in Egypt. These are the gaps we close between the two.",
+    "items": [
+      {
+        "title": "Engineers on site",
+        "text": "Imported lines need people on the floor during start-up and after it. Our engineers are based in Egypt and come to your site."
+      },
+      {
+        "title": "Commissioning the supplier's way",
+        "text": "We follow the machine builder's drawings, programs and procedures, and report to your team and to the supplier."
+      },
+      {
+        "title": "Operators who understand the machine",
+        "text": "Arabic HMI screens and operator guides for your local workforce."
+      },
+      {
+        "title": "Spare parts you can get",
+        "text": "A critical-spares list and local sourcing, so one failed part does not stop the line while you wait for an import."
+      },
+      {
+        "title": "Documents your teams can read",
+        "text": "Arabic for operators. English for engineers and management, with Chinese or Turkish versions of key documents on request."
+      },
+      {
+        "title": "Support after the supplier leaves",
+        "text": "Troubleshooting, program changes and preventive maintenance after the supplier's engineers return home."
+      }
+    ]
+  },
+  "services": {
+    "title": "What we do for new factories",
+    "items": [
+      {
+        "title": "Commissioning of imported lines",
+        "text": "Power-up, I/O and loop checks, interlock tests, start-up and tuning, alongside the supplier's engineers or on their behalf."
+      },
+      {
+        "title": "I/O and loop checks",
+        "text": "Every signal tested between the field device and the controller, with a written record for your acceptance file."
+      },
+      {
+        "title": "FAT and SAT support",
+        "text": "We review the factory acceptance test procedure and results, and run or witness the site acceptance test with your team."
+      },
+      {
+        "title": "Arabic HMI localization",
+        "text": "Screens, alarms and messages translated into Arabic and tested on the machine, with English kept for engineers."
+      },
+      {
+        "title": "Site electrical checks",
+        "text": "Supply voltage, protection and earthing checked against site conditions before power-up, and panel changes where needed."
+      },
+      {
+        "title": "Local spare-parts sourcing",
+        "text": "We list the critical spares from your machine documents and identify which can be bought in Egypt and which must be imported."
+      },
+      {
+        "title": "Operator and maintenance training",
+        "text": "Training in Arabic on your own machines: daily operation, alarms, recipes and basic fault finding."
+      },
+      {
+        "title": "Support agreements",
+        "text": "Planned maintenance visits, program changes and troubleshooting, with response times agreed in writing."
+      }
+    ]
+  },
+  "timeline": {
+    "title": "When to involve us",
+    "intro": "The earlier we join, the fewer surprises on site.",
+    "steps": [
+      {
+        "title": "Line specification",
+        "text": "We review the electrical specifications, PLC and HMI brands and HMI languages before you order. Platforms with support in Egypt save time later."
+      },
+      {
+        "title": "Factory acceptance test",
+        "text": "We review the FAT procedure and results with you, and list open points before the machines ship."
+      },
+      {
+        "title": "Installation",
+        "text": "Cable and termination checks, power-up and safety-circuit tests."
+      },
+      {
+        "title": "Commissioning and SAT",
+        "text": "I/O and loop checks, start-up, tuning and the site acceptance test, together with the supplier."
+      },
+      {
+        "title": "Production and support",
+        "text": "Operator training, Arabic operator documents, a spare-parts list and a support agreement."
+      }
+    ]
+  },
+  "standards": {
+    "title": "Standards and documentation",
+    "paragraphs": [
+      "Our control panels and machine electrical work are designed following IEC 60204-1 (electrical equipment of machines) and IEC 61439 (low-voltage switchgear and controlgear assemblies) practice.",
+      "Every project is documented: schematics, I/O list, bill of materials, test records and as-built drawings. We do not issue CE marking or UL listing. If your machines or products need them, we provide the electrical documentation your certification body asks for."
+    ],
+    "items": [
+      "Designed following IEC 60204-1 and IEC 61439 practice",
+      "Schematics, I/O list and bill of materials",
+      "I/O, interlock and commissioning test records",
+      "As-built drawings at handover"
+    ]
+  },
+  "proof": {
+    "title": "Experience that fits imported lines",
+    "paragraphs": [
+      "We work every day with Wecon, a PLC and HMI brand from China, and we have commissioned a system built on a Siemens S7-200 SMART PLC and an MCGS HMI, a combination common on machines built in China.",
+      "We program and integrate Siemens, Schneider Electric, Delta, LS Electric and Wecon, and we have delivered more than 50 projects in food, dairy, pharmaceutical, cosmetics, packaging and other plants in Egypt."
+    ],
+    "cta": "See the commissioning case study"
+  },
+  "languages": {
+    "title": "Working across languages",
+    "text": "Our engineers work in Arabic and English. You can contact us through the Chinese or Turkish pages of this site. Technical work runs in English, operator material is in Arabic, and Chinese or Turkish versions of key documents are available on request."
+  },
+  "faq": {
+    "title": "Questions from manufacturers setting up in Egypt",
+    "items": [
+      {
+        "q": "Can you commission a line built in China, Türkiye or Europe?",
+        "a": "Yes. We work from the supplier's drawings, I/O lists and programs, check every signal on site and start up the line with the supplier's engineers, on site or remotely."
+      },
+      {
+        "q": "Can you translate the HMI screens into Arabic?",
+        "a": "Yes, when the HMI project file is available from the supplier. We translate screens, alarms and messages and test them on the machine. Where the supplier's warranty is affected, we agree the changes with the supplier first."
+      },
+      {
+        "q": "Do your engineers speak Chinese or Turkish?",
+        "a": "Our engineers work in Arabic and English. You can write to us in Chinese or Turkish through this site. Technical work runs in English, and Chinese or Turkish versions of key documents are available on request."
+      },
+      {
+        "q": "Can you source spare parts in Egypt?",
+        "a": "We prepare a critical-spares list from your machine documents and identify which parts are available from suppliers in Egypt and which must be imported, so you can order ahead. We do not hold a parts stock."
+      },
+      {
+        "q": "Which standards do you work to?",
+        "a": "We design following IEC 60204-1 and IEC 61439 practice and document every system. We do not issue CE marking or UL listing, but we provide the electrical documents a certification body needs."
+      },
+      {
+        "q": "When should we contact you?",
+        "a": "Before the machines ship, ideally while you finalize the line specifications. An early review of electrical specifications, PLC brands and HMI languages avoids changes on site."
+      },
+      {
+        "q": "Do you support the plant after start-up?",
+        "a": "Yes. We offer troubleshooting, program changes, preventive maintenance and training under a support agreement, with response times agreed in writing."
+      },
+      {
+        "q": "Can you help with licences, customs or company registration?",
+        "a": "No. We are an engineering company and focus on automation. For investment procedures, contact GAFI or the SCZONE one-stop shop, or a legal adviser."
+      }
+    ]
+  }
+}

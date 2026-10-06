@@ -1,0 +1,195 @@
+{
+  "intro": {
+    "eyebrow": "HMI 实时演示",
+    "title": "在浏览器中操作巴氏杀菌机",
+    "lead": "一套可实际运行的 HTST 牛奶巴氏杀菌机仿真，正是我们为乳品厂打造的那类 PLC 与 HMI 系统。启动设备、切换配方、制造故障、运行 CIP 清洗：控制逻辑会像真实设备一样作出反应。",
+    "seeing": "演示要点",
+    "bullets": [
+      {
+        "title": "联锁",
+        "text": "只有保温管出口温度在法定温度保持达标后，回流阀（FDV）才会切换至出料。试试在手动模式下强制出料：PLC 不会允许。"
+      },
+      {
+        "title": "报警",
+        "text": "报警按优先级分级并带时间戳，具备确认与恢复正常等状态，符合 ISA-18.2 的建议。"
+      },
+      {
+        "title": "趋势",
+        "text": "实时显示温度及其设定值和回流限值，让操作员在偏移造成整批损失之前及时发现。"
+      }
+    ],
+    "ctaQuestion": "想为您的设备配一套这样的 HMI？",
+    "cta": "获取报价",
+    "try": "试一试：按“启动”，等待进入“出料”，再按“模拟故障”。"
+  },
+  "caption": "模拟 10.1″ 操作面板，按 ISA-101 高性能 HMI 原则设计：一切正常时为灰色，仅异常状态使用彩色，可触摸的元素为蓝色。",
+  "a11y": {
+    "panel": "交互式巴氏杀菌机 HMI 仿真",
+    "mimic": "工艺流程图：原料罐、平衡罐、进料泵、含热回收段、加热段和冷却段的板式换热器、热水回路、保温管、回流阀及储罐。实时数值列于工艺面板中。",
+    "trend": "最近 60 秒的温度趋势",
+    "led": "面板状态指示灯"
+  },
+  "status": {
+    "unit": "HTST-01 巴氏杀菌机",
+    "screen": "总览",
+    "sim": "SIM ×3",
+    "ready": "就绪",
+    "heating": "升温 · 回流",
+    "forward": "生产 · 出料",
+    "divert": "回流",
+    "cip": "CIP 清洗",
+    "stopped": "已停止"
+  },
+  "mimic": {
+    "raw": "原料罐",
+    "balance": "平衡罐",
+    "feedPump": "进料泵",
+    "phe": "板式换热器",
+    "regen": "热回收",
+    "heating": "加热",
+    "cooling": "冷却",
+    "holding": "保温管",
+    "forward": "出料",
+    "divert": "回流",
+    "storage": "储罐",
+    "hotWater": "热水",
+    "hwPump": "HW 泵",
+    "steam": "蒸汽",
+    "iceWater": "冰水",
+    "cipSupply": "CIP 供液",
+    "drain": "排放",
+    "locked": "联锁"
+  },
+  "kpi": {
+    "title": "工艺",
+    "tt102": "保温管出口",
+    "limit": "回流限值",
+    "tt101": "加热出口",
+    "sp": "SP",
+    "hold": "保温时间",
+    "min": "最低",
+    "flow": "流量",
+    "hw": "热水",
+    "valve": "蒸汽阀",
+    "outlet": "产品出口",
+    "batch": "批次",
+    "forwarded": "已出料"
+  },
+  "recipe": {
+    "title": "配方",
+    "milk": "牛奶",
+    "cream": "稀奶油",
+    "juice": "果汁"
+  },
+  "controls": {
+    "run": "运行",
+    "start": "启动",
+    "stop": "停止",
+    "mode": "模式",
+    "auto": "自动",
+    "manual": "手动",
+    "cip": "CIP",
+    "fault": "模拟故障",
+    "ack": "确认",
+    "manualTitle": "手动控制",
+    "sp": "加热 SP",
+    "spDown": "降低加热设定值",
+    "spUp": "提高加热设定值",
+    "fdv": "FDV",
+    "fwd": "出料",
+    "div": "回流"
+  },
+  "trend": {
+    "title": "趋势",
+    "window": "最近 60 s",
+    "show": "显示趋势",
+    "hide": "隐藏趋势",
+    "sp": "SP",
+    "limit": "限值"
+  },
+  "alarms": {
+    "title": "报警与事件",
+    "empty": "无活动报警",
+    "unacked": "未确认",
+    "time": "时间",
+    "prio": "优先级",
+    "tag": "位号",
+    "message": "信息",
+    "state": "状态",
+    "p1": "高",
+    "p2": "中",
+    "p3": "低",
+    "p0": "事件",
+    "active": "活动",
+    "acked": "已确认",
+    "cleared": "已恢复",
+    "almSteam": "蒸汽供应压力低",
+    "almHeat": "加热出口温度低",
+    "almDivert": "低于 {limit} °C：产品回流",
+    "evStart": "批次 {arg} 已启动",
+    "evStop": "生产已停止",
+    "evManual": "已切换至手动模式",
+    "evAuto": "已切换至自动模式",
+    "evRecipe": "配方已切换：{arg}",
+    "evCip": "CIP 程序已启动",
+    "evCipDone": "CIP 程序已完成",
+    "evCipAbort": "CIP 程序已中止"
+  },
+  "msg": {
+    "idle": "按“启动”运行巴氏杀菌机。",
+    "heating": "正在升温。保温管出口达到 {limit} °C 之前，FDV 保持回流。",
+    "recovering": "产品低于 {limit} °C，正回流至平衡罐，直至温度恢复。",
+    "forward": "产品已在 {limit} °C 下保持 {hold} s：FDV 切至出料，送往储罐。",
+    "manual": "手动模式：由您操作 FDV 和加热设定值，联锁仍在保护产品。",
+    "blocked": "联锁：禁止出料。TT-102 为 {t} °C，低于 {limit} °C 限值。",
+    "fault": "蒸汽供应压力下降。请观察低温产品沿保温管向前流动。",
+    "cipDone": "CIP 完成。管线已清洁，可投入生产。",
+    "stopped": "已停止。泵已关闭，蒸汽阀关闭，FDV 处于回流位置（故障安全）。",
+    "acked": "报警已确认。",
+    "fdvFwd": "FDV 出料。",
+    "fdvDiv": "FDV 回流。",
+    "alarm": "{prio}优先级报警：{text}"
+  },
+  "cip": {
+    "title": "CIP 程序",
+    "left": "剩余 {s} s",
+    "pre": "预冲洗",
+    "caustic": "碱洗",
+    "rinse": "中间冲洗",
+    "acid": "酸洗",
+    "final": "最终冲洗"
+  },
+  "loop": {
+    "eyebrow": "自动化如何运作",
+    "title": "每台设备背后的控制回路",
+    "lead": "传感器负责测量，PLC 负责决策，HMI 让人始终参与其中，执行器负责执行。随后周而复始，每秒循环多次。",
+    "caption": "图中所示信号类型均为典型示例。",
+    "nodes": {
+      "sensor": {
+        "label": "传感器",
+        "text": "测量过程变量：温度、压力、液位、流量或位置。",
+        "spec": "PT100 · 4–20 mA"
+      },
+      "plc": {
+        "label": "PLC",
+        "text": "将测量值与设定值比较并执行控制逻辑：PID、联锁、顺序控制。",
+        "spec": "PID · 扫描周期 10 ms"
+      },
+      "hmi": {
+        "label": "HMI / SCADA",
+        "text": "向操作员显示实时数值、报警和趋势，并将其操作指令传送给 PLC。",
+        "spec": "Modbus TCP"
+      },
+      "actuator": {
+        "label": "执行器",
+        "text": "由 VFD、调节阀或接触器将 PLC 的输出作用于设备。",
+        "spec": "VFD 0–50 Hz"
+      },
+      "process": {
+        "label": "被控过程",
+        "text": "设备作出响应，传感器随即测得新值。",
+        "spec": "72.4 °C"
+      }
+    }
+  }
+}

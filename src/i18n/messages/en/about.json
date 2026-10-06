@@ -1,0 +1,64 @@
+{
+  "seo": {
+    "title": "About Logic Controls | Automation Engineers in Egypt",
+    "description": "Logic Controls is an industrial automation company in 6th of October City, Egypt. Founded in 2025 by engineers with 4+ years of experience."
+  },
+  "h1": "About Logic Controls",
+  "lead": "Industrial automation engineers in 6th of October City, Giza. We design, program and commission control systems for factories in Egypt.",
+  "story": {
+    "title": "Our story",
+    "paragraphs": [
+      "Logic Controls was founded in 2025. The company is young, but our engineering team brings more than four years of industrial automation experience and more than 50 delivered projects.",
+      "That work covers food and dairy machines, pharmaceutical coating, cosmetics filling, labeling and bottle printing, concrete batching, hotel laundry machines and test equipment, on Siemens, Schneider Electric, Delta, LS Electric and Wecon platforms.",
+      "We built Logic Controls to give factories in Egypt one engineering team for the whole control system: design, panel, programming, commissioning and support."
+    ]
+  },
+  "mission": {
+    "title": "Our mission",
+    "text": "To deliver control systems that Egyptian factories can run, maintain and extend: reliable, documented, and built on platforms with local support."
+  },
+  "values": {
+    "title": "What we stand for",
+    "items": [
+      {
+        "title": "Honest engineering",
+        "text": "We say what we can do and quote exactly what we will deliver. If a retrofit is not worth it, we tell you."
+      },
+      {
+        "title": "Documented work",
+        "text": "Drawings, I/O lists and operating notes for every system, so your team does not depend on anyone's memory."
+      },
+      {
+        "title": "Safety first",
+        "text": "Interlocks, emergency stops and tests before production. We do not skip safety to save time."
+      },
+      {
+        "title": "Close to the plant",
+        "text": "Engineers based in Egypt who come to your floor and speak your operators' language."
+      }
+    ]
+  },
+  "why": {
+    "title": "Why choose us",
+    "items": [
+      "One team from electrical design to start-up and support",
+      "Five PLC and HMI platforms, chosen for your needs rather than our habits",
+      "Machine automation and process control experience in the same team",
+      "HMI screens in Arabic, English or both",
+      "Every I/O point, interlock and alarm tested before production",
+      "Clear scope and honest limits: no claims we cannot back up"
+    ]
+  },
+  "numbers": {
+    "title": "In numbers"
+  },
+  "location": {
+    "title": "Where we are",
+    "text": "Our base is in 6th of October City, Giza, in Greater Cairo. We work on site across Egypt's industrial zones.",
+    "note": "Meetings are usually held at your plant. Contact us to arrange a visit."
+  },
+  "cta": {
+    "title": "Talk to us about your machine or line",
+    "text": "Send a description and photos, or message an engineer on WhatsApp."
+  }
+}

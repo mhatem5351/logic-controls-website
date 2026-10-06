@@ -1,0 +1,195 @@
+{
+  "intro": {
+    "eyebrow": "Canlı HMI demosu",
+    "title": "Bir pastörizatörü tarayıcınızdan çalıştırın",
+    "lead": "Bir HTST süt pastörizatörünün çalışan simülasyonu; süt işletmeleri için kurduğumuz türden bir PLC ve HMI sistemi. Başlatın, reçeteyi değiştirin, arıza oluşturun, CIP yıkaması çalıştırın: kontrol mantığı gerçek makine gibi tepki verir.",
+    "seeing": "Neler görüyorsunuz",
+    "bullets": [
+      {
+        "title": "Kilitlemeler",
+        "text": "Akış yönlendirme vanası (FDV), ürünü ancak bekletme borusu çıkışı yasal sıcaklığı koruduktan sonra ileri gönderir. Manuel modda bunu aşmayı deneyin: PLC izin vermez."
+      },
+      {
+        "title": "Alarmlar",
+        "text": "ISA-18.2'nin önerdiği gibi önceliklendirilmiş, zaman damgalı alarmlar; onay ve normale dönüş durumlarıyla."
+      },
+      {
+        "title": "Trendler",
+        "text": "Canlı sıcaklık, ayar değeri ve geri dönüş limitiyle birlikte izlenir; operatörler sapmayı bir partiye mal olmadan önce görür."
+      }
+    ],
+    "ctaQuestion": "Makineniz için böyle bir HMI ister misiniz?",
+    "cta": "Teklif isteyin",
+    "try": "Deneyin: “Başlat” düğmesine basın, “İleri” durumunu bekleyin, ardından “Arıza simüle et” düğmesine basın."
+  },
+  "caption": "ISA-101 yüksek performanslı HMI ilkelerine göre hazırlanmış simüle 10.1″ operatör paneli: her şey normalken gri, renk yalnızca anormal durumlarda, dokunabileceğiniz her şey mavi.",
+  "a11y": {
+    "panel": "Etkileşimli pastörizatör HMI simülasyonu",
+    "mimic": "Proses şeması: ham ürün tankı, denge tankı, besleme pompası, rejenerasyon, ısıtma ve soğutma bölümlerine sahip plakalı eşanjör, sıcak su devresi, bekletme borusu, akış yönlendirme vanası ve depolama tankı. Canlı değerler proses panelinde listelenir.",
+    "trend": "Son 60 saniyenin sıcaklık trendi",
+    "led": "Panel durum lambaları"
+  },
+  "status": {
+    "unit": "HTST-01 Pastörizatör",
+    "screen": "Genel bakış",
+    "sim": "SIM ×3",
+    "ready": "Hazır",
+    "heating": "Isınıyor · Geri dönüş",
+    "forward": "Üretim · İleri",
+    "divert": "Geri dönüş",
+    "cip": "CIP yıkama",
+    "stopped": "Durdu"
+  },
+  "mimic": {
+    "raw": "Ham tank",
+    "balance": "Denge tankı",
+    "feedPump": "Besleme pompası",
+    "phe": "Plakalı eşanjör",
+    "regen": "Rejen.",
+    "heating": "Isıtma",
+    "cooling": "Soğutma",
+    "holding": "Bekletme borusu",
+    "forward": "İleri",
+    "divert": "Geri dönüş",
+    "storage": "Depolama",
+    "hotWater": "Sıcak su",
+    "hwPump": "HW pompası",
+    "steam": "Buhar",
+    "iceWater": "Buzlu su",
+    "cipSupply": "CIP besleme",
+    "drain": "Drenaja",
+    "locked": "Kilitleme"
+  },
+  "kpi": {
+    "title": "Proses",
+    "tt102": "Bekletme çıkışı",
+    "limit": "Dönüş limiti",
+    "tt101": "Isıtıcı çıkışı",
+    "sp": "SP",
+    "hold": "Bekletme süresi",
+    "min": "min",
+    "flow": "Debi",
+    "hw": "Sıcak su",
+    "valve": "Buhar vanası",
+    "outlet": "Ürün çıkışı",
+    "batch": "Parti",
+    "forwarded": "Gönderilen"
+  },
+  "recipe": {
+    "title": "Reçete",
+    "milk": "Süt",
+    "cream": "Krema",
+    "juice": "Meyve suyu"
+  },
+  "controls": {
+    "run": "Çalışma",
+    "start": "Başlat",
+    "stop": "Durdur",
+    "mode": "Mod",
+    "auto": "Otomatik",
+    "manual": "Manuel",
+    "cip": "CIP",
+    "fault": "Arıza simüle et",
+    "ack": "Onayla",
+    "manualTitle": "Manuel kontrol",
+    "sp": "Isıtma SP",
+    "spDown": "Isıtma ayar değerini düşür",
+    "spUp": "Isıtma ayar değerini artır",
+    "fdv": "FDV",
+    "fwd": "İleri",
+    "div": "Geri dönüş"
+  },
+  "trend": {
+    "title": "Trend",
+    "window": "son 60 s",
+    "show": "Trendi göster",
+    "hide": "Trendi gizle",
+    "sp": "SP",
+    "limit": "Limit"
+  },
+  "alarms": {
+    "title": "Alarmlar ve olaylar",
+    "empty": "Aktif alarm yok",
+    "unacked": "onaylanmamış",
+    "time": "Zaman",
+    "prio": "Öncelik",
+    "tag": "Etiket",
+    "message": "Mesaj",
+    "state": "Durum",
+    "p1": "Yüksek",
+    "p2": "Orta",
+    "p3": "Düşük",
+    "p0": "Olay",
+    "active": "Aktif",
+    "acked": "Onaylı",
+    "cleared": "Normal",
+    "almSteam": "Buhar besleme basıncı düşük",
+    "almHeat": "Isıtıcı çıkış sıcaklığı düşük",
+    "almDivert": "{limit} °C altında: ürün geri döndürüldü",
+    "evStart": "Parti {arg} başlatıldı",
+    "evStop": "Üretim durduruldu",
+    "evManual": "Manuel mod seçildi",
+    "evAuto": "Otomatik mod seçildi",
+    "evRecipe": "Reçete değiştirildi: {arg}",
+    "evCip": "CIP döngüsü başladı",
+    "evCipDone": "CIP döngüsü tamamlandı",
+    "evCipAbort": "CIP döngüsü iptal edildi"
+  },
+  "msg": {
+    "idle": "Pastörizatörü çalıştırmak için Başlat'a basın.",
+    "heating": "Isınıyor. Bekletme çıkışı {limit} °C'ye ulaşana kadar FDV ürünü geri döndürür.",
+    "recovering": "{limit} °C altındaki ürün, sıcaklık toparlanana kadar denge tankına geri döndürülüyor.",
+    "forward": "Ürün {hold} s boyunca {limit} °C'yi sağladı: FDV ileri konumda, ürün depolamaya gidiyor.",
+    "manual": "Manuel: FDV'yi ve ısıtma ayar değerini siz kumanda edersiniz. Kilitleme ürünü korumaya devam eder.",
+    "blocked": "Kilitleme: ileri geçiş engellendi. TT-102 {t} °C, {limit} °C limitinin altında.",
+    "fault": "Buhar besleme basıncı düştü. Soğuk ürünün bekletme borusunda ilerleyişini izleyin.",
+    "cipDone": "CIP tamamlandı. Hat temiz ve üretime hazır.",
+    "stopped": "Durduruldu. Pompalar kapalı, buhar vanası kapalı, FDV geri dönüş konumunda (arızada emniyetli).",
+    "acked": "Alarmlar onaylandı.",
+    "fdvFwd": "FDV ileri.",
+    "fdvDiv": "FDV geri dönüş.",
+    "alarm": "{prio} öncelikli alarm: {text}"
+  },
+  "cip": {
+    "title": "CIP programı",
+    "left": "{s} s kaldı",
+    "pre": "Ön durulama",
+    "caustic": "Kostik yıkama",
+    "rinse": "Ara durulama",
+    "acid": "Asit yıkama",
+    "final": "Son durulama"
+  },
+  "loop": {
+    "eyebrow": "Otomasyon nasıl çalışır",
+    "title": "Her makinenin arkasındaki kontrol döngüsü",
+    "lead": "Sensörler ölçer, PLC karar verir, HMI insanı döngünün içinde tutar ve aktüatörler uygular. Sonra döngü yeniden başlar; saniyede defalarca.",
+    "caption": "Gösterilen sinyal tipleri tipik örneklerdir.",
+    "nodes": {
+      "sensor": {
+        "label": "Sensör",
+        "text": "Prosesi ölçer: sıcaklık, basınç, seviye, debi veya konum.",
+        "spec": "PT100 · 4–20 mA"
+      },
+      "plc": {
+        "label": "PLC",
+        "text": "Ölçülen değeri ayar değeriyle karşılaştırır ve mantığı yürütür: PID, kilitlemeler, sekanslar.",
+        "spec": "PID · 10 ms tarama"
+      },
+      "hmi": {
+        "label": "HMI / SCADA",
+        "text": "Operatörlere canlı değerleri, alarmları ve trendleri gösterir; komutlarını PLC'ye iletir.",
+        "spec": "Modbus TCP"
+      },
+      "actuator": {
+        "label": "Aktüatör",
+        "text": "VFD, kontrol vanası veya kontaktör, PLC çıkışını makineye uygular.",
+        "spec": "VFD 0–50 Hz"
+      },
+      "process": {
+        "label": "Proses",
+        "text": "Makine tepki verir ve sensör yeni değeri ölçer.",
+        "spec": "72.4 °C"
+      }
+    }
+  }
+}

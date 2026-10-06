@@ -1,26 +1,101 @@
 {
   "nav": {
-    "home": "Home",
-    "services": "Services",
-    "industries": "Industries",
-    "projects": "Projects",
-    "about": "About",
-    "contact": "Contact",
-    "foreign": "Setting up in Egypt?"
+    "home": "首页",
+    "services": "服务",
+    "industries": "行业",
+    "projects": "项目案例",
+    "about": "关于我们",
+    "contact": "联系我们",
+    "foreign": "在埃及建厂？",
+    "technologies": "技术平台",
+    "privacy": "隐私政策",
+    "servicesList": {
+      "controlPanels": "电气控制柜",
+      "plcHmi": "PLC 与 HMI 编程",
+      "machineAutomation": "设备自动化",
+      "commissioning": "调试与技术支持"
+    },
+    "industriesList": {
+      "foodBeverage": "食品饮料",
+      "pharma": "制药",
+      "cosmetics": "化妆品与灌装",
+      "packaging": "包装"
+    }
   },
   "cta": {
-    "quote": "Request a quote",
-    "whatsapp": "WhatsApp an engineer",
-    "call": "Call us",
-    "email": "Email us"
+    "quote": "获取报价",
+    "whatsapp": "WhatsApp 联系工程师",
+    "call": "致电我们",
+    "email": "发送邮件",
+    "emailEngineer": "邮件联系工程师",
+    "learnMore": "了解更多",
+    "viewProject": "查看项目",
+    "viewAll": "查看全部",
+    "inEgyptWhatsapp": "已在埃及？可通过 WhatsApp 联系我们"
   },
   "a11y": {
-    "skip": "Skip to content",
-    "menu": "Menu",
-    "closeMenu": "Close menu",
-    "language": "Language"
+    "skip": "跳到主要内容",
+    "menu": "菜单",
+    "closeMenu": "关闭菜单",
+    "language": "语言",
+    "mainNav": "主导航",
+    "footerNav": "页脚导航",
+    "breadcrumbs": "面包屑导航",
+    "homeLink": "Logic Controls 首页",
+    "newTab": "在新标签页中打开",
+    "currentLanguage": "当前语言"
+  },
+  "whatsapp": {
+    "fabLabel": "通过 WhatsApp 联系工程师",
+    "message": "Logic Controls 您好，我想就一个自动化项目与工程师沟通。"
+  },
+  "email": {
+    "fabLabel": "邮件联系工程师",
+    "subject": "自动化项目咨询"
+  },
+  "contact": {
+    "phone": "电话",
+    "email": "电子邮箱",
+    "whatsapp": "WhatsApp",
+    "address": "地址",
+    "addressValue": "埃及吉萨省十月六日城"
   },
   "footer": {
-    "rights": "All rights reserved."
+    "pitch": "PLC 电气控制柜、HMI/SCADA 与设备自动化——由我们在埃及的工程师团队设计、制造、编程并现场调试。",
+    "servicesTitle": "服务",
+    "industriesTitle": "行业",
+    "companyTitle": "公司",
+    "contactTitle": "联系方式",
+    "zonesTitle": "我们服务的工业区",
+    "zones": "十月六日城 · 斋月十日城 · 萨达特城 · 奥布尔城 · 艾因苏赫纳（苏伊士运河经济区）",
+    "facebook": "Logic Controls 的 Facebook 主页",
+    "rights": "版权所有"
+  },
+  "platforms": {
+    "title": "我们编程与集成的平台",
+    "note": "品牌名称与标志归其各自所有者所有，此处仅用于说明我们工程师所使用的硬件。"
+  },
+  "gallery": {
+    "label": "图片查看器",
+    "open": "打开第 {n} 张图片，共 {total} 张",
+    "close": "关闭图片查看器",
+    "prev": "上一张",
+    "next": "下一张",
+    "counter": "{n} / {total}"
+  },
+  "video": {
+    "play": "播放视频",
+    "playNamed": "播放视频：{title}"
+  },
+  "faq": {
+    "title": "常见问题"
+  },
+  "process": {
+    "step": "步骤"
+  },
+  "notFound": {
+    "title": "页面未找到",
+    "body": "您访问的页面不存在或已被移动。",
+    "home": "返回首页"
   }
 }

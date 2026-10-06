@@ -1,0 +1,139 @@
+---
+/* maintenance-support — gear unit with an exposed meshing gear pair (16:10, royal gear echoes the logo),
+   drive motor running back in depth, a wrench ratcheting a cover bolt, and a tablet on a stand with a
+   health gauge + vibration trace; brand traces to the sensor, the motor and a remote-support node.
+   Loop 8 s: running rough (needle in the amber zone, spiky trace, warning blinks) → three wrench strokes
+   turn the bolt 60° → needle swings to healthy, trace calms, a report pulse runs to the remote node →
+   slow wear drifts it back. */
+import Frame from "../ArtFrame.astro";
+import { uid, type ArtProps } from "../types";
+const p = Astro.props as ArtProps;
+const u = uid("mt");
+const f = (n: number) => +n.toFixed(1);
+function gear(n: number, ro: number, rr: number, phase: number) {
+  const pts: string[] = [];
+  const step = 360 / n;
+  for (let i = 0; i < n; i++) {
+    const c = phase + i * step;
+    [[c - 0.27 * step, rr], [c - 0.13 * step, ro], [c + 0.13 * step, ro], [c + 0.27 * step, rr]].forEach(([a, r]) => {
+      const t = (a * Math.PI) / 180;
+      pts.push(`${f(r * Math.cos(t))} ${f(r * Math.sin(t))}`);
+    });
+  }
+  return `M${pts.join("L")}Z`;
+}
+const big = gear(16, 36, 27.5, 11.25);
+const small = gear(10, 24, 15.5, 0);
+const holes = [45, 135, 225, 315].map((a) => [f(17 * Math.cos((a * Math.PI) / 180)), f(17 * Math.sin((a * Math.PI) / 180))]);
+let rough = "M30 143";
+for (let x = 30; x < 90; x += 10) rough += `L${x + 2.5} 134L${x + 5} 148L${x + 7.5} 139L${x + 10} 143`;
+let calm = "M30 143";
+for (let x = 30; x < 90; x += 5) calm += `Q${x + 2.5} ${x % 10 ? 146.5 : 139.5} ${x + 5} 143`;
+const hex = [0, 60, 120, 180, 240, 300].map((a) => `${f(248 + 5.5 * Math.cos((a * Math.PI) / 180))} ${f(191 + 5.5 * Math.sin((a * Math.PI) / 180))}`).join("L");
+const ta = "M150 106V52L142 44H78L72 50V66";
+const tb = "M36 66V40L28 32V24";
+const tc = "M246 104V74L258 62H334";
+const css =
+  ".lca-mt .g1,.lca-mt .g2{transform-box:fill-box;transform-origin:center;animation:lca-sp 6.4s linear infinite}.lca-mt .g2{animation-duration:4s;animation-direction:reverse}" +
+  ".lca-mt .wr{transform-box:view-box;transform-origin:248px 191px;animation:mtW 8s cubic-bezier(.65,0,.35,1) infinite}" +
+  "@keyframes mtW{0%,12.5%,21.9%,23.75%,33.1%,35%,44.4%,100%{transform:none}18.75%,30%,41.25%{transform:rotate(20deg)}}" +
+  ".lca-mt .bo{transform-box:fill-box;transform-origin:center;animation:mtB 8s cubic-bezier(.65,0,.35,1) infinite}" +
+  "@keyframes mtB{0%,12.5%{transform:none}18.75%,23.75%{transform:rotate(20deg)}30%,35%{transform:rotate(40deg)}41.25%,100%{transform:rotate(60deg)}}" +
+  ".lca-mt .nl{transform-box:view-box;transform-origin:55px 112px;animation:mtN 8s cubic-bezier(.45,0,.55,1) infinite}" +
+  "@keyframes mtN{0%{transform:rotate(-62deg)}6%{transform:rotate(-55deg)}12%{transform:rotate(-66deg)}20%{transform:rotate(-57deg)}30%{transform:rotate(-64deg)}46.25%{transform:rotate(-58deg)}56.25%,87.5%{transform:rotate(55deg)}100%{transform:rotate(-62deg)}}" +
+  ".lca-mt .wv{animation:mtS .5s linear infinite}@keyframes mtS{to{transform:translateX(-10px)}}" +
+  ".lca-mt .rf{animation:mtR 8s ease-in-out infinite}.lca-mt .cf{animation:mtC 8s ease-in-out infinite}" +
+  "@keyframes mtR{0%,46.25%{opacity:1}53.75%,87.5%{opacity:0}100%{opacity:1}}@keyframes mtC{0%,46.25%{opacity:0}53.75%,87.5%{opacity:1}100%{opacity:0}}" +
+  ".lca-mt .wn{animation:mtL 8s step-end infinite}@keyframes mtL{0%,6%,12%,18%,24%,30%,36%,42%{opacity:1}3%,9%,15%,21%,27%,33%,39%,45%,100%{opacity:.1}}" +
+  ".lca-mt .p.rp{animation:mtP 8s linear infinite}@keyframes mtP{0%,56.25%{stroke-dashoffset:12}66%,100%{stroke-dashoffset:-100}}" +
+  ".lca-mt .nd.rp,.lca-mt .pg.rp{transform-box:fill-box;transform-origin:center;animation:mtQ 8s ease-out infinite}" +
+  "@keyframes mtQ{0%,64.5%{opacity:0;transform:scale(1)}65%{opacity:1;transform:scale(1)}78%,100%{opacity:0;transform:scale(2.4)}}" +
+  "@media (prefers-reduced-motion:reduce){.lca-mt .nl{transform:rotate(55deg)}.lca-mt .rf,.lca-mt .wn{opacity:0}}";
+---
+
+<Frame {...p} uid={u} name="mt">
+  <style is:inline set:html={css}></style>
+  <defs>
+    <clipPath id={`${u}c`}><rect x="28" y="126" width="54" height="34"></rect></clipPath>
+  </defs>
+
+  <path class="sh" d="M36 258H76L70 252H42ZM102 258H290L274 242H118Z"></path>
+
+  <!-- drive motor, axis running back in depth (behind the housing) -->
+  <circle class="b" cx="286" cy="115" r="22"></circle>
+  <path class="b" d="M210.4 159.4 270.4 99.4 301.6 130.6 241.6 190.6Z"></path>
+  <path class="h" d="M246 151l40-40M252 157l40-40M240 145l40-40" style="stroke:var(--i-kl)"></path>
+  <path class="t d" d="M238 104 244 98H262L256 104Z"></path>
+  <rect class="f d" x="238" y="104" width="18" height="12"></rect>
+
+  <!-- gear unit -->
+  <path class="t" d="M108 136 124 120H272L256 136Z"></path>
+  <path class="s" d="M256 136 272 120V230L256 246Z"></path>
+  <rect class="f" x="108" y="136" width="148" height="110"></rect>
+  <path class="s d" d="M262 246 270 238V250L262 258Z"></path>
+  <rect class="m3 d" x="102" y="246" width="160" height="12"></rect>
+  <rect class="s d" x="116" y="146" width="124" height="90" rx="8"></rect>
+  <g class="m3 d"><circle cx="113" cy="141" r="2.5"></circle><circle cx="251" cy="141" r="2.5"></circle><circle cx="113" cy="241" r="2.5"></circle><circle cx="251" cy="241" r="2.5"></circle></g>
+  <g transform="translate(158 191)">
+    <g class="g1">
+      <path class="b" d={big}></path>
+      <circle class="h q" r="22"></circle>
+      {holes.map(([x, y]) => <circle class="s d" cx={x} cy={y} r="4.5"></circle>)}
+      <circle class="m3 d" r="7"></circle>
+      <path class="k n" d="M-1.5 -7h3v3h-3z"></path>
+    </g>
+  </g>
+  <g transform="translate(210 191)">
+    <g class="g2">
+      <path class="m" d={small}></path>
+      <circle class="h l" r="11"></circle>
+      <circle class="m3 d" r="5"></circle>
+      <path class="k n" d="M-1.2 -5h2.4v2.4h-2.4z"></path>
+    </g>
+  </g>
+  <!-- vibration sensor on the cover -->
+  <rect class="m3 d" x="146" y="117" width="8" height="11" rx="1"></rect>
+  <path class="d" d="M145 117h10"></path>
+
+  <!-- wrench on the cover bolt -->
+  <path class="m3 d bo" d={`M${hex}Z`}></path>
+  <g class="wr">
+    <path class="m" d="M254.5 187.6 300 189.2V192.8L254.5 194.4Z"></path>
+    <path class="m" d="M248 182a9 9 0 1 1 0 18a9 9 0 1 1 0-18Zm0 3.5a5.5 5.5 0 1 0 0 11a5.5 5.5 0 1 0 0-11Z" fill-rule="evenodd"></path>
+    <path class="m" d="M299 185h9l5 3h-6v6h6l-5 3h-9Z"></path>
+    <path class="h l" d="M262 191H292"></path>
+  </g>
+
+  <!-- tablet on a stand: health gauge + vibration trace -->
+  <path class="t d" d="M36 252 42 246H74L68 252Z"></path>
+  <rect class="s d" x="36" y="252" width="32" height="6"></rect>
+  <rect class="m d" x="52" y="172" width="6" height="77"></rect>
+  <path class="t" d="M24 70 29 65H93L88 70Z"></path>
+  <path class="s" d="M90 73 95 68V169L90 174Z"></path>
+  <rect class="f" x="20" y="70" width="70" height="104" rx="6"></rect>
+  <rect class="k" x="26" y="78" width="58" height="86" rx="1.5"></rect>
+  <path class="e bt" d="M35 112A20 20 0 0 1 45 94.7" stroke-width="3"></path>
+  <path class="q bt" d="M45 94.7A20 20 0 0 1 65 94.7" stroke-width="3" opacity=".45"></path>
+  <path class="bt" d="M65 94.7A20 20 0 0 1 75 112" style="stroke:var(--i-w);stroke-width:3"></path>
+  <path class="nl" d="M55 112V95" style="stroke:var(--i-kl);stroke-width:1.75"></path>
+  <circle class="n" cx="55" cy="112" r="2.5" style="fill:var(--i-kl)"></circle>
+  <circle class="y n wn" cx="78" cy="84" r="2"></circle>
+  <path class="h q" d="M30 120H80" opacity=".35"></path>
+  <g clip-path={`url(#${u}c)`}>
+    <g class="rf"><path class="e wv" d={rough} stroke-width="1.25"></path></g>
+    <g class="cf"><path class="q wv" d={calm} stroke-width="1.25"></path></g>
+  </g>
+
+  <!-- brand traces: sensor → tablet, tablet → remote support, motor → current monitoring -->
+  <path class="tr" d={ta + tb + tc}></path>
+  <circle class="rn" cx="150" cy="110" r="4"></circle>
+  <circle class="rn" cx="28" cy="19" r="5"></circle>
+  <circle class="rn" cx="340" cy="62" r="6"></circle>
+  <path class="p" pathLength="100" d={ta} style="--t:2s"></path>
+  <path class="p" pathLength="100" d={tc} style="--t:2.667s;--d:.6s"></path>
+  <circle class="nd" cx="340" cy="62" r="3" style="--t:2.667s;--d:.6s"></circle>
+  <circle class="pg" cx="340" cy="62" r="6" style="--t:2.667s;--d:.6s"></circle>
+  <path class="p rp" pathLength="100" d={tb}></path>
+  <circle class="nd rp" cx="28" cy="19" r="2.5"></circle>
+  <circle class="pg rp" cx="28" cy="19" r="5"></circle>
+</Frame>

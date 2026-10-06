@@ -1,0 +1,621 @@
+{
+  "index": {
+    "seo": {
+      "title": "Mısır'da Endüstriyel Otomasyon Hizmetleri | Logic Controls",
+      "description": "Mısır'daki tesisler için otomasyon panoları, PLC ve HMI programlama, makine otomasyonu ve retrofit, proses kontrolü, SCADA, devreye alma ve destek."
+    },
+    "h1": "Tasarımdan ilk çalıştırmaya otomasyon hizmetleri",
+    "intro": [
+      "Makinelerin ve proses hatlarının elektrik ve kontrol tarafını üstleniyoruz: tasarım, pano, programlama, test, devreye alma ve destek.",
+      "Kapsamın tamamını ya da yalnızca ihtiyacınız olan kısmını, örneğin programlamayı veya devreye almayı bize bırakabilirsiniz."
+    ],
+    "engagement": {
+      "title": "Çalışma modellerimiz",
+      "items": [
+        {
+          "title": "Komple kontrol sistemi",
+          "text": "Tasarım, pano, PLC ve HMI programları, test ve devreye alma; hepsi tek ekipten."
+        },
+        {
+          "title": "Yalnızca programlama veya mühendislik",
+          "text": "Panoyu veya makineyi siz üretirsiniz. Biz programı yazar, ekranları tasarlar veya çizimleri hazırlarız."
+        },
+        {
+          "title": "Yalnızca devreye alma",
+          "text": "Başka tedarikçilerin ekipmanları için: enstrüman ve I/O kontrolleri, lojik testleri, ilk çalıştırma ve eksik listesinin (punch list) kapatılması."
+        },
+        {
+          "title": "İlk çalıştırma sonrası destek",
+          "text": "Arıza giderme, program değişiklikleri, önleyici bakım ve eğitim; koşullar yazılı olarak belirlenir."
+        }
+      ]
+    },
+    "faq": {
+      "title": "Hizmetlerimizle ilgili sık sorulanlar",
+      "items": [
+        {
+          "q": "Yalnızca kendi kurduğunuz sistemlerde mi çalışıyorsunuz?",
+          "a": "Hayır. Başkalarının ürettiği makineleri de programı ve dokümanları inceledikten veya makinede keşif yaptıktan sonra programlıyor, devreye alıyor, modernize ediyor ve destekliyoruz."
+        },
+        {
+          "q": "Makinelerin mekanik işlerini de yapıyor musunuz?",
+          "a": "Hayır. Elektrik ve kontrol tarafını üstleniyoruz: panolar, sürücüler, sensörler, PLC, HMI ve SCADA. Mekanik ekibinizle veya makine üreticisiyle birlikte çalışıyoruz."
+        },
+        {
+          "q": "Program dosyaları ve çizimler bize teslim edilecek mi?",
+          "a": "Çizimler her teslimatın parçasıdır. Program dosyaları, şifreler ve mülkiyet teklifte yazılı olarak belirtilir; böylece sipariş vermeden önce neyi teslim alacağınızı bilirsiniz."
+        },
+        {
+          "q": "UL veya CE gibi sertifikalarınız var mı?",
+          "a": "Hayır. Tasarımlarımızda IEC 60204-1 ve IEC 61439 uygulamalarını esas alıyor ve yaptığımız işi belgeliyoruz. UL listelemesi veya CE işaretlemesi yapmıyoruz."
+        }
+      ]
+    }
+  },
+  "items": {
+    "control-panels": {
+      "title": "Elektrik tasarımı ve otomasyon panoları",
+      "navTitle": "Otomasyon panoları",
+      "summary": "Makineniz veya prosesiniz için tasarlanan, monte edilen, kablajı yapılan ve test edilen elektrik şemaları, I/O listeleri ve PLC kumanda panoları.",
+      "seoTitle": "Mısır'da Otomasyon Panosu Tasarımı | Logic Controls",
+      "seoDescription": "Mısır'daki makine ve proses hatları için tasarlanan, kablajı yapılan ve test edilen PLC kumanda panoları. Elektrik şemaları, I/O ve malzeme listesi dahil.",
+      "h1": "Elektrik tasarımı ve PLC kumanda panoları",
+      "intro": [
+        "Bir otomasyon panosu ancak çizimleri kadar iyidir. İşe elektrik tasarımıyla başlıyoruz: güç dağıtımı, motor devreleri, güvenlik devreleri ve eksiksiz I/O listesi. Ardından panoyu monte ediyor, kablajını yapıyor, etiketliyor ve sahanıza ulaşmadan önce test ediyoruz.",
+        "Yeni makineler, mevcut makinelerin modernizasyonu ve proses ekipmanları için pano üretiyoruz. Bileşenleri bütçenize ve Mısır'da bulabileceğiniz yedek parçalara göre seçiyoruz."
+      ],
+      "capabilities": [
+        {
+          "title": "Elektrik tasarımı",
+          "text": "Güç ve kumanda devrelerinin elektrik şemaları, pano yerleşim planları, kablo listeleri ve eksiksiz I/O listesi."
+        },
+        {
+          "title": "PLC ve motor kumanda panoları",
+          "text": "PLC, HMI, VFD'ler, kontaktörler, termik röleler, devre kesiciler, röleler ve klemensler; makinenize göre boyutlandırılmış tek bir panoda."
+        },
+        {
+          "title": "Kablaj ve etiketleme",
+          "text": "Kablo kanallarında düzenli kablaj, kablo yüksükleri ve kablo numaraları; çizimlerle birebir uyumlu etiketlenmiş cihazlar ve klemensler."
+        },
+        {
+          "title": "Güvenlik devreleri",
+          "text": "Acil stop ve kapı devreleri, faz kontrolü ve kilitlemeler; hem kablajda hem de kontrol lojiğinde tasarlanır."
+        },
+        {
+          "title": "Teslimat öncesi test",
+          "text": "Pano sahaya gönderilmeden önce kablaj kontrolleri, enerji verme testleri ve PLC programıyla I/O simülasyonu."
+        },
+        {
+          "title": "Tasarım esasları",
+          "text": "Panolar, IEC 60204-1 (makinelerin elektrik donanımı) ve IEC 61439 (alçak gerilim panoları) uygulamaları esas alınarak tasarlanır."
+        }
+      ],
+      "deliverables": [
+        "Elektrik şemaları ve pano yerleşim planı",
+        "I/O listesi ve malzeme listesi (BOM)",
+        "Monte edilmiş, kablajı yapılmış ve etiketlenmiş pano",
+        "Doldurulmuş teslimat öncesi test kontrol listesi",
+        "Devreye alma sonrası as-built çizimler"
+      ],
+      "situations": [
+        "Yeni bir makinenin otomasyon panosuna ihtiyacı var",
+        "Eski bir röleli pano, PLC'li bir panoyla değiştirilmeli",
+        "Bir panonun çizimleri yok ve belgelenmesi gerekiyor",
+        "İthal bir makine yerel bir panoya veya panosunda değişikliğe ihtiyaç duyuyor"
+      ],
+      "faq": [
+        {
+          "q": "Bileşenleri siz mi temin ediyorsunuz, biz mi?",
+          "a": "Her ikisi de mümkün. Malzeme listesinin tamamını biz temin edebilir veya sizin sağladığınız bileşenlerle panoyu kurabiliriz. Mısır'da yedek parça desteği olan markaları tercih ediyoruz."
+        },
+        {
+          "q": "Panoda hangi markaları kullanıyorsunuz?",
+          "a": "Bütçenize ve tercihinize bağlı. Yakın tarihli bir panoda Delta PLC, LS Electric sürücü, Schneider Electric devre kesiciler ve MEAN WELL güç kaynağı kullanıldı."
+        },
+        {
+          "q": "Panolarınız bir standarda göre mi tasarlanıyor?",
+          "a": "Panolarımız IEC 60204-1 ve IEC 61439 uygulamaları esas alınarak tasarlanır. UL listelemesi veya CE işaretlemesi gibi üçüncü taraf sertifikasyonu sağlamıyoruz."
+        },
+        {
+          "q": "Bir pano ne kadar sürede hazırlanır?",
+          "a": "Panonun büyüklüğüne ve bileşenlerin tedarik durumuna bağlıdır. Tasarım üzerinde mutabık kaldıktan sonra teklifte bir teslim tarihi veriyoruz."
+        }
+      ],
+      "cta": {
+        "title": "Otomasyon panosuna mı ihtiyacınız var?",
+        "text": "Makine açıklamasını, motor listesini veya mevcut çizimleri gönderin. Sorularımızla ya da teklifle size dönüş yapalım."
+      }
+    },
+    "plc-hmi-programming": {
+      "title": "PLC ve HMI programlama",
+      "navTitle": "PLC ve HMI programlama",
+      "summary": "Siemens, Schneider Electric, Delta, LS Electric ve Wecon için anlaşılır, açıklamalı PLC programları ve Arapça, İngilizce veya iki dilli HMI ekranları.",
+      "seoTitle": "Mısır'da PLC ve HMI Programlama | Logic Controls",
+      "seoDescription": "Siemens, Delta, LS Electric, Schneider Electric ve Wecon için PLC programlama ve HMI tasarımı. Sekanslar, kilitlemeler, alarmlar, reçeteler, Arapça HMI.",
+      "h1": "PLC programlama ve HMI tasarımı",
+      "intro": [
+        "İyi bir PLC kodunu sizden sonraki mühendis de okuyabilir. Makine sekansları, kilitlemeler, alarmlar ve reçeteler için yapılandırılmış lojik yazıyor, bakım ekibinizin takip edebilmesi için açıklamalar ekliyoruz.",
+        "HMI tarafında operatörlerin bir bakışta anlayacağı ekranlar tasarlıyoruz: proses genel görünümü, manuel ve otomatik modlar, ayarlar, reçeteler ve alarm sayfası. Ekranlar Arapça, İngilizce veya iki dilli olabilir."
+      ],
+      "capabilities": [
+        {
+          "title": "Makine sekansları",
+          "text": "Besleme, dolum, etiketleme, yıkama, sterilizasyon veya dozajlama için adım adım lojik; manuel ve otomatik modlarla."
+        },
+        {
+          "title": "Kilitlemeler ve alarmlar",
+          "text": "Güvenlik ve proses kilitlemeleri (interlock), arıza tespiti ve operatöre neyi kontrol etmesi gerektiğini söyleyen alarm mesajları."
+        },
+        {
+          "title": "Reçeteler ve parametreler",
+          "text": "Operatörlerin PLC programına dokunmadan HMI üzerinden değiştirebildiği ürün reçeteleri, adım programları ve set değerleri."
+        },
+        {
+          "title": "HMI ekran tasarımı",
+          "text": "Makinenizin kullandığı HMI markasında proses mimik ekranları, durum göstergeleri, sayaçlar, ayar sayfaları ve alarm listeleri."
+        },
+        {
+          "title": "Arapça ve iki dilli HMI'lar",
+          "text": "Yerel operatörler için Arapça, mühendisler ve ziyarete gelen uzmanlar için İngilizce ekranlar."
+        },
+        {
+          "title": "Haberleşme",
+          "text": "PLC, HMI, sürücüler ve enstrümanlar arasında Modbus RTU, Modbus TCP ve Ethernet üzerinden bağlantı."
+        }
+      ],
+      "deliverables": [
+        "Test edilmiş, açıklamalı PLC programı",
+        "Belirlenen dillerde HMI ekranları",
+        "Alarm listesi ve parametre listesi",
+        "Operatörler ve bakım personeli için kullanım notları",
+        "Teklifte belirlendiği şekilde program dosyaları ve erişim"
+      ],
+      "situations": [
+        "Yeni bir makinenin kontrol lojiğine ve ekranlarına ihtiyacı var",
+        "Mevcut bir programda değişiklik veya yeni özellik gerekiyor",
+        "Operatörler anlaşılmaz veya yalnızca İngilizce ekranlarla zorlanıyor",
+        "Otomatik sekans hiçbir zaman düzgün çalışmadığı için makine manuelde çalıştırılıyor"
+      ],
+      "faq": [
+        {
+          "q": "Hangi PLC ve HMI markalarını programlıyorsunuz?",
+          "a": "Siemens (S7-1200 ve WinCC Professional dahil), Schneider Electric, Delta, LS Electric ve Wecon. MCGS HMI'lar gibi farklı kontrolörlerle kurulmuş sistemleri de devreye aldık."
+        },
+        {
+          "q": "Başka birinin yazdığı bir programı değiştirebilir misiniz?",
+          "a": "Evet; program PLC'den okunabiliyorsa veya proje dosyaları sizdeyse. Program kilitliyse veya kaybolmuşsa makineyi belgeliyor ve yeni bir program yazıyoruz."
+        },
+        {
+          "q": "Program dosyaları bize teslim edilecek mi?",
+          "a": "Program dosyaları, şifreler ve mülkiyet teklifte yazılı olarak belirtilir; böylece sipariş vermeden önce neyi teslim alacağınızı bilirsiniz."
+        },
+        {
+          "q": "Bir makineyi bir PLC markasından diğerine geçirebilir misiniz?",
+          "a": "Evet. Eski PLC'nin yedek parçalarını bulmak zorlaştığında bu sık yapılan bir iştir. Makine modernizasyonu (retrofit) hizmetimize göz atın."
+        }
+      ],
+      "cta": {
+        "title": "Program yazdırmak veya değiştirmek mi istiyorsunuz?",
+        "text": "PLC ve HMI modellerini ve makinenin ne yapması gerektiğini bize yazın. Pano ve ekran fotoğrafları işimizi kolaylaştırır."
+      }
+    },
+    "machine-automation": {
+      "title": "Makine otomasyonu, sürücüler ve hareket kontrolü",
+      "navTitle": "Makine otomasyonu",
+      "summary": "Dolum, etiketleme, baskı, yıkama ve test makineleri için komple kontrol sistemleri: PLC, HMI, VFD'ler, step motor ve hareket kontrolü.",
+      "seoTitle": "Makine Otomasyonu, Hareket Kontrolü | Logic Controls Mısır",
+      "seoDescription": "Mısır'da dolum, etiketleme, baskı ve yıkama makineleri için PLC, HMI, VFD, step motor ve hareket kontrol sistemleri. Tesisler ve makine üreticileri için.",
+      "h1": "Makine otomasyonu, sürücüler ve hareket kontrolü",
+      "intro": [
+        "Tekil makineleri otomatikleştiriyoruz: dolum, etiketleme, şişe baskı ve yıkama makineleri ile test düzenekleri. Kontrol tasarımını, sürücüleri ve programı tek ekip üstlendiği için makine tek bir sistem olarak çalışır.",
+        "Sahip oldukları bir makineyi otomatikleştirmek isteyen fabrikalarla ve ürettikleri makineler için kontrol tarafında bir iş ortağına ihtiyaç duyan makine üreticileriyle çalışıyoruz."
+      ],
+      "capabilities": [
+        {
+          "title": "Makine kontrol sistemleri",
+          "text": "Besleme, dolum, etiketleme, baskı, yıkama ve test için sekans kontrolü; manuel ve otomatik modlarla."
+        },
+        {
+          "title": "Frekans invertörleri",
+          "text": "Konveyörler, pompalar, karıştırıcılar, tamburlar ve fanlar için VFD'ler: seçim, kablaj, parametre ayarı ve PLC'den kontrol."
+        },
+        {
+          "title": "Step motor ve hareket kontrolü",
+          "text": "Etiketleme ve baskı için konumlandırma ve senkronizasyon: etiket boyu, etiket bırakma konumu ve ürün aralığı."
+        },
+        {
+          "title": "Sensörler ve ürün algılama",
+          "text": "Sekansı yöneten, eksik veya hatalı konumlanmış ürünleri algılayan şişe, etiket, seviye ve konum sensörleri."
+        },
+        {
+          "title": "Hızlı ürün değişimi",
+          "text": "Ürün ve ebat ayarları reçete olarak kaydedilir; ürün değişimi HMI'da tek bir seçime dönüşür."
+        },
+        {
+          "title": "Makine üreticilerine destek",
+          "text": "Kontrol tasarımı, bir makine serisinde tekrar kullanabileceğiniz programlar ve müşterinizin sahasında ilk çalıştırma."
+        }
+      ],
+      "deliverables": [
+        "Kontrol tasarımı ve bileşen listesi",
+        "PLC ve HMI programları",
+        "Sürücü parametre ayarları",
+        "Makine üzerinde test edilmiş manuel ve otomatik sekanslar",
+        "Günlük kullanım için operatör kılavuzu"
+      ],
+      "situations": [
+        "Yerel bir üreticiden gelen yeni bir makinenin kontrol sistemine ihtiyacı var",
+        "Manuel veya yarı otomatik bir makine otomatik çalışmalı",
+        "Ürün değişimleri çok uzun sürüyor",
+        "Hız veya hassasiyet, makinenin vermesi gereken seviyenin altında"
+      ],
+      "faq": [
+        {
+          "q": "Makinenin mekanik parçalarını da üretiyor musunuz?",
+          "a": "Hayır. Elektrik ve kontrol tarafını üstleniyoruz: pano, sürücüler, sensörler, PLC ve HMI. Mekanik ekibinizle veya makine üreticisiyle birlikte çalışıyoruz."
+        },
+        {
+          "q": "Mevcut bir makinede dolum veya etiketleme hassasiyetini iyileştirebilir misiniz?",
+          "a": "Çoğu zaman evet. Hassasiyet mekaniğe, sensörlere ve kontrol zamanlamasına bağlıdır. Üçünü de inceliyor ve kontrol sisteminin değiştirebileceği her şeyi ayarlıyoruz. Dolum projelerimizde dolum hassasiyeti ayarı devreye almanın bir parçasıydı."
+        },
+        {
+          "q": "Hangi sürücülerle çalıştınız?",
+          "a": "Son projelerde LS Electric M100, Schneider Electric Altivar ve VEICHI VFD'ler ile Schneider Electric step motor sürücüleri. Makinenizde zaten kullanılan sürücü markasıyla da çalışabiliriz."
+        }
+      ],
+      "cta": {
+        "title": "Makinenizin otomatik çalışmasını mı istiyorsunuz?",
+        "text": "Makinenin videosunu veya fotoğraflarını gönderin ve çalışma sırasını anlatın. Size bir kontrol konsepti ve teklif önerelim."
+      }
+    },
+    "machine-retrofits": {
+      "title": "Makine modernizasyonu (retrofit) ve kontrol sistemi yenileme",
+      "navTitle": "Makine modernizasyonu",
+      "summary": "İyi durumdaki makinenizi koruyun, eski kontrol sistemini yenileyin: yeni PLC, HMI, sürücüler ve hareket kontrolü; belgelenmiş, test edilmiş ve planlı geçişle.",
+      "seoTitle": "Mısır'da Makine Retrofit ve PLC Yenileme | Logic Controls",
+      "seoDescription": "Eski makineleri değiştirmek yerine modernize edin: yeni PLC, HMI, sürücüler ve hareket kontrolü; çizimler ve testlerle. Mısır genelinde retrofit hizmeti.",
+      "h1": "Makine modernizasyonu ve kontrol sistemi yenileme",
+      "intro": [
+        "Pek çok makine mekanik olarak sağlamdır ama kontrol sistemi değildir: üretimi durmuş PLC'ler, kayıp programlar, röleli lojik, yıpranmış kablaj veya artık satılmayan yedek parçalar. Makinenin tamamını değiştirmek pahalıdır. Kontrol sistemini yenilemek genellikle çok daha az maliyetlidir.",
+        "Makinede keşif yapıyor, mevcut durumu belgeliyor ve mevcut mekaniğin etrafında yeni bir kontrol sistemi tasarlıyoruz. Yeni lojiği duruştan önce test ediyoruz; böylece sahadaki geçiş süresi mümkün olduğunca kısa olur."
+      ],
+      "capabilities": [
+        {
+          "title": "Keşif ve dokümantasyon",
+          "text": "Mevcut kablajı ve I/O noktalarını takip ediyor, etiket plakalarını kayıt altına alıyor ve makinenin hiç sahip olmadığı çizimleri hazırlıyoruz."
+        },
+        {
+          "title": "PLC ve HMI değişimi",
+          "text": "Röleli lojik veya üretimi durmuş bir PLC yerine, yedek parçası Mısır'da bulunan güncel bir PLC ve dokunmatik HMI."
+        },
+        {
+          "title": "Hareket ve sürücü yenileme",
+          "text": "Şişe baskı makinesi modernizasyonumuzda olduğu gibi eski sürücüler değiştirilir; konumlandırma ve senkronizasyon için hareket kontrolü yeniden ayarlanır."
+        },
+        {
+          "title": "Marka geçişi",
+          "text": "Üretimi durmuş veya tedariki zor bir platformdan Siemens, Schneider Electric, Delta, LS Electric veya Wecon'a geçiş."
+        },
+        {
+          "title": "Yeni özellikler",
+          "text": "Kontrol sistemi elden geçirilirken reçeteler, sayaçlar, anlaşılır alarmlar ve veri kaydı eklenir."
+        },
+        {
+          "title": "Planlı geçiş",
+          "text": "Yeni pano ve program duruştan önce test edilir; adım adım geçiş planı üretim ekibinizle birlikte belirlenir."
+        }
+      ],
+      "deliverables": [
+        "Mevcut makinenin keşif notları ve I/O listesi",
+        "Yeni elektrik çizimleri",
+        "Yeni PLC ve HMI programları",
+        "Geçiş planı ve sahada devreye alma",
+        "Operatörler ve bakım personeli için bilgilendirme"
+      ],
+      "situations": [
+        "PLC veya HMI artık üretilmiyor ve yedek parça bulmak zor",
+        "Program yedeği veya çizim yok",
+        "Eski röleler ve kablaj sık arızaya yol açıyor",
+        "Eski bir makinede reçete, sayaç, alarm veya veri kaydına ihtiyacınız var"
+      ],
+      "faq": [
+        {
+          "q": "Retrofit, yeni bir makineden daha mı ucuz?",
+          "a": "Mekanik iyi durumdaysa genellikle evet; çünkü kontrol sistemi, makinenin değerinin yalnızca bir kısmıdır. Keşiften sonra retrofitin değip değmeyeceğini size söylüyoruz."
+        },
+        {
+          "q": "Makine ne kadar süre duracak?",
+          "a": "Makineye bağlı. Yeni panoyu ve programı duruştan önce hazırlayıp test ediyoruz; böylece sahadaki iş ağırlıklı olarak montaj, I/O kontrolleri ve ilk çalıştırmadan oluşur. Planı sizinle önceden belirliyoruz."
+        },
+        {
+          "q": "İthal bir makineyi modernize edebilir misiniz?",
+          "a": "Evet. Yedek parçası en zor bulunan makineler genellikle ithal makinelerdir. Önce mevcut sistemi belgeliyor ve hâlâ çalışan her şeyi koruyoruz."
+        }
+      ],
+      "cta": {
+        "title": "Korumaya değer eski bir makineniz mi var?",
+        "text": "Makinenin, panonun ve etiket plakalarının fotoğraflarını gönderin. Retrofitin neleri kapsadığını size anlatalım."
+      }
+    },
+    "process-control": {
+      "title": "Proses kontrolü: sıcaklık, basınç, CIP ve dozajlama",
+      "navTitle": "Proses kontrolü",
+      "summary": "Pastörizasyon, sterilizasyon, pişirme, kaplama, CIP, harmanlama ve dozajlama kontrolü; reçeteler, kilitlemeler ve veri kaydıyla.",
+      "seoTitle": "Mısır'da Proses Kontrolü ve Dozajlama | Logic Controls",
+      "seoDescription": "Mısır'da pastörizatörler, otoklavlar, pişirme kazanları, CIP, harmanlama ve dozajlama için PLC proses kontrolü. Sıcaklık, basınç, süre ve reçete kontrolü.",
+      "h1": "Termal prosesler, CIP ve dozajlama sistemleri için proses kontrolü",
+      "intro": [
+        "Gıda, süt ve ilaç proseslerinde ürünü sayılar belirler: sıcaklık, basınç, süre, debi ve doz. Bu değerleri koruyan, sağlanmadıklarında prosesi durduran ve olup biteni kaydeden kontrol sistemleri kuruyoruz.",
+        "Proses projelerimiz arasında CIP'li pastörizatörler, bir zeytin sterilizasyon otoklavı, bir peynir pişirme makinesi, bir tablet kaplama makinesi, bir beton santrali ve çamaşırhane kimyasal dozajlaması var."
+      ],
+      "capabilities": [
+        {
+          "title": "Sıcaklık ve basınç kontrolü",
+          "text": "Buhar, sıcak su ve ısıtma için kapalı çevrim kontrol; her ürün için ayrı set değerleri."
+        },
+        {
+          "title": "Süre ve faz kontrolü",
+          "text": "Isıtma, bekletme, sterilizasyon ve soğutma gibi çok fazlı çevrimler; her faz için süre, sıcaklık ve basınç set değerleri."
+        },
+        {
+          "title": "CIP sekansları",
+          "text": "Zamanlanmış adımlar, pompa ve vana kontrolü ve HMI'da kendi ekranlarıyla yerinde temizlik (CIP) çevrimleri."
+        },
+        {
+          "title": "Harmanlama ve dozajlama",
+          "text": "Hammadde, su, katkı maddesi ve kimyasalların tartımı ve dozajlanması; karışım reçeteleri ve parti (batch) sekanslarıyla."
+        },
+        {
+          "title": "Ürün güvenliği kilitlemeleri",
+          "text": "Proses koşulları sağlanana kadar ürünü bekleten veya geri yönlendiren lojik; örneğin pastörizatördeki akış yönlendirme vanası."
+        },
+        {
+          "title": "Reçeteler ve kayıtlar",
+          "text": "Her ürün için reçeteler; kalite kayıtları ve izlenebilirlik için veri kaydı."
+        }
+      ],
+      "deliverables": [
+        "Yazılı kontrol tanımı: sekanslar, kilitlemeler ve alarmlar",
+        "Enstrüman ve I/O listesi",
+        "Reçeteli PLC ve HMI ya da SCADA programları",
+        "İlk çalıştırmada loop testleri ve ayarlar",
+        "Belirlendiği şekilde kurulan veri kaydı"
+      ],
+      "situations": [
+        "Sıcaklıklar veya süreler partiden partiye değişiyor",
+        "Operatörler vanaları elle ayarlıyor",
+        "Kalite ekibiniz parti kayıtlarına ihtiyaç duyuyor",
+        "Yeni bir proses ünitesinin (skid) kontrol sistemine ihtiyacı var"
+      ],
+      "faq": [
+        {
+          "q": "Enstrümanları siz mi temin ediyorsunuz?",
+          "a": "Sensörleri, transmitterleri ve vanaları belirliyor ve temin edebiliyoruz ya da ekipmanınızdaki mevcut enstrümanlarla çalışıyoruz. Her enstrüman devreye alma sırasında kontrol edilir."
+        },
+        {
+          "q": "Sistem kalite denetimleri için kayıt tutabilir mi?",
+          "a": "Evet. Proses sistemlerimiz kritik değerleri ve olayları kaydeder; kayıt formatı her projede birlikte belirlenir. 21 CFR Part 11 gibi resmi bilgisayarlı sistem validasyonu sağlamıyoruz."
+        },
+        {
+          "q": "Mevcut bir prosese CIP ekleyebilir misiniz?",
+          "a": "Vanalar ve pompalar uygunsa çoğu zaman evet. CIP, pastörizatör projelerimizde olduğu gibi makine programının içinde ya da ayrı bir sekans olarak çalışabilir."
+        }
+      ],
+      "cta": {
+        "title": "Prosesinizi daha sıkı kontrol etmek mi istiyorsunuz?",
+        "text": "Prosesi, tutturmanız gereken set değerlerini ve mevcut enstrümanlarınızı anlatın. Size bir kontrol çözümü önerelim."
+      }
+    },
+    "scada-data-logging": {
+      "title": "SCADA, izleme ve veri kaydı",
+      "navTitle": "SCADA ve veri kaydı",
+      "summary": "Prosesi görebilmeniz ve neyin üretildiğini gösterebilmeniz için SCADA ekranları, alarmlar, reçeteler, raporlar ve izlenebilirlik.",
+      "seoTitle": "Mısır'da SCADA ve Veri Kayıt Sistemleri | Logic Controls",
+      "seoDescription": "Siemens WinCC Professional ile SCADA, HMI'da veri kaydı, alarm geçmişi, reçeteler ve izlenebilirlik için otomatik test raporları. Mısır'daki tesisler için.",
+      "h1": "SCADA, izleme ve veri kaydı",
+      "intro": [
+        "Bir parti hatalı çıktığında ilk soru ne olduğudur. SCADA ve veri kaydı bu soruyu yanıtlar. Tüm prosesi gösteren izleme ekranları, zaman damgalı alarm listeleri ve her partiyi kendi ayarlarıyla ilişkilendiren kayıtlar oluşturuyoruz.",
+        "Büyük sistemlerde S7-1200 PLC'lerle birlikte Siemens WinCC Professional kullanıyoruz. Tekil makinelerde ise veri kaydı, reçete saklama ve test raporları doğrudan HMI üzerinde yapılabilir."
+      ],
+      "capabilities": [
+        {
+          "title": "WinCC Professional ile SCADA",
+          "text": "Tablet kaplama ve beton santrali projelerimizde olduğu gibi proses genel görünüm ekranları, ekipman kontrolü, reçete seçimi ve alarm yönetimi."
+        },
+        {
+          "title": "Alarmlar ve olaylar",
+          "text": "Arızaların izini sürmek ve tekrarlayan sorunları bulmak için zaman damgalı alarm listeleri ve alarm geçmişi."
+        },
+        {
+          "title": "Kullanıcı erişimi",
+          "text": "Operatör girişi ve kullanıcı seviyeleri; böylece reçeteleri ve ayarları yalnızca yetkili personel değiştirir."
+        },
+        {
+          "title": "Veri kaydı ve izlenebilirlik",
+          "text": "Kalite kayıtları için proses değerleri ve parti verileri HMI veya SCADA üzerinde kaydedilir."
+        },
+        {
+          "title": "Otomatik raporlar",
+          "text": "Boru test makinemizdeki sıkma (make) ve sökme (break) değerleri gibi, sistem tarafından üretilen test ve parti raporları."
+        },
+        {
+          "title": "Üretim takibi",
+          "text": "Vardiya veya parti bazında üretim için sayaçlar, çevrim süreleri ve makine durumu."
+        }
+      ],
+      "deliverables": [
+        "Proses ekranlarıyla SCADA veya HMI projesi",
+        "Metinleri ve öncelikleriyle alarm listesi",
+        "Reçete ve kullanıcı yönetimi",
+        "Kayıt ve rapor yapılandırması",
+        "Operatörler ve vardiya amirleri için eğitim"
+      ],
+      "situations": [
+        "Her makinenin başına gitmeden hattın ne yaptığını göremiyorsunuz",
+        "Kalite ekibiniz parti kayıtlarına ihtiyaç duyuyor",
+        "Kimse anlamadığı için alarmlar görmezden geliniyor",
+        "Test sonuçları elle yazılıyor"
+      ],
+      "faq": [
+        {
+          "q": "Hangi SCADA yazılımını kullanıyorsunuz?",
+          "a": "Son SCADA projelerimizde Siemens WinCC Professional. Tekil makinelerde veriyi çoğu zaman doğrudan HMI'da kaydediyoruz; bu da ek bir bilgisayar ihtiyacını ortadan kaldırıyor."
+        },
+        {
+          "q": "SCADA farklı markalardaki makineleri birbirine bağlayabilir mi?",
+          "a": "Genellikle evet; Modbus TCP gibi standart protokoller veya PLC'nin kendi Ethernet bağlantısı üzerinden. Teklif vermeden önce her makinenin kontrolörünü kontrol ediyoruz."
+        },
+        {
+          "q": "Bu, MES veya OEE yazılımıyla aynı şey mi?",
+          "a": "Hayır. Makine ve hat seviyesinde SCADA, veri kaydı ve raporlar kuruyoruz. Tesis genelindeki MES ve OEE platformları kapsamımız dışındadır."
+        }
+      ],
+      "cta": {
+        "title": "Prosesinizi görmek ve kayıt altına almak mı istiyorsunuz?",
+        "text": "Hangi makinelerin bağlanacağını ve neyi kaydetmeniz gerektiğini bize yazın. Size ekranlar, kayıt ve raporlar önerelim."
+      }
+    },
+    "testing-commissioning": {
+      "title": "Test ve devreye alma",
+      "navTitle": "Test ve devreye alma",
+      "summary": "Kendi kurduğumuz sistemler ile başka tedarikçilerin makine ve hatları için I/O ve loop testleri, kilitleme testleri, ilk çalıştırma ve ayarlar.",
+      "seoTitle": "Mısır'da Test ve Devreye Alma Hizmetleri | Logic Controls",
+      "seoDescription": "Mısır'da yeni makineler ve ithal hatlar için I/O ve loop testleri, kilitleme testleri, FAT/SAT desteği ve ilk çalıştırma; eksik listesi kapanana kadar.",
+      "h1": "Test ve devreye alma",
+      "intro": [
+        "Bir projenin başarısı ya da gecikmesi devreye almada belli olur. Üretim bunlara bağımlı hale gelmeden önce her sinyali, her kilitlemeyi ve her sekansı test ediyor, teslimden önce eksik listesini kapatıyoruz.",
+        "Kendi kurduğumuz sistemleri ve başkalarının tedarik ettiği ekipmanları devreye alıyoruz: ithal hatlar, paket üniteler ve tedarikçisinin yerel bir ekibe ihtiyaç duyduğu proses sistemleri."
+      ],
+      "capabilities": [
+        {
+          "title": "Devreye alma öncesi kontroller",
+          "text": "Saha enstrümanları, kablaj ve elektrik bağlantıları çizimlere göre kontrol edilir."
+        },
+        {
+          "title": "I/O ve loop testleri",
+          "text": "Her giriş ve çıkış, saha cihazı ile kontrol sistemi arasında test edilir; her loop uçtan uca doğrulanır."
+        },
+        {
+          "title": "Lojik ve kilitleme testleri",
+          "text": "Sekanslar, güvenlik kilitlemeleri ve koruma fonksiyonları ilk çalıştırmadan önce kontrollü koşullarda test edilir."
+        },
+        {
+          "title": "İlk çalıştırma ve ayar",
+          "text": "Gerçek çalışma koşullarında kademeli ilk çalıştırma; ardından hızların, zamanlamaların, set değerlerinin ve kontrol çevrimlerinin ayarı."
+        },
+        {
+          "title": "FAT ve SAT desteği",
+          "text": "Fabrika ve saha kabul testlerine destek: test prosedürleri, testlere tanıklık ve kayıtlar; makine üreticisiyle birlikte."
+        },
+        {
+          "title": "Eksik listesi ve teslim",
+          "text": "Devreye alma bulguları giderilir ve sistem sürekli çalışmaya hazır şekilde teslim edilir."
+        }
+      ],
+      "deliverables": [
+        "Devreye alma kontrol listesi ve I/O test kaydı",
+        "Kilitleme ve alarm test kaydı",
+        "Kapanış durumlarıyla eksik listesi",
+        "Ayarlanan parametrelerin kaydı",
+        "Operatörler ve bakım personeliyle teslim oturumu"
+      ],
+      "situations": [
+        "Yeni bir hat geldi ve tedarikçinin mühendisleri Mısır'da değil",
+        "Bir sistem kuruldu ama hiçbir zaman tam olarak devreye alınmadı",
+        "Bir makineyi kabul etmeden önce bağımsız bir kontrol istiyorsunuz",
+        "İlk çalıştırma sürekli aynı arızalarda takılıyor"
+      ],
+      "faq": [
+        {
+          "q": "Kendi kurmadığınız ekipmanları devreye alabilir misiniz?",
+          "a": "Evet. Bir gıda ve içecek tesisindeki atık arıtma projemiz yalnızca devreye almayı kapsıyordu: enstrüman kontrolleri, I/O testleri, lojik doğrulama, ilk çalıştırma ve eksik listesinin kapatılması."
+        },
+        {
+          "q": "Makine üreticisinin mühendisleriyle birlikte çalışıyor musunuz?",
+          "a": "Evet; sahada veya uzaktan. Onların prosedürlerini ve dokümanlarını takip ediyor, sonuçları İngilizce raporluyoruz."
+        },
+        {
+          "q": "Devreye alma ne kadar sürer?",
+          "a": "I/O nokta sayısına, prosese ve sahanın hazır olma durumuna bağlıdır. Süreyi teklifte tahmin ediyor, saha ziyaretinden sonra netleştiriyoruz."
+        }
+      ],
+      "cta": {
+        "title": "Devreye alınacak bir hattınız mı var?",
+        "text": "I/O listesini veya tedarikçi dokümanlarını ve hedef ilk çalıştırma tarihinizi gönderin. Devreye alma planını sizinle birlikte hazırlayalım."
+      }
+    },
+    "maintenance-support": {
+      "title": "Arıza giderme, bakım ve teknik destek",
+      "navTitle": "Bakım ve destek",
+      "summary": "Arıza tespiti ve giderme, program değişiklikleri, önleyici bakım, operatör eğitimi ve Mısır'da yedek parça tedarikinde destek.",
+      "seoTitle": "Mısır'da Otomasyon Bakım ve Teknik Destek | Logic Controls",
+      "seoDescription": "Mısır'daki tesisler için PLC, HMI ve sürücü arızalarının giderilmesi, önleyici bakım, program değişiklikleri, operatör eğitimi ve yedek parça tedariki.",
+      "h1": "Arıza giderme, bakım ve teknik destek",
+      "intro": [
+        "Duran bir makine her saat para kaybettirir. Kontrol arızalarını PLC diyagnostiği, I/O durumu, sürücü hata kodları ve kablaj kontrolleriyle sistemli biçimde buluyor; yalnızca belirtiyi değil, nedeni gideriyoruz.",
+        "İlk çalıştırmadan sonra da program değişiklikleri, yeni özellikler ve planlı bakım ziyaretleri için yanınızdayız. Destek koşulları yazılı olarak belirlenir; böylece ne bekleyeceğinizi bilirsiniz."
+      ],
+      "capabilities": [
+        {
+          "title": "Arıza tespiti ve giderme",
+          "text": "Kendi kurduğumuz ve diğer makinelerde PLC, HMI, sürücü, sensör ve kablaj arızalarının sahada teşhisi."
+        },
+        {
+          "title": "Program değişiklikleri",
+          "text": "Mevcut programa eklenen yeni özellikler, sekans değişiklikleri, ilave alarmlar veya reçeteler; kullanıma alınmadan önce test edilir."
+        },
+        {
+          "title": "Önleyici bakım",
+          "text": "Panoların, klemenslerin, sürücülerin ve soğutma fanlarının periyodik kontrolleri; program yedekleri ve güncel yedek parça listesi."
+        },
+        {
+          "title": "Teknik destek sözleşmeleri",
+          "text": "Planlı ziyaretler, müdahale süreleri ve destek saatleri her saha için yazılı olarak belirlenir."
+        },
+        {
+          "title": "Yedek parça tedariki",
+          "text": "Sisteminiz için kritik yedek parça listesi ve bunların Mısır'daki tedarikçilerden temininde destek."
+        },
+        {
+          "title": "Operatör ve bakım eğitimi",
+          "text": "Kendi makinelerinizde Arapça veya İngilizce eğitim: günlük çalıştırma, alarmlar, reçeteler ve temel arıza bulma."
+        }
+      ],
+      "deliverables": [
+        "Nedeni ve düzeltici faaliyetiyle arıza raporu",
+        "Her değişiklikten sonra güncellenmiş program ve çizimler",
+        "Kritik yedek parça listesi",
+        "Her ziyaret için bakım kontrol listesi",
+        "Arapça veya İngilizce eğitim notları"
+      ],
+      "situations": [
+        "Makine, kimsenin anlamadığı bir alarmla duruyor",
+        "Aralıklı arızalar tekrar tekrar ortaya çıkıyor",
+        "Orijinal tedarikçi makineye artık destek vermiyor",
+        "Yeni personelin kontrol sistemi eğitimine ihtiyacı var"
+      ],
+      "faq": [
+        {
+          "q": "Bir arızaya ne kadar hızlı müdahale edebilirsiniz?",
+          "a": "Konumunuza ve destek sözleşmesine bağlıdır. Müdahale süreleri her saha için belirlenir ve sözleşmeye yazılır. Acil yardım için bizi arayın veya WhatsApp'tan yazın."
+        },
+        {
+          "q": "Stokta yedek parça bulunduruyor musunuz?",
+          "a": "Yedek parça deposu işletmiyoruz. Sisteminiz için kritik yedek parça listesi hazırlıyor ve parçaları Mısır'daki tedarikçilerden temin etmenize yardımcı oluyoruz; böylece doğru yedekler rafınızda olur."
+        },
+        {
+          "q": "Kendi kurmadığınız bir makineye destek verebilir misiniz?",
+          "a": "Evet; programa veya makinenin dokümanlarına erişebiliyorsak. Erişemiyorsak işe keşifle başlıyor ve sistemi belgeliyoruz."
+        },
+        {
+          "q": "Operatör eğitimi veriyor musunuz?",
+          "a": "Evet. Eğitimler sizin makinelerinizde, operatörler ve bakım personeli için Arapça veya İngilizce olarak verilir."
+        }
+      ],
+      "cta": {
+        "title": "Makineniz durdu mu, sorun mu çıkarıyor?",
+        "text": "Alarm metnini, ekranın fotoğrafını ve makine modelini gönderin. Bir mühendisimiz size bir sonraki adımı söylesin."
+      }
+    }
+  }
+}

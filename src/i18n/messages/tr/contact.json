@@ -1,0 +1,191 @@
+{
+  "seo": {
+    "title": "Teklif İsteyin | Logic Controls Mısır",
+    "description": "Mısır'da otomasyon panosu, PLC/HMI programlama, retrofit, SCADA veya devreye alma için teklif isteyin. Detayları form, WhatsApp veya e-postayla gönderin."
+  },
+  "h1": "Teklif isteyin",
+  "intro": "Makinenizi veya projenizi anlatın. Her talebi bir mühendis inceler ve sorularıyla, saha ziyareti önerisiyle ya da teklifle size dönüş yapar.",
+  "form": {
+    "title": "Teklif talebi",
+    "requiredNote": "* ile işaretli alanlar zorunludur.",
+    "optional": "isteğe bağlı",
+    "steps": {
+      "one": "Bilgileriniz",
+      "two": "Proje detayları",
+      "counter": "Adım {current} / {total}",
+      "twoNote": "İsteğe bağlı, ancak daha hızlı teklif vermemize yardımcı olur."
+    },
+    "buttons": {
+      "next": "Devam",
+      "back": "Geri",
+      "submit": "Talebi gönder",
+      "sending": "Gönderiliyor…",
+      "sendNow": "Atla ve şimdi gönder"
+    },
+    "fields": {
+      "name": {
+        "label": "Ad soyad"
+      },
+      "company": {
+        "label": "Şirket",
+        "help": "Fabrika veya şirket adı."
+      },
+      "phone": {
+        "label": "Cep telefonu veya WhatsApp numarası",
+        "help": "Ülke koduyla birlikte yazın, örneğin +20 10 1234 5678."
+      },
+      "email": {
+        "label": "E-posta",
+        "help": "Çizimler, dokümanlar ve yazılı teklif için."
+      },
+      "need": {
+        "label": "Neye ihtiyacınız var?",
+        "placeholder": "Bir hizmet seçin",
+        "options": {
+          "control-panels": "Yeni otomasyon panosu",
+          "plc-hmi-programming": "PLC veya HMI programlama",
+          "machine-automation": "Makine otomasyonu",
+          "machine-retrofits": "Eski bir makinenin modernizasyonu (retrofit)",
+          "process-control": "Proses kontrolü (sıcaklık, CIP, dozajlama)",
+          "scada-data-logging": "SCADA veya veri kaydı",
+          "testing-commissioning": "Test ve devreye alma",
+          "maintenance-support": "Arıza giderme veya bakım",
+          "new-factory": "Mısır'da yeni fabrika: komple otomasyon kapsamı",
+          "other": "Diğer"
+        }
+      },
+      "industry": {
+        "label": "Sektör",
+        "placeholder": "Sektörünüzü seçin",
+        "options": {
+          "food-beverage": "Gıda, içecek ve süt ürünleri",
+          "pharmaceutical": "İlaç",
+          "cosmetics-personal-care": "Kozmetik ve kişisel bakım",
+          "packaging-labeling": "Ambalaj, etiketleme ve baskı",
+          "building-materials": "Yapı malzemeleri",
+          "commercial-laundry": "Oteller ve endüstriyel çamaşırhaneler",
+          "test-equipment": "Endüstriyel test ekipmanları",
+          "other": "Diğer sektör"
+        }
+      },
+      "location": {
+        "label": "Tesis konumu",
+        "placeholder": "Bir konum seçin",
+        "otherEgypt": "Mısır'da başka bir yer",
+        "outsideEgypt": "Mısır dışında"
+      },
+      "timeline": {
+        "label": "Ne zaman ihtiyacınız var?",
+        "placeholder": "Bir zaman aralığı seçin",
+        "options": {
+          "urgent": "Acil: bir makine durdu",
+          "within-1-month": "1 ay içinde",
+          "1-3-months": "1 ila 3 ay içinde",
+          "3-months-plus": "3 aydan sonra",
+          "planning": "Yalnızca planlama veya bütçeleme"
+        }
+      },
+      "message": {
+        "label": "Makineyi veya projeyi anlatın",
+        "help": "Makine tipi, ne yapması gerektiği, mevcut sorunlar ve biliyorsanız PLC veya HMI markaları."
+      },
+      "contactPreference": {
+        "label": "Size nasıl ulaşalım?",
+        "options": {
+          "whatsapp": "WhatsApp",
+          "phone": "Telefon görüşmesi",
+          "email": "E-posta"
+        }
+      },
+      "consent": {
+        "text": "Logic Controls'un bu bilgileri, {link} açıklandığı şekilde talebime yanıt vermek için kullanmasını kabul ediyorum.",
+        "linkText": "gizlilik bildiriminde"
+      }
+    },
+    "whatsappHint": {
+      "text": "WhatsApp'ı mı tercih edersiniz? Makinenin, etiket plakalarının, panonun veya çizimlerin fotoğraflarını gönderin.",
+      "cta": "Çizimleri WhatsApp'tan gönderin"
+    },
+    "privacyNote": "Bilgilerinizi yalnızca bu talebe yanıt vermek için kullanırız. Sizi herhangi bir e-posta listesine eklemeyiz.",
+    "security": {
+      "label": "Güvenlik kontrolü",
+      "help": "Bu kontrol, formu bir botun değil bir kişinin gönderdiğini doğrular."
+    }
+  },
+  "validation": {
+    "required": "Lütfen bu alanı doldurun.",
+    "name": "Lütfen adınızı ve soyadınızı girin.",
+    "phone": "Lütfen ülke koduyla birlikte geçerli bir telefon numarası girin.",
+    "email": "Lütfen geçerli bir e-posta adresi girin.",
+    "select": "Lütfen bir seçenek belirleyin.",
+    "consent": "Lütfen bilgilerinizi size yanıt vermek için kullanabileceğimizi onaylayın.",
+    "messageTooLong": "Lütfen açıklamayı {max} karakterin altında tutun.",
+    "summary": "Lütfen işaretlenen alanları kontrol edin."
+  },
+  "errors": {
+    "title": "Talebiniz gönderilemedi",
+    "invalid": "Bazı bilgiler eksik veya geçersiz. Lütfen formu kontrol edip tekrar deneyin.",
+    "verification": "Güvenlik kontrolü tamamlanamadı. Lütfen tekrar deneyin veya bize WhatsApp'tan ulaşın.",
+    "send": "Teknik bir sorun nedeniyle talebinizi gönderemedik. Lütfen birkaç dakika sonra tekrar deneyin veya bize WhatsApp ya da e-posta ile ulaşın.",
+    "unknown": "Bir sorun oluştu. Lütfen tekrar deneyin veya bize WhatsApp ya da e-posta ile ulaşın.",
+    "fallback": "Bize doğrudan da ulaşabilirsiniz:"
+  },
+  "channels": {
+    "title": "Bize ulaşmanın diğer yolları",
+    "phone": {
+      "label": "Telefon",
+      "text": "Projenizi bir mühendisle görüşmek için arayın."
+    },
+    "whatsapp": {
+      "label": "WhatsApp",
+      "text": "Fotoğraf, video ve çizimleri doğrudan telefonunuzdan gönderin.",
+      "cta": "Çizimleri WhatsApp'tan gönderin"
+    },
+    "email": {
+      "label": "E-posta",
+      "text": "Dokümanlar, çizimler ve resmi talepler için."
+    },
+    "location": {
+      "label": "Konum",
+      "text": "6 Ekim Şehri, Gize, Mısır",
+      "note": "Saha ziyaretleri randevuyla yapılır."
+    }
+  },
+  "nextSteps": {
+    "title": "Sonraki adımlar",
+    "steps": [
+      {
+        "title": "Talebinizi inceliyoruz",
+        "text": "Bir mühendis talebinizi okur, gönderdiğiniz fotoğrafları ve dokümanları kontrol eder."
+      },
+      {
+        "title": "Sizinle iletişime geçiyoruz",
+        "text": "Sorularımız için sizi arar veya mesaj göndeririz; gerekirse saha ziyareti planlarız."
+      },
+      {
+        "title": "Teklifinizi alırsınız",
+        "text": "Platformları, teslim kalemlerini ve takvimi içeren yazılı iş kapsamı ve teklif."
+      }
+    ]
+  },
+  "thanks": {
+    "seo": {
+      "title": "Talebiniz Gönderildi | Logic Controls",
+      "description": "Talebiniz için teşekkür ederiz. Logic Controls'tan bir mühendis talebinizi inceleyip sizinle iletişime geçecek."
+    },
+    "h1": "Teşekkürler. Talebiniz gönderildi.",
+    "text": "Bir mühendis talebinizi inceleyip tercih ettiğiniz kanaldan sizinle iletişime geçecek.",
+    "urgent": {
+      "title": "Makineniz mi durdu?",
+      "text": "Acil yardım için hemen bizi arayın veya WhatsApp'tan yazın ve talebinizden bahsedin.",
+      "cta": "Bir mühendise WhatsApp'tan yazın"
+    },
+    "more": {
+      "title": "Fotoğraf veya çiziminiz mi var?",
+      "text": "WhatsApp'tan veya e-postayla gönderin. Teklifi daha hızlı hazırlamamıza yardımcı olur.",
+      "cta": "Çizimleri WhatsApp'tan gönderin"
+    },
+    "backHome": "Ana sayfaya dön",
+    "seeProjects": "Projelerimizi inceleyin"
+  }
+}

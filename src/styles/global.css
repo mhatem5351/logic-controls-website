@@ -1,1 +1,738 @@
 @import "tailwindcss";
+
+/* Only scan site sources for class names (research notes and client dumps are not UI). */
+@source not "../../research";
+@source not "../../client-data";
+@source not "../../dist";
+@source not "../../worker";
+
+/*
+ * Logic Controls — design tokens
+ * ------------------------------------------------------------------
+ * Brand colours were sampled from client-data/brand/logo-original.jpg (sharp, pixel clustering):
+ *   royal-600  #0556AD  gear top / lightest end of the "CONTROLS" gradient
+ *   navy-700   #034091  mean of every blue pixel in the logo (the "brand blue")
+ *   navy-800   #012C75  gear bottom / darkest end of the gradient
+ *   charcoal-800 #363740 "Logic" wordmark core
+ *   charcoal-600 #6A6B72 circuit traces · charcoal-400 #A7A7AB swoosh highlight
+ * Scales are interpolated in OKLCH around those anchors (hue/chroma kept, lightness stepped).
+ *
+ * Accent — "signal amber": the amber pilot lamp on a control-panel door. It is the complement of
+ * the brand blue (hue ≈ 70° vs 256°), so a few pixels of it read instantly on navy. Used only for
+ * signals: status LEDs, trace pulses, tiny markers, a highlighted figure. Never for large fills or
+ * body text on white (use signal-700+ there, 4.86:1).
+ *
+ * Contrast (WCAG 2.2, checked numerically):
+ *   charcoal-800/white 11.8 · charcoal-700/white 8.1 · charcoal-600/white 5.3 · charcoal-600/charcoal-100 4.8
+ *   royal-600/white 7.1 (links, primary button) · navy-800/white 13.0
+ *   white/navy-950 19.1 · navy-200/navy-950 13.0 · navy-300/navy-950 9.3 · royal-300/navy-950 10.8
+ *   signal-400/navy-950 10.5 · signal-700/white 4.86 · royal-500 focus ring vs white 4.25 (≥3:1 non-text)
+ */
+
+@theme {
+  --color-*: initial;
+  --color-white: #ffffff;
+  --color-black: #000000;
+
+  --color-royal-50: #f0f8ff;
+  --color-royal-100: #deefff;
+  --color-royal-200: #c1e0ff;
+  --color-royal-300: #95c6ff;
+  --color-royal-400: #5fa4fa;
+  --color-royal-500: #257ae0;
+  --color-royal-600: #0556ad;
+  --color-royal-700: #034393;
+  --color-royal-800: #023378;
+  --color-royal-900: #04255b;
+  --color-royal-950: #03163d;
+
+  --color-navy-50: #f0f6fd;
+  --color-navy-100: #deebfd;
+  --color-navy-200: #c1d6f6;
+  --color-navy-300: #96b6e8;
+  --color-navy-400: #628ed3;
+  --color-navy-500: #3267b8;
+  --color-navy-600: #1951a5;
+  --color-navy-700: #034091;
+  --color-navy-800: #012c75;
+  --color-navy-900: #061b45;
+  --color-navy-950: #040e27;
+
+  --color-charcoal-50: #fafafb;
+  --color-charcoal-100: #f3f3f6;
+  --color-charcoal-200: #e5e6eb;
+  --color-charcoal-300: #d1d2d8;
+  --color-charcoal-400: #a7a7ab;
+  --color-charcoal-500: #7e8087;
+  --color-charcoal-600: #6a6b72;
+  --color-charcoal-700: #4e4f58;
+  --color-charcoal-800: #363740;
+  --color-charcoal-900: #25262e;
+  --color-charcoal-950: #16161e;
+
+  --color-signal-50: #fff9e4;
+  --color-signal-100: #ffefbc;
+  --color-signal-200: #ffdd84;
+  --color-signal-300: #ffc64b;
+  --color-signal-400: #ffb02b;
+  --color-signal-500: #f79719;
+  --color-signal-600: #d6760c;
+  --color-signal-700: #af5b0b;
+  --color-signal-800: #8a4613;
+  --color-signal-900: #6d3714;
+  --color-signal-950: #492107;
+
+  /* Functional only (forms / status) — not part of the brand palette. */
+  --color-success-500: #22a55b;
+  --color-success-700: #15703d;
+  --color-danger-500: #e5484d;
+  --color-danger-700: #b42318;
+  --color-whatsapp: #1fa855; /* white text 3.0:1 → icon-only use; button label uses navy-950 text */
+
+  /* Type scale — fluid between 360px and 1440px viewports. */
+  --text-xs: 0.75rem;
+  --text-xs--line-height: 1.5;
+  --text-sm: 0.875rem;
+  --text-sm--line-height: 1.55;
+  --text-base: 1rem;
+  --text-base--line-height: 1.65;
+  --text-lead: clamp(1.0625rem, 0.99rem + 0.33vw, 1.3125rem);
+  --text-lead--line-height: 1.6;
+  --text-h4: clamp(1.0625rem, 1.01rem + 0.23vw, 1.1875rem);
+  --text-h4--line-height: 1.35;
+  --text-h3: clamp(1.25rem, 1.12rem + 0.56vw, 1.625rem);
+  --text-h3--line-height: 1.25;
+  --text-h2: clamp(1.75rem, 1.37rem + 1.67vw, 2.875rem);
+  --text-h2--line-height: 1.1;
+  --text-h1: clamp(2.125rem, 1.6rem + 2.3vw, 3.75rem);
+  --text-h1--line-height: 1.05;
+  --text-display: clamp(2.25rem, 1.55rem + 2.9vw, 4.125rem);
+  --text-display--line-height: 1.02;
+  --text-stat: clamp(2.25rem, 1.8rem + 2vw, 3.5rem);
+  --text-stat--line-height: 1;
+
+  --radius-xs: 2px;
+  --radius-sm: 4px;
+  --radius-md: 6px;
+  --radius-lg: 10px;
+  --radius-xl: 14px;
+  --radius-2xl: 20px;
+
+  --shadow-card: 0 1px 2px rgb(4 14 39 / 0.05), 0 8px 24px -12px rgb(4 14 39 / 0.18);
+  --shadow-lift: 0 2px 4px rgb(4 14 39 / 0.06), 0 22px 40px -18px rgb(4 14 39 / 0.32);
+  --shadow-glow: 0 0 0 1px rgb(95 164 250 / 0.28), 0 12px 32px -12px rgb(37 122 224 / 0.6);
+  --shadow-header: 0 1px 0 rgb(255 255 255 / 0.06), 0 10px 30px -12px rgb(0 0 0 / 0.55);
+
+  --spacing-section: clamp(4rem, 2.9rem + 4.9vw, 7.5rem);
+  --spacing-gutter: clamp(1rem, 0.55rem + 2vw, 2.5rem);
+  --container-site: 78rem;
+  --container-prose: 42rem;
+
+  --ease-out-expo: cubic-bezier(0.16, 1, 0.3, 1);
+
+  --animate-trace-draw: trace-draw 2.2s var(--ease-out-expo) both;
+  --animate-fade-up: fade-up 0.9s var(--ease-out-expo) both;
+
+  @keyframes trace-draw {
+    from { stroke-dashoffset: 100; }
+    to { stroke-dashoffset: 0; }
+  }
+  @keyframes fade-up {
+    from { opacity: 0; transform: translateY(12px); }
+    to { opacity: 1; transform: none; }
+  }
+}
+
+@theme inline {
+  --font-sans: var(--font-latin);
+  --font-ar: var(--font-arabic);
+  --font-mono: ui-monospace, "SFMono-Regular", "SF Mono", "Cascadia Mono", "Segoe UI Mono", "Roboto Mono", Menlo, Consolas, "Liberation Mono", monospace;
+}
+
+/* ------------------------------------------------------------------ base */
+@layer base {
+  :root {
+    /* The logo's italic slant, measured on the "L" stem and the gear's top cut: ~10°. */
+    --slant: 10deg;
+    --slant-tan: 0.1763;
+    --header-h: 4rem;
+    --utility-h: 0px;
+    --focus: var(--color-royal-500);
+  }
+  @media (min-width: 64rem) {
+    :root {
+      --header-h: 4.5rem;
+      --utility-h: 2.25rem;
+    }
+  }
+
+  html {
+    color-scheme: light;
+    -webkit-text-size-adjust: 100%;
+    text-size-adjust: 100%;
+    scroll-padding-top: calc(var(--header-h) + 1rem);
+    font-synthesis: none;
+  }
+  html:lang(ar) {
+    /* Arabic reads ~10% smaller than Latin at the same size: bump the root size (everything is rem-based). */
+    font-size: 106.25%;
+  }
+  body {
+    background-color: var(--color-white);
+    color: var(--color-charcoal-800);
+    font-size: var(--text-base);
+    line-height: var(--text-base--line-height);
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  /* Script-specific font stacks. Arabic pages load Alexandria (Arabic + Latin subsets, designed as
+     Montserrat's Arabic companion); Chinese uses the OS CJK face with Montserrat for Latin/digits. */
+  :lang(ar) {
+    font-family: var(--font-arabic);
+  }
+  /* Latin-language islands inside Arabic pages (language names, codes) use Montserrat. Matching the element
+     that carries the lang attribute (not every descendant) lets font utilities on it still win. */
+  :lang(ar) [lang="en"],
+  :lang(ar) [lang="tr"] {
+    font-family: var(--font-latin);
+  }
+  :lang(zh-Hans) {
+    font-family: var(--font-latin), "PingFang SC", "Hiragino Sans GB", "Heiti SC", "Microsoft YaHei UI", "Microsoft YaHei",
+      "HarmonyOS Sans SC", "Noto Sans CJK SC", "Source Han Sans SC", "WenQuanYi Micro Hei", sans-serif;
+  }
+  :lang(ar) body,
+  body:lang(ar) {
+    line-height: 1.75;
+  }
+  body:lang(zh-Hans) {
+    line-height: 1.75;
+  }
+  /* Never track or slant Arabic (breaks joining) or Han text. */
+  :where(:lang(ar), :lang(zh-Hans)) {
+    letter-spacing: 0 !important;
+  }
+  :where(:lang(ar), :lang(zh-Hans)) :where(em, i, cite) {
+    font-style: normal;
+    font-weight: 700;
+  }
+
+  h1, h2, h3, h4 {
+    text-wrap: balance;
+  }
+  p, li, dd {
+    text-wrap: pretty;
+  }
+  a {
+    text-underline-offset: 0.2em;
+    text-decoration-thickness: 1px;
+  }
+
+  :focus-visible {
+    outline: 2px solid var(--focus);
+    outline-offset: 3px;
+    border-radius: 2px;
+  }
+  ::selection {
+    background-color: var(--color-royal-200);
+    color: var(--color-navy-950);
+  }
+
+  /* Phone numbers, emails, model codes: always left-to-right, even inside Arabic text. */
+  .ltr {
+    direction: ltr;
+    unicode-bidi: isolate;
+  }
+
+  /* Long-running decorative motion is opt-in by the user's settings. */
+  @media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+      animation-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.01ms !important;
+      scroll-behavior: auto !important;
+    }
+  }
+}
+
+/* ------------------------------------------------------------------ layout utilities */
+@utility wrap {
+  width: 100%;
+  max-width: calc(var(--container-site) + 2 * var(--spacing-gutter));
+  margin-inline: auto;
+  padding-inline: var(--spacing-gutter);
+}
+
+/* Dark surfaces switch the focus colour to amber so the ring is visible on navy. */
+@utility on-dark {
+  --focus: var(--color-signal-300);
+  color: var(--color-navy-100);
+  color-scheme: dark;
+}
+
+/* ------------------------------------------------------------------ typography utilities */
+@utility type-display {
+  font-size: var(--text-display);
+  line-height: var(--text-display--line-height);
+  font-weight: 800;
+  font-style: italic;
+  letter-spacing: -0.028em;
+  &:where(:lang(zh-Hans)) {
+    font-style: normal;
+    font-weight: 700;
+    line-height: 1.18;
+  }
+  &:where(:lang(ar)) {
+    font-size: calc(var(--text-display) * 0.86);
+    font-style: normal;
+    font-weight: 700;
+    line-height: 1.35;
+  }
+}
+@utility type-h1 {
+  font-size: var(--text-h1);
+  line-height: var(--text-h1--line-height);
+  font-weight: 800;
+  font-style: italic;
+  letter-spacing: -0.024em;
+  &:where(:lang(zh-Hans)) {
+    font-style: normal;
+    font-weight: 700;
+    line-height: 1.22;
+  }
+  &:where(:lang(ar)) {
+    font-style: normal;
+    font-weight: 700;
+    line-height: 1.35;
+  }
+}
+@utility type-h2 {
+  font-size: var(--text-h2);
+  line-height: var(--text-h2--line-height);
+  font-weight: 800;
+  font-style: italic;
+  letter-spacing: -0.02em;
+  &:where(:lang(zh-Hans)) {
+    font-style: normal;
+    font-weight: 700;
+    line-height: 1.3;
+  }
+  &:where(:lang(ar)) {
+    font-style: normal;
+    font-weight: 700;
+    line-height: 1.4;
+  }
+}
+@utility type-h3 {
+  font-size: var(--text-h3);
+  line-height: var(--text-h3--line-height);
+  font-weight: 700;
+  letter-spacing: -0.012em;
+  &:where(:lang(ar), :lang(zh-Hans)) {
+    line-height: 1.45;
+  }
+}
+@utility type-h4 {
+  font-size: var(--text-h4);
+  line-height: var(--text-h4--line-height);
+  font-weight: 700;
+  &:where(:lang(ar), :lang(zh-Hans)) {
+    line-height: 1.5;
+  }
+}
+@utility type-lead {
+  font-size: var(--text-lead);
+  line-height: var(--text-lead--line-height);
+  &:where(:lang(ar), :lang(zh-Hans)) {
+    line-height: 1.85;
+  }
+}
+@utility type-stat {
+  font-size: var(--text-stat);
+  line-height: 1;
+  font-weight: 800;
+  font-style: italic;
+  letter-spacing: -0.03em;
+  font-variant-numeric: tabular-nums;
+  &:where(:lang(ar), :lang(zh-Hans)) {
+    font-style: normal;
+  }
+}
+/* HMI-style technical label: monospace, tracked caps. Falls back to the script font for Arabic/CJK. */
+@utility type-label {
+  font-family: var(--font-mono);
+  font-size: 0.75rem;
+  line-height: 1.4;
+  font-weight: 500;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  &:where(:lang(ar)) {
+    font-family: var(--font-arabic);
+    font-size: 0.8125rem;
+    font-weight: 600;
+    text-transform: none;
+  }
+  &:where(:lang(zh-Hans)) {
+    font-family: var(--font-latin), "PingFang SC", "Microsoft YaHei", "Noto Sans CJK SC", sans-serif;
+    font-size: 0.8125rem;
+    font-weight: 600;
+    text-transform: none;
+  }
+}
+/* Model codes / spec values: always mono, never localised. */
+@utility type-code {
+  font-family: var(--font-mono);
+  font-size: 0.8125em;
+  letter-spacing: 0.02em;
+}
+/* Rich text inside cards / FAQ answers / prose blocks. */
+@utility prose-lc {
+  max-width: var(--container-prose);
+  & > * + * {
+    margin-block-start: 1em;
+  }
+  & a {
+    color: var(--color-royal-600);
+    text-decoration: underline;
+  }
+  & a:hover {
+    color: var(--color-royal-800);
+  }
+  & ul {
+    list-style: none;
+    padding-inline-start: 0;
+  }
+  & ul > li {
+    position: relative;
+    padding-inline-start: 1.5em;
+  }
+  & ul > li::before {
+    content: "";
+    position: absolute;
+    inset-inline-start: 0.15em;
+    top: 0.62em;
+    width: 0.6em;
+    height: 0.3em;
+    background: var(--color-royal-600);
+    transform: skewX(calc(-1 * var(--slant)));
+  }
+  & strong {
+    color: var(--color-charcoal-900);
+    font-weight: 700;
+  }
+}
+
+/* ------------------------------------------------------------------ signature motifs */
+
+/* Faint technical / blueprint grid. Use on dark bands (default) or light (`bg-blueprint-light`). */
+@utility bg-blueprint {
+  background-image:
+    linear-gradient(to right, rgb(150 182 232 / 0.09) 1px, transparent 1px),
+    linear-gradient(to bottom, rgb(150 182 232 / 0.09) 1px, transparent 1px),
+    linear-gradient(to right, rgb(150 182 232 / 0.045) 1px, transparent 1px),
+    linear-gradient(to bottom, rgb(150 182 232 / 0.045) 1px, transparent 1px);
+  background-size: 120px 120px, 120px 120px, 24px 24px, 24px 24px;
+  background-position: -1px -1px;
+}
+@utility bg-blueprint-light {
+  background-image:
+    linear-gradient(to right, rgb(3 64 145 / 0.06) 1px, transparent 1px),
+    linear-gradient(to bottom, rgb(3 64 145 / 0.06) 1px, transparent 1px),
+    linear-gradient(to right, rgb(3 64 145 / 0.03) 1px, transparent 1px),
+    linear-gradient(to bottom, rgb(3 64 145 / 0.03) 1px, transparent 1px);
+  background-size: 120px 120px, 120px 120px, 24px 24px, 24px 24px;
+  background-position: -1px -1px;
+}
+/* Fade a decorative layer out towards the edges. */
+@utility mask-fade-edges {
+  mask-image: radial-gradient(ellipse 80% 70% at 50% 40%, #000 30%, transparent 80%);
+}
+@utility mask-fade-start {
+  mask-image: linear-gradient(to right, transparent, #000 35%);
+  &:where(:dir(rtl), [dir="rtl"] *) {
+    mask-image: linear-gradient(to left, transparent, #000 35%);
+  }
+}
+
+/* The logo's ~10° italic slant as a parallelogram accent (eyebrows, list bullets, step markers). */
+@utility slant-bar {
+  display: inline-block;
+  flex: none;
+  width: 1.25rem;
+  height: 0.375rem;
+  background: currentColor;
+  transform: skewX(calc(-1 * var(--slant)));
+  &:where(:dir(rtl), [dir="rtl"] *) {
+    transform: skewX(var(--slant));
+  }
+}
+
+/* 45° chamfered corner — the P-stem chamfer and the circuit-trace bends of the logo.
+   Use on decorative/media boxes only (clip-path also clips focus outlines). */
+@utility chamfer {
+  --chamfer: 14px;
+  clip-path: polygon(0 0, calc(100% - var(--chamfer)) 0, 100% var(--chamfer), 100% 100%, 0 100%);
+  &:where(:dir(rtl), [dir="rtl"] *) {
+    clip-path: polygon(var(--chamfer) 0, 100% 0, 100% 100%, 0 100%, 0 var(--chamfer));
+  }
+}
+@utility chamfer-lg {
+  --chamfer: 28px;
+  clip-path: polygon(0 0, calc(100% - var(--chamfer)) 0, 100% var(--chamfer), 100% 100%, 0 100%);
+  &:where(:dir(rtl), [dir="rtl"] *) {
+    clip-path: polygon(var(--chamfer) 0, 100% 0, 100% 100%, 0 100%, 0 var(--chamfer));
+  }
+}
+
+/* Angled section edges (rise towards the inline end, like the italic). Applied by <Section angle>. */
+@utility angle-top {
+  --angle-h: clamp(1.75rem, 4.2vw, 4.5rem);
+  clip-path: polygon(0 var(--angle-h), 100% 0, 100% 100%, 0 100%);
+  margin-block-start: calc(-1 * var(--angle-h));
+  padding-block-start: calc(var(--spacing-section) + var(--angle-h));
+  &:where(:dir(rtl), [dir="rtl"] *) {
+    clip-path: polygon(0 0, 100% var(--angle-h), 100% 100%, 0 100%);
+  }
+}
+@utility angle-bottom {
+  --angle-h: clamp(1.75rem, 4.2vw, 4.5rem);
+  clip-path: polygon(0 0, 100% 0, 100% calc(100% - var(--angle-h)), 0 100%);
+  padding-block-end: calc(var(--spacing-section) + var(--angle-h));
+  &:where(:dir(rtl), [dir="rtl"] *) {
+    clip-path: polygon(0 0, 100% 0, 100% 100%, 0 calc(100% - var(--angle-h)));
+  }
+}
+@utility angle-both {
+  --angle-h: clamp(1.75rem, 4.2vw, 4.5rem);
+  clip-path: polygon(0 var(--angle-h), 100% 0, 100% calc(100% - var(--angle-h)), 0 100%);
+  margin-block-start: calc(-1 * var(--angle-h));
+  padding-block: calc(var(--spacing-section) + var(--angle-h));
+  &:where(:dir(rtl), [dir="rtl"] *) {
+    clip-path: polygon(0 0, 100% var(--angle-h), 100% 100%, 0 calc(100% - var(--angle-h)));
+  }
+}
+
+/* ------------------------------------------------------------------ circuit traces (Hero / CtaBand) */
+@layer components {
+  .lc-traces path,
+  .lc-traces circle {
+    vector-effect: non-scaling-stroke;
+  }
+  /* Mirror the drawing (not the box) in RTL so the element can still be scaled/positioned freely. */
+  [dir="rtl"] .lc-traces .lc-traces-flip {
+    transform: scaleX(-1);
+    transform-box: view-box;
+    transform-origin: 50% 50%;
+  }
+  .lc-traces .trace {
+    stroke-dasharray: 100;
+    stroke-dashoffset: 0;
+    animation: var(--animate-trace-draw);
+  }
+  .lc-traces .pulse {
+    stroke-dasharray: 7 200;
+    stroke-dashoffset: 7;
+    animation: trace-pulse 6.5s linear infinite;
+    opacity: 0;
+  }
+  .lc-traces .node {
+    animation: node-flash 6.5s ease-out infinite;
+  }
+  @keyframes trace-pulse {
+    0% { stroke-dashoffset: 7; opacity: 0; }
+    4% { opacity: 1; }
+    52% { stroke-dashoffset: -100; opacity: 1; }
+    56%, 100% { stroke-dashoffset: -100; opacity: 0; }
+  }
+  @keyframes node-flash {
+    0%, 48% { fill-opacity: 0; stroke-opacity: 0.55; }
+    54% { fill-opacity: 1; stroke-opacity: 1; }
+    80%, 100% { fill-opacity: 0; stroke-opacity: 0.55; }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .lc-rise,
+    .lc-led[data-blink] {
+      animation: none;
+    }
+    .lc-traces .trace {
+      animation: none;
+    }
+    .lc-traces .pulse,
+    .lc-traces .node {
+      animation: none;
+      opacity: 0;
+    }
+  }
+
+  /* Status LED used in spec chips and the hero eyebrow. */
+  .lc-led {
+    position: relative;
+    display: inline-block;
+    flex: none;
+    width: 0.5rem;
+    height: 0.5rem;
+    border-radius: 999px;
+    background: var(--led, var(--color-signal-400));
+    box-shadow: 0 0 0 3px color-mix(in oklab, var(--led, var(--color-signal-400)) 22%, transparent),
+      0 0 12px color-mix(in oklab, var(--led, var(--color-signal-400)) 70%, transparent);
+  }
+  .lc-led[data-blink] {
+    animation: led-blink 2.4s ease-in-out infinite;
+  }
+  @keyframes led-blink {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.45; }
+  }
+
+  /* Entrance animation for hero content (CSS only; disabled for reduced motion by the base rule). */
+  .lc-rise {
+    animation: var(--animate-fade-up);
+    animation-delay: calc(var(--i, 0) * 90ms + 120ms);
+  }
+}
+
+/* ------------------------------------------------------------------ buttons (<Button>) */
+@layer components {
+  .lc-btn {
+    --cut: 10px;
+    --btn-bg: transparent;
+    --btn-bg-hover: var(--btn-bg);
+    --btn-border: transparent;
+    --btn-border-hover: var(--btn-border);
+    --btn-fg: inherit;
+    --btn-fg-hover: var(--btn-fg);
+    position: relative;
+    isolation: isolate;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.625rem;
+    min-height: 2.75rem;
+    padding: 0.6875rem 1.375rem;
+    font-size: 0.9375rem;
+    font-weight: 700;
+    line-height: 1.25;
+    color: var(--btn-fg);
+    text-align: center;
+    text-decoration: none;
+    cursor: pointer;
+    transition: color 0.2s ease;
+    -webkit-tap-highlight-color: transparent;
+  }
+  .lc-btn::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    z-index: -1;
+    background-color: var(--btn-bg);
+    border: 1px solid var(--btn-border);
+    border-radius: 2px;
+    /* 45° cut on the top inline-end corner, plus a 1px diagonal so outlined variants stay closed. */
+    clip-path: polygon(0 0, calc(100% - var(--cut)) 0, 100% var(--cut), 100% 100%, 0 100%);
+    background-image: linear-gradient(to bottom left, transparent calc(50% - 0.75px), var(--btn-border) calc(50% - 0.75px), var(--btn-border) calc(50% + 0.75px), transparent calc(50% + 0.75px));
+    background-size: var(--cut) var(--cut);
+    background-position: top right;
+    background-repeat: no-repeat;
+    transition: background-color 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease;
+  }
+  [dir="rtl"] .lc-btn::before {
+    clip-path: polygon(var(--cut) 0, 100% 0, 100% 100%, 0 100%, 0 var(--cut));
+    background-image: linear-gradient(to bottom right, transparent calc(50% - 0.75px), var(--btn-border) calc(50% - 0.75px), var(--btn-border) calc(50% + 0.75px), transparent calc(50% + 0.75px));
+    background-position: top left;
+  }
+  .lc-btn:hover {
+    color: var(--btn-fg-hover);
+  }
+  .lc-btn:hover::before {
+    background-color: var(--btn-bg-hover);
+    border-color: var(--btn-border-hover);
+    background-image: linear-gradient(to bottom left, transparent calc(50% - 0.75px), var(--btn-border-hover) calc(50% - 0.75px), var(--btn-border-hover) calc(50% + 0.75px), transparent calc(50% + 0.75px));
+  }
+  [dir="rtl"] .lc-btn:hover::before {
+    background-image: linear-gradient(to bottom right, transparent calc(50% - 0.75px), var(--btn-border-hover) calc(50% - 0.75px), var(--btn-border-hover) calc(50% + 0.75px), transparent calc(50% + 0.75px));
+  }
+  .lc-btn:active {
+    transform: translateY(1px);
+  }
+  .lc-btn:focus-visible {
+    outline-offset: 3px;
+  }
+  .lc-btn .lc-btn-icon-end {
+    transition: translate 0.25s var(--ease-out-expo);
+  }
+  .lc-btn:hover .lc-btn-icon-end {
+    translate: 3px 0;
+  }
+  [dir="rtl"] .lc-btn:hover .lc-btn-icon-end {
+    translate: -3px 0;
+  }
+
+  .lc-btn[data-variant="primary"] {
+    --btn-bg: var(--color-royal-600);
+    --btn-bg-hover: var(--color-royal-700);
+    --btn-fg: var(--color-white);
+  }
+  .lc-btn[data-variant="primary"]::before {
+    box-shadow: inset 0 1px 0 rgb(255 255 255 / 0.14);
+  }
+  /* On navy the primary gains a lighter hairline so its edge reads against the background. */
+  .on-dark .lc-btn[data-variant="primary"] {
+    --btn-border: rgb(95 164 250 / 0.55);
+    --btn-border-hover: rgb(149 198 255 / 0.8);
+    --btn-bg-hover: #0b63c4;
+  }
+  .lc-btn[data-variant="secondary"] {
+    --btn-bg: var(--color-white);
+    --btn-bg-hover: var(--color-royal-50);
+    --btn-border: var(--color-charcoal-300);
+    --btn-border-hover: var(--color-royal-600);
+    --btn-fg: var(--color-navy-800);
+    --btn-fg-hover: var(--color-royal-700);
+  }
+  .lc-btn[data-variant="on-dark"] {
+    --btn-bg: rgb(255 255 255 / 0.06);
+    --btn-bg-hover: rgb(255 255 255 / 0.12);
+    --btn-border: rgb(255 255 255 / 0.28);
+    --btn-border-hover: rgb(255 255 255 / 0.6);
+    --btn-fg: var(--color-white);
+  }
+  .lc-btn[data-variant="ghost"] {
+    --btn-fg: var(--color-royal-600);
+    --btn-fg-hover: var(--color-royal-800);
+    padding-inline: 0.25rem;
+    min-height: 2.5rem;
+  }
+  .lc-btn[data-variant="ghost"]::before {
+    display: none;
+  }
+  .lc-btn[data-variant="ghost"]:hover .lc-btn-label {
+    text-decoration: underline;
+    text-decoration-thickness: 1px;
+    text-underline-offset: 0.25em;
+  }
+  .on-dark .lc-btn[data-variant="ghost"] {
+    --btn-fg: var(--color-royal-300);
+    --btn-fg-hover: var(--color-white);
+  }
+
+  .lc-btn[data-size="sm"] {
+    --cut: 8px;
+    white-space: nowrap;
+    min-height: 2.25rem;
+    padding: 0.4375rem 0.9375rem;
+    font-size: 0.875rem;
+    gap: 0.5rem;
+  }
+  .lc-btn[data-size="lg"] {
+    --cut: 12px;
+    min-height: 3.25rem;
+    padding: 0.875rem 1.75rem;
+    font-size: 1rem;
+  }
+  .lc-btn[data-block] {
+    display: flex;
+    width: 100%;
+  }
+}

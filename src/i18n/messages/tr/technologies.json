@@ -1,0 +1,100 @@
+{
+  "seo": {
+    "title": "PLC, HMI ve SCADA Platformları | Logic Controls Mısır",
+    "description": "Siemens, Schneider Electric, Delta, LS Electric ve Wecon PLC, HMI ve sürücülerini, ayrıca WinCC SCADA ve Modbus ağlarını programlıyor ve entegre ediyoruz."
+  },
+  "h1": "Platformlar ve teknolojiler",
+  "intro": [
+    "Tek bir markaya bağlı değiliz. Beş PLC ve HMI platformunu programlıyor ve entegre ediyor; makinenize, bütçenize ve Mısır'da bulabileceğiniz yedek parçalara en uygun olanı seçiyoruz.",
+    "Aşağıda çalıştığımız platformları, sürücüleri, yazılımları ve sinyalleri, son projelerimizde kullandığımız ürünlerle birlikte bulabilirsiniz."
+  ],
+  "brands": {
+    "title": "Programladığımız ve entegre ettiğimiz PLC ve HMI platformları",
+    "productsLabel": "Projelerimizde kullanılanlar",
+    "items": {
+      "siemens": {
+        "text": "Tablet kaplama ve beton santrali projelerimizde olduğu gibi, proses makineleri ve tesisler için WinCC Professional SCADA ile S7-1200 PLC'ler. S7-200 SMART sistemlerini de devreye aldık."
+      },
+      "schneider-electric": {
+        "text": "PLC'ler, Altivar frekans invertörleri, step motor sürücüleri ile koruma ve kumanda bileşenleri. Etiketleme makinemizde etiket bırakma işlemini Schneider Electric step motor sürücüleri yönetiyor."
+      },
+      "delta": {
+        "text": "Kompakt ve uygun maliyetli bir kontrolörün yeterli olduğu dolum ve etiketleme makineleri için DVP serisi PLC'ler."
+      },
+      "ls-electric": {
+        "text": "Dolum makineleri ve sterilizasyon otoklavları için PLC'ler ve M100 frekans invertörleri."
+      },
+      "wecon": {
+        "text": "Makine projelerimizin çoğunda kullanılan PLC'ler ve dokunmatik HMI'lar: pastörizatörler, bir peynir pişirme makinesi, çamaşır makineleri, dolum, etiketleme ve test makineleri."
+      }
+    }
+  },
+  "drives": {
+    "title": "Sürücüler ve hareket kontrolü",
+    "text": "Konveyörler, pompalar, karıştırıcılar, tamburlar ve fanlar için frekans invertörleri; konumlandırma ve senkronizasyon için step motor ve hareket kontrolü.",
+    "items": [
+      "LS Electric M100 VFD'ler",
+      "Schneider Electric Altivar VFD'ler",
+      "VEICHI VFD'ler",
+      "Schneider Electric step motor sürücüleri",
+      "Senkronize konumlandırma için PLC tabanlı hareket kontrolü"
+    ]
+  },
+  "scada": {
+    "title": "SCADA, HMI ve veri",
+    "text": "Makine üzerindeki tek bir dokunmatik ekrandan tüm prosesin SCADA genel görünümüne kadar.",
+    "items": [
+      "Siemens WinCC Professional SCADA",
+      "HMI'larda proses mimikleri, reçeteler ve alarm geçmişi",
+      "Arapça, İngilizce ve iki dilli HMI ekranları",
+      "Kullanıcı girişi ve yetki seviyeleri",
+      "Veri kaydı ve otomatik test raporları"
+    ]
+  },
+  "networks": {
+    "title": "Haberleşme",
+    "text": "PLC'leri, HMI'ları, sürücüleri ve enstrümanları yaygın endüstriyel ağlar üzerinden birbirine bağlıyoruz. Teklif vermeden önce her cihazın arayüzünü kontrol ediyoruz.",
+    "items": [
+      "RS-485 üzerinden Modbus RTU",
+      "Modbus TCP",
+      "Siemens sistemleri için PROFINET",
+      "Yönetilebilir ve yönetilemeyen switch'lerle endüstriyel Ethernet"
+    ]
+  },
+  "signals": {
+    "title": "Sinyaller ve enstrümanlar",
+    "items": [
+      "Dijital giriş ve çıkışlar: sensörler, anahtarlar, vanalar ve kontaktörler",
+      "Analog sinyaller: 4-20 mA ve 0-10 V transmitterler ve pozisyonerler",
+      "Sıcaklık sensörleri: RTD ve termokupl",
+      "Dozajlama sistemleri için yük hücresiyle (load cell) tartım",
+      "Uzunluk ve konum için enkoderler ve hızlı sayıcılar",
+      "Proses sistemlerinde seviye, basınç ve gaz ölçümü"
+    ]
+  },
+  "otherBrands": {
+    "title": "Çalıştığımız diğer ekipmanlar",
+    "text": "Müşteri makinelerinde MCGS HMI'lar, VEICHI sürücüler, MEAN WELL güç kaynakları ve endüstriyel Ethernet switch'leriyle de çalıştık. Makineniz başka bir marka kullanıyorsa modelini gönderin, neler yapabileceğimizi size söyleyelim."
+  },
+  "choosing": {
+    "title": "Platformu nasıl seçiyoruz",
+    "items": [
+      {
+        "title": "Mısır'da yedek parça",
+        "text": "Bir kontrolör, arızalandığında yerine alabileceğiniz parça kadar iyidir."
+      },
+      {
+        "title": "Bütçeniz",
+        "text": "Basit makineler için uygun maliyetli platformlar; prosesin gerektirdiği yerlerde üst segment PLC'ler ve SCADA."
+      },
+      {
+        "title": "Ekibiniz",
+        "text": "Bakım ekibiniz bir markayı zaten tanıyorsa bunu dikkate alıyoruz."
+      },
+      {
+        "title": "Makine üreticisinin standardı",
+        "text": "İthal veya OEM makinelerde, değiştirmek için bir neden yoksa makinenin tasarlandığı platformu takip ediyoruz."
+      }
+    ]
+  }
+}

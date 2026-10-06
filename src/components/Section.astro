@@ -1,0 +1,62 @@
+---
+/**
+ * Page section with the site's vertical rhythm and container.
+ * variant: "light" (white) · "muted" (blueprint paper) · "dark" (navy band, switches child components to on-dark styles)
+ * angle:   slanted edge(s) echoing the logo's italic — "top" overlaps the previous section.
+ */
+interface Props {
+  as?: "section" | "div" | "aside";
+  variant?: "light" | "muted" | "dark";
+  angle?: "top" | "bottom" | "both";
+  /** Faint technical grid (dark: default on; muted: default on). */
+  grid?: boolean;
+  /** Skip the inner .wrap container (full-bleed content). */
+  bleed?: boolean;
+  /** Reduce vertical padding (e.g. logo walls, stat strips). */
+  compact?: boolean;
+  id?: string;
+  class?: string;
+  innerClass?: string;
+  "aria-labelledby"?: string;
+  "aria-label"?: string;
+}
+
+const {
+  as: Tag = "section",
+  variant = "light",
+  angle,
+  grid = variant !== "light",
+  bleed = false,
+  compact = false,
+  id,
+  class: className,
+  innerClass,
+  ...rest
+} = Astro.props;
+
+const surface = {
+  light: "bg-white text-charcoal-800",
+  muted: "bg-navy-50 text-charcoal-800",
+  dark: "on-dark bg-navy-950 text-navy-100",
+}[variant];
+const angleClass = angle ? { top: "angle-top", bottom: "angle-bottom", both: "angle-both" }[angle] : undefined;
+const gridClass = grid ? (variant === "dark" ? "bg-blueprint" : "bg-blueprint-light") : "";
+---
+
+<Tag
+  id={id}
+  class:list={[
+    "relative isolate",
+    compact ? "py-[calc(var(--spacing-section)*0.55)]" : "py-section",
+    surface,
+    angleClass,
+    className,
+  ]}
+  {...rest}
+>
+  {grid && <div aria-hidden="true" class:list={["pointer-events-none absolute inset-0 -z-10 mask-fade-edges", gridClass]} />}
+  {variant === "dark" && (
+    <div aria-hidden="true" class="pointer-events-none absolute inset-0 -z-20 bg-[radial-gradient(ellipse_70%_60%_at_85%_0%,rgb(13_37_82/0.9),transparent_70%)]" />
+  )}
+  {bleed ? <slot /> : <div class:list={["wrap", innerClass]}><slot /></div>}
+</Tag>

@@ -1,0 +1,128 @@
+---
+/**
+ * Internal lab page: every service / industry illustration on light cards and on a dark band.
+ * noindex, excluded from the sitemap (astro.config filters /lab/).
+ */
+import { Font } from "astro:assets";
+import "~/styles/global.css";
+import { localeStaticPaths, LOCALES, LOCALE_META, localePath, type Locale } from "~/i18n";
+import { SERVICE_SLUGS } from "~/data/services";
+import { INDUSTRY_SLUGS } from "~/data/industries";
+import ServiceArt from "~/components/illustrations/ServiceArt.astro";
+import IndustryArt from "~/components/illustrations/IndustryArt.astro";
+import FactoryLine from "~/components/illustrations/FactoryLine.astro";
+
+export const getStaticPaths = localeStaticPaths;
+const locale = Astro.params.lang as Locale;
+const meta = LOCALE_META[locale];
+const hero = ["control-panels", "plc-hmi-programming"] as const;
+---
+
+<html lang={meta.htmlLang} dir={meta.dir}>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="robots" content="noindex, nofollow" />
+    <title>Illustration lab · Logic Controls</title>
+    <Font cssVariable="--font-latin" />
+    {locale === "ar" && <Font cssVariable="--font-arabic" />}
+  </head>
+  <body class="bg-charcoal-50">
+    <header class="wrap flex flex-wrap items-end justify-between gap-4 py-10">
+      <div>
+        <p class="type-label text-royal-600">Lab · noindex</p>
+        <h1 class="type-h2 text-navy-900">Animated illustrations</h1>
+        <p class="mt-2 max-w-prose text-charcoal-600">
+          Inline SVG + CSS. 4:3, decorative by default. Hover a card to speed the loop up. Offscreen art pauses.
+        </p>
+      </div>
+      <nav class="flex gap-3 text-sm">
+        {LOCALES.map((l) => <a class="text-royal-600 underline" href={localePath(l, "lab/illustrations")}>{LOCALE_META[l].native}</a>)}
+      </nav>
+    </header>
+
+    <main>
+      <section class="wrap pb-12" aria-labelledby="svc">
+        <h2 id="svc" class="type-h3 mb-5 text-navy-900">Services · light</h2>
+        <ul class="grid gap-5 sm:grid-cols-2 lg:grid-cols-4" role="list">
+          {
+            SERVICE_SLUGS.map((slug) => (
+              <li class="group rounded-lg border border-charcoal-200 bg-white p-3 shadow-card transition hover:shadow-lift" data-art={slug} data-kind="service" tabindex="0">
+                <ServiceArt slug={slug} />
+                <p class="type-label mt-2 text-charcoal-600 ltr">{slug}</p>
+              </li>
+            ))
+          }
+        </ul>
+      </section>
+
+      <section class="wrap pb-16" aria-labelledby="ind">
+        <h2 id="ind" class="type-h3 mb-5 text-navy-900">Industries · light</h2>
+        <ul class="grid gap-5 sm:grid-cols-2 lg:grid-cols-4" role="list">
+          {
+            INDUSTRY_SLUGS.map((slug) => (
+              <li class="group rounded-lg border border-charcoal-200 bg-white p-3 shadow-card transition hover:shadow-lift" data-art={slug} data-kind="industry" tabindex="0">
+                <IndustryArt slug={slug} />
+                <p class="type-label mt-2 text-charcoal-600 ltr">{slug}</p>
+              </li>
+            ))
+          }
+        </ul>
+      </section>
+
+      <section class="on-dark bg-navy-950 bg-blueprint py-16" aria-labelledby="dark">
+        <div class="wrap">
+          <h2 id="dark" class="type-h3 mb-5 text-white">On dark (auto palette inside .on-dark)</h2>
+          <ul class="grid gap-5 sm:grid-cols-2 lg:grid-cols-4" role="list">
+            {
+              SERVICE_SLUGS.map((slug) => (
+                <li class="group rounded-lg border border-white/10 bg-navy-900/60 p-3" data-art={slug} data-kind="service-dark" tabindex="0">
+                  <ServiceArt slug={slug} />
+                  <p class="type-label mt-2 text-navy-300 ltr">{slug}</p>
+                </li>
+              ))
+            }
+            {
+              INDUSTRY_SLUGS.map((slug) => (
+                <li class="group rounded-lg border border-white/10 bg-navy-900/60 p-3" data-art={slug} data-kind="industry-dark" tabindex="0">
+                  <IndustryArt slug={slug} />
+                  <p class="type-label mt-2 text-navy-300 ltr">{slug}</p>
+                </li>
+              ))
+            }
+          </ul>
+        </div>
+      </section>
+
+      <section class="wrap py-16" aria-labelledby="big">
+        <h2 id="big" class="type-h3 mb-5 text-navy-900">Hero scale</h2>
+        <div class="grid gap-6 lg:grid-cols-2">
+          {
+            hero.map((slug) => (
+              <div class="rounded-xl border border-charcoal-200 bg-white p-4" data-art={slug} data-kind="hero">
+                <ServiceArt slug={slug} label={slug} />
+              </div>
+            ))
+          }
+          <div class="rounded-xl border border-charcoal-200 bg-white p-4" data-art="food-beverage" data-kind="hero">
+            <IndustryArt slug="food-beverage" label="food-beverage" />
+          </div>
+          <div class="on-dark rounded-xl bg-navy-950 bg-blueprint p-4" data-art="food-beverage" data-kind="hero-dark">
+            <IndustryArt slug="food-beverage" variant="dark" />
+          </div>
+        </div>
+      </section>
+
+      <section class="on-dark bg-navy-950 py-16" aria-labelledby="line">
+        <div class="wrap">
+          <h2 id="line" class="type-h3 mb-5 text-white">Factory line band</h2>
+          <div data-art="factory-line" data-kind="band"><FactoryLine /></div>
+        </div>
+      </section>
+      <section class="wrap py-16" aria-labelledby="line2">
+        <h2 id="line2" class="sr-only">Factory line band (light)</h2>
+        <div data-art="factory-line" data-kind="band-light"><FactoryLine variant="light" /></div>
+      </section>
+    </main>
+  </body>
+</html>

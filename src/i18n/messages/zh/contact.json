@@ -1,0 +1,191 @@
+{
+  "seo": {
+    "title": "获取报价 | Logic Controls 埃及",
+    "description": "为埃及项目询价：控制柜、PLC/HMI 编程、设备改造、SCADA 或调试。可通过表单、电子邮件或 WhatsApp 发送需求。"
+  },
+  "h1": "获取报价",
+  "intro": "请介绍您的设备或项目。每一份需求都由工程师审阅，并回复问题、安排现场考察或提供报价。",
+  "form": {
+    "title": "询价单",
+    "requiredNote": "标有 * 的为必填项。",
+    "optional": "选填",
+    "steps": {
+      "one": "您的信息",
+      "two": "项目信息",
+      "counter": "第 {current} 步，共 {total} 步",
+      "twoNote": "选填，但有助于我们更快报价。"
+    },
+    "buttons": {
+      "next": "继续",
+      "back": "返回",
+      "submit": "提交需求",
+      "sending": "正在发送……",
+      "sendNow": "跳过并立即提交"
+    },
+    "fields": {
+      "name": {
+        "label": "姓名"
+      },
+      "company": {
+        "label": "公司",
+        "help": "工厂或公司名称。"
+      },
+      "phone": {
+        "label": "手机或 WhatsApp 号码",
+        "help": "请包含国家或地区代码，例如 +20 10 1234 5678。"
+      },
+      "email": {
+        "label": "电子邮箱",
+        "help": "用于接收图纸、文件和书面报价。"
+      },
+      "need": {
+        "label": "您需要什么服务？",
+        "placeholder": "请选择服务",
+        "options": {
+          "control-panels": "新控制柜",
+          "plc-hmi-programming": "PLC 或 HMI 编程",
+          "machine-automation": "设备自动化",
+          "machine-retrofits": "旧设备改造或升级",
+          "process-control": "工艺控制（温度、CIP、配料）",
+          "scada-data-logging": "SCADA 或数据记录",
+          "testing-commissioning": "测试与调试",
+          "maintenance-support": "故障排查或维护",
+          "new-factory": "埃及新建工厂：整体自动化范围",
+          "other": "其他需求"
+        }
+      },
+      "industry": {
+        "label": "行业",
+        "placeholder": "请选择行业",
+        "options": {
+          "food-beverage": "食品、饮料与乳品",
+          "pharmaceutical": "制药",
+          "cosmetics-personal-care": "化妆品与个人护理",
+          "packaging-labeling": "包装、贴标与印刷",
+          "building-materials": "建材",
+          "commercial-laundry": "酒店与商业洗衣",
+          "test-equipment": "工业测试设备",
+          "other": "其他行业"
+        }
+      },
+      "location": {
+        "label": "工厂所在地",
+        "placeholder": "请选择地点",
+        "otherEgypt": "埃及其他地区",
+        "outsideEgypt": "埃及境外"
+      },
+      "timeline": {
+        "label": "预计何时需要？",
+        "placeholder": "请选择时间",
+        "options": {
+          "urgent": "紧急：设备已停机",
+          "within-1-month": "1 个月内",
+          "1-3-months": "1 至 3 个月",
+          "3-months-plus": "3 个月以上",
+          "planning": "仅做规划或预算"
+        }
+      },
+      "message": {
+        "label": "请描述设备或项目",
+        "help": "设备类型、需要实现的功能、目前存在的问题，以及 PLC 或 HMI 品牌（如已知）。"
+      },
+      "contactPreference": {
+        "label": "希望我们如何联系您？",
+        "options": {
+          "whatsapp": "WhatsApp",
+          "phone": "电话",
+          "email": "电子邮件"
+        }
+      },
+      "consent": {
+        "text": "我同意 Logic Controls 按照{link}所述，使用上述信息回复我的需求。",
+        "linkText": "隐私政策"
+      }
+    },
+    "whatsappHint": {
+      "text": "身在埃及、习惯用 WhatsApp？可直接发送设备、铭牌、控制柜的照片或图纸。",
+      "cta": "通过 WhatsApp 发送图纸"
+    },
+    "privacyNote": "您的信息仅用于回复本次需求，我们不会将您加入任何邮件列表。",
+    "security": {
+      "label": "安全验证",
+      "help": "此项验证用于确认提交表单的是真人，而非自动程序。"
+    }
+  },
+  "validation": {
+    "required": "请填写此项。",
+    "name": "请输入您的姓名。",
+    "phone": "请输入有效的电话号码，包括国家或地区代码。",
+    "email": "请输入有效的电子邮箱地址。",
+    "select": "请选择一项。",
+    "consent": "请确认同意我们使用您的信息进行回复。",
+    "messageTooLong": "描述请控制在 {max} 个字符以内。",
+    "summary": "请检查标出的字段。"
+  },
+  "errors": {
+    "title": "您的需求未能发送",
+    "invalid": "部分信息缺失或无效，请检查表单后重试。",
+    "verification": "安全验证未完成。请重试，或通过电子邮件或 WhatsApp 联系我们。",
+    "send": "由于技术问题，您的需求未能发送。请几分钟后重试，或通过电子邮件或 WhatsApp 联系我们。",
+    "unknown": "出现错误。请重试，或通过电子邮件或 WhatsApp 联系我们。",
+    "fallback": "您也可以直接联系我们："
+  },
+  "channels": {
+    "title": "其他联系方式",
+    "phone": {
+      "label": "电话",
+      "text": "致电与工程师沟通您的项目。"
+    },
+    "whatsapp": {
+      "label": "WhatsApp",
+      "text": "身在埃及时，可直接用手机发送照片、视频和图纸。",
+      "cta": "通过 WhatsApp 发送图纸"
+    },
+    "email": {
+      "label": "电子邮箱",
+      "text": "用于发送文件、图纸和正式需求。"
+    },
+    "location": {
+      "label": "地址",
+      "text": "埃及吉萨省十月六日城",
+      "note": "现场拜访需提前预约。"
+    }
+  },
+  "nextSteps": {
+    "title": "后续流程",
+    "steps": [
+      {
+        "title": "审阅需求",
+        "text": "工程师阅读您的需求，并查看您发送的照片和文件。"
+      },
+      {
+        "title": "与您联系",
+        "text": "我们会致电或发消息向您了解情况，必要时安排现场考察。"
+      },
+      {
+        "title": "收到报价",
+        "text": "书面的工作范围与报价，包含所用平台、交付内容和进度安排。"
+      }
+    ]
+  },
+  "thanks": {
+    "seo": {
+      "title": "需求已发送 | Logic Controls",
+      "description": "感谢您的询价。Logic Controls 的工程师将审阅您的需求并与您联系。"
+    },
+    "h1": "谢谢！您的需求已发送。",
+    "text": "工程师会审阅您的需求，并通过您选择的方式与您联系。",
+    "urgent": {
+      "title": "设备已停机？",
+      "text": "如需紧急协助，请立即致电或通过 WhatsApp 联系我们，并说明您已提交的需求。",
+      "cta": "WhatsApp 联系工程师"
+    },
+    "more": {
+      "title": "有照片或图纸？",
+      "text": "请通过电子邮件或 WhatsApp 发送，有助于我们更快准备报价。",
+      "cta": "通过 WhatsApp 发送图纸"
+    },
+    "backHome": "返回首页",
+    "seeProjects": "查看项目案例"
+  }
+}

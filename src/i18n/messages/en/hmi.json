@@ -1,0 +1,195 @@
+{
+  "intro": {
+    "eyebrow": "Live HMI demo",
+    "title": "Run a pasteurizer from your browser",
+    "lead": "A working simulation of an HTST milk pasteurizer, the kind of PLC and HMI system we build for dairy plants. Start it, change the recipe, cause a fault, run a CIP clean: the control logic reacts like the real machine.",
+    "seeing": "What you're seeing",
+    "bullets": [
+      {
+        "title": "Interlocks",
+        "text": "The flow-diversion valve (FDV) sends product forward only after the holding-tube outlet has held the legal temperature. Try to override it in Manual: the PLC won't let you."
+      },
+      {
+        "title": "Alarms",
+        "text": "Prioritised, time-stamped alarms with acknowledge and return-to-normal states, as ISA-18.2 recommends."
+      },
+      {
+        "title": "Trends",
+        "text": "Live temperature against setpoint and divert limit, so operators see drift before it costs a batch."
+      }
+    ],
+    "ctaQuestion": "Want an HMI like this for your machine?",
+    "cta": "Request a quote",
+    "try": "Try it: press Start, wait for Forward, then Simulate fault."
+  },
+  "caption": "Simulated 10.1″ operator panel built to ISA-101 high-performance HMI principles: grey when all is normal, colour only for abnormal states, blue for what you can touch.",
+  "a11y": {
+    "panel": "Interactive pasteurizer HMI simulation",
+    "mimic": "Process diagram: raw tank, balance tank, feed pump, plate heat exchanger with regeneration, heating and cooling sections, hot-water loop, holding tube, flow-diversion valve and storage tank. Live values are listed in the process panel.",
+    "trend": "Temperature trend for the last 60 seconds",
+    "led": "Panel status lights"
+  },
+  "status": {
+    "unit": "HTST-01 Pasteurizer",
+    "screen": "Overview",
+    "sim": "SIM ×3",
+    "ready": "Ready",
+    "heating": "Heating up · Diverting",
+    "forward": "Production · Forward",
+    "divert": "Diverting",
+    "cip": "CIP cleaning",
+    "stopped": "Stopped"
+  },
+  "mimic": {
+    "raw": "Raw tank",
+    "balance": "Balance tank",
+    "feedPump": "Feed pump",
+    "phe": "Plate heat exchanger",
+    "regen": "Regen",
+    "heating": "Heating",
+    "cooling": "Cooling",
+    "holding": "Holding tube",
+    "forward": "Forward",
+    "divert": "Divert",
+    "storage": "Storage",
+    "hotWater": "Hot water",
+    "hwPump": "HW pump",
+    "steam": "Steam",
+    "iceWater": "Ice water",
+    "cipSupply": "CIP supply",
+    "drain": "To drain",
+    "locked": "Interlock"
+  },
+  "kpi": {
+    "title": "Process",
+    "tt102": "Holding outlet",
+    "limit": "Divert limit",
+    "tt101": "Heater outlet",
+    "sp": "SP",
+    "hold": "Holding time",
+    "min": "min",
+    "flow": "Flow",
+    "hw": "Hot water",
+    "valve": "Steam valve",
+    "outlet": "Product out",
+    "batch": "Batch",
+    "forwarded": "Forwarded"
+  },
+  "recipe": {
+    "title": "Recipe",
+    "milk": "Milk",
+    "cream": "Cream",
+    "juice": "Juice"
+  },
+  "controls": {
+    "run": "Run",
+    "start": "Start",
+    "stop": "Stop",
+    "mode": "Mode",
+    "auto": "Auto",
+    "manual": "Manual",
+    "cip": "CIP",
+    "fault": "Simulate fault",
+    "ack": "Acknowledge",
+    "manualTitle": "Manual control",
+    "sp": "Heating SP",
+    "spDown": "Lower heating setpoint",
+    "spUp": "Raise heating setpoint",
+    "fdv": "FDV",
+    "fwd": "Forward",
+    "div": "Divert"
+  },
+  "trend": {
+    "title": "Trend",
+    "window": "last 60 s",
+    "show": "Show trend",
+    "hide": "Hide trend",
+    "sp": "SP",
+    "limit": "Limit"
+  },
+  "alarms": {
+    "title": "Alarms & events",
+    "empty": "No active alarms",
+    "unacked": "unacknowledged",
+    "time": "Time",
+    "prio": "Priority",
+    "tag": "Tag",
+    "message": "Message",
+    "state": "State",
+    "p1": "High",
+    "p2": "Medium",
+    "p3": "Low",
+    "p0": "Event",
+    "active": "Active",
+    "acked": "Acked",
+    "cleared": "Cleared",
+    "almSteam": "Steam supply pressure low",
+    "almHeat": "Heater outlet temperature low",
+    "almDivert": "Below {limit} °C: product diverted",
+    "evStart": "Batch {arg} started",
+    "evStop": "Production stopped",
+    "evManual": "Manual mode selected",
+    "evAuto": "Auto mode selected",
+    "evRecipe": "Recipe changed: {arg}",
+    "evCip": "CIP cycle started",
+    "evCipDone": "CIP cycle complete",
+    "evCipAbort": "CIP cycle aborted"
+  },
+  "msg": {
+    "idle": "Press Start to run the pasteurizer.",
+    "heating": "Heating up. The FDV diverts until the holding outlet reaches {limit} °C.",
+    "recovering": "Product below {limit} °C is diverted back to the balance tank until the temperature recovers.",
+    "forward": "Product meets {limit} °C for {hold} s: FDV forward to storage.",
+    "manual": "Manual: you drive the FDV and the heating setpoint. The interlock still protects the product.",
+    "blocked": "Interlock: forward blocked. TT-102 is {t} °C, below the {limit} °C limit.",
+    "fault": "Steam supply pressure dropped. Watch the cold product travel down the holding tube.",
+    "cipDone": "CIP complete. The line is clean and ready for production.",
+    "stopped": "Stopped. Pumps off, steam valve closed, FDV in divert (fail-safe).",
+    "acked": "Alarms acknowledged.",
+    "fdvFwd": "FDV forward.",
+    "fdvDiv": "FDV divert.",
+    "alarm": "{prio} priority alarm: {text}"
+  },
+  "cip": {
+    "title": "CIP programme",
+    "left": "{s} s left",
+    "pre": "Pre-rinse",
+    "caustic": "Caustic wash",
+    "rinse": "Intermediate rinse",
+    "acid": "Acid wash",
+    "final": "Final rinse"
+  },
+  "loop": {
+    "eyebrow": "How automation works",
+    "title": "The control loop behind every machine",
+    "lead": "Sensors measure, the PLC decides, the HMI keeps people in the loop and the actuators act. Then it starts again, many times a second.",
+    "caption": "Signal types shown are typical examples.",
+    "nodes": {
+      "sensor": {
+        "label": "Sensor",
+        "text": "Measures the process: temperature, pressure, level, flow or position.",
+        "spec": "PT100 · 4–20 mA"
+      },
+      "plc": {
+        "label": "PLC",
+        "text": "Compares the value with the setpoint and runs the logic: PID, interlocks, sequences.",
+        "spec": "PID · 10 ms scan"
+      },
+      "hmi": {
+        "label": "HMI / SCADA",
+        "text": "Shows operators live values, alarms and trends, and passes their commands to the PLC.",
+        "spec": "Modbus TCP"
+      },
+      "actuator": {
+        "label": "Actuator",
+        "text": "A VFD, control valve or contactor applies the PLC's output to the machine.",
+        "spec": "VFD 0–50 Hz"
+      },
+      "process": {
+        "label": "Process",
+        "text": "The machine responds, and the sensor measures the new value.",
+        "spec": "72.4 °C"
+      }
+    }
+  }
+}

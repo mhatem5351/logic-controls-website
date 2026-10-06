@@ -1,0 +1,290 @@
+---
+/**
+ * Dark-navy hero. Use with <BaseLayout heroDark> so the transparent header sits on top of it.
+ *
+ * size="home": tall, slanted media panel on the inline-end side (≥1024px), full-bleed poster behind text on
+ *              mobile; optional muted background loop that only starts when motion/data/viewport allow.
+ * size="page": compact page header for inner pages (breadcrumbs slot, no video).
+ *
+ * Title accepts simple HTML; wrap the emphasised words in <em> (rendered in royal-300, not slanted twice).
+ * Slots: default (extra content under the CTAs), "breadcrumbs", "media" (replaces the video/image panel).
+ */
+import type { ImageMetadata } from "astro";
+import { Picture } from "astro:assets";
+import { getMessages, type Locale } from "~/i18n";
+import Button from "./Button.astro";
+import Chips from "./Chips.astro";
+import CircuitTraces from "./CircuitTraces.astro";
+import Icon from "./Icon.astro";
+import { href as lhref, QUOTE_PATH, whatsappLink, mailtoLink, prefersEmail } from "./nav";
+
+interface Cta {
+  label: string;
+  href: string;
+}
+interface Proof {
+  value: string;
+  label: string;
+}
+interface Props {
+  locale?: Locale;
+  title: string;
+  lead?: string;
+  /** HMI spec chip above the title, e.g. ["PLC", "HMI", "SCADA", "VFD"]. */
+  chips?: string[];
+  primary?: Cta | false;
+  secondary?: Cta | false;
+  /** Static proof figures under the CTAs (never animated). */
+  proof?: Proof[];
+  size?: "home" | "page";
+  /** Background loop (muted). `poster` is required and is the LCP image. */
+  video?: { src: string; poster: string; posterSmall?: string; width?: number; height?: number };
+  /** Photo instead of a video. */
+  image?: ImageMetadata;
+  imageAlt?: string;
+  /** Mark the poster/image as the LCP candidate (fetchpriority="high"). Home page only. */
+  priority?: boolean;
+  /** Show the animated circuit traces. */
+  traces?: boolean;
+  /** Slanted bottom edge (rises towards the inline end, like the italic). Default on for size="home". */
+  angle?: boolean;
+  class?: string;
+}
+
+const locale = (Astro.props.locale ?? Astro.currentLocale ?? "en") as Locale;
+const t = getMessages(locale).ui;
+const email = prefersEmail(locale);
+const {
+  title,
+  lead,
+  chips,
+  primary = { label: t.cta.quote, href: lhref(locale, QUOTE_PATH) },
+  secondary = email
+    ? { label: t.cta.emailEngineer, href: mailtoLink(t.email.subject) }
+    : { label: t.cta.whatsapp, href: whatsappLink(t.whatsapp.message) },
+  proof = [],
+  size = "home",
+  video,
+  image,
+  imageAlt = "",
+  priority = false,
+  traces = true,
+  angle,
+  class: className,
+} = Astro.props;
+
+const home = size === "home";
+const angled = angle ?? home;
+const hasMediaSlot = Astro.slots.has("media");
+const hasMedia = hasMediaSlot || !!video || !!image;
+const secondaryIsWa = secondary && secondary.href.startsWith("https://wa.me");
+const posterSrcset = video?.posterSmall ? `${video.posterSmall} 640w, ${video.poster} ${video.width ?? 1280}w` : undefined;
+---
+
+<section
+  class:list={["lc-hero on-dark relative isolate overflow-hidden bg-navy-950 text-navy-100", className]}
+  data-size={size}
+  data-angle={angled ? "" : undefined}
+  style="margin-block-start: calc(-1 * (var(--header-h) + var(--utility-h)))"
+>
+  {/* ---------- media ---------- */}
+  {
+    hasMedia && (
+      <div class:list={["lc-hero-media absolute inset-0 -z-30", home ? "lg:inset-s-auto lg:w-[54%]" : "lg:inset-s-auto lg:w-[44%]"]}>
+        {hasMediaSlot ? (
+          <slot name="media" />
+        ) : video ? (
+          <>
+            <img
+              src={video.poster}
+              srcset={posterSrcset}
+              sizes={posterSrcset ? "(min-width: 1024px) 56vw, 100vw" : undefined}
+              width={video.width ?? 1280}
+              height={video.height ?? 720}
+              alt=""
+              loading="eager"
+              decoding="async"
+              fetchpriority={priority ? "high" : "auto"}
+              class="absolute inset-0 size-full object-cover"
+            />
+            <video
+              class="lc-hero-video absolute inset-0 size-full object-cover opacity-0 transition-opacity duration-1000"
+              data-src={video.src}
+              poster={video.poster}
+              muted
+              loop
+              playsinline
+              preload="none"
+              aria-hidden="true"
+              tabindex="-1"
+            />
+          </>
+        ) : (
+          image && (
+            <Picture
+              src={image}
+              alt={imageAlt}
+              formats={["avif", "webp"]}
+              widths={[640, 960, 1280, 1600]}
+              sizes="(min-width: 1024px) 56vw, 100vw"
+              loading="eager"
+              fetchpriority={priority ? "high" : "auto"}
+              layout="full-width"
+              class="absolute inset-0 size-full object-cover"
+            />
+          )
+        )}
+        {/* contrast overlays: full-strength on mobile (text sits on the media), fading towards the end on desktop */}
+        <div class="absolute inset-0 bg-navy-950/85 lg:bg-transparent lg:bg-gradient-to-r lg:from-navy-950 lg:via-navy-950/45 lg:to-navy-950/10 rtl:lg:bg-gradient-to-l" />
+        <div class="absolute inset-x-0 bottom-0 h-2/5 bg-gradient-to-t from-navy-950 to-transparent" />
+        <div class="absolute inset-0 bg-[linear-gradient(180deg,rgb(4_14_39/0.7),transparent_28%)]" />
+        {/* the slanted edge (10°, the logo's italic) with a hairline */}
+        <svg
+          class="pointer-events-none absolute inset-y-0 start-0 hidden h-full w-(--slant-x) text-royal-400/60 lg:block rtl:-scale-x-100"
+          viewBox="0 0 100 100"
+          preserveAspectRatio="none"
+          aria-hidden="true"
+        >
+          <path d="M100 0 0 100" stroke="currentColor" stroke-width="1" vector-effect="non-scaling-stroke" />
+        </svg>
+      </div>
+    )
+  }
+
+  {/* ---------- decoration ---------- */}
+  <div aria-hidden="true" class="pointer-events-none absolute inset-0 -z-20 bg-[radial-gradient(ellipse_55%_70%_at_10%_20%,rgb(13_37_82/0.95),transparent_70%)] rtl:bg-[radial-gradient(ellipse_55%_70%_at_90%_20%,rgb(13_37_82/0.95),transparent_70%)]" />
+  <div aria-hidden="true" class="pointer-events-none absolute inset-0 -z-10 bg-blueprint [mask-image:linear-gradient(to_bottom,#000_40%,transparent)]" />
+  {
+    traces && (
+      <>
+        <CircuitTraces corner="bottom-start" class="-z-10 opacity-90 max-md:origin-bottom-left max-md:scale-[0.62] rtl:max-md:origin-bottom-right" />
+        {home && <CircuitTraces corner="top-end" tone="royal" class="-z-10 mt-[calc(var(--header-h)+var(--utility-h))] hidden lg:block" />}
+      </>
+    )
+  }
+
+  {/* ---------- content ---------- */}
+  <div
+    class:list={[
+      "wrap relative",
+      home
+        ? "flex min-h-[min(46rem,100svh)] flex-col justify-center pt-[calc(var(--header-h)+var(--utility-h)+3rem)] pb-32 lg:min-h-[47rem] lg:pb-36"
+        : "pt-[calc(var(--header-h)+var(--utility-h)+2.5rem)] pb-24 lg:pb-28",
+    ]}
+  >
+    <div class:list={[home ? "max-w-2xl lg:max-w-[48%]" : "max-w-3xl lg:max-w-[58%]"]}>
+      {Astro.slots.has("breadcrumbs") && (
+        <div class="mb-6">
+          <slot name="breadcrumbs" />
+        </div>
+      )}
+      {chips && chips.length > 0 && <Chips items={chips} joined led class="lc-rise mb-6" />}
+      <h1
+        class:list={[
+          home ? "type-display" : "type-h1",
+          "text-white [&_em]:text-royal-300 [&_em]:[font-style:inherit]",
+        ]}
+        set:html={title}
+      />
+      {lead && <p class="lc-rise mt-6 max-w-xl type-lead text-navy-200" style="--i:1" set:html={lead} />}
+      {
+        (primary || secondary) && (
+          <div class="lc-rise mt-9 flex flex-wrap items-center gap-3" style="--i:2">
+            {primary && (
+              <Button href={primary.href} size="lg" iconEnd="arrow" class="max-sm:w-full">
+                {primary.label}
+              </Button>
+            )}
+            {secondary && (
+              <Button
+                href={secondary.href}
+                size="lg"
+                variant="on-dark"
+                icon={secondaryIsWa ? "whatsapp" : "mail"}
+                iconClass={secondaryIsWa ? "text-[#25d366]" : "text-royal-300"}
+                external={secondaryIsWa}
+                class="max-sm:w-full"
+              >
+                {secondary.label}
+              </Button>
+            )}
+          </div>
+        )
+      }
+      {
+        email && secondary && (
+          <p class="lc-rise mt-4 text-sm" style="--i:2">
+            <a href={whatsappLink(t.whatsapp.message)} target="_blank" rel="noopener" class="inline-flex min-h-6 items-center gap-2 text-navy-200 underline-offset-4 hover:text-white hover:underline">
+              <Icon name="whatsapp" size={16} class="text-[#25d366]" />
+              {t.cta.inEgyptWhatsapp}
+            </a>
+          </p>
+        )
+      }
+      <slot />
+      {
+        proof.length > 0 && (
+          <dl class="lc-rise mt-12 grid max-w-lg grid-cols-3 border-t border-white/10 pt-6" style="--i:3">
+            {proof.map((p, i) => (
+              <div
+                class:list={[
+                  "relative flex flex-col pe-3 sm:pe-6",
+                  i > 0 &&
+                    "ps-4 before:absolute before:inset-y-1 before:start-0 before:w-px before:-skew-x-[10deg] before:bg-white/15 sm:ps-6 rtl:before:skew-x-[10deg]",
+                ]}
+              >
+                <dt class="mt-1 text-sm text-navy-300">{p.label}</dt>
+                <dd class="order-first type-stat text-white" style="font-size: clamp(1.5rem, 1.2rem + 1vw, 2rem)">
+                  <span class="ltr" dir="ltr">{p.value}</span>
+                </dd>
+              </div>
+            ))}
+          </dl>
+        )
+      }
+    </div>
+  </div>
+</section>
+
+<style>
+  .lc-hero {
+    --slant-x: 132px; /* tan(10°) × ~750px hero height */
+  }
+  @media (min-width: 64rem) {
+    .lc-hero-media {
+      clip-path: polygon(var(--slant-x) 0, 100% 0, 100% 100%, 0 100%);
+    }
+    :global([dir="rtl"]) .lc-hero-media {
+      clip-path: polygon(0 0, calc(100% - var(--slant-x)) 0, 100% 100%, 0 100%);
+    }
+  }
+  .lc-hero[data-angle] {
+    --angle-h: clamp(1.5rem, 4vw, 4rem);
+    clip-path: polygon(0 0, 100% 0, 100% calc(100% - var(--angle-h)), 0 100%);
+  }
+  :global([dir="rtl"]) .lc-hero[data-angle] {
+    clip-path: polygon(0 0, 100% 0, 100% 100%, 0 calc(100% - var(--angle-h)));
+  }
+  .lc-hero-video[data-playing] {
+    opacity: 1;
+  }
+</style>
+
+<script>
+  // Start the decorative loop only when it is welcome: no reduced-motion, no Save-Data, viewport ≥ 768px.
+  const video = document.querySelector<HTMLVideoElement>(".lc-hero-video[data-src]");
+  if (video) {
+    const conn = (navigator as Navigator & { connection?: { saveData?: boolean } }).connection;
+    const allowed =
+      !matchMedia("(prefers-reduced-motion: reduce)").matches && !conn?.saveData && matchMedia("(min-width: 768px)").matches;
+    if (allowed) {
+      video.src = video.dataset.src!;
+      video.addEventListener("playing", () => video.setAttribute("data-playing", ""), { once: true });
+      // Pause while off-screen to save battery/CPU.
+      new IntersectionObserver(([entry]) => {
+        if (entry?.isIntersecting) video.play().catch(() => {});
+        else video.pause();
+      }).observe(video);
+    }
+  }
+</script>

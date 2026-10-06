@@ -1,0 +1,98 @@
+{
+  "seo": {
+    "title": "Logic Controls | PLC & Machine Automation in Egypt",
+    "description": "Control panels, PLC/HMI programming, SCADA and commissioning for food, dairy, pharma, cosmetics and packaging plants in Egypt. 50+ projects delivered."
+  },
+  "hero": {
+    "eyebrow": "Industrial automation engineers in 6th of October City, Egypt",
+    "title": "Control panels, PLC programming and machine automation for factories in Egypt",
+    "lead": "We design the control system, program the PLC, HMI and SCADA, and commission the machine on your floor. For food, dairy, pharma, cosmetics and packaging lines.",
+    "proof": "50+ projects delivered by a team with 4+ years in industrial automation",
+    "ctaPrimary": "Request a quote",
+    "ctaSecondary": "WhatsApp an engineer",
+    "imageAlt": "Wecon touch screen on a stainless-steel pasteurizer cabinet, showing the process with Manual, Automatic, CIP, Settings, Recipes and Alarms tabs"
+  },
+  "audiences": {
+    "title": "Who we work with",
+    "local": {
+      "title": "Factories and machine builders in Egypt",
+      "text": "New machines, upgrades of old ones, breakdowns and process improvements. Engineers who speak your language and come to your site.",
+      "cta": "See our services"
+    },
+    "foreign": {
+      "title": "Setting up a factory in Egypt?",
+      "text": "A local engineering team to commission imported lines, put HMI screens in Arabic for your operators and support the plant after start-up.",
+      "cta": "For foreign manufacturers"
+    }
+  },
+  "services": {
+    "title": "What we do",
+    "intro": "One team from electrical design to start-up. The engineers who design your system also program it and commission it.",
+    "cta": "All services"
+  },
+  "projects": {
+    "title": "Recent work",
+    "intro": "Real machines and real photos from our projects. Client names are withheld.",
+    "cta": "All projects"
+  },
+  "industries": {
+    "title": "Industries we serve",
+    "intro": "Most of our work is in plants where temperature, time, dose or position decides product quality.",
+    "cta": "All industries"
+  },
+  "why": {
+    "title": "Why plants work with us",
+    "items": [
+      {
+        "title": "One team, design to start-up",
+        "text": "The engineer who designs your control system also programs it and commissions it. Nothing is lost between teams."
+      },
+      {
+        "title": "Five platforms, no brand bias",
+        "text": "Siemens, Schneider Electric, Delta, LS Electric and Wecon. We recommend the platform that fits your budget, your spare parts and your maintenance team."
+      },
+      {
+        "title": "Screens your operators understand",
+        "text": "HMI screens in Arabic, English or both, with clear alarms, manual and automatic modes, and recipes operators can select."
+      },
+      {
+        "title": "Tested and documented",
+        "text": "Every I/O point, interlock and alarm is checked before production. You receive drawings and notes your maintenance team can use."
+      }
+    ]
+  },
+  "foreignBand": {
+    "title": "Building a factory in Egypt?",
+    "text": "We are a local engineering team for new plants: commissioning of imported lines, I/O and loop checks, Arabic HMIs for local operators, and support after start-up.",
+    "cta": "Setting up in Egypt"
+  },
+  "faq": {
+    "title": "Questions plant managers ask",
+    "items": [
+      {
+        "q": "Which PLC brands do you work with?",
+        "a": "We program and integrate Siemens, Schneider Electric, Delta, LS Electric and Wecon. We also commission and support machines that arrive with other controllers, after we review their documentation."
+      },
+      {
+        "q": "Do you build the control panel as well?",
+        "a": "Yes. We produce the electrical design, assemble and wire the panel, and test it with the PLC program before it goes to site."
+      },
+      {
+        "q": "Can you work on a machine that has no drawings or program?",
+        "a": "Yes. We trace the wiring, document the inputs and outputs, and write a new program if the old one cannot be used."
+      },
+      {
+        "q": "Can the HMI screens be in Arabic?",
+        "a": "Yes. We design HMI screens in Arabic, English or both. One of our shampoo filling machines runs on Arabic screens for its local operators."
+      },
+      {
+        "q": "Do you work outside Greater Cairo?",
+        "a": "Yes. We are based in 6th of October City and work across Egypt's industrial zones, including 10th of Ramadan, Sadat City, Borg El Arab and the Suez Canal Economic Zone."
+      },
+      {
+        "q": "How do I get a quote?",
+        "a": "Use the quote form or send us a WhatsApp message with a short description and photos of the machine, the panel and the nameplates. An engineer will reply with questions, a site visit or a quote."
+      }
+    ]
+  }
+}

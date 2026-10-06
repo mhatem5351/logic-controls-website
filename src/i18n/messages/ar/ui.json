@@ -1,26 +1,101 @@
 {
   "nav": {
-    "home": "Home",
-    "services": "Services",
-    "industries": "Industries",
-    "projects": "Projects",
-    "about": "About",
-    "contact": "Contact",
-    "foreign": "Setting up in Egypt?"
+    "home": "الرئيسية",
+    "services": "الخدمات",
+    "industries": "القطاعات",
+    "projects": "المشروعات",
+    "about": "من نحن",
+    "contact": "تواصل معنا",
+    "foreign": "تؤسس مصنعًا في مصر؟",
+    "technologies": "التقنيات",
+    "privacy": "الخصوصية",
+    "servicesList": {
+      "controlPanels": "لوحات التحكم",
+      "plcHmi": "برمجة PLC و HMI",
+      "machineAutomation": "أتمتة الماكينات",
+      "commissioning": "التشغيل والدعم الفني"
+    },
+    "industriesList": {
+      "foodBeverage": "الأغذية والمشروبات",
+      "pharma": "الصناعات الدوائية",
+      "cosmetics": "مستحضرات التجميل والتعبئة",
+      "packaging": "التغليف"
+    }
   },
   "cta": {
-    "quote": "Request a quote",
-    "whatsapp": "WhatsApp an engineer",
-    "call": "Call us",
-    "email": "Email us"
+    "quote": "اطلب عرض سعر",
+    "whatsapp": "كلّم مهندسًا على واتساب",
+    "call": "اتصل بنا",
+    "email": "راسلنا بالبريد",
+    "emailEngineer": "راسل مهندسًا بالبريد",
+    "learnMore": "اعرف المزيد",
+    "viewProject": "عرض المشروع",
+    "viewAll": "عرض الكل",
+    "inEgyptWhatsapp": "في مصر؟ راسلنا على واتساب"
   },
   "a11y": {
-    "skip": "Skip to content",
-    "menu": "Menu",
-    "closeMenu": "Close menu",
-    "language": "Language"
+    "skip": "انتقل إلى المحتوى",
+    "menu": "القائمة",
+    "closeMenu": "إغلاق القائمة",
+    "language": "اللغة",
+    "mainNav": "التنقل الرئيسي",
+    "footerNav": "روابط التذييل",
+    "breadcrumbs": "مسار التنقل",
+    "homeLink": "Logic Controls — الصفحة الرئيسية",
+    "newTab": "يفتح في علامة تبويب جديدة",
+    "currentLanguage": "اللغة الحالية"
+  },
+  "whatsapp": {
+    "fabLabel": "تحدّث مع مهندس على واتساب",
+    "message": "مرحبًا Logic Controls، أودّ التحدث مع مهندس بخصوص مشروع أتمتة."
+  },
+  "email": {
+    "fabLabel": "راسل مهندسًا بالبريد",
+    "subject": "استفسار عن مشروع أتمتة"
+  },
+  "contact": {
+    "phone": "الهاتف",
+    "email": "البريد الإلكتروني",
+    "whatsapp": "واتساب",
+    "address": "العنوان",
+    "addressValue": "مدينة السادس من أكتوبر، الجيزة، مصر"
   },
   "footer": {
-    "rights": "All rights reserved."
+    "pitch": "لوحات تحكم PLC وأنظمة HMI/SCADA وأتمتة الماكينات — يصممها ويصنّعها ويبرمجها ويشغّلها مهندسونا في مصر.",
+    "servicesTitle": "الخدمات",
+    "industriesTitle": "القطاعات",
+    "companyTitle": "الشركة",
+    "contactTitle": "التواصل",
+    "zonesTitle": "المناطق الصناعية التي نخدمها",
+    "zones": "السادس من أكتوبر · العاشر من رمضان · مدينة السادات · العبور · العين السخنة (المنطقة الاقتصادية لقناة السويس)",
+    "facebook": "Logic Controls على فيسبوك",
+    "rights": "جميع الحقوق محفوظة."
+  },
+  "platforms": {
+    "title": "منصات نبرمجها وندمجها",
+    "note": "الأسماء والشعارات التجارية مملوكة لأصحابها، وتُعرض فقط لتوضيح المعدات التي يعمل عليها مهندسونا."
+  },
+  "gallery": {
+    "label": "عارض الصور",
+    "open": "فتح الصورة {n} من {total}",
+    "close": "إغلاق عارض الصور",
+    "prev": "الصورة السابقة",
+    "next": "الصورة التالية",
+    "counter": "{n} / {total}"
+  },
+  "video": {
+    "play": "تشغيل الفيديو",
+    "playNamed": "تشغيل الفيديو: {title}"
+  },
+  "faq": {
+    "title": "الأسئلة الشائعة"
+  },
+  "process": {
+    "step": "الخطوة"
+  },
+  "notFound": {
+    "title": "الصفحة غير موجودة",
+    "body": "الصفحة التي تبحث عنها غير موجودة أو تم نقلها.",
+    "home": "الذهاب إلى الصفحة الرئيسية"
   }
 }

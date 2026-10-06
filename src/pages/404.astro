@@ -1,0 +1,47 @@
+---
+// Multilingual 404 (served by Workers static assets for any unknown path). One page, four languages.
+import BaseLayout from "~/layouts/BaseLayout.astro";
+import Logo from "~/components/Logo.astro";
+import Icon from "~/components/Icon.astro";
+import CircuitTraces from "~/components/CircuitTraces.astro";
+import { Font } from "astro:assets";
+import { LOCALES, LOCALE_META, getMessages, localePath } from "~/i18n";
+
+const blocks = (["ar", "en", "zh", "tr"] as const).filter((l) => LOCALES.includes(l)).map((l) => ({ locale: l, meta: LOCALE_META[l], t: getMessages(l).ui.notFound }));
+---
+
+<BaseLayout locale="en" title="404 — Page not found" path="404" noindex alternates={false} canonical={false} chrome={false}>
+  <Font slot="head" cssVariable="--font-arabic" />
+  <div class="on-dark relative isolate flex min-h-dvh flex-col overflow-hidden bg-navy-950 text-navy-100">
+    <div aria-hidden="true" class="pointer-events-none absolute inset-0 -z-10 bg-blueprint mask-fade-edges"></div>
+    <CircuitTraces corner="bottom-start" class="-z-10 opacity-80" />
+    <div class="wrap flex flex-1 flex-col py-10 sm:py-14">
+      <a href="/" class="self-start" aria-label="Logic Controls">
+        <Logo variant="dark" width={150} alt="" loading="eager" />
+      </a>
+      <div class="my-auto py-14">
+        <h1 class="font-mono text-[clamp(4.5rem,14vw,10rem)] leading-none font-semibold tracking-tight text-white/90">
+          4<span class="text-signal-400">0</span>4
+        </h1>
+        <ul role="list" class="mt-10 grid gap-px overflow-hidden border border-white/10 bg-white/10 sm:grid-cols-2">
+          {
+            blocks.map(({ locale, meta, t }) => (
+              <li lang={meta.htmlLang} dir={meta.dir} class="bg-navy-950 p-6 sm:p-8">
+                <h2 class="type-h3 text-white">{t.title}</h2>
+                <p class="mt-2 text-navy-200">{t.body}</p>
+                <a
+                  href={localePath(locale)}
+                  hreflang={meta.hreflang}
+                  class="mt-5 inline-flex min-h-10 items-center gap-2 font-bold text-royal-300 hover:text-white"
+                >
+                  {t.home}
+                  <Icon name="arrow" size={18} />
+                </a>
+              </li>
+            ))
+          }
+        </ul>
+      </div>
+    </div>
+  </div>
+</BaseLayout>

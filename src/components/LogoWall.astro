@@ -1,0 +1,68 @@
+---
+/**
+ * "Platforms we program & integrate" — monochrome brand marks at optically balanced heights.
+ * Never labelled "partners". SVGs: Wikimedia Commons (public-domain text logos, trademarks of their owners).
+ * Wecon has no public vector logo, so it is shown as a plain text wordmark.
+ */
+import { getMessages, type Locale } from "~/i18n";
+import { SITE } from "~/data/site";
+import siemens from "~/assets/brand/platforms/siemens.svg?raw";
+import schneider from "~/assets/brand/platforms/schneider-electric.svg?raw";
+import delta from "~/assets/brand/platforms/delta.svg?raw";
+import ls from "~/assets/brand/platforms/ls-electric.svg?raw";
+
+interface Props {
+  locale?: Locale;
+  title?: string;
+  note?: string | false;
+  brands?: readonly string[];
+  class?: string;
+}
+
+const locale = (Astro.props.locale ?? Astro.currentLocale ?? "en") as Locale;
+const t = getMessages(locale).ui;
+const { title = t.platforms.title, note = t.platforms.note, brands = SITE.brands, class: className } = Astro.props;
+
+// Equal-area sizing: height = sqrt(area / aspect). Siemens (6.27:1) ends up 20px tall, Delta (3.24:1) 28px.
+const AREA = 2508;
+const LOGOS: Record<string, { svg: string; aspect: number } | undefined> = {
+  Siemens: { svg: siemens, aspect: 6.27 },
+  "Schneider Electric": { svg: schneider, aspect: 3.385 },
+  Delta: { svg: delta, aspect: 3.243 },
+  "LS Electric": { svg: ls, aspect: 6.271 },
+};
+const sized = (svg: string, aspect: number) => {
+  const h = Math.sqrt(AREA / aspect);
+  return svg.replace("<svg ", `<svg class="block w-auto" style="height:calc(${h.toFixed(1)}px * var(--logo-scale))" `);
+};
+---
+
+<div class:list={["[--logo-scale:0.82] sm:[--logo-scale:1]", className]}>
+  {
+    title && (
+      <p class="mb-6 flex items-center gap-3 type-label text-charcoal-600 in-[.on-dark]:text-navy-200">
+        <span class="slant-bar text-royal-600 in-[.on-dark]:text-signal-400" aria-hidden="true" />
+        <span>{title}</span>
+      </p>
+    )
+  }
+  <ul role="list" class="grid grid-cols-2 border-s border-t border-charcoal-200 sm:grid-cols-3 lg:grid-cols-5 in-[.on-dark]:border-white/10">
+    {
+      brands.map((name) => {
+        const logo = LOGOS[name];
+        return (
+          <li class="group grid min-h-24 place-items-center max-sm:last:odd:col-span-2 border-e border-b border-charcoal-200 px-5 py-6 text-charcoal-500 transition-colors duration-300 hover:bg-navy-50 hover:text-navy-900 in-[.on-dark]:border-white/10 in-[.on-dark]:text-navy-300 in-[.on-dark]:hover:bg-white/[0.04] in-[.on-dark]:hover:text-white">
+            {logo ? (
+              <Fragment set:html={sized(logo.svg, logo.aspect)} />
+            ) : (
+              <span lang="en" role="img" aria-label={name} class="font-sans text-[calc(1.375rem*var(--logo-scale))] leading-none font-extrabold tracking-[0.14em] uppercase">
+                {name}
+              </span>
+            )}
+          </li>
+        );
+      })
+    }
+  </ul>
+  {note && <p class="mt-4 text-xs text-charcoal-600 in-[.on-dark]:text-navy-300">{note}</p>}
+</div>

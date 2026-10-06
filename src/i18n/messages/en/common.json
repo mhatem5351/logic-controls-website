@@ -1,0 +1,195 @@
+{
+  "labels": {
+    "relatedProjects": "Related projects",
+    "relatedServices": "Related services",
+    "relatedIndustries": "Industries",
+    "technologiesUsed": "Technologies used",
+    "challenge": "Challenge",
+    "solution": "Solution",
+    "result": "Result",
+    "scope": "Scope of work",
+    "highlights": "At a glance",
+    "capabilities": "What we do",
+    "deliverables": "What you receive",
+    "situations": "When to call us",
+    "needs": "What matters in this industry",
+    "applications": "Machines and processes we automate",
+    "faq": "Frequently asked questions",
+    "readCaseStudy": "Read case study",
+    "allProjects": "All projects",
+    "allServices": "All services",
+    "allIndustries": "All industries",
+    "learnMore": "Learn more",
+    "viewService": "View service",
+    "viewIndustry": "View industry",
+    "industry": "Industry",
+    "industries": "Industries",
+    "service": "Service",
+    "services": "Services",
+    "year": "Year",
+    "location": "Location",
+    "client": "Client",
+    "gallery": "Project photos",
+    "video": "Video",
+    "watchVideo": "Watch the machine running",
+    "nextProject": "Next project",
+    "previousProject": "Previous project",
+    "backToProjects": "Back to all projects",
+    "featuredProjects": "Featured projects",
+    "onThisPage": "On this page",
+    "contactUs": "Contact us",
+    "phone": "Phone",
+    "whatsapp": "WhatsApp",
+    "email": "Email",
+    "address": "Address",
+    "openInMaps": "Open in maps"
+  },
+  "breadcrumbs": {
+    "label": "Breadcrumb",
+    "home": "Home",
+    "services": "Services",
+    "industries": "Industries",
+    "projects": "Projects",
+    "technologies": "Technologies",
+    "about": "About",
+    "contact": "Contact",
+    "thanks": "Request sent",
+    "foreign": "Setting up in Egypt",
+    "privacy": "Privacy"
+  },
+  "filters": {
+    "label": "Filter projects",
+    "all": "All",
+    "byIndustry": "By industry",
+    "byService": "By service",
+    "reset": "Show all projects",
+    "count": "{count} projects",
+    "empty": "No projects match this filter yet. Tell us about your machine anyway: the same methods apply."
+  },
+  "stats": {
+    "title": "Logic Controls in numbers",
+    "projects": { "label": "projects delivered" },
+    "experience": { "label": "years of team experience" },
+    "platforms": { "label": "PLC and HMI platforms" },
+    "industries": { "label": "industries served" },
+    "founded": { "label": "company founded" }
+  },
+  "platforms": {
+    "title": "Platforms we program and integrate",
+    "intro": "We choose the platform that fits your machine, your budget and the spare parts you can get in Egypt.",
+    "cta": "See technologies"
+  },
+  "process": {
+    "title": "How we work",
+    "intro": "Six steps from the first visit to a running machine. You talk to the same engineers throughout.",
+    "steps": [
+      {
+        "title": "Site visit and survey",
+        "text": "We see the machine or line, read the nameplates and drawings, and agree what the system must do."
+      },
+      {
+        "title": "Proposal and design",
+        "text": "You receive a written scope and quote. Once agreed, we produce the schematics, I/O list and bill of materials."
+      },
+      {
+        "title": "Build and program",
+        "text": "We assemble and wire the control panel, write the PLC program and design the HMI screens."
+      },
+      {
+        "title": "Test before site",
+        "text": "Wiring checks, I/O simulation and an HMI walk-through before anything reaches your floor."
+      },
+      {
+        "title": "Commission on site",
+        "text": "I/O and loop checks, interlock tests, start-up and tuning with your operators."
+      },
+      {
+        "title": "Hand over and support",
+        "text": "As-built drawings, operator training and follow-up support when you need changes."
+      }
+    ]
+  },
+  "quoteChecklist": {
+    "title": "What we need to quote",
+    "intro": "You do not need everything on this list. Send what you have and we will ask for the rest.",
+    "items": [
+      "What the machine or line does, and what you want to change",
+      "Photos of the machine, the existing panel and the nameplates of motors, drives and PLC",
+      "Drawings, an I/O list or the existing program, if you have them",
+      "Preferred PLC and HMI brand, or no preference",
+      "Supply voltage and frequency at the machine, for example 380 V, 50 Hz",
+      "Plant location and target date",
+      "Languages needed for the HMI screens and documents"
+    ],
+    "whatsappHint": "Easier on your phone? Send photos and drawings on WhatsApp."
+  },
+  "ctaBand": {
+    "default": {
+      "title": "Tell us about your machine or line",
+      "text": "Send a short description and a few photos. An engineer will review it and reply with questions or a quote."
+    },
+    "service": {
+      "title": "Need this for your plant?",
+      "text": "Describe the machine or process and attach photos. We will tell you what we need to prepare a quote."
+    },
+    "industry": {
+      "title": "Running a similar plant?",
+      "text": "Tell us which machine or process you want to automate, upgrade or fix. We work across Greater Cairo and Egypt's industrial zones."
+    },
+    "project": {
+      "title": "Have a similar machine?",
+      "text": "We can deliver the same scope for your machine or adapt it. Send us the details for a quote."
+    },
+    "foreign": {
+      "title": "Planning a factory in Egypt?",
+      "text": "Involve a local automation team early. Send us your line list or machine documents and your schedule."
+    }
+  },
+  "whatsapp": {
+    "default": "Hello Logic Controls, I would like to talk to an engineer about an automation project.",
+    "quote": "Hello Logic Controls, I would like a quote. I can send photos and drawings here.",
+    "service": "Hello Logic Controls, I need a quote for: {service}.",
+    "industry": "Hello Logic Controls, I am contacting you from the {industry} page about an automation project.",
+    "project": "Hello Logic Controls, I saw the case study \"{project}\" and have a similar machine.",
+    "foreign": "Hello Logic Controls, we are setting up a factory in Egypt and need a local automation partner.",
+    "drawings": "Hello Logic Controls, I am sending drawings and photos for a quote."
+  },
+  "zones": {
+    "title": "Where we work",
+    "intro": "We are based in 6th of October City, Giza. We work across Greater Cairo and Egypt's industrial zones, including:",
+    "note": "Plant somewhere else in Egypt? Ask us. We plan site visits case by case.",
+    "homeBase": "Our base",
+    "sczone": "SCZONE",
+    "regions": {
+      "greater-cairo": "Greater Cairo",
+      "nile-delta": "Nile Delta",
+      "alexandria": "Alexandria",
+      "suez-canal": "Suez Canal Economic Zone"
+    },
+    "items": {
+      "6th-of-october": { "name": "6th of October and New October", "governorate": "Giza" },
+      "obour": { "name": "Obour City", "governorate": "Qalyubia" },
+      "badr": { "name": "Badr City", "governorate": "Cairo" },
+      "10th-of-ramadan": { "name": "10th of Ramadan City", "governorate": "Sharqia" },
+      "sadat-city": { "name": "Sadat City", "governorate": "Menoufia" },
+      "borg-el-arab": { "name": "Borg El Arab and New Borg El Arab", "governorate": "Alexandria" },
+      "ain-sokhna": { "name": "Ain Sokhna, including the TEDA zone", "governorate": "Suez" },
+      "qantara-west": { "name": "Qantara West", "governorate": "Ismailia" },
+      "east-port-said": { "name": "East Port Said", "governorate": "Port Said" }
+    }
+  },
+  "locations": {
+    "egypt": "Egypt"
+  },
+  "company": {
+    "tagline": "PLC control systems and machine automation for factories in Egypt",
+    "addressLine": "6th of October City, Giza, Egypt",
+    "footerAbout": "Industrial automation engineers in 6th of October City. We design control panels, program PLCs, HMIs and SCADA, and commission machines and process lines across Egypt."
+  },
+  "notes": {
+    "brands": "Brand names and trademarks belong to their owners. Listing a brand means we program and integrate its products. It does not mean a partnership.",
+    "anonymised": "Client names are withheld for confidentiality. References can be arranged on request, with the client's permission.",
+    "preFounding": "Projects dated before 2025 were delivered by our engineers before Logic Controls was founded.",
+    "photos": "Photos are from the actual projects. Some logos and nameplates are blurred."
+  }
+}

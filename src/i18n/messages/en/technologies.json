@@ -1,0 +1,100 @@
+{
+  "seo": {
+    "title": "PLC, HMI & SCADA Platforms We Use | Logic Controls Egypt",
+    "description": "We program and integrate Siemens, Schneider Electric, Delta, LS Electric and Wecon PLCs, HMIs and drives, plus WinCC SCADA and Modbus networks."
+  },
+  "h1": "Platforms and technologies",
+  "intro": [
+    "We are not tied to one brand. We program and integrate five PLC and HMI platforms and choose the one that fits your machine, your budget and the spare parts you can get in Egypt.",
+    "Below are the platforms, drives, software and signals we work with, and the products we have used in recent projects."
+  ],
+  "brands": {
+    "title": "PLC and HMI platforms we program and integrate",
+    "productsLabel": "Used in our projects",
+    "items": {
+      "siemens": {
+        "text": "S7-1200 PLCs with WinCC Professional SCADA for process machines and plants, as in our tablet coating and concrete batching projects. We have also commissioned S7-200 SMART systems."
+      },
+      "schneider-electric": {
+        "text": "PLCs, Altivar variable-speed drives, stepper drives, and protection and control components. Schneider Electric stepper drives run the label dispensing on our labeling machine."
+      },
+      "delta": {
+        "text": "DVP-series PLCs for filling and labeling machines, chosen where a compact, cost-effective controller fits the job."
+      },
+      "ls-electric": {
+        "text": "PLCs for filling machines and sterilization autoclaves, and M100 variable-speed drives."
+      },
+      "wecon": {
+        "text": "PLCs and touch-screen HMIs used in most of our machine projects: pasteurizers, a cheese cooker, laundry washers, filling, labeling and test machines."
+      }
+    }
+  },
+  "drives": {
+    "title": "Drives and motion",
+    "text": "Variable-speed drives for conveyors, pumps, mixers, drums and fans, and stepper and motion control for positioning and synchronization.",
+    "items": [
+      "LS Electric M100 VFDs",
+      "Schneider Electric Altivar VFDs",
+      "VEICHI VFDs",
+      "Schneider Electric stepper drives",
+      "PLC-based motion control for synchronized positioning"
+    ]
+  },
+  "scada": {
+    "title": "SCADA, HMI and data",
+    "text": "From a single touch screen on a machine to a SCADA overview of a full process.",
+    "items": [
+      "Siemens WinCC Professional SCADA",
+      "Process mimics, recipes and alarm history on HMIs",
+      "Arabic, English and bilingual HMI screens",
+      "User log-in and access levels",
+      "Data logging and automatic test reports"
+    ]
+  },
+  "networks": {
+    "title": "Communication",
+    "text": "We connect PLCs, HMIs, drives and instruments over common industrial networks. We check every device's interface before we quote.",
+    "items": [
+      "Modbus RTU over RS-485",
+      "Modbus TCP",
+      "PROFINET for Siemens systems",
+      "Industrial Ethernet with managed and unmanaged switches"
+    ]
+  },
+  "signals": {
+    "title": "Signals and instruments",
+    "items": [
+      "Digital inputs and outputs: sensors, switches, valves and contactors",
+      "Analog signals: 4-20 mA and 0-10 V transmitters and positioners",
+      "Temperature sensors: RTD and thermocouple",
+      "Weighing with load cells for batching",
+      "Encoders and fast counters for length and position",
+      "Level, pressure and gas measurement on process systems"
+    ]
+  },
+  "otherBrands": {
+    "title": "Other equipment we have worked with",
+    "text": "On client machines we have also worked with MCGS HMIs, VEICHI drives, MEAN WELL power supplies and industrial Ethernet switches. If your machine uses another brand, send us the model and we will tell you what we can do."
+  },
+  "choosing": {
+    "title": "How we choose a platform",
+    "items": [
+      {
+        "title": "Spare parts in Egypt",
+        "text": "A controller is only as good as the replacement you can buy when it fails."
+      },
+      {
+        "title": "Your budget",
+        "text": "Cost-effective platforms for simple machines, and higher-end PLCs and SCADA where the process needs them."
+      },
+      {
+        "title": "Your team",
+        "text": "If your maintenance team already knows one brand, we take that into account."
+      },
+      {
+        "title": "The machine builder's standard",
+        "text": "For imported or OEM machines, we follow the platform the machine was designed for, unless there is a reason to change."
+      }
+    ]
+  }
+}

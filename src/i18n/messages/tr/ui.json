@@ -1,26 +1,101 @@
 {
   "nav": {
-    "home": "Home",
-    "services": "Services",
-    "industries": "Industries",
-    "projects": "Projects",
-    "about": "About",
-    "contact": "Contact",
-    "foreign": "Setting up in Egypt?"
+    "home": "Ana sayfa",
+    "services": "Hizmetler",
+    "industries": "Sektörler",
+    "projects": "Projeler",
+    "about": "Hakkımızda",
+    "contact": "İletişim",
+    "foreign": "Mısır'da fabrika mı kuruyorsunuz?",
+    "technologies": "Teknolojiler",
+    "privacy": "Gizlilik",
+    "servicesList": {
+      "controlPanels": "Kontrol panoları",
+      "plcHmi": "PLC ve HMI programlama",
+      "machineAutomation": "Makine otomasyonu",
+      "commissioning": "Devreye alma ve destek"
+    },
+    "industriesList": {
+      "foodBeverage": "Gıda ve içecek",
+      "pharma": "İlaç",
+      "cosmetics": "Kozmetik ve dolum",
+      "packaging": "Ambalaj"
+    }
   },
   "cta": {
-    "quote": "Request a quote",
-    "whatsapp": "WhatsApp an engineer",
-    "call": "Call us",
-    "email": "Email us"
+    "quote": "Teklif isteyin",
+    "whatsapp": "Bir mühendise WhatsApp'tan yazın",
+    "call": "Bizi arayın",
+    "email": "E-posta gönderin",
+    "emailEngineer": "Bir mühendise e-posta gönderin",
+    "learnMore": "Daha fazla bilgi",
+    "viewProject": "Projeyi görüntüle",
+    "viewAll": "Tümünü görüntüle",
+    "inEgyptWhatsapp": "Mısır'da mısınız? Bize WhatsApp'tan yazın"
   },
   "a11y": {
-    "skip": "Skip to content",
-    "menu": "Menu",
-    "closeMenu": "Close menu",
-    "language": "Language"
+    "skip": "İçeriğe geç",
+    "menu": "Menü",
+    "closeMenu": "Menüyü kapat",
+    "language": "Dil",
+    "mainNav": "Ana menü",
+    "footerNav": "Alt bilgi menüsü",
+    "breadcrumbs": "İçerik yolu",
+    "homeLink": "Logic Controls — ana sayfa",
+    "newTab": "yeni sekmede açılır",
+    "currentLanguage": "geçerli dil"
+  },
+  "whatsapp": {
+    "fabLabel": "WhatsApp'ta bir mühendisle görüşün",
+    "message": "Merhaba Logic Controls, bir otomasyon projesi hakkında bir mühendisle görüşmek istiyorum."
+  },
+  "email": {
+    "fabLabel": "Bir mühendise e-posta gönderin",
+    "subject": "Otomasyon projesi hakkında bilgi talebi"
+  },
+  "contact": {
+    "phone": "Telefon",
+    "email": "E-posta",
+    "whatsapp": "WhatsApp",
+    "address": "Adres",
+    "addressValue": "6 Ekim Şehri, Gize, Mısır"
   },
   "footer": {
-    "rights": "All rights reserved."
+    "pitch": "PLC kontrol panoları, HMI/SCADA ve makine otomasyonu — Mısır'daki kendi mühendislerimiz tarafından tasarlanır, üretilir, programlanır ve devreye alınır.",
+    "servicesTitle": "Hizmetler",
+    "industriesTitle": "Sektörler",
+    "companyTitle": "Şirket",
+    "contactTitle": "İletişim",
+    "zonesTitle": "Hizmet verdiğimiz sanayi bölgeleri",
+    "zones": "6 Ekim · 10. Ramazan · Sadat Şehri · Obour · Ain Sokhna (SCZONE)",
+    "facebook": "Facebook'ta Logic Controls",
+    "rights": "Tüm hakları saklıdır."
+  },
+  "platforms": {
+    "title": "Programladığımız ve entegre ettiğimiz platformlar",
+    "note": "Marka adları ve logolar sahiplerine aittir; yalnızca mühendislerimizin çalıştığı donanımı belirtmek için gösterilmektedir."
+  },
+  "gallery": {
+    "label": "Görsel görüntüleyici",
+    "open": "{total} görselden {n}. görseli aç",
+    "close": "Görsel görüntüleyiciyi kapat",
+    "prev": "Önceki görsel",
+    "next": "Sonraki görsel",
+    "counter": "{n} / {total}"
+  },
+  "video": {
+    "play": "Videoyu oynat",
+    "playNamed": "Videoyu oynat: {title}"
+  },
+  "faq": {
+    "title": "Sıkça sorulan sorular"
+  },
+  "process": {
+    "step": "Adım"
+  },
+  "notFound": {
+    "title": "Sayfa bulunamadı",
+    "body": "Aradığınız sayfa mevcut değil veya taşınmış.",
+    "home": "Ana sayfaya git"
   }
 }

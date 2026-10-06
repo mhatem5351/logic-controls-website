@@ -1,0 +1,102 @@
+---
+/**
+ * Closing call-to-action band (dark navy, angled top edge, blueprint grid, gear watermark).
+ * Defaults: "Request a quote" + "WhatsApp an engineer" (zh: email instead of WhatsApp) and the phone line.
+ */
+import { getMessages, type Locale } from "~/i18n";
+import { SITE } from "~/data/site";
+import Button from "./Button.astro";
+import BrandMark from "./BrandMark.astro";
+import Icon from "./Icon.astro";
+import Swoosh from "./Swoosh.astro";
+import { href as lhref, QUOTE_PATH, whatsappLink, mailtoLink, prefersEmail } from "./nav";
+
+interface Cta {
+  label: string;
+  href: string;
+}
+interface Props {
+  locale?: Locale;
+  title: string;
+  text?: string;
+  eyebrow?: string;
+  primary?: Cta;
+  secondary?: Cta | false;
+  /** Show phone + email under the buttons. */
+  contactLine?: boolean;
+  angle?: boolean;
+  id?: string;
+  class?: string;
+}
+
+const locale = (Astro.props.locale ?? Astro.currentLocale ?? "en") as Locale;
+const t = getMessages(locale).ui;
+const email = prefersEmail(locale);
+const {
+  title,
+  text,
+  eyebrow,
+  primary = { label: t.cta.quote, href: lhref(locale, QUOTE_PATH) },
+  secondary = email
+    ? { label: t.cta.emailEngineer, href: mailtoLink(t.email.subject) }
+    : { label: t.cta.whatsapp, href: whatsappLink(t.whatsapp.message) },
+  contactLine = true,
+  angle = true,
+  id,
+  class: className,
+} = Astro.props;
+const secondaryIsWa = secondary && secondary.href.startsWith("https://wa.me");
+---
+
+<section id={id} class:list={["on-dark relative isolate overflow-hidden bg-navy-950 py-section text-navy-100", angle && "angle-top", className]}>
+  <div aria-hidden="true" class="pointer-events-none absolute inset-0 -z-10 bg-blueprint mask-fade-edges" />
+  <div aria-hidden="true" class="pointer-events-none absolute inset-0 -z-20 bg-[radial-gradient(ellipse_60%_80%_at_80%_50%,rgb(5_86_173/0.35),transparent_70%)] rtl:bg-[radial-gradient(ellipse_60%_80%_at_20%_50%,rgb(5_86_173/0.35),transparent_70%)]" />
+  <BrandMark tone="mono" class="pointer-events-none absolute -end-16 top-1/2 -z-10 hidden h-[130%] w-auto -translate-y-1/2 text-white/[0.035] md:block" />
+  <div class="wrap">
+    <div class="max-w-3xl">
+      {
+        eyebrow && (
+          <p class="mb-4 flex items-center gap-3 type-label text-navy-200">
+            <span class="slant-bar text-signal-400" aria-hidden="true" />
+            <span>{eyebrow}</span>
+          </p>
+        )
+      }
+      <h2 class="type-h2 text-white" set:html={title} />
+      <Swoosh tone="light" class="mt-5 w-40" />
+      {text && <p class="mt-5 type-lead text-navy-200">{text}</p>}
+      <div class="mt-9 flex flex-wrap items-center gap-3">
+        <Button href={primary.href} size="lg" iconEnd="arrow" class="max-sm:w-full">{primary.label}</Button>
+        {
+          secondary && (
+            <Button
+              href={secondary.href}
+              size="lg"
+              variant="on-dark"
+              icon={secondaryIsWa ? "whatsapp" : "mail"}
+              iconClass={secondaryIsWa ? "text-[#25d366]" : "text-royal-300"}
+              external={secondaryIsWa}
+              class="max-sm:w-full"
+            >
+              {secondary.label}
+            </Button>
+          )
+        }
+      </div>
+      {
+        contactLine && (
+          <p class="mt-8 flex flex-wrap items-center gap-x-6 gap-y-2 text-sm text-navy-200">
+            <a href={`tel:${SITE.phone.tel}`} class="inline-flex min-h-6 items-center gap-2 hover:text-white">
+              <Icon name="phone" size={16} class="text-royal-300" />
+              <span class="ltr" dir="ltr">{SITE.phone.display}</span>
+            </a>
+            <a href={`mailto:${SITE.email}`} class="inline-flex min-h-6 items-center gap-2 hover:text-white">
+              <Icon name="mail" size={16} class="text-royal-300" />
+              <span class="ltr" dir="ltr">{SITE.email}</span>
+            </a>
+          </p>
+        )
+      }
+    </div>
+  </div>
+</section>

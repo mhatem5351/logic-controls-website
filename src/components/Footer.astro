@@ -1,0 +1,128 @@
+---
+/**
+ * Site footer: logo, pitch, nav columns, NAP (name/address/phone — identical everywhere for local SEO),
+ * WhatsApp (email on zh), Facebook, industrial zones, language list, © year.
+ */
+import { getMessages, type Locale } from "~/i18n";
+import { SITE } from "~/data/site";
+import Logo from "./Logo.astro";
+import Icon from "./Icon.astro";
+import LanguageSwitcher from "./LanguageSwitcher.astro";
+import { SERVICE_LINKS, INDUSTRY_LINKS, FOREIGN_PATH, href, whatsappLink, prefersEmail } from "./nav";
+
+interface Props {
+  locale: Locale;
+  path: string;
+}
+const { locale, path } = Astro.props;
+const t = getMessages(locale).ui;
+const year = new Date().getFullYear();
+const email = prefersEmail(locale);
+const company = [
+  { label: t.nav.about, path: "about" },
+  { label: t.nav.projects, path: "projects" },
+  { label: t.nav.technologies, path: "technologies" },
+  { label: t.nav.foreign, path: FOREIGN_PATH },
+  { label: t.nav.contact, path: "contact" },
+  { label: t.nav.privacy, path: "privacy" },
+];
+const linkCls = "inline-flex min-h-8 items-center text-navy-200 transition-colors hover:text-white";
+const headCls = "mb-4 type-label text-navy-300";
+---
+
+<footer class="on-dark relative isolate overflow-hidden bg-navy-950 pb-24 text-sm text-navy-200 lg:pb-10">
+  <div aria-hidden="true" class="pointer-events-none absolute inset-0 -z-10 bg-blueprint [mask-image:linear-gradient(to_bottom,#000,transparent_70%)]"></div>
+  <div aria-hidden="true" class="h-1 bg-[linear-gradient(90deg,var(--color-royal-600),var(--color-navy-800)_45%,transparent)] rtl:bg-[linear-gradient(-90deg,var(--color-royal-600),var(--color-navy-800)_45%,transparent)]"></div>
+
+  <div class="wrap pt-16 lg:pt-20">
+    <div class="grid gap-12 lg:grid-cols-12 lg:gap-8">
+      <div class="lg:col-span-3">
+        <a href={href(locale)} aria-label={t.a11y.homeLink} class="inline-block">
+          <Logo variant="dark" width={150} alt="" />
+        </a>
+        <p class="mt-6 max-w-sm text-[0.9375rem] leading-relaxed text-navy-200">{t.footer.pitch}</p>
+        <a href={SITE.facebook} target="_blank" rel="noopener" class="mt-6 inline-flex min-h-10 items-center gap-2.5 border border-white/15 px-3 text-navy-100 transition-colors hover:border-white/40 hover:text-white">
+          <Icon name="facebook" size={18} />
+          <span>{t.footer.facebook}</span>
+          <span class="sr-only">({t.a11y.newTab})</span>
+        </a>
+      </div>
+
+      <nav aria-label={t.a11y.footerNav} class="grid grid-cols-2 gap-8 sm:grid-cols-3 lg:col-span-6 lg:ps-6 xl:ps-10">
+        <div>
+          <h2 class={headCls}>{t.footer.servicesTitle}</h2>
+          <ul role="list" class="space-y-1">
+            {SERVICE_LINKS.map((l) => <li><a href={href(locale, l.path)} class={linkCls} aria-current={l.path === path ? "page" : undefined}>{t.nav.servicesList[l.key]}</a></li>)}
+          </ul>
+        </div>
+        <div>
+          <h2 class={headCls}>{t.footer.industriesTitle}</h2>
+          <ul role="list" class="space-y-1">
+            {INDUSTRY_LINKS.map((l) => <li><a href={href(locale, l.path)} class={linkCls} aria-current={l.path === path ? "page" : undefined}>{t.nav.industriesList[l.key]}</a></li>)}
+          </ul>
+        </div>
+        <div>
+          <h2 class={headCls}>{t.footer.companyTitle}</h2>
+          <ul role="list" class="space-y-1">
+            {company.map((l) => <li><a href={href(locale, l.path)} class={linkCls} aria-current={l.path === path ? "page" : undefined}>{l.label}</a></li>)}
+          </ul>
+        </div>
+      </nav>
+
+      <div class="lg:col-span-3">
+        <h2 class={headCls}>{t.footer.contactTitle}</h2>
+        <address class="not-italic">
+          <ul role="list" class="space-y-3">
+            <li class="flex gap-3">
+              <Icon name="map-pin" size={18} class="mt-0.5 text-royal-300" />
+              <span>
+                <span class="block font-semibold text-white">{SITE.name}</span>
+                {t.contact.addressValue}
+              </span>
+            </li>
+            <li>
+              <a href={`tel:${SITE.phone.tel}`} class="flex min-h-8 items-center gap-3 transition-colors hover:text-white">
+                <Icon name="phone" size={18} class="text-royal-300" />
+                <span class="sr-only">{t.contact.phone}:</span>
+                <span class="ltr" dir="ltr">{SITE.phone.display}</span>
+              </a>
+            </li>
+            <li>
+              <a href={`mailto:${SITE.email}`} class="flex min-h-8 items-center gap-3 transition-colors hover:text-white">
+                <Icon name="mail" size={18} class="text-royal-300" />
+                <span class="sr-only">{t.contact.email}:</span>
+                <span class="ltr" dir="ltr">{SITE.email}</span>
+              </a>
+            </li>
+            <li>
+              <a href={whatsappLink(t.whatsapp.message)} target="_blank" rel="noopener" class="flex min-h-8 items-center gap-3 transition-colors hover:text-white">
+                <Icon name="whatsapp" size={18} class="text-[#25d366]" />
+                {/* zh: WhatsApp is blocked in mainland China, so it is offered only to visitors already in Egypt */}
+                <span>{email ? t.cta.inEgyptWhatsapp : t.contact.whatsapp}</span>
+                <span class="sr-only">({t.a11y.newTab})</span>
+              </a>
+            </li>
+          </ul>
+        </address>
+      </div>
+    </div>
+
+    <div class="mt-14 grid gap-6 border-t border-white/10 pt-8 lg:grid-cols-[1fr_auto] lg:items-center">
+      <p class="flex items-start gap-3 text-navy-200">
+        <Icon name="factory" size={18} class="mt-0.5 text-signal-400" />
+        <span>
+          <span class="font-semibold text-white">{t.footer.zonesTitle}{locale === "zh" ? "：" : ":"}</span>{locale === "zh" ? "" : " "}
+          {t.footer.zones}
+        </span>
+      </p>
+      <LanguageSwitcher locale={locale} path={path} variant="inline" class="-ms-2 flex-wrap" />
+    </div>
+
+    <div class="mt-8 flex flex-wrap items-center justify-between gap-4 border-t border-white/10 pt-6 text-xs text-navy-300">
+      <p>
+        © <span class="ltr" dir="ltr">{year}</span> {SITE.name}. {t.footer.rights}
+      </p>
+      <p class="font-mono tracking-wider ltr" dir="ltr">PLC · HMI · SCADA · VFD</p>
+    </div>
+  </div>
+</footer>

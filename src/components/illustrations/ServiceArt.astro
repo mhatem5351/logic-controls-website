@@ -1,0 +1,39 @@
+---
+/**
+ * Animated illustration for a service.
+ *   <ServiceArt slug="control-panels" />                      decorative (aria-hidden), light palette
+ *   <ServiceArt slug="process-control" variant="dark" />      on a navy band (or omit: auto inside .on-dark)
+ *   <ServiceArt slug="scada-data-logging" label="…" size={320} />
+ * 4:3, width 100% of its container unless `size` is set. See STYLE.md.
+ */
+import type { ServiceSlug } from "~/data/services";
+import type { ArtProps } from "./types";
+import ControlPanels from "./services/ControlPanels.astro";
+import PlcHmiProgramming from "./services/PlcHmiProgramming.astro";
+import MachineAutomation from "./services/MachineAutomation.astro";
+import MachineRetrofits from "./services/MachineRetrofits.astro";
+import ProcessControl from "./services/ProcessControl.astro";
+import ScadaDataLogging from "./services/ScadaDataLogging.astro";
+import TestingCommissioning from "./services/TestingCommissioning.astro";
+import MaintenanceSupport from "./services/MaintenanceSupport.astro";
+
+interface Props extends ArtProps {
+  slug: ServiceSlug;
+}
+
+const ART = {
+  "control-panels": ControlPanels,
+  "plc-hmi-programming": PlcHmiProgramming,
+  "machine-automation": MachineAutomation,
+  "machine-retrofits": MachineRetrofits,
+  "process-control": ProcessControl,
+  "scada-data-logging": ScadaDataLogging,
+  "testing-commissioning": TestingCommissioning,
+  "maintenance-support": MaintenanceSupport,
+} satisfies Record<ServiceSlug, unknown>;
+
+const { slug, ...rest } = Astro.props;
+const Art = ART[slug];
+---
+
+{Art && <Art {...rest} />}

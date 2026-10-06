@@ -1,0 +1,154 @@
+---
+/* testing-commissioning — loop check: open panel (PLC, I/O, relays, terminal strip), multimeter on a
+   test bench with its probes on two terminals, commissioning checklist on a clipboard.
+   Loop 8 s, four checks (1.8 s each): selector steps → needle swings to the reading → the row is
+   ticked, the matching input LED lights and a pulse runs out to a field node → reset. */
+import Frame from "../ArtFrame.astro";
+import { uid, type ArtProps } from "../types";
+const p = Astro.props as ArtProps;
+const u = uid("tc");
+const K = [0, 1, 2, 3];
+const s = (k: number) => 0.2 + 1.8 * k;
+const pc = (t: number) => `${+((t / 8) * 100).toFixed(2)}%`;
+const read = [20, 35, -5, 28];
+const knob = [-60, -20, 20, 60];
+const ease = "cubic-bezier(.65,0,.35,1)";
+// needle: rises to the reading, holds, falls back to zero before the next check
+const needle =
+  `@keyframes tcN{0%{transform:rotate(-50deg)}` +
+  K.map((k) => `${pc(s(k) + 0.35)}{transform:rotate(-50deg)}${pc(s(k) + 1)},${pc(s(k) + 1.6)}{transform:rotate(${read[k]}deg)}`).join("") +
+  `${pc(s(3) + 1.8)},100%{transform:rotate(-50deg)}}`;
+const knobKf =
+  `@keyframes tcK{0%,${pc(s(0))}{transform:rotate(-120deg)}` +
+  K.map((k) => `${pc(s(k) + 0.3)},${k < 3 ? pc(s(k + 1)) : "94%"}{transform:rotate(${knob[k]}deg)}`).join("") +
+  `99%,100%{transform:rotate(-120deg)}}`;
+const tip = `@keyframes tcS{0%{opacity:0}` + K.map((k) => `${pc(s(k) + 0.35)}{opacity:1}${pc(s(k) + 1.6)}{opacity:0}`).join("") + `100%{opacity:0}}`;
+const perK = K.map(
+  (k) =>
+    `.lca-tc .k${k}{animation:tcT${k} 8s linear infinite}@keyframes tcT${k}{0%,${pc(s(k) + 1)}{stroke-dashoffset:100;opacity:1}${pc(s(k) + 1.3)},94%{stroke-dashoffset:0;opacity:1}97%,100%{stroke-dashoffset:0;opacity:0}}` +
+    `.lca-tc .o${k}{animation:tcO${k} 8s step-end infinite}@keyframes tcO${k}{0%{opacity:0}${pc(s(k) + 1)}{opacity:1}94%,100%{opacity:0}}`,
+).join("");
+// two traces, two pulses each (checks 0/2 → trace a, 1/3 → trace b)
+const pulse = (n: string, a: number, b: number) => {
+  const [a0, a1, b0, b1] = [s(a) + 1, s(a) + 1.6, s(b) + 1, s(b) + 1.6].map(pc);
+  const [ha, hb] = [s(a) + 1 + 0.6 * (100 / 112), s(b) + 1 + 0.6 * (100 / 112)];
+  return (
+    `.lca-tc .p.${n}{animation:tcP${n} 8s linear infinite}@keyframes tcP${n}{0%,${a0}{stroke-dashoffset:12}${a1}{stroke-dashoffset:-100}${pc(s(a) + 1.61)},${b0}{stroke-dashoffset:12}${b1},100%{stroke-dashoffset:-100}}` +
+    `.lca-tc .nd.${n},.lca-tc .pg.${n}{animation:tcR${n} 8s ease-out infinite}@keyframes tcR${n}{0%,${pc(ha - 0.05)}{opacity:0;transform:scale(1)}${pc(ha)}{opacity:1;transform:scale(1)}${pc(ha + 0.9)},${pc(hb - 0.05)}{opacity:0;transform:scale(2.4)}${pc(hb - 0.04)}{opacity:0;transform:scale(1)}${pc(hb)}{opacity:1;transform:scale(1)}${pc(hb + 0.9)},100%{opacity:0;transform:scale(2.4)}}`
+  );
+};
+const css =
+  `.lca-tc .nl{transform-box:view-box;transform-origin:248px 138px;animation:tcN 8s ${ease} infinite}${needle}` +
+  `.lca-tc .kn{transform-box:fill-box;transform-origin:center;animation:tcK 8s ${ease} infinite}${knobKf}` +
+  `.lca-tc .tp{animation:tcS 8s step-end infinite}${tip}` +
+  `.lca-tc .tk{stroke:var(--i-b);stroke-width:2;stroke-dasharray:100 100}${perK}` +
+  pulse("ta", 0, 2) +
+  pulse("tb", 1, 3) +
+  `.lca-tc .nd{transform-box:fill-box;transform-origin:center}.lca-tc .run{animation:tcB 1s step-end infinite}@keyframes tcB{0%,50%{opacity:1}51%,100%{opacity:.15}}` +
+  `.lca-tc .wr{stroke:var(--i-ln);stroke-dasharray:.9 4.1}.lca-tc .sl{stroke:var(--i-m);stroke-width:2.5;stroke-dasharray:1.2 3.3}` +
+  `@media (prefers-reduced-motion:reduce){.lca-tc .kn{transform:rotate(60deg)}.lca-tc .nl{transform:rotate(28deg)}}`;
+const ducts = [116, 166, 216];
+const relays = [0, 1, 2, 3, 4, 5, 6, 7].map((i) => 34 + i * 16);
+const ra = "M128 60V36L138 26H217";
+const rb = "M146 60V52L156 42H193";
+---
+
+<Frame {...p} uid={u} name="tc">
+  <style is:inline set:html={css}></style>
+
+  <path class="sh" d="M30 246H196L178 258H18ZM200 258H394L384 250H210Z"></path>
+
+  <!-- panel under test -->
+  <path class="t" d="M18 66 30 54H180L168 66Z"></path>
+  <path class="s" d="M168 66 180 54V246L168 258Z"></path>
+  <rect class="f" x="18" y="66" width="150" height="182"></rect>
+  <rect class="s" x="18" y="248" width="150" height="10"></rect>
+  <path class="s d" d="M24 72H29V237H162V242H24Z"></path>
+  <rect class="m d" x="29" y="72" width="133" height="165"></rect>
+  <g class="d">
+    <path d="M24 242 29 237"></path>
+    <rect class="m3" x="31" y="92" width="129" height="6"></rect>
+    <rect class="m3" x="31" y="142" width="129" height="6"></rect>
+    <rect class="m3" x="31" y="194" width="129" height="6"></rect>
+    <path class="wr bt" d="M34 113H158M34 163H158M34 213H158" stroke-width="6"></path>
+    {ducts.map((y) => <rect class="m2" x="31" y={y} width="129" height="10"></rect>)}
+    <path class="sl bt" d={ducts.map((y) => `M32 ${y + 2}H159M32 ${y + 8}H159`).join("")}></path>
+    <rect class="f" x="34" y="83" width="7" height="24"></rect><rect class="f" x="42" y="83" width="7" height="24"></rect><rect class="f" x="50" y="83" width="7" height="24"></rect>
+    <path class="b n" d="M35.5 90h4v6h-4zM43.5 90h4v6h-4zM51.5 90h4v6h-4z"></path>
+    <rect class="f" x="61" y="80" width="22" height="30"></rect>
+    <rect class="b" x="61" y="80" width="22" height="6"></rect>
+    <rect class="k" x="71" y="94" width="7" height="8"></rect>
+    <rect class="f" x="85" y="80" width="22" height="30"></rect>
+    <rect class="b" x="85" y="80" width="22" height="6"></rect>
+    <rect class="m" x="111" y="81" width="20" height="28"></rect>
+    <path class="l" d="M114 86h14M114 90h14M114 94h14"></path>
+    <rect class="f" x="135" y="80" width="22" height="30"></rect>
+    <rect class="b" x="135" y="80" width="22" height="6"></rect>
+    {relays.map((x) => <rect class="m2" x={x} y="155" width="13" height="6"></rect>)}
+    {relays.map((x) => <rect class="b2" x={x} y="131" width="13" height="25" rx="1.5"></rect>)}
+    <path class="l" d={relays.map((x) => `M${x + 3.5} 142h6M${x + 3.5} 146h6`).join("")}></path>
+    <path class="bt" d="M33 197H158" stroke-width="26" style="stroke:var(--i-m3);stroke-dasharray:4 1"></path>
+    <rect x="33" y="184" width="125" height="26"></rect>
+  </g>
+  <rect x="24" y="72" width="138" height="170"></rect>
+  <path d="M35 188H158M35 206H158" style="stroke-dasharray:0 5"></path>
+  <path d="M91 90V108M99 90V108M141 90V108M149 90V108M66 97V102" style="stroke:var(--i-s);stroke-width:2.6;stroke-dasharray:0 5.6"></path>
+  <circle class="y n run" cx="66" cy="91" r="1.5"></circle>
+  {K.map((k) => <circle class={`y n o${k}`} cx="91" cy={90 + k * 5.6} r="1.6"></circle>)}
+  <circle class="y n" cx="40" cy="137" r="1.5"></circle>
+
+  <!-- test bench -->
+  <path class="s d" d="M210 206 214 202V254L210 258ZM372 206 376 202V254L372 258Z"></path>
+  <rect class="m3 d" x="204" y="206" width="6" height="52"></rect>
+  <rect class="m3 d" x="366" y="206" width="6" height="52"></rect>
+  <path class="t" d="M200 200 210 190H386L376 200Z"></path>
+  <rect class="f" x="200" y="200" width="176" height="6"></rect>
+  <path class="s" d="M376 200 386 190V196L376 206Z"></path>
+
+  <!-- checklist on a clipboard -->
+  <path class="d" d="M362 120 378 194"></path>
+  <rect class="m3" x="292" y="74" width="72" height="120" rx="4"></rect>
+  <rect class="f d" x="298" y="84" width="60" height="104"></rect>
+  <rect class="m d" x="314" y="68" width="28" height="12" rx="2"></rect>
+  <path class="l" d="M306 95H338" stroke-width="2.5"></path>
+  <path class="h l" d="M306 101H326"></path>
+  {K.map((k) => <rect class="f d" x="305" y={109 + k * 18} width="10" height="10" rx="1"></rect>)}
+  <path class="h l" d={K.map((k) => `M321 ${112 + k * 18}H350M321 ${117 + k * 18}H${340 - (k % 2) * 8}`).join("")}></path>
+  {K.map((k) => <path class={`tk k${k}`} pathLength="100" d={`M307.5 ${114 + k * 18}l3 3 5.5-6.5`}></path>)}
+
+  <!-- multimeter -->
+  <path class="sh" d="M224 195H276L270 189H230Z"></path>
+  <rect class="b" x="222" y="104" width="52" height="91" rx="8"></rect>
+  <rect class="m d" x="227" y="109" width="42" height="81" rx="5"></rect>
+  <rect class="k d" x="231" y="114" width="34" height="27" rx="1.5"></rect>
+  <path class="q h" d="M234.2 126.4A18 18 0 0 1 261.8 126.4"></path>
+  <path class="q" d="M236.5 124.2A15 15 0 0 1 259.5 124.2" style="stroke-width:2;stroke-dasharray:.6 3.2;stroke-linecap:butt"></path>
+  <path class="e" d="M256.5 120.2l1.6-1.6" stroke-width="1.5"></path>
+  <path class="nl" d="M248 138V121" style="stroke:var(--i-sig);stroke-width:1.5"></path>
+  <circle class="y n" cx="248" cy="138" r="1.6"></circle>
+  <path class="ink n" d="M233.6 152.6a1.2 1.2 0 1 0 0 .1M236 163a1.2 1.2 0 1 0 0 .1M262.4 152.6a1.2 1.2 0 1 0 0 .1M260 163a1.2 1.2 0 1 0 0 .1M248 149a1.2 1.2 0 1 0 0 .1"></path>
+  <circle class="f d" cx="248" cy="163" r="10"></circle>
+  <g class="kn"><path d="M248 155V171" style="stroke:var(--i-m3);stroke-width:5"></path><circle class="ink n" cx="248" cy="156.5" r="1.3"></circle></g>
+  <circle class="k d" cx="236" cy="181" r="3"></circle>
+  <circle class="k d" cx="248" cy="181" r="3"></circle>
+  <circle class="k d" cx="260" cy="181" r="3"></circle>
+
+  <!-- leads + probes on two terminals -->
+  <path d="M236 184C236 232 180 238 150 204" style="stroke:var(--i-ink);stroke-width:1.6"></path>
+  <path d="M248 184C248 244 194 248 164 204" style="stroke:var(--i-b);stroke-width:1.6"></path>
+  <path d="M150 204 141 195" style="stroke:var(--i-ink);stroke-width:5"></path>
+  <path d="M164 204 155 195" style="stroke:var(--i-b);stroke-width:5"></path>
+  <path class="d" d="M141 195 131 189M155 195 146 189M139 199l4-4M153 199l4-4"></path>
+  <g class="y n tp"><circle cx="130.5" cy="188.5" r="2.2"></circle><circle cx="145.5" cy="188.5" r="2.2"></circle></g>
+
+  <!-- brand traces: tested inputs → field devices -->
+  <path class="tr" d={`${ra}${rb}`}></path>
+  <circle class="rn" cx="222" cy="26" r="5"></circle>
+  <circle class="rn" cx="198" cy="42" r="5"></circle>
+  <path class="p ta" pathLength="100" d={ra}></path>
+  <path class="p tb" pathLength="100" d={rb}></path>
+  <circle class="nd ta" cx="222" cy="26" r="2.5"></circle>
+  <circle class="pg ta" cx="222" cy="26" r="5"></circle>
+  <circle class="nd tb" cx="198" cy="42" r="2.5"></circle>
+  <circle class="pg tb" cx="198" cy="42" r="5"></circle>
+</Frame>

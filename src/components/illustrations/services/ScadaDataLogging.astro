@@ -1,0 +1,138 @@
+---
+/* scada-data-logging — SCADA workstation on a desk (plant mimic + three trend lines + alarm row),
+   data-logger rack, and three field controllers on a network of brand traces.
+   Loop 8 s: packets run from the field into the logger every ~0.9 s, each one stacks a record row;
+   trends draw across the screen, tank 2 fills until its high-level alarm blinks; then the log rolls over. */
+import Frame from "../ArtFrame.astro";
+import { uid, type ArtProps } from "../types";
+const p = Astro.props as ArtProps;
+const u = uid("sc");
+const rows = [0, 1, 2, 3, 4, 5, 6, 7];
+const at = (k: number) => +(((0.444 + 0.889 * k) / 8) * 100).toFixed(2);
+const css =
+  ".lca-sc .lad{stroke:var(--i-kl);stroke-width:1.25}" +
+  ".lca-sc .rw{transform-box:fill-box;transform-origin:0 50%}" +
+  rows.map((k) => `.lca-sc .r${k}{animation:scR${k} 8s step-end infinite}@keyframes scR${k}{0%{transform:scaleX(0)}${at(k)}%,100%{transform:none}}`).join("") +
+  ".lca-sc .rg{animation:scG 8s linear infinite}@keyframes scG{0%,92%{opacity:1}97%,100%{opacity:0}}" +
+  ".lca-sc .td{stroke-dasharray:100 100;animation:scT 8s linear infinite}@keyframes scT{0%{stroke-dashoffset:84;opacity:1}92%{stroke-dashoffset:0;opacity:1}97%,100%{stroke-dashoffset:0;opacity:0}}" +
+  ".lca-sc .l1,.lca-sc .l2{transform-box:fill-box;transform-origin:50% 100%;animation:scL1 8s ease-in-out infinite}.lca-sc .l2{animation-name:scL2}" +
+  "@keyframes scL1{0%,100%{transform:scaleY(.9)}90%{transform:scaleY(.3)}}@keyframes scL2{0%,100%{transform:scaleY(.3)}90%{transform:scaleY(.95)}}" +
+  ".lca-sc .al{animation:scA 8s step-end infinite}@keyframes scA{0%,56%{opacity:0}58%,66%,74%,82%{opacity:1}62%,70%,78%,86%,100%{opacity:0}}" +
+  ".lca-sc .bl{animation:scB .889s step-end calc(var(--s) * 1s + .444s) infinite}@keyframes scB{0%,35%{opacity:1}36%,100%{opacity:.15}}" +
+  ".lca-sc .fl2{stroke:var(--i-w);stroke-width:1.5;stroke-dasharray:2 4;animation:lca-fw .9s linear infinite}" +
+  "@media (prefers-reduced-motion:reduce){.lca-sc .l1,.lca-sc .l2{transform:scaleY(.6)}}";
+const field = ["M308 199V190L302 184H280", "M340 183V172L328 160H280", "M372 167V148L360 136H280"];
+const rings = [[308, 204], [340, 188], [372, 172]];
+---
+
+<Frame {...p} uid={u} name="sc">
+  <style is:inline set:html={css}></style>
+
+  <path class="sh" d="M12 258H214L206 250H20ZM226 258H296L284 246H238ZM294 258H394L386 252H300Z"></path>
+
+  <!-- desk -->
+  <path class="s d" d="M62 211 76 197V244L62 258Z"></path>
+  <rect class="f d" x="16" y="211" width="46" height="47"></rect>
+  <path class="d l" d="M16 227H62M16 243H62"></path>
+  <path class="d" d="M33 219h12M33 235h12M33 251h12"></path>
+  <path class="s d" d="M198 211 206 203V250L198 258Z"></path>
+  <rect class="m3 d" x="190" y="211" width="8" height="47"></rect>
+  <path class="t" d="M12 204 26 190H214L200 204Z"></path>
+  <rect class="f" x="12" y="204" width="188" height="7"></rect>
+  <path class="s" d="M200 204 214 190V197L200 211Z"></path>
+
+  <path class="f d" d="M30 202 36 196H82L76 202Z"></path>
+  <path class="h l" d="M38 199.5H76" style="stroke-dasharray:2 1.4"></path>
+  <!-- monitor -->
+  <path class="m3 d" d="M90 199 96 193H126L120 199Z"></path>
+  <rect class="m d" x="104" y="164" width="12" height="32"></rect>
+  <path class="t" d="M24 58 30 52H202L196 58Z"></path>
+  <path class="s" d="M196 62 202 56V160L196 166Z"></path>
+  <rect class="f" x="24" y="58" width="172" height="108" rx="4"></rect>
+  <rect class="k" x="32" y="66" width="156" height="86" rx="1.5"></rect>
+  <circle class="y n" cx="182" cy="159" r="1.6"></circle>
+  <rect x="32" y="66" width="156" height="6" class="n" style="fill:var(--i-kl);opacity:.16"></rect>
+  <path class="h q" d="M104 78V146" opacity=".35"></path>
+  <!-- mimic: two tanks, pump, valve -->
+  <rect class="w n l1" x="42" y="84" width="16" height="31" rx="3" opacity=".8"></rect>
+  <rect class="w n l2" x="78" y="84" width="16" height="31" rx="3" opacity=".8"></rect>
+  <path class="lad" d="M40 80V112a5 5 0 0 0 5 5h10a5 5 0 0 0 5-5V80M76 80V112a5 5 0 0 0 5 5h10a5 5 0 0 0 5-5V80M50 117V128H57.5M66.5 128H71M81 128H86V117"></path>
+  <path class="fl2" d="M50 117V128H86V117"></path>
+  <circle class="lad k" cx="62" cy="128" r="4.5"></circle>
+  <path class="sp" d="M62 125v3l2.6 1.5M62 128l-2.6 1.5" style="stroke:var(--i-kl);stroke-width:1.1;--t:1s"></path>
+  <path class="lad k" d="M71 124L81 132V124L71 132Z"></path>
+  <!-- trends -->
+  <path class="h q" d="M110 78V134H184" opacity=".6"></path>
+  <path class="h q" d="M110 92H184M110 106H184M110 120H184" style="stroke-dasharray:1 3" opacity=".4"></path>
+  <path class="td" pathLength="100" d="M110 126 120 124 128 128 140 120 150 122 160 114 170 116 184 110" style="stroke:var(--i-w);stroke-width:1.5"></path>
+  <path class="td q" pathLength="100" d="M110 100C122 98 128 106 140 104S158 96 168 98 178 104 184 102" stroke-width="1.5"></path>
+  <path class="td e" pathLength="100" d="M110 116C120 114 124 98 134 100S148 114 156 106 170 88 184 92" stroke-width="1.75"></path>
+  <!-- alarm row -->
+  <path class="h q" d="M36 140h34v8H36ZM74 140h34v8H74ZM112 140h34v8h-34ZM150 140h34v8h-34Z" opacity=".7"></path>
+  <rect class="w n" x="37" y="141" width="32" height="6" opacity=".55"></rect>
+  <rect class="y n al" x="75" y="141" width="32" height="6"></rect>
+
+  <!-- data logger rack -->
+  <path class="t" d="M226 128 238 116H284L272 128Z"></path>
+  <path class="s" d="M272 128 284 116V246L272 258Z"></path>
+  <path class="h l" d="M276 140l5-5M276 146l5-5M276 152l5-5"></path>
+  <rect class="f" x="226" y="128" width="46" height="130"></rect>
+  <rect class="s d" x="226" y="250" width="46" height="8"></rect>
+  <g class="d">
+    <rect class="m" x="230" y="134" width="38" height="10"></rect>
+    <rect class="m" x="230" y="147" width="38" height="10"></rect>
+    <rect class="m" x="230" y="160" width="38" height="10"></rect>
+    <rect class="k" x="230" y="176" width="38" height="68"></rect>
+  </g>
+  <path class="h l bt" d="M233 139H250M233 152H250M233 165H250" stroke-width="4" style="stroke-dasharray:1 2"></path>
+  <g class="y n">
+    <circle class="bl" cx="258" cy="139" r="1.6" style="--s:0"></circle>
+    <circle class="bl" cx="264" cy="139" r="1.6" style="--s:.3"></circle>
+    <circle class="bl" cx="258" cy="152" r="1.6" style="--s:.15"></circle>
+    <circle class="bl" cx="264" cy="152" r="1.6" style="--s:.45"></circle>
+    <circle class="bl" cx="258" cy="165" r="1.6" style="--s:.6"></circle>
+    <circle class="bl" cx="264" cy="165" r="1.6" style="--s:.75"></circle>
+  </g>
+  <g class="rg n">
+    {rows.map((k) => (
+      <g class={`rw r${k}`}>
+        <rect class="y" x="233" y={(237.6 - k * 7.4).toFixed(1)} width="4" height="3.4"></rect>
+        <rect x="239" y={(237.6 - k * 7.4).toFixed(1)} width={k % 3 === 1 ? 19 : 25} height="3.4" style="fill:var(--i-kl)" opacity=".85"></rect>
+      </g>
+    ))}
+  </g>
+
+  <!-- field controllers: remote I/O, compact PLC, drive -->
+  <path class="t" d="M294 220 300 214H322L316 220Z"></path>
+  <path class="s" d="M316 220 322 214V252L316 258Z"></path>
+  <rect class="f" x="294" y="220" width="22" height="38"></rect>
+  <rect class="b d" x="294" y="220" width="22" height="5"></rect>
+  <path d="M300 232V250M308 232V250" style="stroke:var(--i-s);stroke-width:2.4;stroke-dasharray:0 6"></path>
+  <circle class="y n bl" cx="300" cy="232" r="1.4" style="--s:.2"></circle>
+
+  <path class="t" d="M326 204 332 198H354L348 204Z"></path>
+  <path class="s" d="M348 204 354 198V252L348 258Z"></path>
+  <rect class="f" x="326" y="204" width="22" height="54"></rect>
+  <rect class="b d" x="326" y="204" width="22" height="6"></rect>
+  <rect class="k d" x="331" y="230" width="12" height="9"></rect>
+  <path d="M332 217H344M332 248H344" style="stroke:var(--i-s);stroke-width:2.4;stroke-dasharray:0 4"></path>
+  <circle class="y n bl" cx="332" cy="217" r="1.4" style="--s:.5"></circle>
+
+  <path class="t" d="M358 188 364 182H386L380 188Z"></path>
+  <path class="s" d="M380 188 386 182V252L380 258Z"></path>
+  <rect class="f" x="358" y="188" width="22" height="70"></rect>
+  <rect class="k d" x="362" y="194" width="14" height="8"></rect>
+  <rect class="y n bl" x="364" y="197" width="7" height="2" style="--s:.1"></rect>
+  <circle class="m d" cx="369" cy="214" r="4"></circle>
+  <path class="d l" d="M362 236h14M362 241h14M362 246h14"></path>
+
+  <!-- brand traces: field bus → logger, logger → SCADA -->
+  <path class="tr" d={`${field.join("")}M248 122V112L236 100H208`}></path>
+  {rings.map(([x, y]) => <circle class="rn" cx={x} cy={y} r="5"></circle>)}
+  <circle class="rn" cx="204" cy="100" r="4"></circle>
+  <g style="--t:2.667s">
+    {field.map((d, i) => <path class="p" pathLength="100" d={d} style={`--d:${(0.889 - i * 0.889).toFixed(3)}s`}></path>)}
+  </g>
+  <path class="p" pathLength="100" d="M248 122V112L236 100H208" style="--t:1.778s;--d:.4s"></path>
+  <circle class="nd" cx="204" cy="100" r="2" style="--t:1.778s;--d:.4s"></circle>
+</Frame>

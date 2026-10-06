@@ -10,11 +10,31 @@ const files = import.meta.glob<Record<string, unknown>>("./messages/*/*.json", {
 
 import type enUi from "./messages/en/ui.json";
 import type enSeo from "./messages/en/seo.json";
+import type enCommon from "./messages/en/common.json";
+import type enHome from "./messages/en/home.json";
+import type enServices from "./messages/en/services.json";
+import type enIndustries from "./messages/en/industries.json";
+import type enProjects from "./messages/en/projects.json";
+import type enForeign from "./messages/en/foreign.json";
+import type enTechnologies from "./messages/en/technologies.json";
+import type enAbout from "./messages/en/about.json";
+import type enContact from "./messages/en/contact.json";
+import type enPrivacy from "./messages/en/privacy.json";
 
 /** Extend this as namespaces are added (keeps `t.<ns>.<key>` fully typed from the English files). */
 export interface Messages {
   ui: typeof enUi;
   seo: typeof enSeo;
+  common: typeof enCommon;
+  home: typeof enHome;
+  services: typeof enServices;
+  industries: typeof enIndustries;
+  projects: typeof enProjects;
+  foreign: typeof enForeign;
+  technologies: typeof enTechnologies;
+  about: typeof enAbout;
+  contact: typeof enContact;
+  privacy: typeof enPrivacy;
   [namespace: string]: any;
 }
 

@@ -1,0 +1,33 @@
+---
+/**
+ * The Logic Controls logo (raster, derived from the client's original artwork — never redrawn or recoloured
+ * beyond the dark-background variant). `variant="dark"` is for navy/charcoal backgrounds.
+ */
+import { Image } from "astro:assets";
+import logoLight from "~/assets/brand/logo.png";
+import logoDark from "~/assets/brand/logo-dark.png";
+
+interface Props {
+  variant?: "light" | "dark";
+  /** Rendered CSS width in px (height follows the 794×335 aspect ratio). */
+  width?: number;
+  alt?: string;
+  class?: string;
+  loading?: "eager" | "lazy";
+}
+
+const { variant = "light", width = 124, alt = "Logic Controls", class: className, loading = "lazy" } = Astro.props;
+const src = variant === "dark" ? logoDark : logoLight;
+---
+
+<Image
+  src={src}
+  alt={alt}
+  width={width}
+  layout="fixed"
+  format="webp"
+  quality={90}
+  loading={loading}
+  decoding="async"
+  class:list={["block h-auto select-none", className]}
+/>

@@ -1,0 +1,58 @@
+---
+/**
+ * Proof figures as static text (never animated counters — crawlers must read the real numbers).
+ * A trailing symbol ("+", "%", "h") is highlighted with the signal accent.
+ * Adapts to dark sections; `band` renders its own navy band.
+ */
+interface Item {
+  value: string;
+  label: string;
+  /** Optional small print under the label (e.g. "since 2021"). */
+  note?: string;
+}
+interface Props {
+  items: Item[];
+  band?: boolean;
+  /** Accessible name for the list. */
+  label?: string;
+  class?: string;
+}
+const { items, band = false, label, class: className } = Astro.props;
+const split = (v: string) => {
+  const m = /^(.*\d)(\D*)$/.exec(v);
+  return m ? [m[1], m[2]] : [v, ""];
+};
+const cols = items.length >= 4 ? "lg:grid-cols-4" : items.length === 3 ? "sm:grid-cols-3" : "sm:grid-cols-2";
+---
+
+<div class:list={[band && "on-dark relative isolate bg-navy-950 py-12 sm:py-14", className]}>
+  {band && <div aria-hidden="true" class="pointer-events-none absolute inset-0 -z-10 bg-blueprint mask-fade-edges" />}
+  <dl class:list={["grid grid-cols-2 gap-y-10", cols, band && "wrap"]} aria-label={label}>
+    {
+      items.map((item, i) => {
+        const [main, suffix] = split(item.value);
+        return (
+          <div
+            class:list={[
+              "relative flex flex-col gap-2 px-4 sm:px-6",
+              i > 0 &&
+                "before:absolute before:inset-y-1 before:start-0 before:w-px before:-skew-x-[10deg] before:bg-charcoal-200 rtl:before:skew-x-[10deg] in-[.on-dark]:before:bg-white/15",
+              i % 2 === 0 && "max-sm:before:hidden",
+            ]}
+          >
+            <dt class="text-sm font-medium text-charcoal-600 in-[.on-dark]:text-navy-200">
+              {item.label}
+              {item.note && <span class="mt-1 block text-xs text-charcoal-600 in-[.on-dark]:text-navy-300">{item.note}</span>}
+            </dt>
+            <dd class="order-first type-stat text-navy-950 in-[.on-dark]:text-white">
+              <span class="ltr" dir="ltr">
+                {main}
+                {suffix && <span class="text-royal-600 in-[.on-dark]:text-signal-400">{suffix}</span>}
+              </span>
+            </dd>
+          </div>
+        );
+      })
+    }
+  </dl>
+</div>

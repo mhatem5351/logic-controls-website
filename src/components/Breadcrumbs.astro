@@ -1,0 +1,62 @@
+---
+/**
+ * Breadcrumb trail + JSON-LD BreadcrumbList. "Home" is prepended automatically.
+ * items: [{ label, path? }] — path is locale-less ("services"); the last item is the current page.
+ */
+import { getMessages, localePath, type Locale } from "~/i18n";
+import { SITE } from "~/data/site";
+import Icon from "./Icon.astro";
+
+interface Crumb {
+  label: string;
+  path?: string;
+}
+interface Props {
+  locale?: Locale;
+  items: Crumb[];
+  /** Emit the BreadcrumbList JSON-LD (default true). */
+  jsonLd?: boolean;
+  /** Landmark label override (only needed if a page shows two trails). */
+  label?: string;
+  class?: string;
+}
+const locale = (Astro.props.locale ?? Astro.currentLocale ?? "en") as Locale;
+const t = getMessages(locale).ui;
+const { items, jsonLd = true, label, class: className } = Astro.props;
+const trail: Crumb[] = [{ label: t.nav.home, path: "" }, ...items];
+const ld = {
+  "@context": "https://schema.org",
+  "@type": "BreadcrumbList",
+  itemListElement: trail.map((c, i) => ({
+    "@type": "ListItem",
+    position: i + 1,
+    name: c.label,
+    ...(c.path !== undefined ? { item: new URL(localePath(locale, c.path), SITE.url).href } : {}),
+  })),
+};
+---
+
+<nav aria-label={label ?? t.a11y.breadcrumbs} class:list={["text-sm", className]}>
+  <ol class="flex flex-wrap items-center gap-x-1.5 gap-y-1 text-charcoal-600 in-[.on-dark]:text-navy-300">
+    {
+      trail.map((c, i) => {
+        const last = i === trail.length - 1;
+        return (
+          <li class="flex items-center gap-1.5">
+            {i > 0 && <Icon name="chevron-right" size={14} class="opacity-60" />}
+            {last || c.path === undefined ? (
+              <span aria-current={last ? "page" : undefined} class:list={[last && "font-semibold text-navy-900 in-[.on-dark]:text-white"]}>
+                {c.label}
+              </span>
+            ) : (
+              <a href={localePath(locale, c.path)} class="inline-flex min-h-6 items-center underline-offset-4 hover:text-royal-700 hover:underline in-[.on-dark]:hover:text-white">
+                {c.label}
+              </a>
+            )}
+          </li>
+        );
+      })
+    }
+  </ol>
+  {jsonLd && <script type="application/ld+json" set:html={JSON.stringify(ld).replace(/</g, "\\u003c")} />}
+</nav>

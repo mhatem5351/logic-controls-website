@@ -1,0 +1,368 @@
+{
+  "index": {
+    "seo": {
+      "title": "Mısır'da Hizmet Verdiğimiz Sektörler | Logic Controls",
+      "description": "Mısır'da gıda ve süt, ilaç, kozmetik, ambalaj, yapı malzemeleri, endüstriyel çamaşırhane ve test ekipmanları için otomasyon. Projelerimizi inceleyin."
+    },
+    "h1": "Hizmet verdiğimiz sektörler",
+    "intro": [
+      "Her sektör sayfasında o sektörde neyin önemli olduğunu, otomasyonunu yaptığımız makine ve prosesleri ve tamamladığımız projeleri bulabilirsiniz.",
+      "Sektörünüz listede yok mu? Aynı kontrol prensipleri çoğu makine ve proses için geçerlidir. Ne işlettiğinizi bize anlatın."
+    ]
+  },
+  "items": {
+    "food-beverage": {
+      "title": "Gıda, içecek ve süt ürünleri",
+      "navTitle": "Gıda ve süt ürünleri",
+      "summary": "Gıda güvenliği ve tutarlı kalite için kontrol edilen CIP'li pastörizatörler, peynir pişirme makineleri, sterilizasyon otoklavları ve tesis yardımcı sistemleri.",
+      "seoTitle": "Mısır'da Gıda ve Süt Ürünleri Otomasyonu | Logic Controls",
+      "seoDescription": "Mısır'da pastörizatör, CIP, peynir pişirme, otoklav ve gıda tesisi yardımcı sistemleri için PLC kontrol. Sıcaklık, kilitleme, reçete, veri kaydı.",
+      "h1": "Gıda, içecek ve süt ürünleri tesisleri için otomasyon",
+      "intro": [
+        "Gıda güvenliği kontrole dayanır: her partide, doğru sürede doğru sıcaklık. Gıda ve süt sistemlerimiz proses set değerlerini korur, güvensiz ürünü geri tutar ve kalite ekibinizin kullanabileceği kayıtlar oluşturur.",
+        "İki pastörizatör, bir peynir pişirme makinesi ve bir zeytin sterilizasyon otoklavı için kontrol sistemleri teslim ettik; bir gıda ve içecek tesisinde de atık arıtma sistemini devreye aldık."
+      ],
+      "needs": [
+        {
+          "title": "Gıda güvenliği",
+          "text": "Pastörizasyon veya sterilizasyon koşulları sağlanana kadar ürünü bekleten veya geri yönlendiren kilitlemeler."
+        },
+        {
+          "title": "Tutarlı partiler",
+          "text": "Her ürün için reçeteler: sıcaklık, süre, karıştırma hızı ve karıştırma yönü."
+        },
+        {
+          "title": "Hijyen",
+          "text": "Makine programına entegre, kendi ekranları ve zamanlayıcıları olan CIP sekansları."
+        },
+        {
+          "title": "Kayıtlar",
+          "text": "Denetimler ve müşteri şikâyetleri için sıcaklıkların, çevrim sürelerinin ve alarmların kaydı."
+        }
+      ],
+      "applications": [
+        "Plakalı eşanjörlü süt pastörizatörleri",
+        "CIP (yerinde temizlik) sekansları",
+        "Adım reçeteli peynir pişirme makineleri",
+        "Otoklav ve retort sterilizasyonu",
+        "Dolum ve ambalaj makineleri",
+        "Atık ve atık su arıtma gibi tesis yardımcı sistemleri"
+      ],
+      "faq": [
+        {
+          "q": "Pastörizatörümüze CIP ekleyebilir misiniz?",
+          "a": "Vanalar ve pompalar uygunsa çoğu zaman evet. Önce boru hattını ve enstrümanları inceliyor, ardından CIP sekansını ve ekranlarını programa ekliyoruz."
+        },
+        {
+          "q": "Sistem, ürünün düşük sıcaklıkta işlendiği anları gösterebilir mi?",
+          "a": "Evet. Veri kaydı ve alarmlar sayesinde düşük sıcaklık olayları zaman ve değerleriyle kaydedilir; bekletme veya yönlendirme lojiği de güvensiz ürünün ilerlemesini engeller."
+        }
+      ],
+      "cta": {
+        "title": "Bir gıda veya süt prosesini mi otomatikleştiriyorsunuz?",
+        "text": "Ürünü, proses sıcaklıklarını ve sürelerini ve mevcut ekipmanınızı bize anlatın."
+      }
+    },
+    "pharmaceutical": {
+      "title": "İlaç",
+      "navTitle": "İlaç",
+      "summary": "SCADA'lı, formülasyon reçeteli ve kullanıcı girişli kaplama makineleri; ilaç hatları için şişe baskı ve ambalaj makineleri.",
+      "seoTitle": "Mısır'da İlaç Makineleri Otomasyonu | Logic Controls",
+      "seoDescription": "Mısır'daki ilaç tesislerinde tablet kaplama, şişe baskı ve ambalaj makineleri için SCADA ve PLC kontrolü. Reçeteler, alarmlar, kullanıcı erişimi, kayıtlar.",
+      "h1": "İlaç üretimi için otomasyon",
+      "intro": [
+        "İlaç üretimi tekrarlanabilir prosesler ve dokümantasyon gerektirir. Formülasyon reçeteleri, kullanıcı erişimi ve alarm geçmişi olan kontrol sistemleri kuruyoruz; böylece her parti aynı şekilde çalışır ve arkasında kayıt bırakır.",
+        "İlaç projelerimiz arasında Siemens S7-1200 PLC ve WinCC Professional SCADA ile çalışan bir tablet kaplama makinesi ve ilaç ve kozmetik şişelerine baskı yapan bir makinenin hareket kontrolü modernizasyonu var."
+      ],
+      "needs": [
+        {
+          "title": "Tekrarlanabilir prosesler",
+          "text": "Püskürtme debisi, tambur hızı, hava sıcaklığı ve proses süresi her formülasyonun ayarlarında tutulur."
+        },
+        {
+          "title": "Erişim kontrolü",
+          "text": "Kullanıcı girişi; böylece reçeteleri veya ayarları yalnızca yetkili personel değiştirir."
+        },
+        {
+          "title": "Alarm geçmişi",
+          "text": "İncelemeler ve değerlendirmeler için kullanıcı adlarıyla birlikte zaman damgalı alarmlar."
+        },
+        {
+          "title": "Dokümantasyon",
+          "text": "Kendi kalifikasyon çalışmalarınızı desteklemek için çizimler, I/O listeleri, fonksiyonel tanımlar ve test kayıtları."
+        }
+      ],
+      "applications": [
+        "Tablet film kaplama makineleri",
+        "VFD ile sürülen hava işleme üniteleri, üfleyiciler ve egzoz fanları",
+        "Şişe baskı ve etiketleme makineleri",
+        "Sıvı dolum makineleri",
+        "Sıcaklık ve basınç kontrollü proses üniteleri (skid)"
+      ],
+      "faq": [
+        {
+          "q": "GMP validasyonu veya 21 CFR Part 11 uyumluluğu sağlıyor musunuz?",
+          "a": "Hayır. Kontrol sistemini ve validasyon ekibinizin ihtiyaç duyduğu dokümanları sağlıyoruz: çizimler, I/O listeleri, fonksiyonel tanımlar ve test kayıtları. Resmi validasyon, kalite ekibinizin veya bir uzmanın sorumluluğundadır."
+        },
+        {
+          "q": "Yeni bir makinede makine üreticisiyle birlikte çalışabilir misiniz?",
+          "a": "Evet. Makine üreticisi mekaniği teslim ederken biz PLC, HMI ve SCADA'yı teslim edebiliriz."
+        }
+      ],
+      "cta": {
+        "title": "Bir ilaç prosesini mi otomatikleştiriyorsunuz?",
+        "text": "Makine tipini, kontrol etmeniz gereken proses parametrelerini ve dokümantasyon gereksinimlerinizi gönderin."
+      }
+    },
+    "cosmetics-personal-care": {
+      "title": "Kozmetik ve kişisel bakım",
+      "navTitle": "Kozmetik",
+      "summary": "Şampuan ve diğer sıvılar için dolum makineleri, şişe baskı ve etiketleme; hassas dolum ve hızlı ürün değişimiyle.",
+      "seoTitle": "Mısır'da Kozmetik Dolum Otomasyonu | Logic Controls",
+      "seoDescription": "Mısır'da şampuan ve sıvı dolum, şişe baskı ve etiketleme makineleri için PLC ve HMI kontrolü. Dolum hassasiyeti, reçeteler ve hızlı ürün değişimi.",
+      "h1": "Kozmetik ve kişisel bakım hatları için otomasyon",
+      "intro": [
+        "Kozmetik tesisleri aynı makinelerde çok sayıda ürün ve şişe boyutu çalıştırır. Üretim miktarını ve fireyi dolum hacmi, hız ve ürün değişim süresi belirler. Dolumları hassas tutan ve ürün değişimini HMI'da birkaç ayara indiren kontrol sistemleri kuruyoruz.",
+        "Biri LS Electric, diğeri Delta PLC ile çalışan ve her ikisi de Wecon HMI kullanan iki şampuan dolum makinesini otomatikleştirdik; bir şişe baskı makinesini de hareket kontrolüyle modernize ettik."
+      ],
+      "needs": [
+        {
+          "title": "Dolum hassasiyeti",
+          "text": "Dolum hacmi, nozul zamanlaması ve hız devreye almada ayarlanır ve her ürün için kaydedilir."
+        },
+        {
+          "title": "Hızlı ürün değişimi",
+          "text": "Şişe boyutu ve ürün ayarları reçete olarak kaydedilir."
+        },
+        {
+          "title": "Tek bir kontrollü sekans",
+          "text": "Şişe besleme, dolum ve tahliye tek sekansta; stoperler ve sensörlerle."
+        },
+        {
+          "title": "Operatör ekranları",
+          "text": "Sayaçlar, alarmlar ve ayar için manuel modla Arapça veya İngilizce HMI'lar."
+        }
+      ],
+      "applications": [
+        "Çok nozullu pistonlu dolum makineleri",
+        "Şişe baskı makineleri",
+        "Etiketleme makineleri",
+        "Konveyörler ve şişe taşıma"
+      ],
+      "faq": [
+        {
+          "q": "Yarı otomatik bir dolum makinesini otomatiğe çevirebilir misiniz?",
+          "a": "Çoğu zaman evet. Yarı otomatik bir dolum makinesine şişe sensörleri, stoperler ve otomatik sekans eklemek sık yapılan bir yükseltmedir. Önce mekaniği kontrol ediyoruz."
+        },
+        {
+          "q": "Tek bir makine birden fazla şişe boyutunda çalışabilir mi?",
+          "a": "Evet. Her ürün dolum hacmi, hızı ve zamanlamasıyla kaydedilir; operatör ürünü HMI'dan seçer."
+        }
+      ],
+      "cta": {
+        "title": "Bir dolum veya ambalaj hattı mı işletiyorsunuz?",
+        "text": "Makinenin kısa bir videosunu ve çalıştırdığınız ürünlerin ve şişe boyutlarının listesini gönderin."
+      }
+    },
+    "packaging-labeling": {
+      "title": "Ambalaj, etiketleme ve baskı",
+      "navTitle": "Ambalaj ve etiketleme",
+      "summary": "Senkronize hareket, ürün algılama ve reçetelerle çalışan etiketleme, dolum ve şişe baskı makineleri.",
+      "seoTitle": "Mısır'da Ambalaj ve Etiketleme Otomasyonu | Logic Controls",
+      "seoDescription": "Mısır'da etiketleme, dolum ve şişe baskı makineleri için kontrol sistemleri: step motor ve hareket kontrolü, eksik etiket algılama, reçeteler ve sayaçlar.",
+      "h1": "Ambalaj, etiketleme ve baskı makineleri için otomasyon",
+      "intro": [
+        "Ambalaj makineleri zamanlamaya bağlıdır: etiket şişeyle, baskı yüzeyle buluşmalı ve her ürün sayılmalıdır. Bu makineleri hatla uyum içinde tutan hareket, algılama ve lojiği tasarlıyoruz.",
+        "Ambalaj projelerimiz arasında Delta PLC, Wecon HMI ve Schneider Electric step motor sürücüleriyle çalışan bir etiketleme makinesi, bir şişe baskı makinesinin hareket kontrolü modernizasyonu ve iki dolum makinesi var."
+      ],
+      "needs": [
+        {
+          "title": "Senkronizasyon",
+          "text": "Etiket bırakma ve baskı, konveyör hızı ve ürün konumuyla senkronize."
+        },
+        {
+          "title": "Kalite kontrolleri",
+          "text": "Eksik veya kaymış etiketlerin algılanması."
+        },
+        {
+          "title": "Format değişimleri",
+          "text": "Etiket boyu, bırakma uzunluğu ve hızlar her ürün için kaydedilir."
+        },
+        {
+          "title": "Üretim takibi",
+          "text": "Vardiya veya parti bazında üretim için sayaçlar ve veri kaydı."
+        }
+      ],
+      "applications": [
+        "Kendinden yapışkanlı etiketleme makineleri",
+        "Şişe baskı makineleri",
+        "Pistonlu dolum makineleri",
+        "Konveyörler ve ürün taşıma"
+      ],
+      "faq": [
+        {
+          "q": "Eski bir etiketleme veya baskı makinesini modernize edebilir misiniz?",
+          "a": "Evet. Şişe baskı projemizde, makineyi değiştirmeden baskı hassasiyetini ve güvenilirliği artırmak için eski kontrol sistemini PLC ve hareket kontrolüyle değiştirdik."
+        },
+        {
+          "q": "Makine üreticileriyle çalışıyor musunuz?",
+          "a": "Evet. Yerel bir üreticinin ürettiği makinelerin kontrol sistemini tasarlayıp programlayabilir, üreticinin müşterisinde ilk çalıştırmaya destek verebiliriz."
+        }
+      ],
+      "cta": {
+        "title": "Ambalaj makinenizin hattınızla uyumlu çalışmasını mı istiyorsunuz?",
+        "text": "Makine tipini, hat hızınızı ve çalıştırdığınız ürün formatlarını gönderin."
+      }
+    },
+    "building-materials": {
+      "title": "Yapı malzemeleri",
+      "navTitle": "Yapı malzemeleri",
+      "summary": "Tartım, dozajlama, karıştırma sekansları, karışım reçeteleri ve SCADA ile izlenen beton santralleri.",
+      "seoTitle": "Mısır'da Beton Santrali Otomasyonu | Logic Controls",
+      "seoDescription": "Mısır'da beton santralleri için PLC ve SCADA kontrolü: çimento, agrega, su ve katkı maddesi dozajlama, karışım reçeteleri, izleme ve alarmlar.",
+      "h1": "Beton santralleri için otomasyon",
+      "intro": [
+        "Bir beton santrali her partide aynı karışımı üretmelidir. Tartım hassasiyeti, boşaltma zamanlaması ve karıştırma süresi beton kalitesini ve malzeme maliyetini belirler.",
+        "Siemens S7-1200 PLC ve WinCC Professional SCADA ile bir beton santrali kontrol sistemi teslim ettik: çimento, agrega, su ve katkı maddesi dozajlama, otomatik dozaj ve karıştırma sekansları ve farklı karışımlar için reçete yönetimi."
+      ],
+      "needs": [
+        {
+          "title": "Hassas dozajlama",
+          "text": "Her malzeme için hedef ağırlıklar; otomatik dozajlama ve boşaltma."
+        },
+        {
+          "title": "Karışım reçeteleri",
+          "text": "Her beton karışımı malzemeleri, ağırlıkları ve karıştırma süresiyle kaydedilir."
+        },
+        {
+          "title": "Santral genel görünümü",
+          "text": "Bunkerlerin, tartım haznelerinin, konveyörlerin ve mikserin durumunu gösteren SCADA ekranı."
+        },
+        {
+          "title": "Anlaşılır alarmlar",
+          "text": "Arızalar sade mesajlarla gösterilir; operatör neyi kontrol etmesi gerektiğini bilir."
+        }
+      ],
+      "applications": [
+        "Beton santralleri",
+        "Agrega, çimento ve su dozajlama",
+        "Katkı maddesi dozajlama",
+        "Mikser ve konveyör sekansları"
+      ],
+      "faq": [
+        {
+          "q": "Mevcut bir beton santralinin kontrol sistemini yenileyebilir misiniz?",
+          "a": "Evet. Kantarları, motorları ve mevcut panoyu inceliyor, ardından mekanik tesisi koruyarak kontrol sistemini ve SCADA'yı değiştiriyor veya yükseltiyoruz."
+        },
+        {
+          "q": "Sistem parti kayıtlarını saklayabilir mi?",
+          "a": "Parti verileri SCADA'da kaydedilebilir. İhtiyaç duyduğunuz kayıtlar ve raporlar her proje için ayrıca belirlenir."
+        }
+      ],
+      "cta": {
+        "title": "Beton santralinizi mi yenilemek istiyorsunuz?",
+        "text": "Kumanda odasının, panonun ve santral yerleşiminin fotoğraflarını ve dozajladığınız malzeme sayısını gönderin."
+      }
+    },
+    "commercial-laundry": {
+      "title": "Oteller ve endüstriyel çamaşırhaneler",
+      "navTitle": "Endüstriyel çamaşırhane",
+      "summary": "Düzenlenebilir yıkama programları, su seviyesi, sıcaklık ve kimyasal dozajlama ile endüstriyel çamaşır makinesi kontrolleri.",
+      "seoTitle": "Mısır'da Çamaşır Makinesi Kontrolü | Logic Controls",
+      "seoDescription": "Mısır'da otel ve endüstriyel çamaşır makineleri için PLC ve HMI kontrolü: yıkama programları, su seviyesi, sıcaklık, kimyasal dozajlama ve alarmlar.",
+      "h1": "Otel ve endüstriyel çamaşırhane makineleri için kontrol sistemleri",
+      "intro": [
+        "Otel çamaşırhanelerinde havlular, çarşaflar ve üniformalar farklı şekillerde yıkanır. İyi bir kontrolör, çamaşırhane yöneticisinin her programı bir kez ayarlamasını ve her seferinde aynı şekilde çalıştırmasını sağlar.",
+        "Çamaşır makineleri için düzenlenebilir çok adımlı programlar, su seviyesi ve sıcaklık kontrolü, kimyasal dozajlama ve güvenlik kilitlemeleri içeren Wecon PLC ve HMI kontrol sistemleri teslim ettik."
+      ],
+      "needs": [
+        {
+          "title": "Her yük için program",
+          "text": "Program başına en fazla 15 adım: ön yıkama, yıkama, durulama, boşaltma ve sıkma; her adımın kendi süresi, seviyesi, sıcaklığı ve kimyasalları."
+        },
+        {
+          "title": "Kimyasal dozajlama",
+          "text": "Beşe kadar kimyasal girişinde zamanlı dozajlama."
+        },
+        {
+          "title": "Güvenli çalışma",
+          "text": "Operatörleri ve makineyi koruyan kapı kilidi durumu, seviye kontrolü ve kilitlemeler."
+        },
+        {
+          "title": "Tutarlı sonuçlar",
+          "text": "Aynı program, daha az el emeğiyle her seferinde aynı yıkamayı sağlar."
+        }
+      ],
+      "applications": [
+        "Endüstriyel yıkama-sıkma makineleri",
+        "Otel çamaşırhaneleri",
+        "Kimyasal dozajlama",
+        "Mevcut çamaşır makinelerinde kontrolör değişimi"
+      ],
+      "faq": [
+        {
+          "q": "Mevcut çamaşır makinelerimizin kontrolörünü değiştirebilir misiniz?",
+          "a": "Çoğu durumda evet. Motor sürücüsünü, vanaları, seviye algılamayı ve kapı kilidini kontrol ediyor, ardından çamaşır türlerinize göre programlanmış bir PLC ve dokunmatik ekran takıyoruz."
+        },
+        {
+          "q": "Personelimiz yıkama programlarını düzenleyebilir mi?",
+          "a": "Evet. Programlar, PLC programını değiştirmeye gerek kalmadan dokunmatik ekrandan düzenlenir: adım tipi, süre, su seviyesi, sıcaklık ve kimyasallar."
+        }
+      ],
+      "cta": {
+        "title": "Otel veya endüstriyel çamaşırhane mi işletiyorsunuz?",
+        "text": "Çamaşır makinelerinizin modellerini ve kapasitelerini ve yıkadığınız çamaşır türlerini bize yazın."
+      }
+    },
+    "test-equipment": {
+      "title": "Endüstriyel test ekipmanları",
+      "navTitle": "Test ekipmanları",
+      "summary": "Tekrarlanabilir test sekansları ve otomatik test raporlarıyla test düzenekleri ve kalite kontrol makineleri.",
+      "seoTitle": "Mısır'da Test Düzeneği Otomasyonu | Logic Controls",
+      "seoDescription": "Mısır'da endüstriyel test düzenekleri için PLC ve HMI kontrolü: tekrarlanabilir test sekansları, canlı ölçümler, kalite kontrol için otomatik raporlar.",
+      "h1": "Test düzenekleri ve kalite kontrol ekipmanları için kontrol sistemleri",
+      "intro": [
+        "Bir test ancak tekrarlanabilir ve kayıt altındaysa işe yarar. Test düzeneklerini, her test aynı sekansı izleyecek ve elle yazmaya gerek kalmadan rapor üretecek şekilde otomatikleştiriyoruz.",
+        "Bir boru test makinesi için Wecon PLC ve HMI kontrol sistemi teslim ettik; sistem sıkma (make) ve sökme (break) değerlerini ft·lb ve psi cinsinden kaydediyor ve test raporlarını otomatik olarak oluşturuyor."
+      ],
+      "needs": [
+        {
+          "title": "Tekrarlanabilir testler",
+          "text": "Her seferinde aynı test sekansı ve aynı limitler."
+        },
+        {
+          "title": "Net ölçümler",
+          "text": "HMI'da canlı değerler ve bar grafikler."
+        },
+        {
+          "title": "Otomatik raporlar",
+          "text": "Kalite kontrol ve izlenebilirlik için sonuçlar her testte kaydedilir."
+        },
+        {
+          "title": "Dokümantasyon",
+          "text": "Müşterilerinizin ve denetçilerin inceleyebileceği kayıtlar."
+        }
+      ],
+      "applications": [
+        "Boru ve bağlantı test makineleri",
+        "Basınç test tezgâhları",
+        "Tork ve basınç ölçümü",
+        "Hat sonu kalite kontrol istasyonları"
+      ],
+      "faq": [
+        {
+          "q": "Test sonuçları dışa aktarılabilir mi?",
+          "a": "Sonuçlar HMI'da saklanabilir ve proje için belirlenen formatta, örneğin kalite kayıtlarınız için bir dosya olarak, dışa aktarılabilir."
+        },
+        {
+          "q": "Mekanik test düzeneğini de siz mi üretiyorsunuz?",
+          "a": "Hayır. Kontrol sistemini, enstrüman entegrasyonunu, HMI'yı ve raporları sağlıyoruz. Mekanik düzenek sizden veya bir makine üreticisinden gelir."
+        }
+      ],
+      "cta": {
+        "title": "Bir test düzeneğini mi otomatikleştiriyorsunuz?",
+        "text": "Testi, ölçtüğünüz değerleri ve ihtiyaç duyduğunuz raporu anlatın."
+      }
+    }
+  }
+}

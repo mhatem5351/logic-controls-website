@@ -1,0 +1,154 @@
+---
+/* test-equipment — pipe make/break torque & pressure rig: bench with a fixed backup vise and a
+   rotating make-up head gripping pipe + coupling, hydraulic power unit (gauge, sight glass, motor)
+   under the bench, HMI on a pedestal with make/break torque & pressure bar gauges, test report.
+   Loop 8 s: jaws clamp → command pulse → make-up (pipe turns, bars + gauge rise, hold) →
+   break-out (pipe turns back, second pair rises) → record pulse → report lines + tick → reset. */
+import Frame from "../ArtFrame.astro";
+import { uid, type ArtProps } from "../types";
+const p = Astro.props as ArtProps;
+const u = uid("te");
+const stripes = Array.from({ length: 20 }, (_, i) => `M${146 + i * 8} 168l40-80`).join("");
+const t1 = "M310 70H264L252 58";
+const t2 = "M201 230H306L322 214V133";
+const t3 = "M340 52V30H191";
+const bars = [
+  { x: 322, h: 38, c: "w", k: "b1" },
+  { x: 334, h: 24, c: "b2", k: "b2" },
+  { x: 352, h: 31, c: "w", k: "b3" },
+  { x: 364, h: 20, c: "b2", k: "b4" },
+];
+---
+
+<Frame {...p} uid={u} name="te">
+  <style is:inline>
+    .lca-te .jt{animation:teJt 8s cubic-bezier(.65,0,.35,1) infinite}
+    .lca-te .jb{animation:teJb 8s cubic-bezier(.65,0,.35,1) infinite}
+    .lca-te .st{animation:teSt 8s cubic-bezier(.45,0,.55,1) infinite}
+    .lca-te .bf{transform-box:fill-box;transform-origin:50% 100%}
+    .lca-te .b1{animation:teB1 8s cubic-bezier(.2,.7,.3,1) infinite}
+    .lca-te .b2{animation:teB2 8s cubic-bezier(.2,.7,.3,1) infinite}
+    .lca-te .b3{animation:teB3 8s cubic-bezier(.2,.7,.3,1) infinite}
+    .lca-te .b4{animation:teB4 8s cubic-bezier(.2,.7,.3,1) infinite}
+    .lca-te .ne{transform-box:fill-box;transform-origin:center;animation:teNe 8s cubic-bezier(.45,0,.55,1) infinite}
+    .lca-te .rl{stroke-dasharray:100 100;animation:teR 8s linear calc(var(--s) - 8s) infinite}
+    .lca-te .ok{stroke-dasharray:100 100;animation:teOk 8s linear infinite}
+    .lca-te .p.o1{animation:teP1 8s linear infinite}
+    .lca-te .nd.o1,.lca-te .pg.o1{animation:teN1 8s ease-out infinite}
+    .lca-te .p.o3{animation:teP3 8s linear infinite}
+    .lca-te .nd.o3,.lca-te .pg.o3{animation:teN3 8s ease-out infinite}
+    @keyframes teJt{0%{transform:translateY(-3px)}6%,88%{transform:none}96%,100%{transform:translateY(-3px)}}
+    @keyframes teJb{0%{transform:translateY(3px)}6%,88%{transform:none}96%,100%{transform:translateY(3px)}}
+    @keyframes teSt{0%,7.5%{transform:none}37.5%,45%{transform:translateY(48px)}70%,100%{transform:none}}
+    @keyframes teB1{0%,7.5%{transform:scaleY(0)}37.5%,88%{transform:scaleY(1)}94%,100%{transform:scaleY(0)}}
+    @keyframes teB2{0%,9%{transform:scaleY(0)}37.5%,88%{transform:scaleY(1)}94%,100%{transform:scaleY(0)}}
+    @keyframes teB3{0%,45%{transform:scaleY(0)}70%,88%{transform:scaleY(1)}94%,100%{transform:scaleY(0)}}
+    @keyframes teB4{0%,46.5%{transform:scaleY(0)}70%,88%{transform:scaleY(1)}94%,100%{transform:scaleY(0)}}
+    @keyframes teNe{0%,7.5%{transform:rotate(-70deg)}37.5%{transform:rotate(40deg)}45%{transform:rotate(-50deg)}70%{transform:rotate(25deg)}78%,100%{transform:rotate(-70deg)}}
+    @keyframes teR{0%,78%{stroke-dashoffset:100;opacity:1}82%,90%{stroke-dashoffset:0;opacity:1}95%,100%{stroke-dashoffset:0;opacity:0}}
+    @keyframes teOk{0%,84%{stroke-dashoffset:100;opacity:1}87%,90%{stroke-dashoffset:0;opacity:1}95%,100%{stroke-dashoffset:0;opacity:0}}
+    @keyframes teP1{0%,.5%{stroke-dashoffset:12}7%,100%{stroke-dashoffset:-100}}
+    @keyframes teN1{0%,6%{opacity:0;transform:scale(1)}6.5%{opacity:1;transform:scale(1)}16%,100%{opacity:0;transform:scale(2.4)}}
+    @keyframes teP3{0%,70%{stroke-dashoffset:12}77.5%,100%{stroke-dashoffset:-100}}
+    @keyframes teN3{0%,76.5%{opacity:0;transform:scale(1)}77%{opacity:1;transform:scale(1)}87%,100%{opacity:0;transform:scale(2.4)}}
+  </style>
+  <defs>
+    <clipPath id={`${u}c`}><rect x="190" y="137" width="110" height="22"></rect></clipPath>
+  </defs>
+
+  <!-- shadows -->
+  <path class="sh" d="M28 258H44L40 254H32ZM60 258H222L214 250H66ZM272 258H288L284 254H276ZM326 258H378L370 250H334Z"></path>
+
+  <!-- hydraulic power unit (under the bench) -->
+  <path class="t d" d="M96 220 106 210H206L196 220Z"></path>
+  <path class="s d" d="M196 220 206 210V248L196 258Z"></path>
+  <rect class="m d" x="96" y="220" width="100" height="38"></rect>
+  <rect class="f d" x="104" y="227" width="6" height="25" rx="2"></rect>
+  <rect class="b2 n" x="105.5" y="236" width="3" height="15" rx="1"></rect>
+  <path class="d l" d="M120 232h34M120 238h34"></path>
+  <circle class="f d" cx="176" cy="238" r="10"></circle>
+  <path class="h l" d="M169 245a10 10 0 1 1 14 0"></path>
+  <path class="e" d="M182 231.5l1.6-1.6" stroke-width="1.5"></path>
+  <path class="ne" d="M176 244V232" stroke-width="1.5"></path>
+  <circle class="m3 d" cx="201" cy="230" r="2.5"></circle>
+  <circle class="b d" cx="82" cy="234" r="9"></circle>
+  <path class="b d" d="M63.6 239.6 75.6 227.6 88.4 240.4 76.4 252.4Z"></path>
+  <circle class="m3 d" cx="70" cy="246" r="9"></circle>
+  <circle class="h l" cx="70" cy="246" r="4.5"></circle>
+  <path class="d" d="M88 240h8" stroke-width="3" style="stroke:var(--i-ink)"></path>
+
+  <!-- bench -->
+  <rect class="m3 d" x="24" y="206" width="12" height="52"></rect>
+  <rect class="m3 d" x="268" y="206" width="12" height="52"></rect>
+  <path class="t" d="M14 192 28 178H304L290 192Z"></path>
+  <path class="s" d="M290 192 304 178V192L290 206Z"></path>
+  <rect class="m" x="14" y="192" width="276" height="14"></rect>
+  <path d="M20 199H286" style="stroke:var(--i-ink);stroke-width:2;stroke-dasharray:0 12"></path>
+
+  <!-- pipe A, coupling, pipe B -->
+  <rect class="m" x="6" y="136" width="146" height="24"></rect>
+  <rect class="m" x="188" y="136" width="112" height="24"></rect>
+  <g class="m2 n"><rect x="7" y="152" width="144" height="7"></rect><rect x="189" y="152" width="110" height="7"></rect></g>
+  <g clip-path={`url(#${u}c)`}><path class="st h l" d={stripes}></path></g>
+  <path class="n" d="M8 141H150M190 141H298" style="stroke:var(--i-f);stroke-width:2"></path>
+  <path class="d" d="M296 139V157"></path>
+  <rect class="m" x="150" y="128" width="40" height="40"></rect>
+  <rect class="m2 n" x="151" y="156" width="38" height="11"></rect>
+  <path class="d" d="M156 128V168M184 128V168"></path>
+  <path class="n" d="M152 133H188" style="stroke:var(--i-f);stroke-width:2"></path>
+
+  <!-- backup vise (fixed) -->
+  <path class="t" d="M54 100 68 86H110L96 100Z"></path>
+  <path class="s" d="M96 100 110 86V178L96 192Z"></path>
+  <rect class="m" x="54" y="100" width="42" height="34"></rect>
+  <rect class="m" x="54" y="162" width="42" height="30"></rect>
+  <g class="jt"><rect class="m3 d" x="62" y="128" width="26" height="8"></rect></g>
+  <g class="jb"><rect class="m3 d" x="62" y="160" width="26" height="8"></rect></g>
+  <rect class="m d" x="64" y="62" width="16" height="26"></rect>
+  <rect class="m3 d" x="62" y="58" width="20" height="4" rx="1"></rect>
+
+  <!-- make-up / break-out head -->
+  <path class="t" d="M214 92 228 78H276L262 92Z"></path>
+  <path class="s" d="M262 92 276 78V178L262 192Z"></path>
+  <rect class="m" x="214" y="92" width="48" height="42"></rect>
+  <rect class="m" x="214" y="162" width="48" height="30"></rect>
+  <g class="jt"><rect class="m3 d" x="222" y="128" width="32" height="8"></rect></g>
+  <g class="jb"><rect class="m3 d" x="222" y="160" width="32" height="8"></rect></g>
+  <rect class="b n" x="215" y="93" width="46" height="7"></rect>
+  <path d="M220 109H256M220 182H256" style="stroke:var(--i-ink);stroke-width:2;stroke-dasharray:0 6"></path>
+  <rect class="m d" x="222" y="54" width="14" height="24"></rect>
+  <rect class="m3 d" x="220" y="50" width="18" height="4" rx="1"></rect>
+
+  <!-- HMI pedestal -->
+  <path class="t d" d="M326 250 334 242H386L378 250Z"></path>
+  <rect class="s d" x="326" y="250" width="52" height="8"></rect>
+  <rect class="m d" x="343" y="132" width="8" height="118"></rect>
+  <path class="t" d="M310 56 318 48H392L384 56Z"></path>
+  <path class="s" d="M384 56 392 48V124L384 132Z"></path>
+  <rect class="f" x="310" y="56" width="74" height="76" rx="4"></rect>
+  <rect class="k" x="316" y="62" width="62" height="62" rx="1"></rect>
+  <rect class="n" x="316" y="62" width="62" height="5" style="fill:var(--i-kl);opacity:.16"></rect>
+  <path class="h q" d="M347 72V120" opacity=".4"></path>
+  <path class="q" d="M322 71h20M352 71h20" stroke-width="2" opacity=".45"></path>
+  {bars.map((b) => <rect class="n" x={b.x} y="76" width="8" height="42" style="fill:var(--i-kl);opacity:.18"></rect>)}
+  {bars.map((b) => <rect class:list={[b.c, "n bf", b.k]} x={b.x} y={118 - b.h} width="8" height={b.h}></rect>)}
+
+  <!-- report sheet -->
+  <path class="f" d="M150 22H172L180 30V62H150Z"></path>
+  <path class="d" d="M172 22V30H180"></path>
+  {[34, 40, 46, 52].map((y, i) => <path class="d l rl" pathLength="100" d={`M155 ${y}H${i % 2 ? 169 : 175}`} style={`--s:${i * 0.15}s`}></path>)}
+  <path class="e ok" pathLength="100" d="M163 57l3 3 7-7" stroke-width="1.75"></path>
+
+  <!-- brand traces: HMI → head, pressure transducer → HMI, HMI → report -->
+  <path class="tr" d={t1 + t2 + t3}></path>
+  <circle class="rn" cx="248" cy="54" r="5"></circle>
+  <circle class="rn" cx="186" cy="30" r="5"></circle>
+  <circle class="rn" cx="201" cy="230" r="5"></circle>
+  <path class="p o1" pathLength="100" d={t1}></path>
+  <path class="p" pathLength="100" d={t2} style="--t:2s"></path>
+  <path class="p o3" pathLength="100" d={t3}></path>
+  <circle class="nd o1" cx="248" cy="54" r="2.5"></circle>
+  <circle class="pg o1" cx="248" cy="54" r="5"></circle>
+  <circle class="nd o3" cx="186" cy="30" r="2.5"></circle>
+  <circle class="pg o3" cx="186" cy="30" r="5"></circle>
+</Frame>

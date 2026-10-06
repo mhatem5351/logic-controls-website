@@ -1,0 +1,37 @@
+---
+/**
+ * Animated illustration for an industry.
+ *   <IndustryArt slug="food-beverage" />                      decorative (aria-hidden), light palette
+ *   <IndustryArt slug="pharmaceutical" variant="dark" />      on a navy band (or omit: auto inside .on-dark)
+ *   <IndustryArt slug="commercial-laundry" label="…" size="20rem" />
+ * 4:3, width 100% of its container unless `size` is set. See STYLE.md.
+ */
+import type { IndustrySlug } from "~/data/industries";
+import type { ArtProps } from "./types";
+import FoodBeverage from "./industries/FoodBeverage.astro";
+import Pharmaceutical from "./industries/Pharmaceutical.astro";
+import CosmeticsPersonalCare from "./industries/CosmeticsPersonalCare.astro";
+import PackagingLabeling from "./industries/PackagingLabeling.astro";
+import BuildingMaterials from "./industries/BuildingMaterials.astro";
+import CommercialLaundry from "./industries/CommercialLaundry.astro";
+import TestEquipment from "./industries/TestEquipment.astro";
+
+interface Props extends ArtProps {
+  slug: IndustrySlug;
+}
+
+const ART = {
+  "food-beverage": FoodBeverage,
+  pharmaceutical: Pharmaceutical,
+  "cosmetics-personal-care": CosmeticsPersonalCare,
+  "packaging-labeling": PackagingLabeling,
+  "building-materials": BuildingMaterials,
+  "commercial-laundry": CommercialLaundry,
+  "test-equipment": TestEquipment,
+} satisfies Record<IndustrySlug, unknown>;
+
+const { slug, ...rest } = Astro.props;
+const Art = ART[slug];
+---
+
+{Art && <Art {...rest} />}

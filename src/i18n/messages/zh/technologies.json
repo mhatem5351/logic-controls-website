@@ -1,0 +1,100 @@
+{
+  "seo": {
+    "title": "PLC、HMI 与 SCADA 技术平台 | Logic Controls 埃及",
+    "description": "我们编程和集成 Siemens、Schneider Electric、Delta、LS Electric 和 Wecon 的 PLC、HMI 与变频器，以及 WinCC SCADA 和 Modbus 网络。"
+  },
+  "h1": "平台与技术",
+  "intro": [
+    "我们不绑定任何单一品牌。我们编程和集成五个 PLC 与 HMI 平台，并根据您的设备、预算以及在埃及能买到的备件选择合适的平台。",
+    "以下是我们使用的平台、驱动、软件和信号类型，以及近期项目中用过的产品。"
+  ],
+  "brands": {
+    "title": "我们编程与集成的 PLC 和 HMI 平台",
+    "productsLabel": "项目中使用",
+    "items": {
+      "siemens": {
+        "text": "S7-1200 PLC 配合 WinCC Professional SCADA，用于工艺设备和工厂，例如我们的片剂包衣机和混凝土搅拌站项目。我们也调试过 S7-200 SMART 系统。"
+      },
+      "schneider-electric": {
+        "text": "PLC、Altivar 变频器、步进驱动器以及保护与控制元件。我们贴标机的出标就由 Schneider Electric 步进驱动器驱动。"
+      },
+      "delta": {
+        "text": "DVP 系列 PLC，用于灌装机和贴标机，适合需要紧凑、高性价比控制器的场合。"
+      },
+      "ls-electric": {
+        "text": "用于灌装机和杀菌釜的 PLC，以及 M100 变频器。"
+      },
+      "wecon": {
+        "text": "我们大多数设备项目使用的 PLC 和触摸屏 HMI：巴氏杀菌机、奶酪蒸煮锅、洗衣设备、灌装机、贴标机和测试设备。"
+      }
+    }
+  },
+  "drives": {
+    "title": "驱动与运动控制",
+    "text": "用于输送线、泵、搅拌器、滚筒和风机的变频器，以及用于定位和同步的步进与运动控制。",
+    "items": [
+      "LS Electric M100 变频器",
+      "Schneider Electric Altivar 变频器",
+      "VEICHI 变频器",
+      "Schneider Electric 步进驱动器",
+      "基于 PLC 的同步定位运动控制"
+    ]
+  },
+  "scada": {
+    "title": "SCADA、HMI 与数据",
+    "text": "从设备上的单台触摸屏，到整个工艺的 SCADA 总览。",
+    "items": [
+      "Siemens WinCC Professional SCADA",
+      "HMI 上的工艺流程画面、配方与历史报警",
+      "阿拉伯语、英语及双语 HMI 画面",
+      "用户登录与权限等级",
+      "数据记录与自动测试报告"
+    ]
+  },
+  "networks": {
+    "title": "通讯",
+    "text": "我们通过常用工业网络连接 PLC、HMI、变频器和仪表。报价前会核查每台设备的接口。",
+    "items": [
+      "基于 RS-485 的 Modbus RTU",
+      "Modbus TCP",
+      "用于 Siemens 系统的 PROFINET",
+      "配合网管型与非网管型交换机的工业以太网"
+    ]
+  },
+  "signals": {
+    "title": "信号与仪表",
+    "items": [
+      "数字量输入输出：传感器、开关、阀门和接触器",
+      "模拟量信号：4-20 mA 和 0-10 V 变送器及定位器",
+      "温度传感器：RTD 热电阻和热电偶",
+      "配料称量：称重传感器",
+      "用于长度和位置测量的编码器与高速计数",
+      "工艺系统中的液位、压力和气体测量"
+    ]
+  },
+  "otherBrands": {
+    "title": "我们用过的其他设备",
+    "text": "在客户设备上，我们还用过 MCGS 触摸屏、VEICHI 变频器、MEAN WELL 电源和工业以太网交换机。如果您的设备采用其他品牌，请发送型号，我们会告诉您能做什么。"
+  },
+  "choosing": {
+    "title": "我们如何选择平台",
+    "items": [
+      {
+        "title": "埃及的备件供应",
+        "text": "控制器好不好，要看它出故障时能否买到替换件。"
+      },
+      {
+        "title": "您的预算",
+        "text": "简单设备选用高性价比平台，工艺需要时选用更高端的 PLC 和 SCADA。"
+      },
+      {
+        "title": "您的团队",
+        "text": "如果您的维护团队已经熟悉某个品牌，我们会将其纳入考虑。"
+      },
+      {
+        "title": "设备制造商的标准",
+        "text": "对于进口设备或 OEM 设备，我们沿用设备原设计所用的平台，除非有理由更换。"
+      }
+    ]
+  }
+}

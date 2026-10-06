@@ -1,0 +1,127 @@
+---
+/* control-panels — the schematic sheet behind and the open cabinet built from it: MCBs, PSU, PLC + I/O,
+   VFD, contactor, relays, terminal strips, slotted ducts; stack light on top; three logo traces leave
+   through side glands. Loop 6 s: input LEDs → output LEDs → relays pull in (contactor closes, the same
+   rung lights on the drawing) → pulses run out to the field nodes. */
+import Frame from "../ArtFrame.astro";
+import { uid, type ArtProps } from "../types";
+const p = Astro.props as ArtProps;
+const u = uid("cp");
+const io = [0, 1, 2, 3, 4, 5, 6, 7];
+const ducts = [119, 172, 220];
+const tr = ["M268 178H288L300 166V134", "M268 196H300L320 176V114", "M268 214H312L340 186V94"];
+const rings = [[300, 128], [320, 108], [340, 88]];
+---
+
+<Frame {...p} uid={u} name="cp">
+  <style is:inline>
+    .lca-cp .o{animation:cpOn 6s calc(var(--s) - 6s) step-end infinite}
+    .lca-cp .run{animation:cpBl 1s step-end infinite}
+    .lca-cp .lamp{animation:cpBl 1.5s step-end infinite}
+    .lca-cp .vb{transform-box:fill-box;transform-origin:0 50%;animation:cpV 6s cubic-bezier(.65,0,.35,1) infinite}
+    .lca-cp .pl{animation:cpPl 6s calc(var(--s) - 6s) step-end infinite}
+    .lca-cp .dt{stroke-dasharray:0 5}
+    .lca-cp .wr{stroke:var(--i-ln);stroke-dasharray:.9 4.1}
+    .lca-cp .sl{stroke:var(--i-m);stroke-width:2.5;stroke-dasharray:1.2 3.3}
+    .lca-cp .sc{stroke:var(--i-ln);stroke-width:.9}
+    .lca-cp .rg{stroke-dasharray:100 100;animation:cpR 6s calc(var(--s) - 6s) linear infinite}
+    @keyframes cpR{0%{stroke-dashoffset:100;opacity:1}5%,40%{stroke-dashoffset:0;opacity:1}41%,100%{stroke-dashoffset:0;opacity:0}}
+    @keyframes cpOn{0%,40%{opacity:1}41%,100%{opacity:0}}
+    @keyframes cpBl{0%,50%{opacity:1}51%,100%{opacity:.15}}
+    @keyframes cpV{0%,100%{transform:scaleX(.2)}45%,70%{transform:scaleX(1)}}
+    @keyframes cpPl{0%,40%{transform:translateY(2px)}41%,100%{transform:none}}
+  </style>
+  <defs>
+    <!-- <use>d symbols: inline styles only (class selectors do not reach use instances) -->
+    <g id={`${u}c`}><rect style="fill:var(--i-f)" width="8" height="26"></rect><rect style="fill:var(--i-b);stroke:none" x="2" y="8" width="4" height="7"></rect></g>
+    <g id={`${u}y`}><rect style="fill:var(--i-m2)" y="24" width="13" height="6"></rect><rect style="fill:var(--i-b2)" width="13" height="25" rx="1.5"></rect><path style="stroke:var(--i-ln)" d="M3.5 11h6M3.5 15h6M3.5 19h6"></path></g>
+    <g id={`${u}i`}><rect style="fill:var(--i-f)" width="22" height="31"></rect><rect style="fill:var(--i-b)" width="22" height="6"></rect><path d="M7 10V27M15 10V27" style="stroke:var(--i-s);stroke-width:2.6;stroke-dasharray:0 5.67"></path></g>
+  </defs>
+  <g transform="translate(-12 4)">
+    <!-- schematic sheet (behind the cabinet) -->
+    <rect class="sh" x="27" y="57" width="84" height="90"></rect>
+    <rect class="f d" x="22" y="52" width="84" height="90"></rect>
+    <rect class="h l" x="27" y="57" width="74" height="80"></rect>
+    <path class="sc" d="M33 63V112M90 63V112M33 70H42M46 70H70M78 70H90M42 66V74M46 66V74M33 84H42M46 84H52M56 84H70M78 84H90M42 80V88M46 80V88M52 80V88M56 80V88M51 89L57 79M33 98H42M46 98H69M79 98H90M42 94V102M46 94V102M33 70V84M33 84V98"></path>
+    <circle class="sc" cx="74" cy="70" r="4"></circle><circle class="sc" cx="74" cy="84" r="4"></circle><circle class="sc" cx="74" cy="98" r="5"></circle>
+    <path class="h l" d="M64 120H101M64 128H101M64 120V137M80 128V137M30 122h22M30 128h16"></path>
+    <g class="e" style="--s:2.15s"><path class="rg" pathLength="100" d="M33 70H70" stroke-width="1.5"></path><circle class="o y n" cx="74" cy="70" r="2.2" style="--s:2.2s"></circle></g>
+    <!-- shadow + body -->
+    <path class="sh" d="M114 240H320L302 258H96Z"></path>
+    <path class="t" d="M96 70 114 52H274L256 70Z"></path>
+    <path class="s" d="M256 70 274 52V240L256 258Z"></path>
+    <path class="d l" d="M260 88l10-10M260 94l10-10M260 100l10-10"></path>
+    <rect class="f" x="96" y="70" width="160" height="176"></rect>
+    <rect class="s" x="96" y="246" width="160" height="12"></rect>
+    <!-- opening: side/bottom walls + recessed back plate -->
+    <path class="s d" d="M102 76H108V234H250V240H102Z"></path>
+    <rect class="m d" x="108" y="76" width="142" height="158"></rect>
+    <g class="d">
+      <path d="M102 240 108 234"></path>
+      <!-- DIN rails -->
+      <rect class="m3" x="110" y="93" width="138" height="6"></rect>
+      <rect class="m3" x="110" y="147" width="138" height="6"></rect>
+      <rect class="m3" x="110" y="198" width="138" height="6"></rect>
+      <!-- wire stubs (dash trick: one thick dashed stroke = a row of thin wires) -->
+      <path class="wr bt" d="M113 116H248M113 185H245M113 217H245" stroke-width="6"></path>
+      <path class="wr bt" d="M166 168H240" stroke-width="8" style="stroke-dashoffset:-4"></path>
+      <!-- ducts with comb slots -->
+      {ducts.map((y) => <rect class="m2" x="110" y={y} width="138" height="10"></rect>)}
+      <path class="sl bt" d={ducts.map((y) => `M111 ${y + 2}H247M111 ${y + 8}H247`).join("")}></path>
+      <!-- row A: MCBs, PSU, CPU, 2× I/O -->
+      <use href={`#${u}c`} x="113" y="83"></use><use href={`#${u}c`} x="122" y="83"></use><use href={`#${u}c`} x="131" y="83"></use><use href={`#${u}c`} x="140" y="83"></use>
+      <rect class="m" x="150" y="82" width="21" height="29"></rect>
+      <path class="l" d="M154 87h13M154 91h13M154 95h13"></path>
+      <circle class="y n" cx="166" cy="104" r="1.4"></circle>
+      <rect class="f" x="175" y="82" width="22" height="31"></rect>
+      <rect class="b" x="175" y="82" width="22" height="6"></rect>
+      <rect class="k" x="186" y="96" width="7" height="9"></rect>
+      <circle class="y n run" cx="180" cy="93" r="1.5"></circle>
+      <path d="M180 98V103" style="stroke:var(--i-s);stroke-width:2.6;stroke-dasharray:0 5"></path>
+      <use href={`#${u}i`} x="199" y="82"></use>
+      <use href={`#${u}i`} x="223" y="82"></use>
+      <!-- row B: VFD, contactor, relays -->
+      <rect class="f" x="113" y="131" width="26" height="38"></rect>
+      <rect class="k n" x="117" y="135" width="18" height="9"></rect>
+      <path class="l" d="M118 150h7M127 150h7"></path>
+      <circle class="m" cx="126" cy="160" r="4"></circle>
+      <path d="M126 160l2.4-2.4"></path>
+      <rect class="f" x="143" y="133" width="18" height="32"></rect>
+      <rect class="s" x="147" y="141" width="10" height="8"></rect>
+      <path class="dt" d="M146 137H158M146 161H158" style="stroke-dasharray:0 4"></path>
+      <use href={`#${u}y`} x="165" y="134"></use><use href={`#${u}y`} x="180" y="134"></use><use href={`#${u}y`} x="195" y="134"></use><use href={`#${u}y`} x="210" y="134"></use><use href={`#${u}y`} x="225" y="134"></use>
+      <!-- row C: terminal strips (dash trick for blocks + screw dots) -->
+      <path class="bt" d="M113 201H176M181 201H246" stroke-width="26" style="stroke:var(--i-m3);stroke-dasharray:4 1"></path>
+      <rect x="113" y="188" width="63" height="26"></rect>
+      <rect x="181" y="188" width="65" height="26"></rect>
+      <path class="dt" d="M115 192H176M183 192H246M115 210H176M183 210H246" stroke-width="2"></path>
+      <rect class="b n" x="177" y="186" width="3" height="30"></rect>
+    </g>
+    <rect x="102" y="76" width="148" height="164"></rect>
+    <!-- live signals inside the panel -->
+    {io.map((i) => <circle class="y n o" cx={206 + (i % 2) * 8} cy={92 + (i >> 1) * 5.67} r="1.5" style={`--s:${(i * 0.13).toFixed(2)}s`}></circle>)}
+    {io.map((i) => <circle class="y n o" cx={230 + (i % 2) * 8} cy={92 + (i >> 1) * 5.67} r="1.5" style={`--s:${(1.1 + i * 0.13).toFixed(2)}s`}></circle>)}
+    {[0, 1, 2, 3, 4].map((i) => <circle class="y n o" cx={171.5 + i * 15} cy="139" r="1.8" style={`--s:${(2.2 + i * 0.22).toFixed(2)}s`}></circle>)}
+    <rect class="y n vb" x="119" y="138.5" width="14" height="2"></rect>
+    <rect class="b n pl" x="149" y="142.5" width="6" height="3" style="--s:2.2s"></rect>
+    <!-- stack light -->
+    <g class="d">
+      <rect class="m3" x="134" y="56" width="12" height="4"></rect>
+      <rect class="m2" x="138.5" y="44" width="3" height="12"></rect>
+      <path class="m" d="M134 14V11.5Q140 9 146 11.5V14Z"></path>
+    </g>
+    <rect class="b" x="133" y="34" width="14" height="10" rx="1"></rect>
+    <rect class="f" x="133" y="24" width="14" height="10" rx="1"></rect>
+    <rect class="f" x="133" y="14" width="14" height="10" rx="1"></rect>
+    <rect class="y n lamp" x="134.5" y="15.5" width="11" height="7" rx=".5"></rect>
+    <!-- glands + brand traces -->
+    <g class="m3 d"><circle cx="265" cy="178" r="3"></circle><circle cx="265" cy="196" r="3"></circle><circle cx="265" cy="214" r="3"></circle></g>
+    <path class="tr" d={tr.join("")}></path>
+    {rings.map(([x, y]) => <circle class="rn" cx={x} cy={y} r="6"></circle>)}
+    <g style="--t:3s">
+      {tr.map((d, i) => <path class="p" pathLength="100" d={d} style={`--d:${0.1 + i * 0.2}s`}></path>)}
+      {rings.map(([x, y], i) => <circle class="nd" cx={x} cy={y} r="3" style={`--d:${0.1 + i * 0.2}s`}></circle>)}
+      {rings.map(([x, y], i) => <circle class="pg" cx={x} cy={y} r="6" style={`--d:${0.1 + i * 0.2}s`}></circle>)}
+    </g>
+  </g>
+</Frame>

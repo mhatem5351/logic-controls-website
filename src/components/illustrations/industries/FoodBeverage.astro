@@ -1,0 +1,146 @@
+---
+/* food-beverage — dairy pasteurizer: balance tank, end-suction pump, plate heat exchanger,
+   holding tube, temperature gauge, flow-diversion valve (FDV) and the control panel with a trend HMI.
+   Loop 9 s: product flows; temperature dips → interlock diverts flow (alarm lamp) → heating recovers
+   (plates glow) → back at set point → FDV switches to forward. Trend on the HMI draws the same story. */
+import Frame from "../ArtFrame.astro";
+import { uid, type ArtProps } from "../types";
+const p = Astro.props as ArtProps;
+const u = uid("fb");
+const plates = Array.from({ length: 13 }, (_, k) => 156 + k * 4);
+const plateLines = plates.slice(1).map((x) => `M${x} 134V244`).join("") + plates.slice(1).map((x) => `M${x} 134l18-18`).join("");
+const product = "M44 214V238H82M92 228V200H147M147 144H138V60H262a6 6 0 0 1 0 12H176a6 6 0 0 0 0 12H293";
+const fwd = "M307 84H322V250l7-7";
+const div = "M300 91V250l7-7";
+---
+
+<Frame {...p} uid={u} name="fb">
+  <style is:inline>
+    .lca-fb .po{stroke:var(--i-ink);stroke-width:7}
+    .lca-fb .pi{stroke:var(--i-m);stroke-width:4}
+    .lca-fb .pf{stroke:var(--i-w);stroke-width:2;stroke-dasharray:3 7;animation:lca-fw .7s linear infinite}
+    .lca-fb .fwd{animation:fbF 9s step-end infinite}
+    .lca-fb .dv{animation:fbD 9s step-end infinite}
+    .lca-fb .al{animation:fbA 9s step-end infinite}
+    .lca-fb .wv{animation:fbW 1.6s ease-in-out calc(var(--k) * -.12s) infinite}
+    .lca-fb .nd2{transform-box:fill-box;transform-origin:center;animation:fbNe 9s cubic-bezier(.45,0,.55,1) infinite}
+    .lca-fb .plug{transform-box:fill-box;transform-origin:center;animation:fbP 9s cubic-bezier(.65,0,.35,1) infinite}
+    .lca-fb .pos{animation:fbS 9s cubic-bezier(.65,0,.35,1) infinite}
+    .lca-fb .tl{transform-box:fill-box;transform-origin:50% 100%;animation:fbL 9s ease-in-out infinite}
+    .lca-fb .tr2{stroke-dasharray:100 100;animation:fbT 9s linear infinite}
+    .lca-fb .p.o1{animation:fbO 9s linear infinite}
+    .lca-fb .pg.o1,.lca-fb .nd.o1{animation:fbN 9s ease-out infinite}
+    @keyframes fbF{0%{opacity:1}24%{opacity:0}61%,100%{opacity:1}}
+    @keyframes fbD{0%{opacity:0}24%{opacity:1}61%,100%{opacity:0}}
+    @keyframes fbA{0%{opacity:0}24%,30%,36%,42%,48%,54%{opacity:1}27%,33%,39%,45%,51%,57%,100%{opacity:0}}
+    @keyframes fbW{0%,100%{opacity:.12}50%{opacity:.75}}
+    @keyframes fbNe{0%,20%{transform:rotate(35deg)}31%{transform:rotate(-38deg)}58%{transform:rotate(35deg)}80%{transform:rotate(31deg)}90%,100%{transform:rotate(35deg)}}
+    @keyframes fbP{0%,23%{transform:none}26%,59%{transform:rotate(90deg)}62%,100%{transform:none}}
+    @keyframes fbS{0%,23%{transform:none}26%,59%{transform:translateY(-4px)}62%,100%{transform:none}}
+    @keyframes fbL{0%,24%{transform:scaleY(.55)}61%{transform:scaleY(.8)}100%{transform:scaleY(.55)}}
+    @keyframes fbT{0%{stroke-dashoffset:100}96%,100%{stroke-dashoffset:0}}
+    @keyframes fbO{0%,19%{stroke-dashoffset:12}24%{stroke-dashoffset:-100}24.1%,56%{stroke-dashoffset:12}61%,100%{stroke-dashoffset:-100}}
+    @keyframes fbN{0%,23.5%{opacity:0;transform:scale(1)}24%{opacity:1;transform:scale(1)}34%,60.5%{opacity:0;transform:scale(2.4)}60.6%{opacity:0;transform:scale(1)}61%{opacity:1;transform:scale(1)}71%,100%{opacity:0;transform:scale(2.4)}}
+    @media (prefers-reduced-motion:reduce){.lca-fb .dv,.lca-fb .al{opacity:0}.lca-fb .nd2{transform:rotate(35deg)}.lca-fb .tl{transform:scaleY(.7)}.lca-fb .wv{opacity:.45}}
+  </style>
+  <defs>
+    <path id={`${u}a`} d={product}></path>
+    <path id={`${u}f`} d={fwd}></path>
+    <path id={`${u}d`} d={div}></path>
+  </defs>
+
+  <!-- shadows -->
+  <path class="sh" d="M22 258H82L74 250H30ZM142 258H284L276 248H150ZM336 258H404L396 248H344Z"></path>
+
+  <!-- balance tank -->
+  <path class="d" d="M26 190V258M62 190V258M22 258h8M58 258h8"></path>
+  <path class="m" d="M22 142Q44 118 66 142V196L48 214H40L22 196Z"></path>
+  <path class="n" d="M61.5 141V197" style="stroke:var(--i-m2);stroke-width:7"></path>
+  <path class="d" d="M22 142H66M22 196H66"></path>
+  <rect class="m3 d" x="40" y="124" width="8" height="5"></rect>
+  <rect class="f d" x="28" y="150" width="6" height="38" rx="2"></rect>
+  <rect class="w n tl" x="29.5" y="155" width="3" height="32" rx="1"></rect>
+
+  <!-- pump: volute in front, motor running back in depth -->
+  <rect class="m3 d" x="78" y="250" width="48" height="8"></rect>
+  <circle class="b" cx="110" cy="220" r="9"></circle>
+  <path class="b" d="M85.6 231.6 103.6 213.6 116.4 226.4 98.4 244.4Z"></path>
+  <path class="h" d="M96 228l12-12M100 232l12-12" style="stroke:var(--i-kl)"></path>
+
+  <!-- product pipes (outline / bore / flow) -->
+  <use href={`#${u}a`} class="po"></use>
+  <use href={`#${u}a`} class="pi"></use>
+  <use href={`#${u}a`} class="pf"></use>
+  <use href={`#${u}d`} class="po"></use>
+  <use href={`#${u}d`} class="pi"></use>
+  <g class="dv"><use href={`#${u}d`} class="pf"></use></g>
+  <use href={`#${u}f`} class="po"></use>
+  <use href={`#${u}f`} class="pi"></use>
+  <g class="fwd"><use href={`#${u}f`} class="pf"></use></g>
+
+  <circle class="m" cx="92" cy="238" r="10"></circle>
+  <path class="d sp" d="M92 238v-6M92 238l5.2 3M92 238l-5.2 3" style="--t:.9s"></path>
+
+  <!-- plate heat exchanger -->
+  <rect class="s d" x="142" y="250" width="18" height="8"></rect>
+  <path class="t" d="M146 128 164 110H174L156 128Z"></path>
+  <path class="s" d="M156 128 174 110V232L156 250Z"></path>
+  <rect class="m" x="146" y="128" width="10" height="122"></rect>
+  <path class="t" d="M156 134 174 116H226L208 134Z"></path>
+  <rect class="f" x="156" y="134" width="52" height="110"></rect>
+  {plates.map((x, k) => <rect class:list={["n wv", k % 2 ? "w" : "y"]} x={x} y="134" width="4" height="110" style={`--k:${k}`}></rect>)}
+  <path class="h" d={plateLines}></path>
+  <rect x="156" y="134" width="52" height="110" class="d"></rect>
+  <path class="t" d="M208 128 226 110H236L218 128Z"></path>
+  <path class="s" d="M218 128 236 110V232L218 250Z"></path>
+  <rect class="m" x="208" y="128" width="10" height="122"></rect>
+  <rect class="m3 d" x="227" y="115" width="35" height="6"></rect>
+  <rect class="m3 d" x="227" y="237" width="35" height="5"></rect>
+  <path class="s d" d="M270 106 274 102V254L270 258Z"></path>
+  <rect class="m d" x="262" y="106" width="8" height="152"></rect>
+  <path class="d" d="M142 131H222M142 247H222"></path>
+  <path class="d" d="M142 131h4M142 247h4M218 131h4M218 247h4" stroke-width="4" style="stroke:var(--i-ink);stroke-linecap:butt"></path>
+  <circle class="m3 d" cx="151" cy="144" r="4"></circle>
+  <circle class="m3 d" cx="151" cy="200" r="4"></circle>
+
+  <!-- temperature gauge on the holding-tube outlet -->
+  <path class="d" d="M280 81V77"></path>
+  <circle class="f" cx="280" cy="70" r="9"></circle>
+  <path class="h l" d="M273.6 76.4a9 9 0 1 1 12.8 0" transform="translate(0 0)"></path>
+  <path class="e" d="M284.2 63.6l1.6-2.2" stroke-width="1.5"></path>
+  <path class="nd2" d="M280 77V63" stroke-width="1.5"></path>
+
+  <!-- flow-diversion valve -->
+  <rect class="m3 d" x="291" y="46" width="18" height="4" rx="1"></rect>
+  <rect class="m d" x="293" y="50" width="14" height="22" rx="2"></rect>
+  <rect class="m3 d" x="298" y="72" width="4" height="6"></rect>
+  <rect class="b n pos" x="299" y="40" width="2" height="7"></rect>
+  <circle class="m" cx="300" cy="84" r="7"></circle>
+  <path class="plug" d="M295.5 84H304.5" stroke-width="2.5"></path>
+
+  <!-- control panel with trend HMI -->
+  <path class="t" d="M336 120 346 110H396L386 120Z"></path>
+  <path class="s" d="M386 120 396 110V248L386 258Z"></path>
+  <rect class="f" x="336" y="120" width="50" height="138"></rect>
+  <rect class="k d" x="342" y="128" width="38" height="28" rx="1"></rect>
+  <path class="h q" d="M345 136H377" style="stroke-dasharray:2 2" opacity=".7"></path>
+  <path class="e tr2" pathLength="100" d="M345 136H352L356 148Q360 150 365 136H377" stroke-width="1.5"></path>
+  <circle class="b d" cx="348" cy="168" r="3.2"></circle>
+  <circle class="f d" cx="361" cy="168" r="3.2"></circle>
+  <circle class="f d" cx="374" cy="168" r="3.2"></circle>
+  <circle class="y n al" cx="361" cy="168" r="2.3"></circle>
+  <circle class="y n fwd" cx="374" cy="168" r="2.3"></circle>
+  <circle class="m d" cx="361" cy="186" r="5"></circle>
+  <path class="d" d="M357.5 189.5l7-7"></path>
+  <rect class="m3 d" x="379" y="200" width="3" height="14" rx="1"></rect>
+  <path class="d l" d="M344 236h34M344 241h34M344 246h34"></path>
+
+  <!-- brand traces: gauge → panel (input), panel → FDV (output) -->
+  <path class="tr" d="M280 52V40H368V115M350 115V60H317"></path>
+  <circle class="rn" cx="280" cy="56" r="4"></circle>
+  <circle class="rn" cx="313" cy="60" r="4"></circle>
+  <path class="p" pathLength="100" d="M280 52V40H368V115" style="--t:3s"></path>
+  <path class="p o1" pathLength="100" d="M350 115V60H317"></path>
+  <circle class="nd o1" cx="313" cy="60" r="2"></circle>
+  <circle class="pg o1" cx="313" cy="60" r="4"></circle>
+</Frame>

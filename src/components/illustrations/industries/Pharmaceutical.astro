@@ -1,0 +1,146 @@
+---
+/* pharmaceutical — tablet coating pan in a cleanroom: perforated drum (front elevation) turning,
+   tablet bed tumbling on the rising side with a cascading surface layer, spray arm with three nozzles,
+   heated inlet-air duct and exhaust duct, SCADA operator panel with trend.
+   Loop 8 s: command pulse to the spray arm → spray cones on (atomised coating lands on the bed) →
+   stop pulse → spray off (drying); drum turns, exhaust-temperature signal pulses back to SCADA. */
+import Frame from "../ArtFrame.astro";
+import { uid, type ArtProps } from "../types";
+const p = Astro.props as ArtProps;
+const u = uid("rx");
+const C = [133, 164];
+const U = [0.94, 0.342]; // along the bed surface
+const N = [-0.342, 0.94]; // into the bed
+const M = [122.7, 192.25]; // chord midpoint (bed chord 172° → 48°)
+const pt = (s: number, d: number) => [+(M[0] + U[0] * s + N[0] * d).toFixed(1), +(M[1] + U[1] * s + N[1] * d).toFixed(1)];
+const inside = ([x, y]: number[], r: number) => Math.hypot(x - C[0], y - C[1]) < r;
+const rows = [7.5, 15, 22.5, 30].map((d, r) => {
+  const out: number[][] = [];
+  for (let s = -80; s <= 80; s += 10) {
+    const q = pt(s + (r % 2 ? 5 : 0), d);
+    if (inside(q, 60)) out.push(q);
+  }
+  return out;
+});
+const surf: number[][] = [];
+for (let s = -110; s <= 100; s += 10) surf.push(pt(s, 2.4));
+const noz = [-20, 0, 20].map((k) => pt(k, -25));
+const arm = "M133 164L223 74H262";
+const trend = "M310 152C320 150 326 140 336 141S356 145 366 139";
+const spray = "M310 160H318V146H350V160H366";
+---
+
+<Frame {...p} uid={u} name="rx">
+  <style is:inline>
+    .lca-rx .dr{transform-box:view-box;transform-origin:133px 164px;animation:lca-sp 8s linear infinite}
+    .lca-rx .jg{animation:rxJ 1.6s ease-in-out infinite}
+    .lca-rx .cas{animation:rxC .9s linear infinite}
+    .lca-rx .spr{animation:rxS 8s step-end infinite}
+    .lca-rx .dp{stroke:var(--i-w);stroke-width:1.5;stroke-dasharray:2 5;animation:rxD .35s linear infinite}
+    .lca-rx .air{stroke-dasharray:4 8;animation:rxA 1s linear infinite}
+    .lca-rx .tl{stroke-dasharray:100 100;animation:rxT 8s linear infinite}
+    .lca-rx .p.o1{animation:rxO 8s linear infinite}
+    .lca-rx .nd.o1,.lca-rx .pg.o1{animation:rxN 8s ease-out infinite}
+    @keyframes rxJ{0%,100%{transform:translate(-1.4px,-.5px)}50%{transform:translate(1.4px,.5px)}}
+    @keyframes rxC{to{transform:translate(9.4px,3.42px)}}
+    @keyframes rxS{0%{opacity:0}8%,62%{opacity:1}62.5%,100%{opacity:0}}
+    @keyframes rxD{to{stroke-dashoffset:-7}}
+    @keyframes rxA{to{stroke-dashoffset:-12}}
+    @keyframes rxT{0%{stroke-dashoffset:100}97%,100%{stroke-dashoffset:0}}
+    @keyframes rxO{0%,2%{stroke-dashoffset:12}8.5%{stroke-dashoffset:-100}8.6%,56%{stroke-dashoffset:12}62.5%,100%{stroke-dashoffset:-100}}
+    @keyframes rxN{0%,7.5%{opacity:0;transform:scale(1)}8%{opacity:1;transform:scale(1)}18%,61.5%{opacity:0;transform:scale(2.4)}61.6%{opacity:0;transform:scale(1)}62%{opacity:1;transform:scale(1)}72%,100%{opacity:0;transform:scale(2.4)}}
+  </style>
+  <defs>
+    <ellipse id={`${u}t`} rx="4.3" ry="2.8" transform="rotate(20)" style="fill:var(--i-b2);stroke-width:1"></ellipse>
+    <clipPath id={`${u}c`}><circle cx="133" cy="164" r="63"></circle></clipPath>
+    <path id={`${u}a`} d={arm}></path>
+  </defs>
+
+  <!-- cleanroom wall seams -->
+  <path class="h l" d="M10 6H390M18 6V258M282 6V258" opacity=".5"></path>
+
+  <!-- ducts: heated inlet air (left), exhaust (right) -->
+  <path class="s" d="M82 60 90 52V6H82Z"></path>
+  <rect class="m" x="66" y="6" width="16" height="54"></rect>
+  <path class="s" d="M212 60 220 52V6H212Z"></path>
+  <rect class="m" x="196" y="6" width="16" height="54"></rect>
+  <path class="d" d="M62 6h32M192 6h32" stroke-width="2.5"></path>
+  <path class="d" d="M64 18h20M64 22h20M194 18h20M194 22h20"></path>
+  <path class="e air" d="M74 10V56" stroke-width="1.6"></path>
+  <path class="l air" d="M204 56V10" stroke-width="1.6"></path>
+
+  <!-- shadows -->
+  <path class="sh" d="M30 258H272L254 240H48ZM300 258H400L386 248H310Z"></path>
+
+  <!-- coater cabinet -->
+  <path class="t" d="M30 66 48 48H254L236 66Z"></path>
+  <path class="s" d="M236 66 254 48V240L236 258Z"></path>
+  <rect class="m" x="30" y="66" width="206" height="184"></rect>
+  <rect class="s" x="30" y="250" width="206" height="8"></rect>
+  <rect class="d l" x="38" y="74" width="190" height="170" rx="6"></rect>
+  <path class="d l" d="M240 92l10-10M240 98l10-10M240 104l10-10"></path>
+
+  <!-- drum: mouth ring, interior, rotating perforations + baffles -->
+  <circle class="m2" cx="133" cy="164" r="74"></circle>
+  <circle class="s" cx="133" cy="164" r="64"></circle>
+  <g class="dr">
+    <g class="l bt" style="stroke-dasharray:0 6;stroke-linecap:round" stroke-width="1.6">
+      <circle cx="133" cy="164" r="57"></circle>
+      <circle cx="133" cy="164" r="48"></circle>
+      <circle cx="133" cy="164" r="39"></circle>
+      <circle cx="133" cy="164" r="30"></circle>
+    </g>
+    <path class="d" d="M133 100v10M133 228v-10M69 164h10M197 164h-10" stroke-width="3.5"></path>
+  </g>
+
+  <!-- tablet bed -->
+  <path class="b2 d" d="M69.6 172.9A64 64 0 0 0 175.8 211.6Z"></path>
+  <g clip-path={`url(#${u}c)`}>
+    {rows.map((row, r) => (
+      <g class="jg" style={`animation-delay:${(-r * 0.4).toFixed(1)}s;animation-direction:${r % 2 ? "reverse" : "normal"}`}>
+        {row.map(([x, y]) => <use href={`#${u}t`} x={x} y={y}></use>)}
+      </g>
+    ))}
+    <g class="cas">{surf.map(([x, y]) => <use href={`#${u}t`} x={x} y={y}></use>)}</g>
+  </g>
+  <circle cx="133" cy="164" r="64" class="d"></circle>
+  <circle cx="133" cy="164" r="74"></circle>
+
+  <!-- spray: cones + droplets (on while coating) -->
+  <g class="spr">
+    {noz.map(([x, y]) => <path class="w n" d={`M${x} ${y}l-1.4 27.1l-15-5.4z`} opacity=".35"></path>)}
+    {noz.map(([x, y]) => <path class="dp" d={`M${x} ${y}l-7 22`}></path>)}
+  </g>
+
+  <!-- spray arm + manifold + nozzles -->
+  <use href={`#${u}a`} style="stroke-width:7"></use>
+  <use href={`#${u}a`} style="stroke:var(--i-m);stroke-width:4"></use>
+  <path d={`M${pt(-29, -30).join(" ")}L${pt(29, -30).join(" ")}`} stroke-width="4.5"></path>
+  <path d={noz.map(([x, y]) => `M${(x + 1.7).toFixed(1)} ${(y - 4.7).toFixed(1)}L${x} ${y}`).join("")} stroke-width="3"></path>
+
+  <!-- SCADA operator panel -->
+  <path class="t" d="M300 116 310 106H386L376 116Z"></path>
+  <path class="s" d="M376 116 386 106V248L376 258Z"></path>
+  <rect class="f" x="300" y="116" width="76" height="142"></rect>
+  <rect class="k d" x="306" y="124" width="64" height="44" rx="1"></rect>
+  <rect class="n" x="306" y="124" width="64" height="6" style="fill:var(--i-kl);opacity:.16"></rect>
+  <path class="h q" d="M310 136H366" style="stroke-dasharray:2 2" opacity=".6"></path>
+  <path class="tl" pathLength="100" d={spray} style="stroke:var(--i-kl);stroke-width:1.25"></path>
+  <path class="e tl" pathLength="100" d={trend} stroke-width="1.5"></path>
+  <circle class="b d" cx="318" cy="184" r="4"></circle>
+  <circle class="f d" cx="338" cy="184" r="4"></circle>
+  <circle class="y n spr" cx="338" cy="184" r="2.8"></circle>
+  <circle class="m d" cx="358" cy="184" r="4"></circle>
+  <path class="d" d="M355.5 186.5l5-5"></path>
+  <rect class="m3 d" x="369" y="200" width="3" height="14" rx="1"></rect>
+  <path class="d l" d="M308 236h60M308 241h60M308 246h60"></path>
+
+  <!-- brand traces: SCADA → spray arm (output), exhaust temperature → SCADA (input) -->
+  <path class="tr" d="M326 111V87L313 74H272M231 40H338L350 52V111"></path>
+  <circle class="rn" cx="267" cy="74" r="5"></circle>
+  <circle class="rn" cx="226" cy="40" r="5"></circle>
+  <path class="p" pathLength="100" d="M231 40H338L350 52V111" style="--t:4s"></path>
+  <path class="p o1" pathLength="100" d="M326 111V87L313 74H272"></path>
+  <circle class="nd o1" cx="267" cy="74" r="2.5"></circle>
+  <circle class="pg o1" cx="267" cy="74" r="5"></circle>
+</Frame>

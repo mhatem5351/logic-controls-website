@@ -1,0 +1,486 @@
+---
+/**
+ * Internal styleguide (noindex, excluded from the sitemap). Shows every token and component in the page's locale.
+ * Section captions are English on purpose (internal tool); demo content is localised so RTL/CJK rendering can be checked.
+ */
+import type { ImageMetadata } from "astro";
+import BaseLayout from "~/layouts/BaseLayout.astro";
+import Hero from "~/components/Hero.astro";
+import Section from "~/components/Section.astro";
+import SectionHeading from "~/components/SectionHeading.astro";
+import Button from "~/components/Button.astro";
+import Card from "~/components/Card.astro";
+import Chips from "~/components/Chips.astro";
+import StatStrip from "~/components/StatStrip.astro";
+import LogoWall from "~/components/LogoWall.astro";
+import CtaBand from "~/components/CtaBand.astro";
+import FAQ from "~/components/FAQ.astro";
+import Breadcrumbs from "~/components/Breadcrumbs.astro";
+import ProcessSteps from "~/components/ProcessSteps.astro";
+import VideoPlayer from "~/components/VideoPlayer.astro";
+import Gallery from "~/components/Gallery.astro";
+import Icon, { type IconName } from "~/components/Icon.astro";
+import Logo from "~/components/Logo.astro";
+import BrandMark from "~/components/BrandMark.astro";
+import Swoosh from "~/components/Swoosh.astro";
+import CircuitTraces from "~/components/CircuitTraces.astro";
+import { INDUSTRY_LINKS, SERVICE_LINKS, href } from "~/components/nav";
+import { getMessages, localeStaticPaths, type Locale } from "~/i18n";
+
+export const getStaticPaths = localeStaticPaths;
+const locale = Astro.params.lang as Locale;
+const t = getMessages(locale).ui;
+
+/* Client photos (optional): only used when client-data/ is present. */
+const photoFiles = import.meta.glob<{ default: ImageMetadata }>(
+  "/client-data/facebook/photos/photo-{122107453653178639,122107453587178639,122126403375178639,122106295155178639,122128513203178639,122128513245178639,122107457697178639,122107477467178639,122126403471178639,122136605433178639}.jpg",
+  { eager: true },
+);
+const photo = (id: string) => photoFiles[`/client-data/facebook/photos/photo-${id}.jpg`]?.default;
+const P = {
+  panelVfd: photo("122107453653178639"),
+  filler: photo("122107453587178639"),
+  hmiLabel: photo("122126403375178639"),
+  panelPlc: photo("122106295155178639"),
+  hmiMachine: photo("122128513203178639"),
+  hmiLamps: photo("122128513245178639"),
+  pharma: photo("122107457697178639"),
+  autoclave: photo("122107477467178639"),
+  panelLamps: photo("122126403471178639"),
+  panelWide: photo("122136605433178639"),
+};
+
+const DEMO = {
+  en: {
+    heroTitle: "Design system &amp; <em>components</em>",
+    heroLead: "Tokens, motifs and every building block of the Logic Controls site — rendered in this page's language.",
+    services: [
+      ["Control panels", "Panels designed to the drawing, wired, labelled and tested in our workshop before they reach your line."],
+      ["PLC & HMI programming", "Clean, documented logic and operator screens your technicians can actually use — in Arabic and English."],
+      ["Machine automation", "Retrofits and new machines: sensors, drives, safety and recipes, commissioned on site."],
+    ],
+    industries: ["Filling, CIP and pasteurising lines", "Reactors, autoclaves and clean-room equipment", "Liquid and cream filling, capping, labelling", "Cartoning, wrapping and conveyors"],
+    projects: [
+      ["Shampoo filling line upgraded to PLC control", ["Cosmetics", "6th of October", "2026"]],
+      ["Bottle printing machine retrofit", ["Packaging", "10th of Ramadan", "2026"]],
+      ["Industrial laundry washer with Wecon HMI", ["Hospitality", "Cairo", "2025"]],
+    ],
+    stats: [["4+", "years of experience"], ["50+", "automation projects"], ["5", "PLC & HMI platforms"], ["4", "core industries"]],
+    steps: [
+      ["Site survey", "We visit the machine, list I/O and agree the scope."],
+      ["Design & drawings", "Electrical drawings and a fixed quotation for approval."],
+      ["Build & program", "Panel built and tested in our workshop; PLC and HMI programmed."],
+      ["Commission & support", "Start-up on site, operator training and fast follow-up."],
+    ],
+    faq: [
+      ["Which PLC brands do you work with?", "Mainly <strong>Siemens, Schneider Electric, Delta, LS Electric</strong> and <strong>Wecon</strong> HMIs. We pick the platform whose spare parts you can get quickly in Egypt."],
+      ["Can you upgrade an old machine instead of replacing it?", "Yes. Most retrofits keep the mechanics and replace relay logic with a PLC, new drives and an HMI."],
+      ["Do you deliver drawings and source code?", "Every project is handed over with electrical drawings, the PLC/HMI programs and an I/O list."],
+    ],
+    gallery: ["Control panel with VFD and PLC", "Liquid filling machine", "Wecon HMI on a labelling machine", "PLC control panel", "Operator panel on a machine", "HMI with pilot lamps"],
+    video: ["Shampoo filling line", "Hotel laundry HMI"],
+    ctaTitle: "Have a machine to automate?",
+    ctaText: "Send the nameplate photo or a drawing — an engineer replies the same working day.",
+    lorem: "Logic Controls designs, builds and commissions PLC control panels and machine automation for factories across Egypt's industrial zones.",
+  },
+  ar: {
+    heroTitle: "نظام التصميم و<em>المكوّنات</em>",
+    heroLead: "الألوان والعناصر البصرية وكل مكوّنات موقع Logic Controls — معروضة بلغة هذه الصفحة.",
+    services: [
+      ["لوحات التحكم", "لوحات مصممة وفق الرسومات، مجمّعة ومرقّمة ومختبرة في ورشتنا قبل وصولها إلى خط الإنتاج."],
+      ["برمجة PLC و HMI", "برمجة منظمة وموثّقة وشاشات تشغيل سهلة الاستخدام لفنييك — بالعربية والإنجليزية."],
+      ["أتمتة الماكينات", "تطوير الماكينات القديمة وأتمتة الماكينات الجديدة: حساسات وانفرترات ودوائر أمان ووصفات تشغيل، مع التشغيل في الموقع."],
+    ],
+    industries: ["خطوط التعبئة وأنظمة CIP والبسترة", "المفاعلات والأوتوكلاف ومعدات الغرف النظيفة", "تعبئة السوائل والكريمات وتركيب الأغطية ولصق الليبل", "التعبئة في كراتين والتغليف والسيور"],
+    projects: [
+      ["تطوير خط تعبئة شامبو بالتحكم عبر PLC", ["مستحضرات التجميل", "السادس من أكتوبر", "2026"]],
+      ["تطوير ماكينة طباعة على الزجاجات", ["التغليف", "العاشر من رمضان", "2026"]],
+      ["غسالة صناعية بشاشة Wecon", ["الفنادق", "القاهرة", "2025"]],
+    ],
+    stats: [["4+", "سنوات من الخبرة"], ["50+", "مشروع أتمتة"], ["5", "منصات PLC و HMI"], ["4", "قطاعات رئيسية"]],
+    steps: [
+      ["المعاينة في الموقع", "نعاين الماكينة ونحصر المداخل والمخارج (I/O) ونتفق على نطاق العمل."],
+      ["التصميم والرسومات", "رسومات كهربائية وعرض سعر ثابت للاعتماد."],
+      ["التصنيع والبرمجة", "تصنيع اللوحة واختبارها في ورشتنا وبرمجة PLC و HMI."],
+      ["التشغيل والدعم", "التشغيل في الموقع وتدريب المشغلين ومتابعة سريعة."],
+    ],
+    faq: [
+      ["ما ماركات PLC التي تعملون عليها؟", "نعمل أساسًا على <strong>Siemens</strong> و<strong>Schneider Electric</strong> و<strong>Delta</strong> و<strong>LS Electric</strong> وشاشات <strong>Wecon</strong>، ونختار المنصة التي تتوفر قطع غيارها بسرعة في مصر."],
+      ["هل يمكن تطوير ماكينة قديمة بدلًا من استبدالها؟", "نعم. في أغلب مشروعات التطوير نحتفظ بالأجزاء الميكانيكية ونستبدل دوائر الريليهات بـ PLC وانفرترات جديدة وشاشة HMI."],
+      ["هل تسلّمون الرسومات والبرامج؟", "يُسلَّم كل مشروع مع الرسومات الكهربائية وبرامج PLC و HMI وقائمة المداخل والمخارج (I/O)."],
+    ],
+    gallery: ["لوحة تحكم بها انفرتر و PLC", "ماكينة تعبئة سوائل", "شاشة Wecon على ماكينة ليبل", "لوحة تحكم PLC", "شاشة تشغيل على ماكينة", "شاشة HMI مع لمبات بيان"],
+    video: ["خط تعبئة شامبو", "شاشة مغسلة فندقية"],
+    ctaTitle: "لديك ماكينة تحتاج إلى أتمتة؟",
+    ctaText: "أرسل صورة لوحة بيانات الماكينة أو الرسومات — يرد عليك مهندس في نفس يوم العمل.",
+    lorem: "تصمم Logic Controls وتصنّع وتشغّل لوحات تحكم PLC وأنظمة أتمتة الماكينات للمصانع في المناطق الصناعية بمصر.",
+  },
+  zh: {
+    heroTitle: "设计系统与<em>组件</em>",
+    heroLead: "Logic Controls 网站的设计令牌、视觉元素与全部组件——以本页语言呈现。",
+    services: [
+      ["电气控制柜", "按图纸设计、接线、标识，并在出厂前于我们车间完成测试。"],
+      ["PLC 与 HMI 编程", "结构清晰、文档完整的程序与易用的操作界面，支持阿拉伯文和英文。"],
+      ["设备自动化", "旧设备改造与新设备集成：传感器、变频驱动、安全与配方，现场调试交付。"],
+    ],
+    industries: ["灌装、CIP 清洗与巴氏杀菌线", "反应釜、灭菌釜与洁净室设备", "液体与膏体灌装、旋盖、贴标", "装盒、裹包与输送线"],
+    projects: [
+      ["洗发水灌装线升级为 PLC 控制", ["化妆品", "十月六日城", "2026"]],
+      ["瓶身印刷机改造", ["包装", "斋月十日城", "2026"]],
+      ["配备 Wecon HMI 的工业洗衣机", ["酒店", "开罗", "2025"]],
+    ],
+    stats: [["4+", "年行业经验"], ["50+", "自动化项目"], ["5", "PLC/HMI 平台"], ["4", "核心行业"]],
+    steps: [
+      ["现场勘察", "现场查看设备，梳理 I/O 并确认工作范围。"],
+      ["设计与图纸", "提供电气图纸与固定报价供您确认。"],
+      ["制造与编程", "在车间完成控制柜制造与测试，并完成 PLC 与 HMI 编程。"],
+      ["调试与支持", "现场开机调试、操作培训与快速售后响应。"],
+    ],
+    faq: [
+      ["你们使用哪些 PLC 品牌？", "主要使用 <strong>Siemens、Schneider Electric、Delta、LS Electric</strong> 以及 <strong>Wecon</strong> 触摸屏。我们优先选择在埃及能快速采购备件的平台。"],
+      ["旧设备可以改造而不必更换吗？", "可以。大多数改造保留机械部分，用 PLC、新的驱动器和 HMI 取代继电器控制。"],
+      ["是否交付图纸和程序源文件？", "每个项目交付时均附电气图纸、PLC/HMI 程序以及 I/O 清单。"],
+    ],
+    gallery: ["带变频器和 PLC 的控制柜", "液体灌装机", "贴标机上的 Wecon HMI", "PLC 控制柜", "设备上的操作面板", "带指示灯的 HMI"],
+    video: ["洗发水灌装线", "酒店洗衣设备 HMI"],
+    ctaTitle: "有需要自动化的设备吗？",
+    ctaText: "发送设备铭牌照片或图纸——工程师将在同一工作日内回复。",
+    lorem: "Logic Controls 为埃及各工业区的工厂设计、制造并调试 PLC 电气控制柜与设备自动化系统。",
+  },
+  tr: {
+    heroTitle: "Tasarım sistemi ve <em>bileşenler</em>",
+    heroLead: "Logic Controls sitesinin renkleri, motifleri ve tüm yapı taşları — bu sayfanın dilinde.",
+    services: [
+      ["Kontrol panoları", "Çizime göre tasarlanan, kablolanan, etiketlenen ve hattınıza gelmeden atölyemizde test edilen panolar."],
+      ["PLC ve HMI programlama", "Düzenli, belgelenmiş yazılım ve teknisyenlerinizin kolayca kullanacağı operatör ekranları — Arapça ve İngilizce."],
+      ["Makine otomasyonu", "Modernizasyon ve yeni makineler: sensörler, sürücüler, emniyet ve reçeteler, sahada devreye alma."],
+    ],
+    industries: ["Dolum, CIP ve pastörizasyon hatları", "Reaktörler, otoklavlar ve temiz oda ekipmanları", "Sıvı ve krem dolum, kapaklama, etiketleme", "Kartonlama, sarma ve konveyörler"],
+    projects: [
+      ["Şampuan dolum hattı PLC kontrolüne geçirildi", ["Kozmetik", "6 Ekim", "2026"]],
+      ["Şişe baskı makinesi modernizasyonu", ["Ambalaj", "10. Ramazan", "2026"]],
+      ["Wecon HMI'lı endüstriyel çamaşır makinesi", ["Otelcilik", "Kahire", "2025"]],
+    ],
+    stats: [["4+", "yıllık deneyim"], ["50+", "otomasyon projesi"], ["5", "PLC ve HMI platformu"], ["4", "ana sektör"]],
+    steps: [
+      ["Saha incelemesi", "Makineyi yerinde inceler, I/O listesini çıkarır ve kapsamı belirleriz."],
+      ["Tasarım ve çizimler", "Onayınız için elektrik çizimleri ve sabit fiyat teklifi."],
+      ["Üretim ve programlama", "Pano atölyemizde üretilip test edilir; PLC ve HMI programlanır."],
+      ["Devreye alma ve destek", "Sahada devreye alma, operatör eğitimi ve hızlı destek."],
+    ],
+    faq: [
+      ["Hangi PLC markalarıyla çalışıyorsunuz?", "Ağırlıklı olarak <strong>Siemens, Schneider Electric, Delta, LS Electric</strong> ve <strong>Wecon</strong> HMI'larla. Yedek parçası Mısır'da hızla bulunabilen platformu seçeriz."],
+      ["Eski bir makineyi değiştirmek yerine modernize edebilir misiniz?", "Evet. Çoğu modernizasyonda mekanik aksam korunur; röle mantığı PLC, yeni sürücüler ve bir HMI ile değiştirilir."],
+      ["Çizimleri ve yazılımı teslim ediyor musunuz?", "Her proje elektrik çizimleri, PLC/HMI programları ve I/O listesiyle teslim edilir."],
+    ],
+    gallery: ["VFD ve PLC'li kontrol panosu", "Sıvı dolum makinesi", "Etiketleme makinesinde Wecon HMI", "PLC kontrol panosu", "Makinede operatör paneli", "Sinyal lambalı HMI"],
+    video: ["Şampuan dolum hattı", "Otel çamaşırhanesi HMI ekranı"],
+    ctaTitle: "Otomasyona ihtiyaç duyan bir makineniz mi var?",
+    ctaText: "Etiket plakasının fotoğrafını ya da bir çizim gönderin — bir mühendisimiz aynı iş günü içinde size yanıt verir.",
+    lorem: "Logic Controls, Mısır'ın sanayi bölgelerindeki fabrikalar için PLC kontrol panoları ve makine otomasyonu tasarlar, üretir ve devreye alır.",
+  },
+} as const;
+const d = DEMO[locale];
+
+const SCALES = {
+  royal: ["#f0f8ff", "#deefff", "#c1e0ff", "#95c6ff", "#5fa4fa", "#257ae0", "#0556ad", "#034393", "#023378", "#04255b", "#03163d"],
+  navy: ["#f0f6fd", "#deebfd", "#c1d6f6", "#96b6e8", "#628ed3", "#3267b8", "#1951a5", "#034091", "#012c75", "#061b45", "#040e27"],
+  charcoal: ["#fafafb", "#f3f3f6", "#e5e6eb", "#d1d2d8", "#a7a7ab", "#7e8087", "#6a6b72", "#4e4f58", "#363740", "#25262e", "#16161e"],
+  signal: ["#fff9e4", "#ffefbc", "#ffdd84", "#ffc64b", "#ffb02b", "#f79719", "#d6760c", "#af5b0b", "#8a4613", "#6d3714", "#492107"],
+} as const;
+const STEPS = [50, 100, 200, 300, 400, 500, 600, 700, 800, 900, 950];
+const SAMPLED: Record<string, string> = {
+  "royal-600": "logo · gear top",
+  "navy-700": "logo · brand blue (mean)",
+  "navy-800": "logo · gear bottom",
+  "charcoal-800": "logo · “Logic”",
+  "charcoal-600": "logo · traces",
+  "charcoal-400": "logo · swoosh",
+};
+const ICONS: IconName[] = ["panel", "plc", "hmi", "gear", "bolt", "flask", "bottle", "droplet", "box", "wrench", "shield", "globe", "phone", "mail", "whatsapp", "facebook", "arrow", "check", "map-pin", "clock", "factory", "traces", "gauge", "file", "users", "calendar", "send", "download", "thermometer", "layers", "play", "plus", "external", "chevron-right", "menu", "close"];
+const serviceIcons: IconName[] = ["panel", "plc", "gear"];
+const galleryImages: { src: ImageMetadata; alt: string }[] = [];
+[P.panelVfd, P.filler, P.hmiLabel, P.panelPlc, P.hmiMachine, P.hmiLamps].forEach((src, i) => {
+  if (src) galleryImages.push({ src, alt: d.gallery[i] ?? "" });
+});
+const cap = "mb-3 font-mono text-xs tracking-wider text-charcoal-600 uppercase in-[.on-dark]:text-navy-300";
+---
+
+<BaseLayout locale={locale} title="Styleguide" path="styleguide" noindex heroDark>
+  <Hero locale={locale} size="page" title={d.heroTitle} lead={d.heroLead} chips={["TOKENS", "MOTIFS", "COMPONENTS"]} primary={false} secondary={false}>
+    <Breadcrumbs slot="breadcrumbs" locale={locale} items={[{ label: "Styleguide" }]} jsonLd={false} />
+  </Hero>
+
+  {/* ------------------------------------------------ brand */}
+  <Section>
+    <SectionHeading index="01" eyebrow="Brand" title="Logo, mark &amp; swoosh" />
+    <div class="mt-10 grid gap-4 lg:grid-cols-3">
+      <div class="grid min-h-48 place-items-center border border-charcoal-200 bg-white p-8">
+        <Logo width={220} />
+      </div>
+      <div class="grid min-h-48 place-items-center bg-navy-950 p-8">
+        <Logo variant="dark" width={220} />
+      </div>
+      <div class="grid grid-cols-3 gap-4">
+        <div class="grid place-items-center border border-charcoal-200 p-4"><BrandMark class="h-20 w-auto" title="Logic Controls" /></div>
+        <div class="grid place-items-center bg-navy-950 p-4"><BrandMark tone="dark" class="h-20 w-auto" /></div>
+        <div class="grid place-items-center bg-navy-50 p-4 text-royal-600"><BrandMark tone="mono" class="h-20 w-auto" /></div>
+        <div class="col-span-3 grid place-items-center border border-charcoal-200 p-6"><Swoosh class="w-full max-w-72" /></div>
+      </div>
+    </div>
+  </Section>
+
+  {/* ------------------------------------------------ colour */}
+  <Section variant="muted">
+    <SectionHeading index="02" eyebrow="Colour" title="Palette sampled from the logo" lead="Royal · navy · charcoal come from the logo pixels; signal amber is the single accent (control-panel pilot lamp)." />
+    <div class="mt-10 space-y-6" lang="en">
+      {
+        Object.entries(SCALES).map(([name, hexes]) => (
+          <div>
+            <p class="mb-2 font-mono text-sm font-semibold text-navy-900">{name}</p>
+            <ul role="list" class="grid grid-cols-6 gap-1.5 sm:grid-cols-11">
+              {hexes.map((hex, i) => {
+                const key = `${name}-${STEPS[i]}`;
+                return (
+                  <li class="overflow-hidden border border-black/5 bg-white">
+                    <div class="flex h-16 items-end p-1.5" style={`background:${hex}`}>
+                      {SAMPLED[key] && <span class="lc-led !size-2" style="--led:var(--color-signal-400)" title={SAMPLED[key]} />}
+                    </div>
+                    <div class="px-1.5 py-1 font-mono text-[0.625rem] leading-tight text-charcoal-700">
+                      <span class="block font-semibold">{STEPS[i]}</span>
+                      <span class="block uppercase">{hex.slice(1)}</span>
+                    </div>
+                  </li>
+                );
+              })}
+            </ul>
+          </div>
+        ))
+      }
+      <p class="font-mono text-xs text-charcoal-600"><span class="lc-led !size-2 me-2 align-middle" style="--led:var(--color-signal-400)"></span>= sampled from logo-original.jpg</p>
+    </div>
+  </Section>
+
+  {/* ------------------------------------------------ type */}
+  <Section>
+    <SectionHeading index="03" eyebrow="Typography" title="Type scale" />
+    <div class="mt-10 divide-y divide-charcoal-200 border-y border-charcoal-200">
+      {
+        [
+          ["display", "type-display"],
+          ["h1", "type-h1"],
+          ["h2", "type-h2"],
+          ["h3", "type-h3"],
+          ["h4", "type-h4"],
+          ["lead", "type-lead"],
+          ["body", "text-base"],
+          ["small", "text-sm"],
+        ].map(([label, cls]) => (
+          <div class="grid gap-2 py-6 md:grid-cols-[8rem_1fr] md:items-baseline">
+            <p class="font-mono text-xs text-charcoal-600 uppercase" lang="en">{label}</p>
+            <p class:list={[cls, "text-navy-950"]}>{label === "body" || label === "small" || label === "lead" ? d.lorem : d.services[1]![0]}</p>
+          </div>
+        ))
+      }
+      <div class="grid gap-2 py-6 md:grid-cols-[8rem_1fr] md:items-baseline">
+        <p class="font-mono text-xs text-charcoal-600 uppercase" lang="en">label</p>
+        <p class="type-label text-royal-700">{t.nav.servicesList.plcHmi}</p>
+      </div>
+      <div class="grid gap-2 py-6 md:grid-cols-[8rem_1fr] md:items-baseline">
+        <p class="font-mono text-xs text-charcoal-600 uppercase" lang="en">code</p>
+        <p class="text-charcoal-700"><span class="type-code ltr" dir="ltr">LS XGB-DR16C · Wecon PI3070ig · 24 VDC · IP65</span></p>
+      </div>
+    </div>
+  </Section>
+
+  {/* ------------------------------------------------ motifs */}
+  <Section variant="muted">
+    <SectionHeading index="04" eyebrow="Motifs" title="Signature visual language" lead="10° italic slant · 45° chamfer · swoosh · circuit traces with ring nodes · blueprint grid · HMI spec chips with status LEDs." />
+    <div class="mt-10 grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+      <div class="flex min-h-40 flex-col justify-between border border-charcoal-200 bg-white p-6">
+        <p class={cap}>slant-bar</p>
+        <div class="flex items-center gap-3 text-royal-600"><span class="slant-bar" /><span class="slant-bar w-10" /><span class="slant-bar w-16 text-signal-500" /></div>
+      </div>
+      <div class="flex min-h-40 flex-col justify-between border border-charcoal-200 bg-white p-6">
+        <p class={cap}>chamfer / chamfer-lg</p>
+        <div class="flex gap-4"><div class="chamfer h-16 w-24 bg-navy-900" /><div class="chamfer-lg h-16 w-32 bg-royal-600" /></div>
+      </div>
+      <div class="flex min-h-40 flex-col justify-between border border-charcoal-200 bg-white p-6">
+        <p class={cap}>chips + led</p>
+        <div class="space-y-3">
+          <Chips items={["PLC", "HMI", "VFD", "SCADA"]} joined led />
+          <Chips items={["LS XGB", "Wecon PI", "Delta VFD"]} led="green" size="sm" />
+        </div>
+      </div>
+      <div class="on-dark relative min-h-56 overflow-hidden bg-navy-950 p-6 md:col-span-2">
+        <div class="absolute inset-0 bg-blueprint" />
+        <CircuitTraces corner="bottom-start" class="origin-bottom-left scale-75 rtl:origin-bottom-right" />
+        <p class={cap + " relative"}>blueprint + circuit traces (CSS pulses, reduced-motion safe)</p>
+      </div>
+      <div class="flex min-h-40 flex-col justify-between bg-navy-950 p-6">
+        <p class={cap + " text-navy-300"}>swoosh on dark</p>
+        <Swoosh tone="light" class="w-full" />
+      </div>
+    </div>
+  </Section>
+
+  <Section variant="dark" angle="both">
+    <SectionHeading index="05" eyebrow="Angled section" title={d.ctaTitle} lead={d.lorem} />
+  </Section>
+
+  {/* ------------------------------------------------ buttons */}
+  <Section>
+    <SectionHeading index="06" eyebrow="Buttons" title="Button" />
+    <div class="mt-10 grid gap-4 lg:grid-cols-2">
+      <div class="space-y-5 border border-charcoal-200 p-6">
+        <p class={cap}>light surface</p>
+        <div class="flex flex-wrap items-center gap-3">
+          <Button href="#">{t.cta.quote}</Button>
+          <Button href="#" variant="secondary" icon="phone">{t.cta.call}</Button>
+          <Button href="#" variant="ghost">{t.cta.learnMore}</Button>
+        </div>
+        <div class="flex flex-wrap items-center gap-3">
+          <Button size="sm">{t.cta.quote}</Button>
+          <Button size="md" variant="secondary">{t.cta.viewAll}</Button>
+          <Button size="lg" iconEnd="arrow">{t.cta.quote}</Button>
+        </div>
+      </div>
+      <div class="on-dark space-y-5 bg-navy-950 p-6">
+        <p class={cap}>dark surface</p>
+        <div class="flex flex-wrap items-center gap-3">
+          <Button href="#">{t.cta.quote}</Button>
+          <Button href="#" variant="on-dark" icon="whatsapp" iconClass="text-[#25d366]">{t.cta.whatsapp}</Button>
+          <Button href="#" variant="ghost">{t.cta.learnMore}</Button>
+        </div>
+        <div class="flex flex-wrap items-center gap-3">
+          <Button size="sm" variant="on-dark" icon="mail">{t.cta.email}</Button>
+          <Button size="lg" iconEnd="arrow">{t.cta.quote}</Button>
+        </div>
+      </div>
+    </div>
+  </Section>
+
+  {/* ------------------------------------------------ icons */}
+  <Section variant="muted" compact>
+    <SectionHeading index="07" eyebrow="Icons" title="Icon set" as="h2" size="h3" />
+    <ul role="list" class="mt-8 grid grid-cols-4 gap-2 sm:grid-cols-6 lg:grid-cols-12" lang="en">
+      {
+        ICONS.map((name) => (
+          <li class="flex flex-col items-center gap-2 border border-charcoal-200 bg-white px-1 py-4 text-navy-900">
+            <Icon name={name} />
+            <span class="font-mono text-[0.625rem] text-charcoal-600">{name}</span>
+          </li>
+        ))
+      }
+    </ul>
+  </Section>
+
+  {/* ------------------------------------------------ cards */}
+  <Section>
+    <SectionHeading index="08" eyebrow={t.nav.services} title="Card · service" lead={d.lorem} />
+    <div class="mt-10 grid gap-5 md:grid-cols-3">
+      {
+        d.services.map(([title, text], i) => (
+          <Card
+            variant="service"
+            title={title}
+            text={text}
+            icon={serviceIcons[i]}
+            href={href(locale, SERVICE_LINKS[i]!.path)}
+            tags={[["24 VDC", "DIN rail", "IP54"], ["LS", "Siemens", "Wecon"], ["VFD", "Servo", "Safety"]][i]}
+            cta={t.cta.learnMore}
+          />
+        ))
+      }
+    </div>
+  </Section>
+
+  <Section variant="muted">
+    <SectionHeading index="09" eyebrow={t.nav.industries} title="Card · industry" />
+    <div class="mt-10 grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
+      {
+        INDUSTRY_LINKS.map((ind, i) => (
+          <Card
+            variant="industry"
+            title={t.nav.industriesList[ind.key]}
+            text={d.industries[i]}
+            icon={ind.icon}
+            href={href(locale, ind.path)}
+            image={[P.filler, P.pharma, P.hmiLabel, P.autoclave][i]}
+            cta={t.cta.learnMore}
+          />
+        ))
+      }
+    </div>
+  </Section>
+
+  <Section>
+    <SectionHeading index="10" eyebrow={t.nav.projects} title="Card · project" />
+    <div class="mt-10 grid gap-x-6 gap-y-12 md:grid-cols-3">
+      {
+        d.projects.map(([title, meta], i) => (
+          <Card
+            variant="project"
+            title={title}
+            meta={[...meta]}
+            href={href(locale, "projects")}
+            image={[P.panelVfd, P.hmiMachine, P.panelLamps][i] ?? ["/media/shampoo-filling-line-poster.webp", "/media/bottle-printing-retrofit-poster.webp", "/media/hotel-laundry-hmi-poster.webp"][i]}
+            tags={[["LS XGB", "Wecon PI", "VFD"], ["Delta PLC", "Servo"], ["Wecon HMI", "Inverter"]][i]}
+            cta={t.cta.viewProject}
+          />
+        ))
+      }
+      <Card variant="service" title="media slot" text="A page can drop an illustration component in place of the icon/photo.">
+        <div slot="media" class="chamfer grid h-24 place-items-center bg-navy-950 text-royal-300"><Icon name="traces" size={40} /></div>
+      </Card>
+    </div>
+  </Section>
+
+  {/* ------------------------------------------------ stats + process */}
+  <Section variant="dark" compact>
+    <StatStrip items={d.stats.map(([value, label]) => ({ value, label }))} />
+  </Section>
+  <Section>
+    <SectionHeading index="11" eyebrow="StatStrip · light" title={d.ctaTitle} as="h2" size="h3" />
+    <StatStrip class="mt-10" items={d.stats.map(([value, label]) => ({ value, label }))} />
+  </Section>
+
+  <Section variant="muted">
+    <SectionHeading index="12" eyebrow="ProcessSteps" title={d.steps[0]![0] + " · " + d.steps[3]![0]} />
+    <ProcessSteps class="mt-12" steps={d.steps.map(([title, text], i) => ({ title, text, icon: (["map-pin", "file", "panel", "check"] as IconName[])[i] }))} />
+  </Section>
+  <Section variant="dark">
+    <ProcessSteps steps={d.steps.map(([title, text]) => ({ title, text }))} />
+  </Section>
+
+  {/* ------------------------------------------------ logo wall, faq, breadcrumbs */}
+  <Section compact>
+    <LogoWall locale={locale} />
+  </Section>
+  <Section variant="dark" compact>
+    <LogoWall locale={locale} note={false} />
+  </Section>
+
+  <Section>
+    <div class="grid gap-12 lg:grid-cols-[1fr_1.4fr]">
+      <SectionHeading index="13" eyebrow="FAQ" title={t.faq.title} lead={d.lorem} />
+      <FAQ items={d.faq.map(([q, a]) => ({ q, a }))} exclusive openFirst />
+    </div>
+    <div class="mt-16 space-y-4">
+      <p class={cap}>breadcrumbs</p>
+      <Breadcrumbs locale={locale} label={`${t.a11y.breadcrumbs} (demo)`} items={[{ label: t.nav.services, path: "services" }, { label: t.nav.servicesList.controlPanels }]} jsonLd={false} />
+    </div>
+  </Section>
+
+  {/* ------------------------------------------------ media */}
+  <Section variant="muted">
+    <SectionHeading index="14" eyebrow="VideoPlayer · Gallery" title={d.video[0]!} />
+    <div class="mt-10 grid items-start gap-8 lg:grid-cols-[1.6fr_1fr]">
+      <VideoPlayer src="/media/shampoo-filling-line.mp4" poster="/media/shampoo-filling-line-poster.webp" title={d.video[0]!} caption={d.video[0]} duration="0:58" />
+      <VideoPlayer src="/media/hotel-laundry-hmi.mp4" poster="/media/hotel-laundry-hmi-poster.webp" title={d.video[1]!} caption={d.video[1]} aspect="9/16" />
+    </div>
+    {galleryImages.length > 0 && <Gallery class="mt-12" images={galleryImages} columns={3} />}
+  </Section>
+
+  <CtaBand locale={locale} eyebrow={t.cta.quote} title={d.ctaTitle} text={d.ctaText} />
+</BaseLayout>
