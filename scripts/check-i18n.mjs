@@ -1,5 +1,6 @@
 // Fails the build if any locale is missing a key from the English files (the source of truth),
-// has extra keys, a different array length, or an empty string / TODO marker.
+// has extra keys, a different array length, or an empty string / TODO marker — or uses a Latin letter
+// that the Montserrat files the site ships don't have.
 import { readFileSync, readdirSync, existsSync } from "node:fs";
 
 const LOCALES = ["ar", "zh", "tr"];
@@ -38,6 +39,18 @@ for (const ns of namespaces) {
     for (const k of other.keys()) if (!en.has(k)) report(`${l}/${ns}: extra key ${k}`);
   }
 }
+
+// Montserrat ships as fontsource's "latin" subset plus ğ Ğ İ Ş ş ("LC Montserrat Ext", src/layouts/BaseLayout.astro);
+// any other Latin letter would render in the fallback face. Re-cut that subset (command there) before adding one.
+const FONT_HAS = new Set("ıŒœĞğİŞş");
+for (const l of ["en", ...LOCALES])
+  for (const ns of namespaces) {
+    const file = new URL(`${l}/${ns}`, root);
+    if (!existsSync(file)) continue;
+    for (const ch of new Set(readFileSync(file, "utf8")))
+      if (ch > "\u00FF" && ch < "\uFF00" && /\p{Script=Latin}/u.test(ch) && !FONT_HAS.has(ch))
+        report(`${l}/${ns}: "${ch}" (U+${ch.codePointAt(0).toString(16).toUpperCase().padStart(4, "0")}) is not in the Montserrat subsets`);
+  }
 
 if (problems) {
   console.error(`i18n check failed with ${problems} problem(s).`);

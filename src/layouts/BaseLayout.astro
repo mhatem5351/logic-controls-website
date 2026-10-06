@@ -11,6 +11,8 @@ import Seo from "~/components/Seo.astro";
 import Header from "~/components/Header.astro";
 import Footer from "~/components/Footer.astro";
 import WhatsAppButton from "~/components/WhatsAppButton.astro";
+import montserratTrNormal from "~/assets/fonts/montserrat-tr-normal.woff2?url&no-inline";
+import montserratTrItalic from "~/assets/fonts/montserrat-tr-italic.woff2?url&no-inline";
 
 interface Props {
   locale: Locale;
@@ -59,20 +61,31 @@ const {
 
 const meta = LOCALE_META[locale];
 const t = getMessages(locale).ui;
-/* Preload exactly the font files the first screen uses (the hero H1 is Montserrat italic, the lead upright):
-   Turkish needs latin-ext too (ş ğ ı İ), Arabic pages use Alexandria's Arabic + Latin files ("PLC" in the H1).
+/* Preload exactly the font files the first screen uses (the hero H1 is Montserrat italic, the lead upright), plus the
+   Turkish letters on Turkish pages; Arabic pages use Alexandria's Arabic + Latin files ("PLC" in the H1).
    Fonts that arrive late swap in without moving the layout (metric-matched fallbacks, global.css). */
 const latinPreload =
-  locale === "ar"
-    ? false
-    : locale === "tr"
-      ? [
-          { subset: "latin", style: "normal" },
-          { subset: "latin", style: "italic" },
-          { subset: "latin-ext", style: "normal" },
-          { subset: "latin-ext", style: "italic" },
-        ]
-      : [{ subset: "latin", style: "normal" }, { subset: "latin", style: "italic" }];
+  locale === "ar" ? false : [{ subset: "latin", style: "normal" }, { subset: "latin", style: "italic" }];
+/* "LC Montserrat Ext": the Montserrat glyphs Turkish needs beyond the "latin" subset (which has ı): ğ Ğ İ Ş ş (Ğ, İ
+   also come from text-transform: uppercase). Listed right after Montserrat in --font-latin (astro.config.mjs), so the
+   browser takes only these code points from it, and only pages that contain them download it (unicode-range).
+   ~5 KB per style vs 72/76 KB for fontsource's full latin-ext files. Same outlines, metrics, hinting and wght axis
+   (100–900) as those files, cut with fonttools (Romanian locl dropped) from
+   https://cdn.jsdelivr.net/fontsource/fonts/montserrat:vf@latest/latin-ext-wght-{normal,italic}.woff2:
+     pyftsubset <file> --unicodes="U+011E-011F,U+0130,U+015E-015F" --layout-features="kern,mark,mkmk,ccmp,rvrn" \
+       --flavor=woff2 --output-file=src/assets/fonts/montserrat-tr-<style>.woff2
+   scripts/check-i18n.mjs fails the build if the copy gains a Latin letter that neither subset covers.
+   `no-inline`: Vite would inline files < 4 KB as data: URIs, which the CSP (font-src 'self') blocks. */
+const latinExtFaces = [
+  { style: "normal", url: montserratTrNormal },
+  { style: "italic", url: montserratTrItalic },
+];
+const latinExtCss = latinExtFaces
+  .map(
+    ({ style, url }) =>
+      `@font-face{font-family:"LC Montserrat Ext";src:url("${url}") format("woff2");font-display:swap;font-weight:100 900;font-style:${style};unicode-range:U+011E-011F,U+0130,U+015E-015F}`,
+  )
+  .join("");
 const beacon = JSON.stringify({ token: SITE.webAnalyticsToken });
 /** /^(www\.)?logic-controls\.com$/ as source text for the inline loader below. */
 const beaconHost = `/^(www\\.)?${new URL(SITE.url).hostname.replace(/\./g, "\\.")}$/`;
@@ -186,6 +199,8 @@ const beaconHost = `/^(www\\.)?${new URL(SITE.url).hostname.replace(/\./g, "\\."
       )
     }
     <Font cssVariable="--font-latin" preload={latinPreload} />
+    {locale === "tr" && latinExtFaces.map(({ url }) => <link rel="preload" href={url} as="font" type="font/woff2" crossorigin />)}
+    <style is:inline set:html={latinExtCss} />
     {locale === "ar" && <Font cssVariable="--font-arabic" preload={[{ subset: "arabic" }, { subset: "latin" }]} />}
     <noscript><style>.lc-header[data-hero] .lc-header-bg{background:rgb(4 14 39/.94)!important}</style></noscript>
     <slot name="head" />

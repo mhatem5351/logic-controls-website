@@ -21,6 +21,9 @@ export default defineConfig({
   // Fallbacks: metric-matched local faces defined in src/styles/global.css ("metric-matched font fallbacks"), one size
   // per weight band and script, so the font swap does not re-wrap text (CLS). Astro's generated fallback is turned off:
   // it used a single size for every weight and Latin metrics for Arabic.
+  // Montserrat: "latin" only. Turkish needs just ğ Ğ İ Ş ş beyond it (ı is in "latin"); those come from
+  // "LC Montserrat Ext", a ~5 KB subset of fontsource's latin-ext files (src/layouts/BaseLayout.astro), instead of the
+  // 72 + 76 KB latin-ext files, which were on Turkish pages' critical path.
   fonts: [
     {
       provider: fontProviders.fontsource(),
@@ -28,8 +31,8 @@ export default defineConfig({
       cssVariable: "--font-latin",
       weights: ["300 900"],
       styles: ["normal", "italic"],
-      subsets: ["latin", "latin-ext"],
-      fallbacks: ["LC Montserrat Fallback", "system-ui", "sans-serif"],
+      subsets: ["latin"],
+      fallbacks: ["LC Montserrat Ext", "LC Montserrat Fallback", "system-ui", "sans-serif"],
       optimizedFallbacks: false,
     },
     {
