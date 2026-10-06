@@ -2,6 +2,7 @@
 /**
  * Section heading: optional index ("01"), eyebrow with the slanted bar, title, lead, optional swoosh.
  * Colours adapt automatically inside dark sections (.on-dark).
+ * Motion (motion.css): the block rises into place on scroll, the eyebrow's slant bar draws, the swoosh wipes in.
  */
 import Swoosh from "./Swoosh.astro";
 interface Props {
@@ -22,7 +23,7 @@ const { title, eyebrow, lead, index, align = "start", as: Tag = "h2", size = Tag
 const center = align === "center";
 ---
 
-<header class:list={["max-w-3xl", center ? "mx-auto text-center" : "text-start", className]}>
+<header class:list={["lc-head max-w-3xl", center ? "mx-auto text-center" : "text-start", className]}>
   {
     (eyebrow || index) && (
       <p class:list={["mb-4 flex items-center gap-3 type-label text-royal-700 in-[.on-dark]:text-navy-200", center && "justify-center"]}>

@@ -115,7 +115,7 @@ const posterSrcset = video?.posterSmall ? `${video.posterSmall} 640w, ${video.po
               class="absolute inset-0 size-full object-cover"
             />
             <video
-              class="lc-hero-video absolute inset-0 size-full object-cover opacity-0 transition-opacity duration-1000"
+              class="lc-hero-video absolute inset-0 size-full object-cover opacity-0 transition-opacity duration-1000 ease-inout"
               data-src={video.src}
               poster={video.poster}
               muted
@@ -152,7 +152,7 @@ const posterSrcset = video?.posterSmall ? `${video.posterSmall} 640w, ${video.po
           preserveAspectRatio="none"
           aria-hidden="true"
         >
-          <path d="M100 0 0 100" stroke="currentColor" stroke-width="1" vector-effect="non-scaling-stroke" />
+          <path class="lc-hero-edge" d="M100 0 0 100" pathLength="100" stroke="currentColor" stroke-width="1" vector-effect="non-scaling-stroke" />
         </svg>
       </div>
     )
@@ -181,7 +181,7 @@ const posterSrcset = video?.posterSmall ? `${video.posterSmall} 640w, ${video.po
         : "pt-[calc(var(--header-h)+var(--utility-h)+2.5rem)] pb-24 lg:pb-28",
     ]}
   >
-    <div class:list={[home ? (fit ? "max-w-2xl lg:max-w-[50%]" : "max-w-2xl lg:max-w-[48%]") : "max-w-3xl lg:max-w-[58%]"]}>
+    <div class:list={["lc-hero-copy", home ? (fit ? "max-w-2xl lg:max-w-[50%]" : "max-w-2xl lg:max-w-[48%]") : "max-w-3xl lg:max-w-[58%]"]}>
       {Astro.slots.has("breadcrumbs") && (
         <div class="mb-6">
           <slot name="breadcrumbs" />
@@ -196,7 +196,7 @@ const posterSrcset = video?.posterSmall ? `${video.posterSmall} 640w, ${video.po
         style={fit ? "--text-display: clamp(2.125rem, 1.5rem + 2.25vw, 3.5rem)" : undefined}
         set:html={title}
       />
-      {lead && <p class:list={["lc-rise max-w-xl type-lead text-navy-200", fit ? "mt-5" : "mt-6"]} style="--i:1" set:html={lead} />}
+      {lead && <p class:list={["max-w-xl type-lead text-navy-200", fit ? "mt-5" : "mt-6"]} set:html={lead} />}
       {
         (primary || secondary) && (
           <div class:list={["lc-rise flex flex-wrap items-center gap-3", fit ? "mt-8" : "mt-9"]} style="--i:2" data-fab-avoid>

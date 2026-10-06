@@ -4,6 +4,9 @@
  * WhatsApp with a pre-filled message in the page language; on zh (WhatsApp blocked in mainland China)
  * it becomes an email button.
  *
+ * Motion: docks in on the first page of a session, one gentle ping ~8 s later (once per session), persists
+ * across page transitions (view-transition-name in motion.css).
+ *
  * It never covers a call to action: while an element marked `data-fab-avoid` (hero CTAs and proof figures,
  * form actions…) or a large button in <main> passes underneath it, the button fades out of the way.
  */
@@ -31,7 +34,7 @@ const link = email ? mailtoLink(t.email.subject) : whatsappLink(message ?? t.wha
   aria-label={label}
   title={label}
   class:list={[
-    "lc-fab group fixed end-4 bottom-4 z-40 grid size-14 place-items-center rounded-full text-white shadow-[0_10px_30px_-8px_rgb(4_14_39/0.55)] transition-transform duration-300 hover:-translate-y-0.5 sm:end-6 sm:bottom-6",
+    "lc-fab group fixed end-4 bottom-4 z-40 grid size-14 place-items-center rounded-full text-white shadow-[0_10px_30px_-8px_rgb(4_14_39/0.55)] hover:-translate-y-(--move-lift) sm:end-6 sm:bottom-6",
     email ? "bg-royal-600 hover:bg-royal-700" : "bg-[#128c4a] hover:bg-[#0f7a40]",
   ]}
 >
@@ -43,30 +46,58 @@ const link = email ? mailtoLink(t.email.subject) : whatsappLink(message ?? t.wha
 <style>
   .lc-fab {
     transition-property: transform, translate, opacity, visibility;
-    transition-duration: 0.3s, 0.3s, 0.25s, 0s;
+    transition-duration: var(--dur-ui), var(--dur-ui), var(--dur-micro), 0s;
+    transition-timing-function: var(--ease-mech);
   }
   .lc-fab[data-hidden] {
     opacity: 0;
     transform: translateY(1rem) scale(0.9);
     visibility: hidden;
     pointer-events: none;
-    transition-delay: 0s, 0s, 0s, 0.25s;
+    transition-delay: 0s, 0s, 0s, var(--dur-micro);
+    transition-timing-function: var(--ease-exit);
   }
   .lc-fab:focus-visible {
     outline: 3px solid var(--color-signal-400);
     outline-offset: 3px;
   }
   .lc-fab-ring {
-    box-shadow: 0 0 0 0 rgb(37 211 102 / 0.45);
-    animation: lc-fab-ring 2.8s ease-out 3;
+    box-shadow: 0 0 0 2px rgb(37 211 102 / 0.65);
+    opacity: 0;
   }
-  @keyframes lc-fab-ring {
-    0% {
-      box-shadow: 0 0 0 0 rgb(37 211 102 / 0.45);
+  /* First page of the session: the button docks in once (it then persists across page transitions).
+     ~8 s later, once per session: a single sonar ping and a small nudge of the glyph. Flags: BaseLayout. */
+  @media (prefers-reduced-motion: no-preference) {
+    :global(:root[data-intro]) .lc-fab {
+      animation: lc-fab-in var(--dur-section) var(--ease-emph) 0.6s backwards;
     }
-    70%,
+    :global(:root[data-fab-ping]) .lc-fab-ring {
+      animation: lc-fab-ping 1.5s var(--ease-emph) 8s;
+    }
+    :global(:root[data-fab-ping]) .lc-fab > :global(svg) {
+      animation: lc-fab-nudge 0.6s var(--ease-mech) 8s;
+    }
+  }
+  @keyframes lc-fab-in {
+    from {
+      opacity: 0;
+      scale: 0.6;
+      translate: 0 var(--move-page);
+    }
+  }
+  @keyframes lc-fab-ping {
+    0% {
+      opacity: 0.9;
+      scale: 1;
+    }
     100% {
-      box-shadow: 0 0 0 14px rgb(37 211 102 / 0);
+      opacity: 0;
+      scale: 1.7;
+    }
+  }
+  @keyframes lc-fab-nudge {
+    40% {
+      scale: 1.14;
     }
   }
 </style>

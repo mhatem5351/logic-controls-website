@@ -51,14 +51,14 @@ const body = html(locale, text).replace(/(?<![\w>-])([A-Za-z]+\d*-\d+[A-Za-z0-9]
 
 <article
   class:list={[
-    "group grid gap-6 border-b border-charcoal-200 py-8 sm:grid-cols-[13rem_1fr] sm:gap-8 lg:grid-cols-[14rem_1fr_19rem] lg:gap-10 lg:py-10",
+    "lc-reveal group grid gap-6 border-b border-charcoal-200 py-8 sm:grid-cols-[13rem_1fr] sm:gap-8 lg:grid-cols-[14rem_1fr_19rem] lg:gap-10 lg:py-10",
     className,
   ]}
 >
   <div
-    class="relative grid min-h-20 place-items-center border border-charcoal-200 bg-white px-6 py-5 text-charcoal-700 sm:min-h-28 sm:py-7 transition-colors duration-300 group-hover:border-royal-300 group-hover:text-navy-900 sm:row-span-2 lg:row-span-1"
+    class="relative grid min-h-20 place-items-center border border-charcoal-200 bg-white px-6 py-5 text-charcoal-700 sm:min-h-28 sm:py-7 transition-colors duration-(--dur-ui) ease-mech group-hover:border-royal-300 group-hover:text-navy-900 sm:row-span-2 lg:row-span-1"
   >
-    <span aria-hidden="true" class="absolute -top-px start-4 h-1 w-8 skew-x-[-10deg] bg-royal-600 transition-[width] duration-300 group-hover:w-14 rtl:skew-x-[10deg]"></span>
+    <span aria-hidden="true" class="absolute -top-px start-4 h-1 w-14 origin-left scale-x-[0.57] skew-x-[-10deg] bg-royal-600 transition-[scale] duration-(--dur-ui) ease-mech group-hover:scale-x-100 rtl:origin-right rtl:skew-x-[10deg]"></span>
     {index != null && (
       <span aria-hidden="true" class="absolute end-3 top-2.5 font-mono text-[0.6875rem] text-charcoal-600 ltr" dir="ltr">{pad(index)}</span>
     )}

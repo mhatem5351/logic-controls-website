@@ -1,4 +1,6 @@
 @import "tailwindcss";
+/* Motion system (page transitions, scroll reveals, micro-interactions). Tokens live in this file, below. */
+@import "./motion.css";
 
 /* Only scan site sources for class names (research notes and client dumps are not UI). */
 @source not "../../research";
@@ -128,18 +130,29 @@
   --container-site: 78rem;
   --container-prose: 42rem;
 
-  --ease-out-expo: cubic-bezier(0.16, 1, 0.3, 1);
+  /*
+   * Motion — easings (also generate `ease-mech` / `ease-emph` / `ease-inout` / `ease-exit` utilities).
+   * One family, three characters + an exit:
+   *   mech  — crisp "mechanical" ease-out: fast start, firm stop, no overshoot. UI state changes (hover,
+   *           press, menus, focus, card lift). Feels like a relay pulling in.
+   *   emph  — emphasized ease-out (expo): long, quiet settle. Entrances, page-in, reveals, morphs, image zoom.
+   *   inout — gentle in-out: the illustrations' "mechanical stroke" curve (STYLE.md). Draws, sweeps, LED breathing.
+   *   (Signals travelling along a trace stay `linear`, as in the illustrations: constant speed reads as current.)
+   *   exit  — accelerate away: things leaving (old page, closing menus).
+   * Durations / distances are plain custom properties on :root (see the base layer) so prefers-reduced-motion
+   * can collapse them in one place.
+   */
+  --ease-mech: cubic-bezier(0.2, 0, 0, 1);
+  --ease-emph: cubic-bezier(0.16, 1, 0.3, 1);
+  --ease-inout: cubic-bezier(0.65, 0, 0.35, 1);
+  --ease-exit: cubic-bezier(0.4, 0, 1, 1);
+  --ease-out-expo: var(--ease-emph); /* legacy alias */
 
-  --animate-trace-draw: trace-draw 2.2s var(--ease-out-expo) both;
-  --animate-fade-up: fade-up 0.9s var(--ease-out-expo) both;
+  --animate-trace-draw: trace-draw 2.2s var(--ease-emph) both;
 
   @keyframes trace-draw {
     from { stroke-dashoffset: 100; }
     to { stroke-dashoffset: 0; }
-  }
-  @keyframes fade-up {
-    from { opacity: 0; transform: translateY(12px); }
-    to { opacity: 1; transform: none; }
   }
 }
 
@@ -158,6 +171,41 @@
     --header-h: 4rem;
     --utility-h: 0px;
     --focus: var(--color-royal-500);
+
+    /* Motion — durations. micro: hover/press/focus · ui: menus, accordions, card lift, page-in · section:
+       entrances, draws, image zoom · page: new page in (old page out uses micro) · morph: shared element. */
+    --dur-micro: 160ms;
+    --dur-ui: 280ms;
+    --dur-page: 340ms;
+    --dur-morph: 460ms;
+    --dur-section: 720ms;
+    /* Motion — distances. Small on purpose: things settle into place, they never fly in. */
+    --move-press: 1px;
+    --move-lift: 2px;
+    --move-nudge: 3px;
+    --move-ui: 6px;
+    --move-page: 10px;
+    --move-reveal: 18px;
+    --move-slide: 24px;
+  }
+  /* The one reduced-motion strategy: every token collapses (anything built on them becomes an instant state
+     change), new motion is opt-in behind `prefers-reduced-motion: no-preference` (motion.css), and the
+     catch-all below neutralises anything else (third-party, legacy). Page transitions are switched off. */
+  @media (prefers-reduced-motion: reduce) {
+    :root {
+      --dur-micro: 0s;
+      --dur-ui: 0s;
+      --dur-page: 0s;
+      --dur-morph: 0s;
+      --dur-section: 0s;
+      --move-press: 0px;
+      --move-lift: 0px;
+      --move-nudge: 0px;
+      --move-ui: 0px;
+      --move-page: 0px;
+      --move-reveal: 0px;
+      --move-slide: 0px;
+    }
   }
   @media (min-width: 64rem) {
     :root {
@@ -538,7 +586,7 @@
     opacity: 0;
   }
   .lc-traces .node {
-    animation: node-flash 6.5s ease-out infinite;
+    animation: node-flash 6.5s var(--ease-emph) infinite;
   }
   @keyframes trace-pulse {
     0% { stroke-dashoffset: 7; opacity: 0; }
@@ -552,7 +600,6 @@
     80%, 100% { fill-opacity: 0; stroke-opacity: 0.55; }
   }
   @media (prefers-reduced-motion: reduce) {
-    .lc-rise,
     .lc-led[data-blink] {
       animation: none;
     }
@@ -579,18 +626,15 @@
       0 0 12px color-mix(in oklab, var(--led, var(--color-signal-400)) 70%, transparent);
   }
   .lc-led[data-blink] {
-    animation: led-blink 2.4s ease-in-out infinite;
+    animation: led-blink 2.4s var(--ease-inout) infinite;
   }
   @keyframes led-blink {
     0%, 100% { opacity: 1; }
     50% { opacity: 0.45; }
   }
 
-  /* Entrance animation for hero content (CSS only; disabled for reduced motion by the base rule). */
-  .lc-rise {
-    animation: var(--animate-fade-up);
-    animation-delay: calc(var(--i, 0) * 90ms + 120ms);
-  }
+  /* Hero content "settles" on load: a short transform-only glide, never an opacity fade — the copy is painted
+     and readable from the first frame (no hidden-until-animated text, LCP untouched). See motion.css. */
 }
 
 /* ------------------------------------------------------------------ buttons (<Button>) */
@@ -618,7 +662,9 @@
     text-align: center;
     text-decoration: none;
     cursor: pointer;
-    transition: color 0.2s ease;
+    transition:
+      color var(--dur-micro) var(--ease-mech),
+      transform var(--dur-micro) var(--ease-mech);
     -webkit-tap-highlight-color: transparent;
   }
   .lc-btn::before {
@@ -629,16 +675,39 @@
     background-color: var(--btn-bg);
     border: 1px solid var(--btn-border);
     border-radius: 2px;
-    /* 45° cut on the top inline-end corner, plus a 1px diagonal so outlined variants stay closed. */
-    clip-path: polygon(0 0, calc(100% - var(--cut)) 0, 100% var(--cut), 100% 100%, 0 100%);
+    /* 45° cut on the top inline-end corner, plus a 1px diagonal so outlined variants stay closed.
+       --cut-x (registered in motion.css) deepens the cut on hover/focus: the corner "machines" a little further. */
+    --c: calc(var(--cut) + var(--cut-x, 0px));
+    clip-path: polygon(0 0, calc(100% - var(--c)) 0, 100% var(--c), 100% 100%, 0 100%);
     background-image: linear-gradient(to bottom left, transparent calc(50% - 0.75px), var(--btn-border) calc(50% - 0.75px), var(--btn-border) calc(50% + 0.75px), transparent calc(50% + 0.75px));
-    background-size: var(--cut) var(--cut);
+    background-size: var(--c) var(--c);
     background-position: top right;
     background-repeat: no-repeat;
-    transition: background-color 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease;
+    transition:
+      background-color var(--dur-micro) var(--ease-mech),
+      border-color var(--dur-micro) var(--ease-mech),
+      box-shadow var(--dur-micro) var(--ease-mech),
+      --cut-x var(--dur-ui) var(--ease-mech);
+  }
+  /* Hover only where hover is real (no sticky "hovered" chamfer after a tap); keyboard focus always. */
+  .lc-btn:focus-visible::before {
+    --cut-x: 5px;
+  }
+  @media (hover: hover) {
+    .lc-btn:hover::before {
+      --cut-x: 5px;
+    }
+  }
+  .lc-btn[data-size="sm"]:focus-visible::before {
+    --cut-x: 4px;
+  }
+  @media (hover: hover) {
+    .lc-btn[data-size="sm"]:hover::before {
+      --cut-x: 4px;
+    }
   }
   [dir="rtl"] .lc-btn::before {
-    clip-path: polygon(var(--cut) 0, 100% 0, 100% 100%, 0 100%, 0 var(--cut));
+    clip-path: polygon(var(--c) 0, 100% 0, 100% 100%, 0 100%, 0 var(--c));
     background-image: linear-gradient(to bottom right, transparent calc(50% - 0.75px), var(--btn-border) calc(50% - 0.75px), var(--btn-border) calc(50% + 0.75px), transparent calc(50% + 0.75px));
     background-position: top left;
   }
@@ -653,20 +722,30 @@
   [dir="rtl"] .lc-btn:hover::before {
     background-image: linear-gradient(to bottom right, transparent calc(50% - 0.75px), var(--btn-border-hover) calc(50% - 0.75px), var(--btn-border-hover) calc(50% + 0.75px), transparent calc(50% + 0.75px));
   }
+  /* Press: instant travel down (a switch), eased return on release. */
   .lc-btn:active {
-    transform: translateY(1px);
+    transform: translateY(var(--move-press));
+    transition-duration: 0s;
   }
   .lc-btn:focus-visible {
     outline-offset: 3px;
   }
   .lc-btn .lc-btn-icon-end {
-    transition: translate 0.25s var(--ease-out-expo);
+    transition: translate var(--dur-ui) var(--ease-mech);
   }
-  .lc-btn:hover .lc-btn-icon-end {
-    translate: 3px 0;
+  .lc-btn:focus-visible .lc-btn-icon-end {
+    translate: var(--move-nudge) 0;
   }
-  [dir="rtl"] .lc-btn:hover .lc-btn-icon-end {
-    translate: -3px 0;
+  [dir="rtl"] .lc-btn:focus-visible .lc-btn-icon-end {
+    translate: calc(-1 * var(--move-nudge)) 0;
+  }
+  @media (hover: hover) {
+    .lc-btn:hover .lc-btn-icon-end {
+      translate: var(--move-nudge) 0;
+    }
+    [dir="rtl"] .lc-btn:hover .lc-btn-icon-end {
+      translate: calc(-1 * var(--move-nudge)) 0;
+    }
   }
 
   .lc-btn[data-variant="primary"] {

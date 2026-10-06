@@ -45,10 +45,10 @@ const {
 const secondaryIsWa = secondary && secondary.href.startsWith("https://wa.me");
 ---
 
-<section id={id} class:list={["on-dark angle-top relative isolate overflow-hidden bg-navy-950 py-section text-navy-100", className]}>
+<section id={id} class:list={["lc-band lc-clip on-dark angle-top relative isolate overflow-hidden bg-navy-950 py-section text-navy-100", className]}>
   <div aria-hidden="true" class="pointer-events-none absolute inset-0 -z-10 bg-blueprint mask-fade-edges"></div>
   <div aria-hidden="true" class="pointer-events-none absolute inset-0 -z-20 bg-[radial-gradient(ellipse_60%_80%_at_20%_40%,rgb(5_86_173/0.35),transparent_70%)] rtl:bg-[radial-gradient(ellipse_60%_80%_at_80%_40%,rgb(5_86_173/0.35),transparent_70%)]"></div>
-  <BrandMark tone="mono" class="pointer-events-none absolute -start-24 top-1/2 -z-10 hidden h-[120%] w-auto -translate-y-1/2 text-white/[0.03] lg:block" />
+  <BrandMark tone="mono" class="lc-gear pointer-events-none absolute -start-24 top-1/2 -z-10 hidden h-[120%] w-auto -translate-y-1/2 text-white/[0.03] lg:block" />
   <div class="wrap grid items-start gap-12 lg:grid-cols-12 lg:gap-10">
     <div class="lg:col-span-6 lg:pt-4">
       {

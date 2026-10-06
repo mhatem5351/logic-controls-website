@@ -50,7 +50,7 @@ const meta = [industry?.navTitle, String(p.year)].filter((m): m is string => !!m
           sizes={sizes ?? "(min-width: 1024px) 33vw, (min-width: 640px) 50vw, 100vw"}
           loading={eager ? "eager" : "lazy"}
           layout="full-width"
-          class="size-full object-cover transition duration-700 group-hover:scale-[1.04]"
+          class="size-full object-cover transition-[scale] duration-(--dur-section) ease-emph group-hover:scale-[1.04]"
         />
         {
           p.video && (

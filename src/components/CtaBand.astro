@@ -1,6 +1,7 @@
 ---
 /**
  * Closing call-to-action band (dark navy, angled top edge, blueprint grid, gear watermark).
+ * Motion (motion.css): the gear watermark turns a few degrees as the band scrolls past; the swoosh wipes in.
  * Defaults: "Request a quote" + "WhatsApp an engineer" (zh: email instead of WhatsApp) and the phone line.
  */
 import { getMessages, type Locale } from "~/i18n";
@@ -48,10 +49,10 @@ const {
 const secondaryIsWa = secondary && secondary.href.startsWith("https://wa.me");
 ---
 
-<section id={id} class:list={["on-dark relative isolate overflow-hidden bg-navy-950 py-section text-navy-100", angle && "angle-top", className]}>
+<section id={id} class:list={["lc-band lc-clip on-dark relative isolate overflow-hidden bg-navy-950 py-section text-navy-100", angle && "angle-top", className]}>
   <div aria-hidden="true" class="pointer-events-none absolute inset-0 -z-10 bg-blueprint mask-fade-edges" />
   <div aria-hidden="true" class="pointer-events-none absolute inset-0 -z-20 bg-[radial-gradient(ellipse_60%_80%_at_80%_50%,rgb(5_86_173/0.35),transparent_70%)] rtl:bg-[radial-gradient(ellipse_60%_80%_at_20%_50%,rgb(5_86_173/0.35),transparent_70%)]" />
-  <BrandMark tone="mono" class="pointer-events-none absolute -end-16 top-1/2 -z-10 hidden h-[130%] w-auto -translate-y-1/2 text-white/[0.035] md:block" />
+  <BrandMark tone="mono" class="lc-gear pointer-events-none absolute -end-16 top-1/2 -z-10 hidden h-[130%] w-auto -translate-y-1/2 text-white/[0.035] md:block" />
   <div class="wrap">
     <div class="max-w-3xl">
       {

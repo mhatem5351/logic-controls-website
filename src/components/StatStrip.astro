@@ -3,6 +3,8 @@
  * Proof figures as static text (never animated counters — crawlers must read the real numbers).
  * A trailing symbol ("+", "%", "h") is highlighted with the signal accent.
  * Adapts to dark sections; `band` renders its own navy band.
+ * Instrument flourish (motion.css): a tick scale under each figure with an amber needle that sweeps to its mark as
+ * the strip scrolls in (decoration only — pseudo-elements, the text never changes).
  */
 interface Item {
   value: string;
@@ -34,7 +36,7 @@ const cols = items.length >= 4 ? "lg:grid-cols-4" : items.length === 3 ? "sm:gri
         return (
           <div
             class:list={[
-              "relative flex flex-col gap-2 px-4 sm:px-6",
+              "lc-stat relative flex flex-col gap-2 px-4 sm:px-6",
               i > 0 &&
                 "before:absolute before:inset-y-1 before:start-0 before:w-px before:-skew-x-[10deg] before:bg-charcoal-200 rtl:before:skew-x-[10deg] in-[.on-dark]:before:bg-white/15",
               i % 2 === 0 && "max-sm:before:hidden",

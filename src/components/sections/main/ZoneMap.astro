@@ -36,7 +36,7 @@ const u = uid("map");
 const a11y = label ? { role: "img" as const, "aria-label": label } : { "aria-hidden": "true" as const };
 ---
 
-<svg class:list={["lc-map block h-auto w-full", className]} viewBox="0 0 380 260" {...a11y} data-map>
+<svg class:list={["lc-map block h-auto w-full", className]} viewBox="0 0 380 260" {...a11y} data-map data-pause-offscreen>
   <defs>
     <pattern id={`${u}-sea`} width="6" height="6" patternUnits="userSpaceOnUse" patternTransform="rotate(-10)">
       <path d="M0 3H6" stroke="currentColor" stroke-width=".6" class="text-royal-400/25"></path>
@@ -149,7 +149,7 @@ const a11y = label ? { role: "img" as const, "aria-label": label } : { "aria-hid
     fill: var(--map-dot);
     stroke: var(--map-dot-stroke);
     stroke-width: 1.3;
-    transition: fill 0.2s ease, stroke 0.2s ease;
+    transition: fill var(--dur-micro) var(--ease-mech), stroke var(--dur-micro) var(--ease-mech);
   }
   .lc-map-home-dot {
     fill: var(--color-signal-400);
@@ -177,7 +177,7 @@ const a11y = label ? { role: "img" as const, "aria-label": label } : { "aria-hid
   .lc-map-pulse {
     transform-box: fill-box;
     transform-origin: center;
-    animation: lc-map-pulse 3.2s ease-out infinite;
+    animation: lc-map-pulse 3.2s var(--ease-emph) infinite;
   }
   @keyframes lc-map-pulse {
     0% {

@@ -70,7 +70,76 @@ const beacon = JSON.stringify({ token: SITE.webAnalyticsToken });
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
-    <script is:inline>document.documentElement.classList.add("js");</script>
+    {/*
+      Render-blocking on purpose (tiny): sets html.js, the once-per-session motion flags before first paint (logo
+      intro, FAB ping), and listens for pagereveal, which fires before the first frame of a cross-document view
+      transition. Names for the shared-element morph are set only for that one navigation (unique, cheap):
+        pageswap (old page): the clicked card's art/photo → "lc-media" (or the hero, when going back up)
+        pagereveal (new page): the hero media + copy (or the card we came back to) → "lc-media" / "lc-hero-copy"
+      Transition types: lc-next / lc-prev (case-study pager), lc-back (history back), lc-lang (language switch).
+      Also pauses looping decoration ([data-pause-offscreen]) while it is offscreen. See src/styles/motion.css.
+    */}
+    <script is:inline>
+      (() => {
+        const d = document.documentElement, N = [];
+        d.classList.add("js");
+        let S = {};
+        try {
+          S = sessionStorage;
+          if (!matchMedia("(prefers-reduced-motion: reduce)").matches) {
+            if (!S.lcIntro) { d.dataset.intro = ""; S.lcIntro = 1; }
+            if (!S.lcPing) { d.dataset.fabPing = ""; setTimeout(() => (S.lcPing = 1), 8e3); }
+          }
+        } catch {}
+        const path = (u) => new URL(u, location.href).pathname;
+        const vis = (el) => { const r = el.getBoundingClientRect(); return r.width > 0 && r.bottom > 0 && r.top < innerHeight; };
+        const art = (el) => el.querySelector(".lca") || el;
+        const name = (el, n) => { el.style.viewTransitionName = n; N.push(el); };
+        const clear = () => { N.forEach((el) => (el.style.viewTransitionName = "")); N.length = 0; };
+        const card = (p) => [...document.querySelectorAll("[data-vt-href]")].find((el) => path(el.dataset.vtHref) === p && vis(art(el)));
+        const hero = () => {
+          const h = document.querySelector(".lc-hero"), m = h?.querySelector(".lc-hero-media");
+          return (h && [...h.querySelectorAll(".lca")].find(vis)) || (m?.querySelector("img") && vis(m) ? m : null);
+        };
+        addEventListener("pageswap", (e) => {
+          const t = e.viewTransition, a = e.activation;
+          if (!t || !a?.entry?.url) return;
+          const p = path(a.entry.url), c = card(p), h = !c && hero();
+          const r = [...document.querySelectorAll("a[rel=prev],a[rel=next]")].find((x) => path(x.href) === p);
+          try {
+            if (c) { name(art(c), "lc-media"); S.lcMorph = p; }
+            else if (h && !r && (a.navigationType === "traverse" || p.split("/").length < location.pathname.split("/").length)) name(h, "lc-media");
+            if (r) S.lcDir = r.rel + " " + p;
+          } catch {}
+        });
+        addEventListener("pagereveal", (e) => {
+          const t = e.viewTransition, a = window.navigation?.activation, from = a?.from?.url, here = location.pathname;
+          clear();
+          if (!t) return;
+          try {
+            const [dir, to] = (S.lcDir || "").split(" ");
+            if (to === here) t.types?.add("lc-" + dir);
+            if (a?.navigationType === "traverse" && a.entry.index < a.from?.index) t.types?.add("lc-back");
+            if (from && path(from).split("/")[1] !== here.split("/")[1]) t.types?.add("lc-lang");
+            if (S.lcMorph === here) {
+              const h = hero(), c = document.querySelector(".lc-hero-copy");
+              if (h) { name(h, "lc-media"); c && name(c, "lc-hero-copy"); }
+            } else if (from) {
+              const c = card(path(from));
+              if (c) name(art(c), "lc-media");
+            }
+            delete S.lcMorph;
+            delete S.lcDir;
+          } catch {}
+          t.finished.finally(clear);
+        });
+        addEventListener("DOMContentLoaded", () => {
+          if (!window.IntersectionObserver) return;
+          const io = new IntersectionObserver((es) => es.forEach((x) => x.target.toggleAttribute("data-offscreen", !x.isIntersecting)));
+          document.querySelectorAll("[data-pause-offscreen], .lc-led[data-blink]").forEach((el) => io.observe(el));
+        });
+      })();
+    </script>
     <Seo
       locale={locale}
       title={title}

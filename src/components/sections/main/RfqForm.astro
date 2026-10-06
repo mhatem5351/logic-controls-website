@@ -266,7 +266,7 @@ const optional = f.optional;
 
   {/* ---------- success (JS) ---------- */}
   <div class="lc-success absolute inset-0 z-10 flex-col items-center justify-center gap-4 bg-white/95 p-8 text-center" data-success role="status" hidden>
-    <span class="grid size-14 place-items-center rounded-full bg-success-700 text-white"><Icon name="check" size={28} /></span>
+    <span class="lc-success-badge grid size-14 place-items-center rounded-full bg-success-700 text-white"><Icon name="check" size={28} /></span>
     <p class="type-h4 text-navy-950">{f.sent}</p>
   </div>
 </form>
@@ -303,6 +303,7 @@ const optional = f.optional;
     outline: none;
   }
   .lc-rfq .lc-label {
+    position: relative;
     display: flex;
     flex-wrap: wrap;
     align-items: baseline;
@@ -311,6 +312,31 @@ const optional = f.optional;
     font-size: 0.9375rem;
     font-weight: 600;
     color: var(--color-navy-950);
+    transition: color var(--dur-micro) var(--ease-mech);
+  }
+  /* Focused field: the label turns royal and a slant marker switches on in the gutter (no layout change). */
+  .lc-rfq .lc-field:focus-within > .lc-label {
+    color: var(--color-royal-700);
+  }
+  .lc-rfq .lc-field > .lc-label::before {
+    content: "";
+    position: absolute;
+    inset-inline-start: -0.875rem;
+    top: 0.62em;
+    inline-size: 0.5rem;
+    block-size: 3px;
+    background: var(--color-royal-600);
+    transform: skewX(calc(-1 * var(--slant)));
+    transform-origin: 0 50%;
+    scale: 0 1;
+    transition: scale var(--dur-ui) var(--ease-mech);
+  }
+  [dir="rtl"] .lc-rfq .lc-field > .lc-label::before {
+    transform: skewX(var(--slant));
+    transform-origin: 100% 50%;
+  }
+  .lc-rfq .lc-field:focus-within > .lc-label::before {
+    scale: 1 1;
   }
   .lc-rfq .lc-req {
     color: var(--color-danger-700);
@@ -334,7 +360,9 @@ const optional = f.optional;
     border: 1px solid var(--color-charcoal-300);
     border-radius: 2px;
     box-shadow: inset 0 1px 2px rgb(4 14 39 / 0.04);
-    transition: border-color 0.15s ease, box-shadow 0.15s ease;
+    transition:
+      border-color var(--dur-micro) var(--ease-mech),
+      box-shadow var(--dur-micro) var(--ease-mech);
   }
   .lc-rfq .lc-input:hover {
     border-color: var(--color-charcoal-400);
@@ -452,39 +480,98 @@ const optional = f.optional;
   .lc-rfq .lc-step {
     color: var(--color-charcoal-600);
   }
+  /* Stepper: each bar fills from the inline start when its step is reached (a progress bar, not a colour swap). */
   .lc-rfq .lc-step-bar {
+    position: relative;
+    overflow: hidden;
     display: block;
     block-size: 4px;
     background: var(--color-charcoal-200);
     transform: skewX(-10deg);
-    transition: background-color 0.3s ease;
   }
   [dir="rtl"] .lc-rfq .lc-step-bar {
     transform: skewX(10deg);
+  }
+  .lc-rfq .lc-step-bar::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background: var(--color-royal-600);
+    transform-origin: 0 50%;
+    scale: 0 1;
+    transition: scale var(--dur-section) var(--ease-emph);
+  }
+  [dir="rtl"] .lc-rfq .lc-step-bar::after {
+    transform-origin: 100% 50%;
+  }
+  .lc-rfq .lc-step {
+    transition: color var(--dur-ui) var(--ease-mech);
   }
   .lc-rfq .lc-step[data-active],
   .lc-rfq .lc-step[data-done] {
     color: var(--color-navy-950);
   }
-  .lc-rfq .lc-step[data-active] .lc-step-bar,
-  .lc-rfq .lc-step[data-done] .lc-step-bar {
-    background: var(--color-royal-600);
+  .lc-rfq .lc-step[data-active] .lc-step-bar::after,
+  .lc-rfq .lc-step[data-done] .lc-step-bar::after {
+    scale: 1 1;
   }
   .lc-rfq[data-enhanced] .lc-step-panel:not([data-active]) {
     display: none;
   }
   .lc-rfq[data-enhanced] .lc-step-panel {
     margin-block-start: 0;
-    animation: lc-step-in 0.35s var(--ease-out-expo);
-  }
-  @keyframes lc-step-in {
-    from {
-      opacity: 0;
-      transform: translateY(8px);
-    }
   }
   .lc-rfq .lc-success:not([hidden]) {
     display: flex;
+  }
+  /* Step change (never on load: data-step-dir only exists after the first goTo): the new step slides in from
+     the side it comes from — next from the inline end, back from the inline start. Success: overlay fades in,
+     the badge docks, the check draws. */
+  @media (prefers-reduced-motion: no-preference) {
+    .lc-rfq {
+      --step-x: 16px;
+    }
+    [dir="rtl"] .lc-rfq {
+      --step-x: -16px;
+    }
+    .lc-rfq[data-step-dir] .lc-step-panel[data-active] {
+      animation: lc-step-in var(--dur-page) var(--ease-emph) both;
+    }
+    .lc-rfq[data-step-dir="prev"] .lc-step-panel[data-active] {
+      --step-x-from: calc(-1 * var(--step-x));
+    }
+    @keyframes lc-step-in {
+      from {
+        opacity: 0;
+        transform: translateX(var(--step-x-from, var(--step-x)));
+      }
+    }
+    .lc-rfq .lc-success:not([hidden]) {
+      animation: lc-success-in var(--dur-ui) var(--ease-mech) both;
+    }
+    .lc-rfq .lc-success:not([hidden]) .lc-success-badge {
+      animation: lc-badge-in var(--dur-section) var(--ease-emph) 60ms both;
+    }
+    .lc-rfq .lc-success:not([hidden]) .lc-success-badge path {
+      stroke-dasharray: 24;
+      animation: lc-check-draw 0.42s var(--ease-inout) 0.22s both;
+    }
+    @keyframes lc-success-in {
+      from {
+        opacity: 0;
+      }
+    }
+    @keyframes lc-badge-in {
+      from {
+        opacity: 0;
+        scale: 0.6;
+      }
+    }
+    @keyframes lc-check-draw {
+      from {
+        stroke-dashoffset: 24;
+      }
+    }
   }
   .lc-rfq[data-sending] [data-submit] {
     pointer-events: none;
@@ -638,6 +725,7 @@ const optional = f.optional;
 
     /* ---------- steps ---------- */
     function goTo(n: number, focus = true) {
+      if (n !== step) form.dataset.stepDir = n > step ? "next" : "prev"; // motion only (CSS), never on load
       step = n;
       panels.forEach((p) => p.toggleAttribute("data-active", Number(p.dataset.step) === n));
       tabs.forEach((tab) => {

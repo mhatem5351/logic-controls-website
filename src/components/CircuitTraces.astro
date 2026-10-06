@@ -2,7 +2,8 @@
 /**
  * Decorative circuit traces (the logo's 45° traces + ring nodes) with CSS-only signal pulses.
  * Anchored to a corner at a fixed pixel size so strokes never distort. Mirrors in RTL.
- * Motion: draw-in once, then amber pulses travel to the ring nodes; disabled for prefers-reduced-motion.
+ * Motion: draw-in once, then amber pulses travel to the ring nodes; disabled for prefers-reduced-motion,
+ * paused while offscreen (data-pause-offscreen, BaseLayout).
  */
 interface Props {
   /** "bottom-start" (default) or "top-end" bundle. */
@@ -41,6 +42,7 @@ const pos = corner === "top-end" ? "top-0 end-0" : "bottom-0 start-0";
 
 <svg
   class:list={["lc-traces pointer-events-none absolute", pos, className]}
+  data-pause-offscreen
   width={set.w}
   height={set.h}
   viewBox={`0 0 ${set.w} ${set.h}`}

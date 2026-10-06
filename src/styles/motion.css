@@ -1,0 +1,680 @@
+/*
+ * Logic Controls — motion system
+ * ------------------------------------------------------------------
+ * One language: things are *switched on*, not thrown around. Signals travel along traces, LEDs strike, needles
+ * sweep, bars draw from the inline start, corners machine a little deeper. Small distances, crisp ease-outs.
+ *
+ * Tokens (global.css): --dur-micro 160ms · --dur-ui 280ms · --dur-page 340ms · --dur-morph 460ms ·
+ * --dur-section 720ms · --ease-mech / --ease-emph / --ease-inout / --ease-exit · --move-* distances.
+ *
+ * Rules every block below follows:
+ *  - Only transform / translate / scale / opacity / clip-path / stroke-dashoffset (+ a little filter) animate.
+ *    The single exception is the FAQ accordion height (user-initiated, interpolate-size).
+ *  - Motion is opt-in: `prefers-reduced-motion: no-preference`. Under `reduce` there are no page transitions,
+ *    no reveals, no intros; tokens collapse to 0 (global.css).
+ *  - Nothing is hidden-by-default: scroll reveals live inside `@supports (animation-timeline: view())`, so
+ *    without support content is simply there; above-the-fold elements are past their reveal range at load.
+ *  - Directional motion uses logical sides and mirrors on [dir="rtl"].
+ *  - Loops pause offscreen (`data-pause-offscreen`, BaseLayout) and in hidden tabs (browsers stop frames).
+ */
+
+/* Registered so the button chamfer can transition (see .lc-btn in global.css). */
+@property --cut-x {
+  syntax: "<length>";
+  inherits: false;
+  initial-value: 0px;
+}
+
+/* ================================================================== 1. page transitions (MPA, cross-document) */
+
+@media (prefers-reduced-motion: no-preference) {
+  @view-transition {
+    navigation: auto;
+  }
+}
+
+/* Persistent chrome: its own layers, so it stays put while the page underneath changes. */
+.lc-header {
+  view-transition-name: lc-header;
+}
+.lc-fab {
+  view-transition-name: lc-fab;
+}
+/* The amber "you are here" bar slides along the nav to the new section (Header.astro). */
+.lc-nav-ind {
+  view-transition-name: lc-nav-ind;
+}
+
+:root {
+  /* Direction of the new page's arrival. Default: rises a few px (going deeper / any link). */
+  --vt-x: 0px;
+  --vt-y: var(--move-page);
+  --vt-out-x: 0px;
+  --vt-sign: 1;
+}
+:root[dir="rtl"] {
+  --vt-sign: -1; /* horizontal slides follow the reading direction */
+}
+/* History back: the page settles down instead of up. */
+:root:active-view-transition-type(lc-back) {
+  --vt-y: calc(-1 * var(--move-page));
+}
+/* Previous / next case study: a sibling, so it slides in from the reading-direction side. */
+:root:active-view-transition-type(lc-next) {
+  --vt-x: calc(var(--vt-sign) * var(--move-slide));
+  --vt-y: 0px;
+  --vt-out-x: calc(var(--vt-sign) * var(--move-slide) * -0.5);
+}
+:root:active-view-transition-type(lc-prev) {
+  --vt-x: calc(var(--vt-sign) * var(--move-slide) * -1);
+  --vt-y: 0px;
+  --vt-out-x: calc(var(--vt-sign) * var(--move-slide) * 0.5);
+}
+/* Language switch: the layout mirrors, so no travel at all — a straight crossfade. */
+:root:active-view-transition-type(lc-lang) {
+  --vt-y: 0px;
+}
+:root:active-view-transition-type(lc-lang)::view-transition-group(*) {
+  animation-duration: 0s;
+}
+
+::view-transition-group(*) {
+  animation-duration: var(--dur-page);
+  animation-timing-function: var(--ease-emph);
+}
+/* The new page is painted *over* the old one with normal alpha (no plus-lighter crossfade): on these navy-on-white
+   pages a mutual fade would let the white canvas flash through. The old page never goes transparent — it dims
+   (brightness) like a screen switching over, which also takes the contrast out of the brief overlap. The new page
+   fades in quickly (ui) while it settles over the longer page duration. */
+::view-transition-image-pair(root) {
+  isolation: auto;
+}
+::view-transition-old(root),
+::view-transition-new(root) {
+  mix-blend-mode: normal;
+}
+::view-transition-old(root) {
+  animation: lc-vt-out var(--dur-ui) var(--ease-mech) both;
+}
+::view-transition-new(root) {
+  animation:
+    lc-vt-fade var(--dur-ui) var(--ease-mech) both,
+    lc-vt-in var(--dur-page) var(--ease-emph) both;
+}
+@keyframes lc-vt-out {
+  to {
+    filter: brightness(0.45);
+    transform: translateX(var(--vt-out-x));
+  }
+}
+@keyframes lc-vt-fade {
+  from {
+    opacity: 0;
+  }
+}
+@keyframes lc-vt-in {
+  from {
+    transform: translate(var(--vt-x), var(--vt-y));
+  }
+}
+
+/* Shared element: card art / photo → detail hero (and back). Named only for that one navigation by the
+   BaseLayout script, so names are always unique. */
+::view-transition-group(lc-media) {
+  z-index: 1;
+  animation-duration: var(--dur-morph);
+  animation-timing-function: var(--ease-mech); /* less front-loaded than emph: the eye can follow the photo */
+}
+::view-transition-old(lc-media),
+::view-transition-new(lc-media) {
+  block-size: 100%;
+  object-fit: cover;
+}
+/* The hero copy rides above the morphing photo (on phones the photo sits behind the text). */
+::view-transition-group(lc-hero-copy) {
+  z-index: 2;
+}
+::view-transition-new(lc-hero-copy) {
+  animation:
+    lc-vt-fade var(--dur-ui) var(--ease-mech) both,
+    lc-vt-in var(--dur-page) var(--ease-emph) both;
+}
+::view-transition-group(lc-header),
+::view-transition-group(lc-nav-ind),
+::view-transition-group(lc-fab) {
+  z-index: 3;
+}
+::view-transition-group(lc-nav-ind) {
+  animation-duration: var(--dur-morph);
+}
+
+/* ================================================================== 2. hero load (never hides content) */
+
+@media (prefers-reduced-motion: no-preference) {
+  /* Chips, CTAs, proof figures settle 6px into place — transform only, painted from the first frame. */
+  .lc-rise {
+    animation: lc-settle var(--dur-section) var(--ease-emph) backwards;
+    animation-delay: calc(var(--i, 0) * 70ms + 60ms);
+  }
+  @keyframes lc-settle {
+    from {
+      transform: translateY(var(--move-ui));
+    }
+  }
+  /* The eyebrow status LED strikes once: dim → bright → steady. */
+  .lc-hero .lc-led {
+    animation: lc-led-on 1.1s var(--ease-inout) 0.2s backwards;
+  }
+  @keyframes lc-led-on {
+    0% {
+      opacity: 0.2;
+      filter: none;
+    }
+    55% {
+      opacity: 1;
+      filter: brightness(1.7);
+    }
+  }
+  /* The slanted media edge draws top → bottom (pathLength=100 in Hero.astro). */
+  .lc-hero-edge {
+    stroke-dasharray: 100;
+    animation: lc-line-draw 1.2s var(--ease-emph) 0.15s both;
+  }
+  @keyframes lc-line-draw {
+    from {
+      stroke-dashoffset: 100;
+    }
+  }
+}
+
+/* ================================================================== 3. brand moment (header logo, once per session) */
+
+/* Overlay of the logo's traces + ring nodes, exactly over the raster mark (Header.astro). Invisible unless the
+   head script flagged the first page of the session (html[data-intro]) and motion is welcome. */
+.lc-logo-intro {
+  position: absolute;
+  inset-inline: 0;
+  inset-block: 0.25rem;
+  inline-size: 100%;
+  block-size: calc(100% - 0.5rem);
+  overflow: visible;
+  pointer-events: none;
+  opacity: 0;
+}
+@media (prefers-reduced-motion: no-preference) {
+  :root[data-intro] .lc-logo-intro {
+    opacity: 1;
+  }
+  :root[data-intro] .lc-logo-intro .t {
+    stroke: var(--color-signal-400);
+    stroke-width: 15;
+    stroke-dasharray: 100;
+    stroke-dashoffset: 100;
+    /* constant signal speed (linear), so the branch to ring 2 leaves exactly as the main pulse passes the junction */
+    animation:
+      lc-li-draw var(--t) linear var(--d) forwards,
+      lc-li-fade 0.6s var(--ease-exit) 1.5s forwards;
+  }
+  :root[data-intro] .lc-logo-intro .n {
+    fill: var(--color-signal-400);
+    fill-opacity: 0;
+    stroke: var(--color-signal-400);
+    stroke-width: 9;
+    stroke-opacity: 0;
+    animation: lc-li-node 0.9s var(--ease-mech) var(--d) both;
+  }
+  :root[data-intro] .lc-logo-intro .g {
+    stroke: var(--color-signal-300);
+    stroke-width: 5;
+    opacity: 0;
+    transform-box: fill-box;
+    transform-origin: center;
+    animation: lc-li-ping 0.8s var(--ease-emph) var(--d) both;
+  }
+  @keyframes lc-li-draw {
+    to {
+      stroke-dashoffset: 0;
+    }
+  }
+  @keyframes lc-li-fade {
+    to {
+      opacity: 0;
+    }
+  }
+  @keyframes lc-li-node {
+    0% {
+      fill-opacity: 0;
+      stroke-opacity: 0;
+    }
+    12% {
+      fill-opacity: 1;
+      stroke-opacity: 1;
+    }
+    100% {
+      fill-opacity: 0;
+      stroke-opacity: 0;
+    }
+  }
+  @keyframes lc-li-ping {
+    0% {
+      opacity: 0.95;
+      transform: scale(1);
+    }
+    100% {
+      opacity: 0;
+      transform: scale(2.6);
+    }
+  }
+}
+
+/* ================================================================== 4. scroll reveals (CSS scroll-driven) */
+
+/*
+ * Column index of a grid item (rows enter the viewport together, so cards cascade across a row from the
+ * inline start; in RTL columns are mirrored, so the cascade is too). Derived from the grid utilities.
+ */
+[class*="grid-cols-"] > * {
+  --col: 0;
+}
+[class~="grid-cols-2"] > :nth-child(2n) {
+  --col: 1;
+}
+@media (min-width: 40rem) {
+  [class*="sm:grid-cols-2"] > :nth-child(n) {
+    --col: 0;
+  }
+  [class*="sm:grid-cols-2"] > :nth-child(2n) {
+    --col: 1;
+  }
+  [class*="sm:grid-cols-3"] > :nth-child(n) {
+    --col: 0;
+  }
+  [class*="sm:grid-cols-3"] > :nth-child(3n + 2) {
+    --col: 1;
+  }
+  [class*="sm:grid-cols-3"] > :nth-child(3n) {
+    --col: 2;
+  }
+}
+@media (min-width: 48rem) {
+  [class*="md:grid-cols-2"] > :nth-child(n) {
+    --col: 0;
+  }
+  [class*="md:grid-cols-2"] > :nth-child(2n) {
+    --col: 1;
+  }
+}
+@media (min-width: 64rem) {
+  [class*="lg:grid-cols-"] > :nth-child(n) {
+    --col: 0;
+  }
+  [class*="lg:grid-cols-2"] > :nth-child(2n) {
+    --col: 1;
+  }
+  [class*="lg:grid-cols-3"] > :nth-child(3n + 2) {
+    --col: 1;
+  }
+  [class*="lg:grid-cols-3"] > :nth-child(3n) {
+    --col: 2;
+  }
+  [class*="lg:grid-cols-4"] > :nth-child(4n + 2) {
+    --col: 1;
+  }
+  [class*="lg:grid-cols-4"] > :nth-child(4n + 3) {
+    --col: 2;
+  }
+  [class*="lg:grid-cols-4"] > :nth-child(4n) {
+    --col: 3;
+  }
+  [class*="lg:grid-cols-5"] > :nth-child(5n + 2) {
+    --col: 1;
+  }
+  [class*="lg:grid-cols-5"] > :nth-child(5n + 3) {
+    --col: 2;
+  }
+  [class*="lg:grid-cols-5"] > :nth-child(5n + 4) {
+    --col: 3;
+  }
+  [class*="lg:grid-cols-5"] > :nth-child(5n) {
+    --col: 4;
+  }
+}
+
+/* Static resting positions of the stat needles (decorative; no meaning). */
+.lc-stat {
+  --rest: 0.72;
+}
+.lc-stat:nth-child(4n + 2) {
+  --rest: 0.86;
+}
+.lc-stat:nth-child(4n + 3) {
+  --rest: 0.6;
+}
+.lc-stat:nth-child(4n) {
+  --rest: 0.92;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  @supports (animation-timeline: view()) {
+    /* Cards, tiles, feature cells, gallery thumbs: rise 18px + fade, scrubbed by the scroll position over the
+       first part of the element's entry, offset per column. */
+    .lc-reveal {
+      animation: lc-reveal var(--ease-mech) both;
+      animation-timeline: view();
+      animation-range: entry calc(var(--col, 0) * 6%) entry calc(60% + var(--col, 0) * 6%);
+    }
+    @keyframes lc-reveal {
+      from {
+        opacity: 0;
+        transform: translateY(var(--move-reveal));
+      }
+    }
+
+    /* Thin parts (bars, rails, scales) are driven by their block's timeline, not their own 2px box. */
+    .lc-reveal {
+      view-timeline: --lc-item block;
+    }
+
+    /* Section headings: the block rises, the eyebrow's slant bar draws from the inline start, the swoosh wipes in. */
+    .lc-head {
+      view-timeline: --lc-head block;
+      animation: lc-reveal-sm var(--ease-mech) both;
+      animation-timeline: view();
+      animation-range: entry 0% entry 70%;
+    }
+    @keyframes lc-reveal-sm {
+      from {
+        opacity: 0;
+        transform: translateY(var(--move-page));
+      }
+    }
+    .lc-head .slant-bar,
+    .lc-draw-x {
+      transform-origin: 0 50%;
+      animation: lc-draw-x var(--ease-inout) both;
+      animation-timeline: --lc-head;
+      animation-range: entry 25% entry 100%;
+    }
+    .lc-draw-x {
+      animation-timeline: --lc-item;
+    }
+    :is([dir="rtl"] .lc-head .slant-bar, [dir="rtl"] .lc-draw-x) {
+      transform-origin: 100% 50%;
+    }
+    @keyframes lc-draw-x {
+      from {
+        scale: 0 1;
+      }
+    }
+    /* Ranges stay within entry/contain so they always complete, even for blocks at the very end of a page. */
+    .lc-swoosh {
+      animation: lc-wipe var(--ease-inout) both;
+      animation-timeline: view();
+      animation-range: entry 0% contain 40px;
+    }
+    .lc-head .lc-swoosh {
+      animation-timeline: --lc-head;
+      animation-range: entry 40% contain 40px;
+    }
+    .lc-band .lc-swoosh {
+      animation-timeline: --lc-band;
+      animation-range: entry 25% entry 65%;
+    }
+    @keyframes lc-wipe {
+      from {
+        clip-path: inset(0 100% 0 0);
+      }
+      to {
+        clip-path: inset(0);
+      }
+    }
+
+    /* Process bus: each ring node switches on, then its trace draws to the next node — a signal propagating
+       step to step (all steps share one row on desktop, so --col staggers them along the bus). */
+    .lc-steps > li {
+      --col: 0;
+      view-timeline: --lc-step block;
+    }
+    @media (min-width: 64rem) {
+      .lc-steps > li {
+        --col: var(--i);
+      }
+    }
+    .lc-steps .lc-step-node {
+      animation: lc-node-on var(--ease-mech) both;
+      animation-timeline: --lc-step;
+      animation-range: entry calc(10% + var(--col) * 8%) entry calc(45% + var(--col) * 8%);
+    }
+    @keyframes lc-node-on {
+      from {
+        opacity: 0.25;
+        scale: 0.8;
+      }
+    }
+    .lc-steps .lc-step-rail {
+      transform-origin: 50% 0;
+      animation: lc-draw-y var(--ease-inout) both;
+      animation-timeline: --lc-step;
+      animation-range: entry 50% contain 80px;
+    }
+    @keyframes lc-draw-y {
+      from {
+        scale: 1 0;
+      }
+    }
+    @media (min-width: 64rem) {
+      .lc-steps .lc-step-rail {
+        transform-origin: 0 50%;
+        animation-name: lc-draw-x;
+        animation-range: entry calc(30% + var(--col) * 8%) entry calc(60% + var(--col) * 8%);
+      }
+      [dir="rtl"] .lc-steps .lc-step-rail {
+        transform-origin: 100% 50%;
+      }
+    }
+    .lc-steps .lc-step-body {
+      animation: lc-reveal-sm var(--ease-mech) both;
+      animation-timeline: --lc-step;
+      animation-range: entry calc(10% + var(--col) * 8%) entry calc(60% + var(--col) * 8%);
+    }
+
+    /* Stat strip: the needle sweeps from zero to its resting mark as the figure scrolls in. */
+    .lc-stat {
+      view-timeline: --lc-stat block;
+    }
+    .lc-stat dd::before {
+      animation: lc-needle var(--ease-inout) both; /* a needle accelerates and settles */
+      animation-timeline: --lc-stat;
+      animation-range: entry 50% contain 160px;
+    }
+    @keyframes lc-needle {
+      from {
+        translate: 0 0;
+      }
+    }
+    .lc-stat dd::after {
+      animation: lc-wipe var(--ease-inout) both;
+      animation-timeline: --lc-stat;
+      animation-range: entry 0% entry 100%;
+    }
+    [dir="rtl"] .lc-stat dd::after {
+      animation-name: lc-wipe-rtl;
+    }
+    @keyframes lc-wipe-rtl {
+      from {
+        clip-path: inset(0 0 0 100%);
+      }
+      to {
+        clip-path: inset(0);
+      }
+    }
+
+    /* Closing bands: the gear watermark turns a few degrees as the band passes (named timeline on the band). */
+    .lc-band {
+      view-timeline: --lc-band block;
+    }
+    .lc-band .lc-gear {
+      animation: lc-gear linear both;
+      animation-timeline: --lc-band;
+    }
+    @keyframes lc-gear {
+      from {
+        rotate: -9deg;
+      }
+      to {
+        rotate: 9deg;
+      }
+    }
+  }
+}
+
+/* An overflow:hidden ancestor is a scroll container, so it would become the reveal's (non-scrolling) timeline
+   source and freeze the animation. overflow:clip paints exactly the same without being a scroll container. Applied
+   to bands that host scroll-driven parts (pages sometimes pass `overflow-hidden` to <Section>). */
+.lc-clip,
+:where(.overflow-hidden):has(:is(.lc-reveal, .lc-head, .lc-steps, .lc-stat, .lc-swoosh)) {
+  overflow: clip;
+}
+
+/* Stat strip instrument scale (static decoration; the figures themselves are plain text and never animate). */
+.lc-stat dd {
+  --scale-w: 90px; /* 0…90: major ticks at both ends, so the scale reads the same mirrored */
+  position: relative;
+  padding-block-end: 1rem;
+}
+.lc-stat dd::after {
+  /* the scale: minor ticks every 6px, major every 30px */
+  content: "";
+  position: absolute;
+  inset-inline-start: 0;
+  bottom: 0;
+  inline-size: calc(var(--scale-w) + 1px);
+  block-size: 6px;
+  color: var(--color-charcoal-300);
+  background:
+    linear-gradient(to right, currentColor 1px, transparent 1px) 0 0 / 30px 100% repeat-x,
+    linear-gradient(to right, currentColor 1px, transparent 1px) 0 100% / 6px 50% repeat-x;
+}
+.lc-stat dd::before {
+  /* the needle: a slanted amber bar resting at --rest of the scale */
+  content: "";
+  position: absolute;
+  inset-inline-start: 0;
+  bottom: -2px;
+  inline-size: 3px;
+  block-size: 10px;
+  background: var(--color-signal-500);
+  transform: skewX(calc(-1 * var(--slant)));
+  translate: calc(var(--rest) * (var(--scale-w) - 2px) * var(--vt-sign, 1)) 0;
+  z-index: 1;
+}
+:where(.on-dark) .lc-stat dd::after {
+  color: rgb(255 255 255 / 0.22);
+}
+:where(.on-dark) .lc-stat dd::before {
+  background: var(--color-signal-400);
+}
+[dir="rtl"] .lc-stat dd::before {
+  transform: skewX(var(--slant));
+}
+
+/* ================================================================== 5. micro-interactions */
+
+/* --- FAQ: smooth open / close where the browser can size to `auto`; native instant toggle elsewhere. */
+@media (prefers-reduced-motion: no-preference) {
+  @supports (interpolate-size: allow-keywords) and selector(::details-content) {
+    .lc-faq details {
+      interpolate-size: allow-keywords;
+    }
+    .lc-faq details::details-content {
+      block-size: 0;
+      overflow-y: clip;
+      opacity: 0;
+      transition:
+        block-size var(--dur-ui) var(--ease-mech),
+        opacity var(--dur-ui) var(--ease-mech),
+        content-visibility var(--dur-ui) allow-discrete;
+    }
+    .lc-faq details[open]::details-content {
+      block-size: auto;
+      opacity: 1;
+    }
+  }
+}
+
+/* --- Language menu (popover): drops 6px into place; leaves faster than it arrives. */
+@supports selector(:popover-open) {
+  .lc-lang-pop {
+    opacity: 0;
+    transform: translateY(calc(-1 * var(--move-ui)));
+    transition:
+      opacity var(--dur-micro) var(--ease-exit),
+      transform var(--dur-micro) var(--ease-exit),
+      overlay var(--dur-micro) allow-discrete,
+      display var(--dur-micro) allow-discrete;
+  }
+  .lc-lang-pop:popover-open {
+    opacity: 1;
+    transform: none;
+    transition-duration: var(--dur-ui);
+    transition-timing-function: var(--ease-mech);
+  }
+  @starting-style {
+    .lc-lang-pop:popover-open {
+      opacity: 0;
+      transform: translateY(calc(-1 * var(--move-ui)));
+    }
+  }
+}
+
+/* --- Gallery lightbox (dialog): backdrop and image fade/scale in; reverse on close. */
+.lc-lightbox,
+.lc-lightbox::backdrop {
+  opacity: 0;
+  transition:
+    opacity var(--dur-ui) var(--ease-mech),
+    overlay var(--dur-ui) allow-discrete,
+    display var(--dur-ui) allow-discrete;
+}
+.lc-lightbox[open],
+.lc-lightbox[open]::backdrop {
+  opacity: 1;
+}
+@starting-style {
+  .lc-lightbox[open],
+  .lc-lightbox[open]::backdrop {
+    opacity: 0;
+  }
+}
+.lc-lightbox [data-image] {
+  transition: scale var(--dur-section) var(--ease-emph);
+}
+.lc-lightbox:not([open]) [data-image] {
+  scale: 0.97;
+}
+@starting-style {
+  .lc-lightbox[open] [data-image] {
+    scale: 0.96;
+  }
+}
+
+/* --- Paused loops: hero traces, zone-map pulse… (attribute set by an IntersectionObserver in BaseLayout). */
+[data-offscreen],
+[data-offscreen] * {
+  animation-play-state: paused !important;
+}
+
+@media print {
+  *,
+  *::before,
+  *::after {
+    animation: none !important;
+    transition: none !important;
+  }
+}
+
+/* Card media zoom: one curve everywhere (some pages pass their own <Picture> classes). */
+[data-vt-href] img {
+  transition-duration: var(--dur-section);
+  transition-timing-function: var(--ease-emph);
+}

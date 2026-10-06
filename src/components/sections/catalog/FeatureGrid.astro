@@ -27,8 +27,8 @@ const pad = (i: number) => String(i + 1).padStart(2, "0");
 <ul role="list" class:list={["grid gap-x-8 gap-y-10", grid, className]}>
   {
     items.map((it, i) => (
-      <li class="relative border-t border-charcoal-200 pt-6 in-[.on-dark]:border-white/12">
-        <span aria-hidden="true" class="absolute -top-px start-0 h-0.5 w-10 bg-royal-600 in-[.on-dark]:bg-signal-400" />
+      <li class="lc-reveal relative border-t border-charcoal-200 pt-6 in-[.on-dark]:border-white/12">
+        <span aria-hidden="true" class="lc-draw-x absolute -top-px start-0 h-0.5 w-10 bg-royal-600 in-[.on-dark]:bg-signal-400" />
         <span aria-hidden="true" class="mb-4 flex items-center gap-3">
           <span class="font-mono text-xs font-semibold tracking-widest text-royal-600 ltr in-[.on-dark]:text-signal-300" dir="ltr">
             {pad(i)}

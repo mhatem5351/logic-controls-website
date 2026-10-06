@@ -27,11 +27,11 @@ if (foreignFirst) doors.reverse();
     doors.map((d) => (
       <article
         class:list={[
-          "group relative isolate flex flex-col overflow-hidden p-7 transition duration-300 sm:p-9",
+          "lc-reveal group relative isolate flex flex-col overflow-hidden p-7 transition-[translate,border-color,box-shadow] duration-(--dur-ui) ease-mech sm:p-9",
           "has-[a:focus-visible]:outline-2 has-[a:focus-visible]:outline-offset-4 has-[a:focus-visible]:outline-(--focus)",
           d.dark
             ? "on-dark bg-navy-950 text-navy-100 hover:shadow-glow"
-            : "border border-charcoal-200 bg-white hover:-translate-y-0.5 hover:border-royal-300 hover:shadow-lift",
+            : "border border-charcoal-200 bg-white hover:-translate-y-(--move-lift) hover:border-royal-300 hover:shadow-lift",
         ]}
       >
         {d.dark && <div aria-hidden="true" class="pointer-events-none absolute inset-0 -z-10 bg-blueprint mask-fade-edges" />}
@@ -76,7 +76,7 @@ if (foreignFirst) doors.reverse();
         >
           {d.dark && <span class="lc-led" />}
           {d.cta}
-          <Icon name="arrow" size={18} class="transition-transform duration-300 group-hover:translate-x-1 rtl:group-hover:-translate-x-1" />
+          <Icon name="arrow" size={18} class="transition-[translate] duration-(--dur-ui) ease-mech group-hover:translate-x-1 rtl:group-hover:-translate-x-1" />
         </span>
       </article>
     ))
