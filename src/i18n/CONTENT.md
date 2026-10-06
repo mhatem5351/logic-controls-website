@@ -65,7 +65,7 @@ WhatsApp links: `whatsappLink(t.common.whatsapp.<key>)` after replacing placehol
 ## 4. Page section order
 
 **Home** (`home.json` unless noted)
-1. Hero: `hero.eyebrow`, H1 `hero.title`, `hero.lead`, `hero.proof`, buttons `hero.ctaPrimary` → `contact/` and `hero.ctaSecondary` → WhatsApp `whatsapp.default`; stats strip from `STATS` + `common.stats`. Suggested hero image: `pasteurizer-cip-recipes/hmi.jpg` (alt `hero.imageAlt`), or the `/media/hero-filling.mp4` loop with its poster.
+1. Hero: `hero.eyebrow`, H1 `hero.title`, `hero.lead`, `hero.proof`, buttons `hero.ctaPrimary` → `contact/` and `hero.ctaSecondary` → WhatsApp `whatsapp.default`; stats strip from `STATS` + `common.stats`. Suggested hero image: `pasteurizer-cip-recipes/hmi.jpg` (alt `hero.imageAlt`), or the `/media/hero-filling-v2.mp4` loop with its poster.
 2. Platforms strip: `common.platforms` + `SITE.brands` (text or logos) → `technologies/`
 3. Two doors: `audiences.local` → `services/`, `audiences.foreign` → `foreign-manufacturers/`
 4. Services: `services.title/intro`, 8 cards from `services.json items[slug].{title,summary}` in `SERVICE_SLUGS` order

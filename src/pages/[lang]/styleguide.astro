@@ -422,7 +422,7 @@ const cap = "mb-3 font-mono text-xs tracking-wider text-charcoal-600 uppercase i
             title={title}
             meta={[...meta]}
             href={href(locale, "projects")}
-            image={[P.panelVfd, P.hmiMachine, P.panelLamps][i] ?? ["/media/shampoo-filling-line-poster.webp", "/media/bottle-printing-retrofit-poster.webp", "/media/hotel-laundry-hmi-poster.webp"][i]}
+            image={[P.panelVfd, P.hmiMachine, P.panelLamps][i] ?? ["/media/shampoo-filling-line-poster-v2.webp", "/media/bottle-printing-retrofit-poster-v2.webp", "/media/hotel-laundry-hmi-poster-v2.webp"][i]}
             tags={[["LS XGB", "Wecon PI", "VFD"], ["Delta PLC", "Servo"], ["Wecon HMI", "Inverter"]][i]}
             cta={t.cta.viewProject}
           />
@@ -474,8 +474,8 @@ const cap = "mb-3 font-mono text-xs tracking-wider text-charcoal-600 uppercase i
   <Section variant="muted">
     <SectionHeading index="14" eyebrow="VideoPlayer · Gallery" title={d.video[0]!} />
     <div class="mt-10 grid items-start gap-8 lg:grid-cols-[1.6fr_1fr]">
-      <VideoPlayer src="/media/shampoo-filling-line.mp4" poster="/media/shampoo-filling-line-poster.webp" title={d.video[0]!} caption={d.video[0]} duration="0:58" />
-      <VideoPlayer src="/media/hotel-laundry-hmi.mp4" poster="/media/hotel-laundry-hmi-poster.webp" title={d.video[1]!} caption={d.video[1]} aspect="9/16" />
+      <VideoPlayer src="/media/shampoo-filling-line-v2.mp4" poster="/media/shampoo-filling-line-poster-v2.webp" title={d.video[0]!} caption={d.video[0]} duration="0:58" />
+      <VideoPlayer src="/media/hotel-laundry-hmi-v2.mp4" poster="/media/hotel-laundry-hmi-poster-v2.webp" title={d.video[1]!} caption={d.video[1]} aspect="9/16" />
     </div>
     {galleryImages.length > 0 && <Gallery class="mt-12" images={galleryImages} columns={3} />}
   </Section>
