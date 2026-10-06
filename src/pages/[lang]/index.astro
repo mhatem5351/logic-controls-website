@@ -1,0 +1,12 @@
+---
+import { Font } from "astro:assets";
+import "~/styles/global.css";
+import { getMessages, localeStaticPaths, LOCALE_META, type Locale } from "~/i18n";
+export const getStaticPaths = localeStaticPaths;
+const locale = Astro.params.lang as Locale;
+const t = getMessages(locale);
+---
+<html lang={LOCALE_META[locale].htmlLang} dir={LOCALE_META[locale].dir}>
+  <head><meta charset="utf-8" /><title>{t.seo.defaultTitle}</title><Font cssVariable="--font-latin" /></head>
+  <body><h1>{t.seo.siteName}</h1><p>{t.ui.cta.quote}</p></body>
+</html>

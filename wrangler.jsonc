@@ -1,0 +1,27 @@
+{
+  "$schema": "./node_modules/wrangler/config-schema.json",
+  "name": "logic-controls-site",
+  "main": "worker/index.ts",
+  "compatibility_date": "2026-10-01",
+  "assets": {
+    "directory": "./dist",
+    "binding": "ASSETS",
+    "html_handling": "auto-trailing-slash",
+    "not_found_handling": "404-page",
+    // Only these paths invoke the Worker (Free plan: 100k/day); every other asset is served for free.
+    "run_worker_first": ["/", "/api/*"]
+  },
+  "routes": [
+    { "pattern": "logic-controls.com", "custom_domain": true }
+  ],
+  "send_email": [
+    // Must be a verified Email Routing destination — free on all plans.
+    { "name": "RFQ_MAIL", "destination_address": "mohammedsafa11@gmail.com" }
+  ],
+  "vars": {
+    "OWNER_EMAIL": "mohammedsafa11@gmail.com",
+    "MAIL_FROM": "website@logic-controls.com",
+    "ALLOWED_HOSTNAMES": "logic-controls.com,www.logic-controls.com"
+  },
+  "observability": { "enabled": true }
+}

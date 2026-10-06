@@ -1,0 +1,26 @@
+{
+  "nav": {
+    "home": "Home",
+    "services": "Services",
+    "industries": "Industries",
+    "projects": "Projects",
+    "about": "About",
+    "contact": "Contact",
+    "foreign": "Setting up in Egypt?"
+  },
+  "cta": {
+    "quote": "Request a quote",
+    "whatsapp": "WhatsApp an engineer",
+    "call": "Call us",
+    "email": "Email us"
+  },
+  "a11y": {
+    "skip": "Skip to content",
+    "menu": "Menu",
+    "closeMenu": "Close menu",
+    "language": "Language"
+  },
+  "footer": {
+    "rights": "All rights reserved."
+  }
+}
