@@ -1,11 +1,176 @@
 ---
-/* building-materials — TODO */
+/* building-materials — concrete batching plant: two aggregate bins with gates over a weigh belt,
+   inclined belt to a twin-shaft mixer (cut-away end view, counter-rotating paddles), water weigh tank,
+   cement silo with inclined screw, truck mixer under the discharge chute, SCADA panel.
+   Loop 10 s: gate 1 → gate 2 dose onto the weigh belt (load-cell pulses, SCADA bars rise) → belt and
+   incline carry aggregate up → cement screw → water → mixing → discharge command pulse → chute pours
+   into the turning truck drum → reset. */
 import Frame from "../ArtFrame.astro";
 import { uid, type ArtProps } from "../types";
 const p = Astro.props as ArtProps;
 const u = uid("bm");
+const trough = "M214 98V122A19 19 0 0 0 252 122A19 19 0 0 0 290 122V98Z";
+const paddle = "M-14 0H14M0-14V14M-14-4V4M14-4V4M-4-14H4M-4 14H4";
+const fins = Array.from({ length: 11 }, (_, i) => `M${-70 + i * 12} -20l10 40`).join("");
+const t1 = "M70 146V134L56 120V104";
+const t2 = "M94 146V136L104 126H196L206 116";
 ---
 
 <Frame {...p} uid={u} name="bm">
-  <rect class="f" x="140" y="100" width="120" height="120"></rect>
+  <style is:inline>
+    .lca-bm .g1{animation:bmG1 10s cubic-bezier(.65,0,.35,1) infinite}
+    .lca-bm .g2{animation:bmG2 10s cubic-bezier(.65,0,.35,1) infinite}
+    .lca-bm .f1{animation:bmF1 10s step-end infinite}
+    .lca-bm .f2{animation:bmF2 10s step-end infinite}
+    .lca-bm .fb{animation:bmFb 10s step-end infinite}
+    .lca-bm .fi{animation:bmFi 10s step-end infinite}
+    .lca-bm .fc{animation:bmFc 10s step-end infinite}
+    .lca-bm .fw2{animation:bmFw 10s step-end infinite}
+    .lca-bm .fd{animation:bmFd 10s step-end infinite}
+    .lca-bm .dn{stroke-dasharray:3 4;animation:bmDn .45s linear infinite}
+    .lca-bm .lm{stroke-dasharray:.1 7;animation:bmLm .6s linear infinite}
+    .lca-bm .sc{stroke-dasharray:1.5 4;animation:bmSc .4s linear infinite}
+    .lca-bm .pd{transform-box:fill-box;transform-origin:center;animation:lca-sp 2.4s linear infinite}
+    .lca-bm .pr{animation-direction:reverse}
+    .lca-bm .mx{animation:bmMx 10s ease-in-out infinite}
+    .lca-bm .wl{transform-box:fill-box;transform-origin:50% 100%;animation:bmWl 10s ease-in-out infinite}
+    .lca-bm .fn{animation:bmFn 1.2s linear infinite}
+    .lca-bm .sb{transform-box:fill-box;transform-origin:50% 100%}
+    .lca-bm .s1{animation:bmS1 10s ease-out infinite}
+    .lca-bm .s2{animation:bmS2 10s ease-out infinite}
+    .lca-bm .s3{animation:bmS3 10s ease-out infinite}
+    .lca-bm .p.o1{animation:bmP1 10s linear infinite}
+    .lca-bm .nd.o1,.lca-bm .pg.o1{animation:bmN1 10s ease-out infinite}
+    .lca-bm .p.o2{animation:bmP2 10s linear infinite}
+    .lca-bm .nd.o2,.lca-bm .pg.o2{animation:bmN2 10s ease-out infinite}
+    @keyframes bmG1{0%,2%{transform:none}5%,14%{transform:translateX(9px)}17%,100%{transform:none}}
+    @keyframes bmG2{0%,16%{transform:none}19%,28%{transform:translateX(9px)}31%,100%{transform:none}}
+    @keyframes bmF1{0%{opacity:0}4%{opacity:1}15%,100%{opacity:0}}
+    @keyframes bmF2{0%{opacity:0}18%{opacity:1}29%,100%{opacity:0}}
+    @keyframes bmFb{0%{opacity:0}4%{opacity:1}36%,100%{opacity:0}}
+    @keyframes bmFi{0%{opacity:0}9%{opacity:1}45%,100%{opacity:0}}
+    @keyframes bmFc{0%{opacity:0}22%{opacity:1}42%,100%{opacity:0}}
+    @keyframes bmFw{0%{opacity:0}32%{opacity:1}45%,100%{opacity:0}}
+    @keyframes bmFd{0%{opacity:0}72%{opacity:1}90%,100%{opacity:0}}
+    @keyframes bmDn{to{stroke-dashoffset:-7}}
+    @keyframes bmLm{to{stroke-dashoffset:-7.1}}
+    @keyframes bmSc{to{stroke-dashoffset:-5.5}}
+    @keyframes bmMx{0%,6%{transform:translateY(20px)}45%,70%{transform:none}90%,100%{transform:translateY(20px)}}
+    @keyframes bmWl{0%,32%{transform:none}45%{transform:scaleY(.25)}60%,100%{transform:none}}
+    @keyframes bmFn{to{transform:translateX(12px)}}
+    @keyframes bmS1{0%,4%{transform:scaleY(.05)}15%,72%{transform:none}88%,100%{transform:scaleY(.05)}}
+    @keyframes bmS2{0%,18%{transform:scaleY(.05)}29%,72%{transform:none}88%,100%{transform:scaleY(.05)}}
+    @keyframes bmS3{0%,32%{transform:scaleY(.05)}45%,72%{transform:none}88%,100%{transform:scaleY(.05)}}
+    @keyframes bmP1{0%{stroke-dashoffset:14}4%{stroke-dashoffset:-102}4.1%,13.9%{stroke-dashoffset:14}18%,100%{stroke-dashoffset:-102}}
+    @keyframes bmN1{0%,3.5%{opacity:0;transform:scale(1)}4%{opacity:1;transform:scale(1)}12%,17.4%{opacity:0;transform:scale(2.4)}17.5%{opacity:0;transform:scale(1)}18%{opacity:1;transform:scale(1)}26%,100%{opacity:0;transform:scale(2.4)}}
+    @keyframes bmP2{0%,66%{stroke-dashoffset:14}72%,100%{stroke-dashoffset:-102}}
+    @keyframes bmN2{0%,71.5%{opacity:0;transform:scale(1)}72%{opacity:1;transform:scale(1)}82%,100%{opacity:0;transform:scale(2.4)}}
+    @media (prefers-reduced-motion:reduce){.lca-bm .f2,.lca-bm .fw2{opacity:0}.lca-bm .g1{transform:translateX(9px)}}
+  </style>
+  <defs>
+    <clipPath id={`${u}t`}><path d={trough}></path></clipPath>
+    <clipPath id={`${u}d`}><path d="M-56-18Q-66 0-56 18H32L56 7V-7L32-18Z"></path></clipPath>
+  </defs>
+
+  <!-- shadows -->
+  <path class="sh" d="M60 258H116L108 250H66ZM122 258H292L284 250H130ZM326 258H376L368 252H332Z"></path>
+
+  <!-- mixer columns (behind the truck) -->
+  <rect class="m3 d" x="212" y="120" width="6" height="138"></rect>
+  <rect class="m3 d" x="286" y="120" width="6" height="138"></rect>
+
+  <!-- cement silo -->
+  <path class="d" d="M330 150V258M366 150V258"></path>
+  <path class="m" d="M324 34Q348 22 372 34V150L354 176H342L324 150Z"></path>
+  <path class="n" d="M366.5 34V150" style="stroke:var(--i-m2);stroke-width:7"></path>
+  <path class="d" d="M324 34Q348 22 372 34V150L354 176H342L324 150ZM324 150H372"></path>
+  <rect class="m3 d" x="341" y="14" width="14" height="10"></rect>
+  <rect class="m3 d" x="343" y="176" width="10" height="8"></rect>
+  <!-- screw conveyor silo → mixer -->
+  <path d="M348 186 298 92" style="stroke:var(--i-ink);stroke-width:10"></path>
+  <path d="M348 186 298 92" style="stroke:var(--i-m);stroke-width:7"></path>
+  <g class="fc rms"><path class="sc" d="M348 186 298 92" style="stroke:var(--i-ln);stroke-width:6"></path></g>
+  <rect class="b d" x="340" y="186" width="16" height="12" rx="2"></rect>
+
+  <!-- water weigh tank on the mixer -->
+  <path class="d" d="M252 46V86M280 46V86"></path>
+  <rect class="m" x="248" y="22" width="36" height="24" rx="3"></rect>
+  <rect class="w n wl" x="251" y="27" width="30" height="16" rx="1.5" opacity=".55"></rect>
+  <rect x="248" y="22" width="36" height="24" rx="3"></rect>
+  <path d="M266 46V88" style="stroke:var(--i-ink);stroke-width:6"></path>
+  <path d="M266 46V88" style="stroke:var(--i-m);stroke-width:3"></path>
+  <g class="fw2"><path class="dn" d="M266 47V88" style="stroke:var(--i-w);stroke-width:2"></path></g>
+
+  <!-- twin-shaft mixer (cut-away end view) -->
+  <path class="t" d="M214 98 228 84H304L290 98Z"></path>
+  <path class="s" d="M290 98 304 84V108L290 122Z"></path>
+  <path class="s" d={trough}></path>
+  <g clip-path={`url(#${u}t)`}>
+    <g class="mx"><path class="n" d="M210 116q10-4 20 0t20 0t20 0t20 0V150H210Z" style="fill:var(--i-tr);opacity:.5"></path><path class="d" d="M210 116q10-4 20 0t20 0t20 0t20 0"></path></g>
+  </g>
+  <g transform="translate(233 122)"><path class="pd" d={paddle}></path></g>
+  <g transform="translate(271 122)"><path class="pd pr" d={paddle}></path></g>
+  <path d={trough}></path>
+  <rect class="m3 d" x="245" y="140" width="14" height="6"></rect>
+  <path d="M252 146V150L268 166" style="stroke:var(--i-ink);stroke-width:9"></path>
+  <path d="M252 146V150L268 166" style="stroke:var(--i-m3);stroke-width:6"></path>
+  <g class="fd rms"><path class="dn" d="M252 147V150L268 166L273 180" style="stroke:var(--i-ink);stroke-width:2.5"></path></g>
+
+  <!-- truck mixer -->
+  <rect class="m3 d" x="122" y="236" width="162" height="8"></rect>
+  <path class="m3 d" d="M174 236V226h8v10M244 236V214h8v22"></path>
+  <g transform="translate(222 204) rotate(-14)">
+    <path class="m" d="M-56-18Q-66 0-56 18H32L56 7V-7L32-18Z"></path>
+    <g clip-path={`url(#${u}d)`}><g class="fn"><path class="h l" d={fins} stroke-width="2.5"></path></g></g>
+    <path class="d" d="M-56-18Q-66 0-56 18H32L56 7V-7L32-18Z"></path>
+    <path class="d" d="M32-18V18"></path>
+  </g>
+  <path class="m d" d="M262 168H284L278 182H270Z"></path>
+  <path class="f" d="M124 244V214L134 200H160V244Z"></path>
+  <path class="b2 d" d="M130 214 137 205H154V214Z"></path>
+  <path class="d l" d="M130 226h24"></path>
+  {[144, 232, 258].map((x) => <g><circle class="k" cx={x} cy="248" r="10"></circle><circle class="m3 d" cx={x} cy="248" r="4"></circle></g>)}
+
+  <!-- aggregate bins + gates + weigh belt -->
+  <path class="d" d="M16 70V258M114 70V258"></path>
+  <path class="t" d="M16 34 28 22H130L118 34Z"></path>
+  <path d="M24 30H124M30 26H126" style="stroke:var(--i-m3);stroke-width:2.5;stroke-dasharray:0 5"></path>
+  <path class="s" d="M118 34 130 22V58L118 70Z"></path>
+  <path class="m" d="M16 34H64V70L45 92H35L16 70ZM70 34H118V70L99 92H89L70 70Z"></path>
+  <path class="n" d="M59 35V70M113 35V70" style="stroke:var(--i-m2);stroke-width:7"></path>
+  <path class="d" d="M16 34H64V70L45 92H35L16 70ZM70 34H118V70L99 92H89L70 70ZM16 70H64M70 70H118"></path>
+  <g class="f1 rms"><path class="dn" d="M40 96V104" style="stroke:var(--i-m3);stroke-width:5"></path></g>
+  <g class="f2"><path class="dn" d="M94 96V104" style="stroke:var(--i-m3);stroke-width:5"></path></g>
+  <g class="g1"><rect class="b d" x="33" y="92" width="14" height="4"></rect></g>
+  <g class="g2"><rect class="b d" x="87" y="92" width="14" height="4"></rect></g>
+  <rect class="m2 d" x="10" y="106" width="142" height="8" rx="4"></rect>
+  <path class="h" d="M14 110h0M148 110h0" stroke-width="4"></path>
+  <g class="fb rms"><path class="lm" d="M18 103H146" style="stroke:var(--i-m3);stroke-width:5"></path></g>
+  <!-- inclined belt -->
+  <path d="M150 108 226 72" style="stroke:var(--i-ink);stroke-width:8"></path>
+  <path d="M150 108 226 72" style="stroke:var(--i-m2);stroke-width:5"></path>
+  <g class="fi rms"><path class="lm" d="M150 108 226 72" style="stroke:var(--i-ink);stroke-width:3"></path></g>
+  <circle class="m3 d" cx="226" cy="72" r="4"></circle>
+
+  <!-- SCADA panel -->
+  <path class="t d" d="M60 150 68 142H108L100 150Z"></path>
+  <path class="s d" d="M100 150 108 142V250L100 258Z"></path>
+  <rect class="f" x="60" y="150" width="40" height="108"></rect>
+  <rect class="k d" x="65" y="157" width="30" height="24" rx="1"></rect>
+  {[[70, "s1", "m3"], [78, "s2", "m3"], [86, "s3", "w"]].map(([x, k, c]) => <rect class:list={["n sb", k, c]} x={x} y="163" width="5" height="15"></rect>)}
+  <circle class="b d" cx="70" cy="192" r="3"></circle><circle class="f d" cx="80" cy="192" r="3"></circle><circle class="f d" cx="90" cy="192" r="3"></circle>
+  <circle class="y n fd" cx="90" cy="192" r="2.1"></circle>
+  <rect class="m3 d" x="93" y="206" width="3" height="12" rx="1"></rect>
+  <path class="d l" d="M66 238h28M66 243h28"></path>
+
+  <!-- brand traces: panel → gates, panel → mixer discharge -->
+  <path class="tr" d={t1 + t2}></path>
+  <circle class="rn" cx="56" cy="99" r="4.5"></circle>
+  <circle class="rn" cx="209.5" cy="112.5" r="4.5"></circle>
+  <path class="p o1" pathLength="100" d={t1}></path>
+  <path class="p o2" pathLength="100" d={t2}></path>
+  <circle class="nd o1" cx="56" cy="99" r="2.2"></circle>
+  <circle class="pg o1" cx="56" cy="99" r="4.5"></circle>
+  <circle class="nd o2" cx="209.5" cy="112.5" r="2.2"></circle>
+  <circle class="pg o2" cx="209.5" cy="112.5" r="4.5"></circle>
 </Frame>

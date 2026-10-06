@@ -1,0 +1,49 @@
+---
+/**
+ * "What happens next" — 3 numbered steps (contact.nextSteps). Vertical rail, adapts to dark surfaces.
+ *   <NextSteps locale="en" />                      heading h2 + steps
+ *   <NextSteps locale="en" headingLevel="h3" />    inside a sidebar card
+ */
+import { getMessages, type Locale } from "~/i18n";
+import Icon, { type IconName } from "~/components/Icon.astro";
+
+interface Props {
+  locale: Locale;
+  headingLevel?: "h2" | "h3";
+  /** Hide the heading (when the page provides its own). */
+  heading?: boolean;
+  class?: string;
+}
+const { locale, headingLevel: H = "h3", heading = true, class: className } = Astro.props;
+const t = getMessages(locale).contact.nextSteps;
+const icons: IconName[] = ["file", "phone", "send"];
+const S = H === "h2" ? "h3" : "h4";
+---
+
+<div class={className}>
+  {heading && <H class="type-h4 text-navy-950 in-[.on-dark]:text-white">{t.title}</H>}
+  <ol role="list" class:list={["relative", heading && "mt-5"]}>
+    {
+      t.steps.map((s, i) => (
+        <li class="relative flex gap-4 pb-6 last:pb-0">
+          {i < t.steps.length - 1 && (
+            <span aria-hidden="true" class="absolute start-[1.125rem] top-10 -bottom-0 w-px bg-royal-600/25 in-[.on-dark]:bg-white/15" />
+          )}
+          <span
+            aria-hidden="true"
+            class="relative grid size-9 shrink-0 place-items-center rounded-full border-2 border-royal-600 bg-white text-royal-700 in-[.on-dark]:border-royal-400 in-[.on-dark]:bg-navy-950 in-[.on-dark]:text-royal-300"
+          >
+            <Icon name={icons[i] ?? "check"} size={16} />
+          </span>
+          <div class="pt-1">
+            <S class="flex items-baseline gap-2 font-bold text-navy-950 in-[.on-dark]:text-white">
+              <span class="font-mono text-xs text-royal-700 ltr in-[.on-dark]:text-royal-300" dir="ltr">{String(i + 1).padStart(2, "0")}</span>
+              <span>{s.title}</span>
+            </S>
+            <p class="mt-1 text-sm text-charcoal-600 in-[.on-dark]:text-navy-200">{s.text}</p>
+          </div>
+        </li>
+      ))
+    }
+  </ol>
+</div>

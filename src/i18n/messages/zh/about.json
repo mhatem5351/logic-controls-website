@@ -1,16 +1,40 @@
 {
   "seo": {
     "title": "关于 Logic Controls | 埃及自动化工程团队",
-    "description": "Logic Controls 是位于埃及十月六日城的工业自动化公司，2025 年由拥有 4 年以上经验的工程师创立。"
+    "description": "Logic Controls 是位于埃及十月六日城的工业自动化公司，工程师拥有 4 年以上经验，已交付 50 多个项目。"
   },
   "h1": "关于 Logic Controls",
   "lead": "我们是位于吉萨省十月六日城的工业自动化工程团队，为埃及工厂设计控制系统、编写程序并完成调试。",
   "story": {
     "title": "我们的故事",
     "paragraphs": [
-      "Logic Controls 成立于 2025 年。公司虽然年轻，但工程团队拥有 4 年以上工业自动化经验，已交付 50 多个项目。",
-      "这些项目涵盖食品与乳品设备、制药包衣、化妆品灌装、贴标与瓶身印刷、混凝土搅拌站、酒店洗衣设备和测试设备，所用平台包括 Siemens、Schneider Electric、Delta、LS Electric 和 Wecon。",
-      "我们创立 Logic Controls，是为了让埃及工厂由一个工程团队负责整套控制系统：设计、控制柜、编程、调试和技术支持。"
+      "Logic Controls 是一家年轻的公司，但工程团队经验丰富：拥有 4 年以上工业自动化经验，已交付 50 多个项目。",
+      "这些项目涵盖食品、饮料与乳品设备、制药包衣、化妆品灌装、贴标与瓶身印刷、混凝土搅拌站、酒店洗衣设备和测试设备，所用平台包括 Siemens、Schneider Electric、Delta、LS Electric 和 Wecon。我们的工程师还参与过排水泵站和饲料厂的 SCADA 系统、金属板定尺剪切机和磨床，以及贴花纸印刷机。",
+      "我们打造 Logic Controls，是为了让埃及工厂由一个工程团队负责整套控制系统：设计、控制柜、编程、调试和技术支持。"
+    ]
+  },
+  "founder": {
+    "eyebrow": "创始人",
+    "title": "Logic Controls 背后的工程师",
+    "name": "Mohammed Tarek Aboalsafa",
+    "role": "创始人兼自动化工程师",
+    "bio": [
+      "Mohammed Tarek Aboalsafa 是一名工业自动化工程师，拥有 4 年以上经验，为食品饮料、制药及其他行业设计、编程、调试和维护 PLC、HMI 与 SCADA 系统。他毕业于赫勒万大学（Helwan University），获电力与电机专业学士学位（2020 年）。",
+      "在 Logic Controls 之前，他曾在开罗一家跨国制药企业的工厂担任自动化工程师，在 GMP 环境中工作；也曾在一家埃及工程实训设备制造商从事研发工作，并在一家设备自动化公司任职。"
+    ],
+    "highlights": [
+      {
+        "value": "4+",
+        "label": "年工业自动化经验"
+      },
+      {
+        "value": "学士",
+        "label": "电力与电机专业"
+      },
+      {
+        "value": "GMP",
+        "label": "制药工厂经验"
+      }
     ]
   },
   "mission": {
@@ -60,5 +84,11 @@
   "cta": {
     "title": "与我们聊聊您的设备或生产线",
     "text": "请发送说明和照片；如您在埃及，也可以通过 WhatsApp 联系工程师。"
+  },
+  "eyebrows": {
+    "story": "公司简介",
+    "values": "价值观",
+    "why": "选择我们的理由",
+    "process": "工作流程"
   }
 }

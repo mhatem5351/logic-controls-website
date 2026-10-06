@@ -1,0 +1,290 @@
+---
+/**
+ * Foreign manufacturers (investor landing page; the key page for /zh/ and /tr/ visitors).
+ * Hero → what a new plant needs (need → how we close the gap) → services → when to involve us →
+ * standards & documentation → experience with imported lines → languages → zones → FAQ → CTA.
+ */
+import { Picture } from "astro:assets";
+import BaseLayout from "~/layouts/BaseLayout.astro";
+import Hero from "~/components/Hero.astro";
+import Breadcrumbs from "~/components/Breadcrumbs.astro";
+import Section from "~/components/Section.astro";
+import SectionHeading from "~/components/SectionHeading.astro";
+import Button from "~/components/Button.astro";
+import Icon, { type IconName } from "~/components/Icon.astro";
+import ProcessSteps from "~/components/ProcessSteps.astro";
+import LogoWall from "~/components/LogoWall.astro";
+import FAQ from "~/components/FAQ.astro";
+import CtaBand from "~/components/CtaBand.astro";
+import ZonesBlock from "~/components/sections/main/ZonesBlock.astro";
+import { html, emphasize } from "~/components/sections/main/rich";
+import { getMessages, localeStaticPaths, localePath, LOCALE_META, type Locale } from "~/i18n";
+import { SITE } from "~/data/site";
+import { STATS } from "~/data/stats";
+import { href, whatsappLink, prefersEmail } from "~/components/nav";
+import heroImage from "~/assets/projects/tablet-coating-scada/machine.jpg";
+import proofHmi from "~/assets/projects/anaerobic-waste-treatment-commissioning/hmi.jpg";
+import proofPanel from "~/assets/projects/anaerobic-waste-treatment-commissioning/panel.jpg";
+
+export const getStaticPaths = localeStaticPaths;
+const locale = Astro.params.lang as Locale;
+const t = getMessages(locale);
+const f = t.foreign;
+const c = t.common;
+const email = prefersEmail(locale);
+const quoteHref = `${href(locale, "contact")}?service=new-factory#quote`;
+const caseSlug = "anaerobic-waste-treatment-commissioning";
+const caseItem = t.projects.items[caseSlug];
+const caseAlts = (caseItem?.imageAlts ?? {}) as Record<string, string>;
+const heroAlt = ((t.projects.items["tablet-coating-scada"]?.imageAlts ?? {}) as Record<string, string>).machine ?? "";
+
+const EMPHASIS: Record<Locale, string> = {
+  en: "automation and controls team",
+  ar: "للأتمتة وأنظمة التحكم",
+  zh: "本地自动化与控制团队",
+  tr: "otomasyon ve kontrol ekibiniz",
+};
+const needIcons: IconName[] = ["users", "gear", "hmi", "box", "file", "wrench"];
+const serviceIcons: IconName[] = ["gear", "traces", "check", "hmi", "bolt", "box", "users", "shield"];
+const stepIcons: IconName[] = ["file", "check", "panel", "gauge", "wrench"];
+const proof = STATS.map((s) => ({ value: s.value, label: c.stats[s.key].label }));
+
+const url = new URL(localePath(locale, "foreign-manufacturers"), SITE.url).href;
+const jsonLd = {
+  "@context": "https://schema.org",
+  "@type": "Service",
+  "@id": `${url}#service`,
+  name: f.hero.title,
+  description: f.seo.description,
+  url,
+  inLanguage: LOCALE_META[locale].htmlLang,
+  serviceType: "Commissioning, HMI localization and automation support for new factories",
+  provider: { "@id": `${SITE.url}/#organization` },
+  areaServed: { "@type": "Country", name: "Egypt" },
+  audience: { "@type": "BusinessAudience", audienceType: "Manufacturers setting up or relocating a factory in Egypt" },
+};
+---
+
+<BaseLayout locale={locale} title={f.seo.title} description={f.seo.description} path="foreign-manufacturers" heroDark jsonLd={jsonLd} whatsappMessage={c.whatsapp.foreign}>
+  <Hero
+    locale={locale}
+    size="home"
+    titleSize="fit"
+    title={emphasize(html(locale, f.hero.title), EMPHASIS[locale])}
+    lead={html(locale, f.hero.lead)}
+    chips={[f.hero.eyebrow]}
+    image={heroImage}
+    imageAlt={heroAlt}
+    priority
+    primary={{ label: f.hero.ctaPrimary, href: quoteHref }}
+    secondary={email ? undefined : { label: f.hero.ctaSecondary, href: whatsappLink(c.whatsapp.foreign) }}
+  >
+    <Breadcrumbs slot="breadcrumbs" locale={locale} items={[{ label: c.breadcrumbs.foreign }]} />
+    <ul role="list" class="lc-rise mt-9 grid max-w-xl gap-2.5 border-t border-white/10 pt-6" style="--i:3" data-fab-avoid>
+      {
+        f.hero.chips.map((chip) => (
+          <li class="flex items-start gap-3 text-[0.9375rem] text-navy-100">
+            <span class="mt-0.5 grid size-5 shrink-0 place-items-center bg-signal-400 text-navy-950" aria-hidden="true">
+              <Icon name="check" size={14} strokeWidth={2.5} />
+            </span>
+            <span set:html={html(locale, chip)} />
+          </li>
+        ))
+      }
+    </ul>
+  </Hero>
+
+  {/* ---------- proof figures ---------- */}
+  <Section compact class="border-b border-charcoal-200" aria-label={c.stats.title}>
+    <dl class="grid grid-cols-2 gap-y-8 lg:grid-cols-4">
+      {
+        proof.map((p, i) => (
+          <div
+            class:list={[
+              "relative flex flex-col gap-1.5 px-4 sm:px-6",
+              i > 0 && "before:absolute before:inset-y-1 before:start-0 before:w-px before:-skew-x-[10deg] before:bg-charcoal-200 rtl:before:skew-x-[10deg]",
+              i === 2 && "max-lg:before:hidden",
+            ]}
+          >
+            <dt class="text-sm font-medium text-charcoal-600">{p.label}</dt>
+            <dd class="order-first type-stat text-navy-950" style="font-size: clamp(2rem, 1.6rem + 1.6vw, 3rem)">
+              <span class="ltr" dir="ltr">{p.value.replace(/\+$/, "")}{p.value.endsWith("+") && <span class="text-royal-600">+</span>}</span>
+            </dd>
+          </div>
+        ))
+      }
+    </dl>
+  </Section>
+
+  {/* ---------- 01 what a new plant needs: need → how we close the gap ---------- */}
+  <Section id="needs" aria-labelledby="needs-title">
+    <SectionHeading id="needs-title" index="01" eyebrow={f.eyebrows.needs} title={html(locale, f.needs.title)} lead={html(locale, f.needs.intro)} />
+    <div class="mt-12 hidden grid-cols-[minmax(0,5fr)_4rem_minmax(0,7fr)] gap-6 border-b-2 border-navy-950 pb-3 lg:grid" aria-hidden="true">
+      <p class="type-label text-charcoal-600">{f.needs.columns.need}</p>
+      <span></span>
+      <p class="type-label text-charcoal-600">{f.needs.columns.answer}</p>
+    </div>
+    <ol role="list" class="mt-10 lg:mt-0">
+      {
+        f.needs.items.map((item, i) => (
+          <li class="group grid gap-3 border-b border-charcoal-200 py-6 lg:grid-cols-[minmax(0,5fr)_4rem_minmax(0,7fr)] lg:items-center lg:gap-6 lg:py-7">
+            <div class="flex items-center gap-4">
+              <span class="chamfer grid size-12 shrink-0 place-items-center bg-navy-950 text-royal-300 transition-colors [--chamfer:10px] group-hover:bg-royal-700 group-hover:text-white">
+                <Icon name={needIcons[i] ?? "check"} size={22} />
+              </span>
+              <h3 class="flex items-baseline gap-2 type-h4 text-navy-950">
+                <span class="font-mono text-xs text-royal-700 ltr" dir="ltr">{String(i + 1).padStart(2, "0")}</span>
+                <span>{item.title}</span>
+              </h3>
+            </div>
+            <span aria-hidden="true" class="relative hidden h-px bg-royal-600/40 lg:block">
+              <span class="absolute -top-[3px] start-0 size-[7px] rounded-full border border-royal-600 bg-white" />
+              <Icon name="chevron-right" size={16} class="absolute -end-1.5 -top-2 text-royal-600" />
+            </span>
+            <p class="text-charcoal-700 max-lg:ps-16" set:html={html(locale, item.text)} />
+          </li>
+        ))
+      }
+    </ol>
+  </Section>
+
+  {/* ---------- 02 services for new factories ---------- */}
+  <Section variant="muted" id="services" aria-labelledby="services-title">
+    <SectionHeading id="services-title" index="02" eyebrow={c.labels.services} title={html(locale, f.services.title)} />
+    <ul role="list" class="mt-12 grid gap-px overflow-hidden border border-charcoal-200 bg-charcoal-200 sm:grid-cols-2 lg:grid-cols-4">
+      {
+        f.services.items.map((s, i) => (
+          <li class="group relative bg-white p-6 transition-colors hover:bg-royal-50/40 sm:p-7">
+            <span aria-hidden="true" class="absolute -top-px start-6 h-1 w-8 skew-x-[-10deg] bg-royal-600 transition-[width] duration-300 group-hover:w-14 rtl:skew-x-[10deg] sm:start-7" />
+            <div class="flex items-center justify-between">
+              <Icon name={serviceIcons[i] ?? "check"} size={26} class="text-royal-600" />
+              <span aria-hidden="true" class="font-mono text-xs text-charcoal-600 ltr" dir="ltr">{String(i + 1).padStart(2, "0")}</span>
+            </div>
+            <h3 class="mt-5 type-h4 text-navy-950" set:html={html(locale, s.title)} />
+            <p class="mt-2 text-[0.9375rem] text-charcoal-600" set:html={html(locale, s.text)} />
+          </li>
+        ))
+      }
+    </ul>
+  </Section>
+
+  {/* ---------- 03 when to involve us ---------- */}
+  <Section id="timeline" aria-labelledby="timeline-title">
+    <SectionHeading id="timeline-title" index="03" eyebrow={f.eyebrows.timeline} title={html(locale, f.timeline.title)} lead={html(locale, f.timeline.intro)} />
+    <ProcessSteps class="mt-14" locale={locale} steps={f.timeline.steps.map((s, i) => ({ title: s.title, text: s.text, icon: stepIcons[i] }))} />
+  </Section>
+
+  {/* ---------- 04 standards & documentation ---------- */}
+  <Section variant="dark" angle="both" id="standards" aria-labelledby="standards-title">
+    <div class="grid items-start gap-12 lg:grid-cols-12">
+      <div class="lg:col-span-6">
+        <SectionHeading id="standards-title" index="04" eyebrow={f.eyebrows.standards} title={html(locale, f.standards.title)} />
+        <div class="mt-6 space-y-4 text-navy-200">
+          {f.standards.paragraphs.map((p) => <p set:html={html(locale, p)} />)}
+        </div>
+      </div>
+      <div class="lg:col-span-6">
+        <div class="chamfer-lg relative border border-white/10 bg-white/[0.04] p-6 sm:p-8">
+          <span aria-hidden="true" class="absolute -top-px start-8 h-1 w-14 skew-x-[-10deg] bg-signal-400 rtl:skew-x-[10deg]"></span>
+          <ul role="list" class="divide-y divide-white/10">
+            {
+              f.standards.items.map((item, i) => (
+                <li class="flex items-center gap-4 py-4 first:pt-0 last:pb-0">
+                  <span class="grid size-11 shrink-0 place-items-center border border-royal-400/40 bg-navy-900 text-signal-300">
+                    <Icon name={i === 0 ? "shield" : "file"} size={20} />
+                  </span>
+                  <span class="flex-1 font-semibold text-white" set:html={html(locale, item)} />
+                  <Icon name="check" size={18} class="shrink-0 text-[#2bd47d]" />
+                </li>
+              ))
+            }
+          </ul>
+        </div>
+      </div>
+    </div>
+  </Section>
+
+  {/* ---------- 05 experience with imported lines ---------- */}
+  <Section id="proof" aria-labelledby="proof-title">
+    <div class="grid items-center gap-12 lg:grid-cols-12 lg:gap-14">
+      <div class="relative lg:col-span-6">
+        <div class="chamfer-lg relative aspect-[4/3] overflow-hidden bg-navy-950">
+          <Picture src={proofHmi} alt={caseAlts.hmi ?? ""} formats={["avif", "webp"]} widths={[480, 720, 960]} sizes="(min-width: 1024px) 45vw, 100vw" layout="full-width" class="size-full object-cover" />
+        </div>
+        <div class="absolute -bottom-8 end-4 w-[42%] border-4 border-white bg-white shadow-lift sm:end-6">
+          <Picture src={proofPanel} alt={caseAlts.panel ?? ""} formats={["avif", "webp"]} widths={[240, 360, 480]} sizes="(min-width: 1024px) 20vw, 40vw" layout="full-width" class="aspect-square size-full object-cover" />
+        </div>
+      </div>
+      <div class="lg:col-span-6 max-lg:pt-6">
+        <SectionHeading id="proof-title" index="05" eyebrow={f.eyebrows.proof} title={html(locale, f.proof.title)} />
+        <div class="mt-6 space-y-4 text-charcoal-700">
+          {f.proof.paragraphs.map((p) => <p set:html={html(locale, p)} />)}
+        </div>
+        {
+          caseItem && (
+            <a href={href(locale, `projects/${caseSlug}`)} class="group mt-8 flex items-center gap-4 border border-charcoal-200 p-4 transition-colors hover:border-royal-600">
+              <span class="chamfer grid size-11 shrink-0 place-items-center bg-navy-950 text-signal-300 [--chamfer:9px]"><Icon name="check" size={20} /></span>
+              <span class="min-w-0 flex-1">
+                <span class="block type-label text-charcoal-600">{f.proof.cta}</span>
+                <span class="mt-0.5 block font-bold text-navy-950 group-hover:text-royal-700">{caseItem.cardTitle}</span>
+              </span>
+              <Icon name="arrow" size={20} class="shrink-0 text-royal-600 transition-transform group-hover:translate-x-1 rtl:group-hover:-translate-x-1" />
+            </a>
+          )
+        }
+      </div>
+    </div>
+    <LogoWall locale={locale} class="mt-20 [&_li]:text-charcoal-600" />
+  </Section>
+
+  {/* ---------- 06 languages ---------- */}
+  <Section variant="muted" id="languages" aria-labelledby="languages-title">
+    <div class="grid gap-10 lg:grid-cols-12 lg:gap-14">
+      <div class="lg:col-span-5">
+        <SectionHeading id="languages-title" index="06" eyebrow={f.eyebrows.languages} title={html(locale, f.languages.title)} />
+        <p class="mt-6 text-charcoal-700" set:html={html(locale, f.languages.text)} />
+      </div>
+      <ul role="list" class="grid content-start gap-4 sm:grid-cols-2 lg:col-span-7">
+        {
+          (["ar", "en", "zh", "tr"] as const).map((l) => (
+            <li class:list={["relative border bg-white p-5 sm:p-6", l === locale ? "border-royal-600 shadow-card" : "border-charcoal-200"]}>
+              <p lang={LOCALE_META[l].htmlLang} class="type-h3 text-navy-950">
+                {LOCALE_META[l].native}
+              </p>
+              <p class="mt-2 text-sm text-charcoal-600" set:html={html(locale, f.languages.roles[l])} />
+              {l === locale && <span class="lc-led absolute end-5 top-6" aria-hidden="true" />}
+            </li>
+          ))
+        }
+      </ul>
+    </div>
+  </Section>
+
+  {/* ---------- 07 zones ---------- */}
+  <Section id="zones" aria-labelledby="zones-title">
+    <SectionHeading id="zones-title" index="07" eyebrow={c.labels.location} title={html(locale, c.zones.title)} lead={html(locale, c.zones.intro)} />
+    <ZonesBlock locale={locale} class="mt-12" />
+  </Section>
+
+  {/* ---------- 08 FAQ ---------- */}
+  <Section variant="muted" id="faq" aria-labelledby="faq-title">
+    <div class="grid gap-10 lg:grid-cols-12 lg:gap-14">
+      <div class="lg:col-span-4">
+        <div class="lg:sticky lg:top-[calc(var(--header-h)+2rem)]">
+          <SectionHeading id="faq-title" index="08" eyebrow={c.labels.faq} title={html(locale, f.faq.title)} />
+          <Button href={quoteHref} variant="secondary" iconEnd="arrow" class="mt-8">{f.hero.ctaPrimary}</Button>
+        </div>
+      </div>
+      <FAQ class="lg:col-span-8" items={f.faq.items.map((x) => ({ q: x.q, a: html(locale, x.a) }))} openFirst />
+    </div>
+  </Section>
+
+  <CtaBand
+    locale={locale}
+    title={html(locale, c.ctaBand.foreign.title)}
+    text={c.ctaBand.foreign.text}
+    eyebrow={t.ui.nav.foreign}
+    primary={{ label: f.hero.ctaPrimary, href: quoteHref }}
+    secondary={email ? undefined : { label: f.hero.ctaSecondary, href: whatsappLink(c.whatsapp.foreign) }}
+  />
+</BaseLayout>

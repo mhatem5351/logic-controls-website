@@ -6,10 +6,12 @@
  * - Paused while offscreen (IntersectionObserver) or while the tab is hidden; CSS animations too.
  * - Reduced motion: CSS drops the flowing/spinning/blinking; values still update on interaction.
  */
-import { CIP, DT, Pasteurizer, RECIPES, SPEED, type Alarm, type RecipeId } from "./hmi-sim";
+import { CHECK_S, CIP, DT, Pasteurizer, RECIPES, SPEED, type Alarm, type RecipeId } from "./hmi-sim";
+import { iso } from "./hmi-bidi";
 
 type Dict = { [k: string]: string };
 interface I18n {
+  perm: Dict;
   status: Dict;
   mimic: Dict;
   recipe: Dict;
@@ -24,10 +26,6 @@ const pad = (n: number) => String(n).padStart(2, "0");
 const hms = (d: Date) => `${pad(d.getHours())}:${pad(d.getMinutes())}:${pad(d.getSeconds())}`;
 const esc = (s: string) => s.replace(/[&<>"]/g, (c) => `&#${c.charCodeAt(0)};`);
 const f1 = (v: number) => v.toFixed(1);
-// Keep "72.0 °C", "≥ 15 s", "3000 L/h" in one LTR piece inside Arabic sentences (bidi isolates).
-const iso = (s: string) =>
-  s.replace(/(?<![\w-])(?:[≥≤]\s?)?-?\d+(?:\.\d+)?(?:\s?(?:°C|bar|L\/h|s|%|L)\b|\s?°C)?/g, (m) => `\u2066${m}\u2069`);
-
 // Product temperature → colour (cold steel-blue → neutral → warm copper). Muted on purpose (ISA-101).
 const STOPS: [number, number, number, number][] = [
   [4, 95, 136, 184],
@@ -82,6 +80,8 @@ export function initHmi(fig: HTMLElement): void {
   const cipLis = [...scr.querySelectorAll<HTMLElement>(".hs-cip li")];
   const almRo = [...scr.querySelectorAll<Element>("[data-alm-ro]")];
   const almInd = [...scr.querySelectorAll<Element>("[data-alm-ind]")];
+  const perm = scr.querySelector<HTMLElement>(".hs-perm");
+  const permLi = [...scr.querySelectorAll<HTMLElement>("[data-perm]")];
 
   // ---------------------------------------------------------------- trend buffers
   const tr = { pv: new Float32Array(N_TREND), th: new Float32Array(N_TREND), sp: new Float32Array(N_TREND), lim: new Float32Array(N_TREND) };
@@ -261,6 +261,23 @@ export function initHmi(fig: HTMLElement): void {
     ai.style.setProperty("--lim", pc(cip ? -99 : R.limit));
     ai.style.setProperty("--b0", pc(cip ? s.spActive - 3 : R.limit));
     ai.style.setProperty("--bw", `${((cip ? 6 : s.sp + 1.5 - R.limit) / span) * 100}%`);
+
+    // FDV forward permissive (what the PLC checks before it energises the FDV)
+    if (perm) {
+      const ok: Record<string, boolean> = {
+        temp: tt >= R.limit,
+        check: s.okT >= CHECK_S,
+        dp: producing && s.q > 50,
+        hold: producing && s.holdS >= R.hold,
+      };
+      permLi.forEach((li) => attr(li, "data-ok", ok[li.dataset.perm!] ? "" : null));
+      const all = Object.values(ok).every(Boolean);
+      attr(perm, "data-ok", all ? "" : null);
+      set("permSt", all ? T.perm.ok : T.perm.blocked);
+      set("permTemp", iso(fill(T.perm.temp, { limit: f1(R.limit) })));
+      set("permCheck", iso(fill(T.perm.check, { s: CHECK_S })));
+      set("permHold", iso(fill(T.perm.hold, { hold: R.hold })));
+    }
 
     // alarms on readouts
     const almOf = (tag: string) => s.alarms.find((a) => a.tag === tag && a.prio > 0 && (a.active || !a.acked));
@@ -525,8 +542,8 @@ export function initHmi(fig: HTMLElement): void {
     kick();
   });
 
-  // Phones: start with the trend collapsed (the toggle is only interactive there).
-  if (matchMedia("(max-width: 700px)").matches) {
+  // Phones: start with the trend collapsed.
+  if (fig.clientWidth <= 560) {
     trendBox.dataset.open = "false";
     trendBox.querySelector("button")?.setAttribute("aria-expanded", "false");
   }

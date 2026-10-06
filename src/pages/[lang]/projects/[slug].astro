@@ -1,0 +1,307 @@
+---
+/**
+ * Case study (one per locale × project).
+ * Hero (cover) → facts row (client · industry · services · location · year) → Challenge → Solution → Scope
+ * → Tech stack → Result (+ "At a glance" aside, vertical video beside the text) → video (16:9) → gallery
+ * → previous / next → related projects → CTA band.
+ */
+import { getImage } from "astro:assets";
+import BaseLayout from "~/layouts/BaseLayout.astro";
+import Hero from "~/components/Hero.astro";
+import Section from "~/components/Section.astro";
+import SectionHeading from "~/components/SectionHeading.astro";
+import Breadcrumbs from "~/components/Breadcrumbs.astro";
+import CtaBand from "~/components/CtaBand.astro";
+import Gallery from "~/components/Gallery.astro";
+import VideoPlayer from "~/components/VideoPlayer.astro";
+import Icon from "~/components/Icon.astro";
+import SpecList from "~/components/sections/catalog/SpecList.astro";
+import TechStack from "~/components/sections/catalog/TechStack.astro";
+import ProjectNav from "~/components/sections/catalog/ProjectNav.astro";
+import RelatedProjects from "~/components/sections/catalog/RelatedProjects.astro";
+import {
+  absUrl,
+  html,
+  imageAlt,
+  industryCopy,
+  isPreFounding,
+  keepCodes,
+  orderedServices,
+  orgRef,
+  projectCopy,
+  projectImages,
+  projectsFor,
+  quoteHref,
+  secondaryCta,
+  serviceCopy,
+} from "~/components/sections/catalog/catalog";
+import { fmt } from "~/components/nav";
+import { LOCALES, LOCALE_META, getMessages, localePath, type Locale } from "~/i18n";
+import { PROJECT_SLUGS, getProject, relatedProjects, type ProjectSlug } from "~/data/projects";
+
+export function getStaticPaths() {
+  return LOCALES.flatMap((lang) => PROJECT_SLUGS.map((slug) => ({ params: { lang, slug } })));
+}
+
+const locale = Astro.params.lang as Locale;
+const slug = Astro.params.slug as ProjectSlug;
+const m = getMessages(locale);
+const L = m.common.labels;
+const p = getProject(slug)!;
+const c = projectCopy(locale, slug)!;
+const path = `projects/${slug}`;
+const url = absUrl(localePath(locale, path));
+
+const industries = p.industries.filter((i) => industryCopy(locale, i));
+const services = orderedServices(p.services).filter((s) => serviceCopy(locale, s));
+const location = (m.common.locations as Record<string, string>)[p.location] ?? p.location;
+const preFounding = isPreFounding(p);
+
+const images = projectImages(p).map((img) => ({ src: img.image, alt: imageAlt(locale, slug, img.key) }));
+const video = p.video;
+const vertical = !!video && video.height > video.width;
+/* A landscape film with one or two photos: film and photos side by side. Otherwise film, then a full gallery. */
+const sideBySide = !!video && !vertical && images.length <= 2;
+const galleryCols = (
+  sideBySide ? 1 : images.length <= 4 ? images.length : images.length % 3 === 0 ? 3 : images.length % 4 === 0 ? 4 : 3
+) as 1 | 2 | 3 | 4;
+const videoTitle = c.videoTitle ?? c.cardTitle;
+
+/* Portfolio order (newest first) for previous / next, wrapping around. */
+const list = projectsFor(locale);
+const at = list.findIndex((x) => x.slug === slug);
+const prev = list[(at - 1 + list.length) % list.length]!;
+const next = list[(at + 1) % list.length]!;
+const related = projectsFor(locale, relatedProjects(slug, 3));
+
+const wa = fmt(m.common.whatsapp.project, { project: c.cardTitle });
+const og = await getImage({ src: p.cover.image, width: 1200, height: 630, fit: "cover", format: "jpg", quality: 80 });
+const industryName = industryCopy(locale, p.industries[0] ?? "")?.navTitle;
+
+const sections = [
+  { id: "challenge", title: L.challenge },
+  { id: "solution", title: L.solution },
+  { id: "scope", title: L.scope },
+  { id: "technologies", title: L.technologiesUsed },
+  { id: "result", title: L.result },
+];
+const num = (id: string) => String(sections.findIndex((s) => s.id === id) + 1).padStart(2, "0");
+
+const jsonLd = {
+  "@context": "https://schema.org",
+  "@type": "Article",
+  "@id": `${url}#case-study`,
+  headline: c.title.length > 110 ? c.cardTitle : c.title,
+  name: c.cardTitle,
+  description: c.seoDescription,
+  articleSection: m.common.breadcrumbs.projects,
+  inLanguage: LOCALE_META[locale].htmlLang,
+  url,
+  mainEntityOfPage: url,
+  image: [absUrl(og.src)],
+  dateCreated: String(p.year),
+  author: orgRef(),
+  publisher: orgRef(),
+  about: industries.map((i) => industryCopy(locale, i)!.title),
+  keywords: p.technologies.join(", "),
+  contentLocation: { "@type": "Place", name: location },
+  ...(video
+    ? {
+        video: {
+          "@type": "VideoObject",
+          name: videoTitle,
+          description: c.summary,
+          thumbnailUrl: absUrl(video.poster),
+          contentUrl: absUrl(video.src),
+        },
+      }
+    : {}),
+};
+---
+
+<BaseLayout locale={locale} title={c.seoTitle} description={c.seoDescription} path={path} heroDark jsonLd={jsonLd} ogImage={og.src} whatsappMessage={wa}>
+  <Hero
+    locale={locale}
+    size="page"
+    title={html(c.title, locale)}
+    lead={html(c.summary, locale)}
+    chips={[industryName, location, String(p.year)].filter((x): x is string => !!x)}
+    image={p.cover.image}
+    imageAlt={imageAlt(locale, slug, p.cover.key)}
+    primary={{ label: m.ui.cta.quote, href: quoteHref(locale) }}
+    secondary={secondaryCta(locale, wa)}
+  >
+    <Breadcrumbs slot="breadcrumbs" locale={locale} items={[{ label: m.common.breadcrumbs.projects, path: "projects" }, { label: keepCodes(c.cardTitle, locale) }]} />
+  </Hero>
+
+  {/* Facts row */}
+  <Section compact class="border-b border-charcoal-200" aria-label={L.highlights}>
+    <dl class="grid grid-cols-2 gap-x-6 gap-y-6 lg:grid-cols-[1.2fr_1.2fr_2fr_0.8fr_0.6fr]">
+      <div class="col-span-2 lg:col-span-1">
+        <dt class="type-label text-charcoal-600">{L.client}</dt>
+        <dd class="mt-1.5 font-semibold text-navy-950">{c.client}</dd>
+      </div>
+      <div class="col-span-2 lg:col-span-1">
+        <dt class="type-label text-charcoal-600">{industries.length > 1 ? L.industries : L.industry}</dt>
+        <dd class="mt-1.5 flex flex-wrap gap-x-3 gap-y-1">
+          {
+            industries.map((i) => (
+              <a href={localePath(locale, `industries/${i}`)} class="font-semibold text-royal-700 underline decoration-royal-200 underline-offset-4 hover:decoration-royal-600">
+                {industryCopy(locale, i)!.navTitle}
+              </a>
+            ))
+          }
+        </dd>
+      </div>
+      <div class="col-span-2 lg:col-span-1">
+        <dt class="type-label text-charcoal-600">{services.length > 1 ? L.services : L.service}</dt>
+        <dd class="mt-1.5 flex flex-wrap gap-x-3 gap-y-1">
+          {
+            services.map((s) => (
+              <a href={localePath(locale, `services/${s}`)} class="font-semibold text-royal-700 underline decoration-royal-200 underline-offset-4 hover:decoration-royal-600">
+                {serviceCopy(locale, s)!.navTitle}
+              </a>
+            ))
+          }
+        </dd>
+      </div>
+      <div>
+        <dt class="type-label text-charcoal-600">{L.location}</dt>
+        <dd class="mt-1.5 font-semibold text-navy-950">{location}</dd>
+      </div>
+      <div>
+        <dt class="type-label text-charcoal-600">{L.year}</dt>
+        <dd class="mt-1.5 font-semibold text-navy-950"><span class="ltr" dir="ltr">{p.year}</span></dd>
+      </div>
+    </dl>
+    {
+      preFounding && (
+        <p class="mt-6 flex items-start gap-2 text-sm text-charcoal-600">
+          <Icon name="clock" size={16} class="mt-0.5 text-royal-600" />
+          {m.common.notes.preFounding}
+        </p>
+      )
+    }
+  </Section>
+
+  {/* Story */}
+  <Section id="story" class="pt-14! sm:pt-20!">
+    <div class="grid gap-12 lg:grid-cols-[minmax(0,8fr)_minmax(0,4fr)] lg:gap-16">
+      <article class="min-w-0">
+        <section aria-labelledby="challenge-title">
+          <SectionHeading id="challenge-title" index={num("challenge")} title={html(L.challenge, locale)} size="h3" />
+          <p class="mt-5 max-w-prose text-lg/relaxed text-charcoal-700" set:html={html(c.challenge, locale)} />
+        </section>
+
+        <section aria-labelledby="solution-title" class="mt-14">
+          <SectionHeading id="solution-title" index={num("solution")} title={html(L.solution, locale)} size="h3" />
+          <p class="mt-5 max-w-prose text-lg/relaxed text-charcoal-700" set:html={html(c.solution, locale)} />
+        </section>
+
+        <section aria-labelledby="scope-title" class="mt-14">
+          <SectionHeading id="scope-title" index={num("scope")} title={html(L.scope, locale)} size="h3" />
+          <SpecList items={c.scope} locale={locale} marker="check" columns={2} ruled class="mt-6 border-t border-charcoal-200" />
+        </section>
+
+        <section aria-labelledby="technologies-title" class="mt-14">
+          <SectionHeading id="technologies-title" index={num("technologies")} title={html(L.technologiesUsed, locale)} size="h3" />
+          <TechStack technologies={p.technologies} locale={locale} class="mt-6" />
+        </section>
+
+        <section aria-labelledby="result-title" class="mt-14">
+          <SectionHeading id="result-title" index={num("result")} title={html(L.result, locale)} size="h3" />
+          <div class="relative mt-6 border-s-4 border-royal-600 bg-navy-50 px-6 py-6 sm:px-8">
+            <p class="type-lead text-navy-950" set:html={html(c.result, locale)} />
+          </div>
+        </section>
+      </article>
+
+      {/* Below 1024px the aside dissolves into the grid: "At a glance" moves above the story, the reel stays after it. */}
+      <aside class:list={["max-lg:contents lg:flex lg:min-w-0 lg:flex-col lg:gap-8", !vertical && "lg:sticky lg:top-[calc(var(--header-h)+2rem)] lg:self-start"]} aria-labelledby="highlights-title">
+        <div class="on-dark relative isolate overflow-hidden bg-navy-950 text-navy-100 max-lg:order-first">
+          <div aria-hidden="true" class="pointer-events-none absolute inset-0 -z-10 bg-blueprint mask-fade-edges"></div>
+          <div class="flex items-center gap-3 border-b border-white/10 px-6 py-3.5">
+            <span class="lc-led" style="--led:#2bd47d" aria-hidden="true"></span>
+            <h2 id="highlights-title" class="type-label text-navy-100">{L.highlights}</h2>
+          </div>
+          <ul role="list" class="divide-y divide-white/10 px-6">
+            {
+              c.highlights.map((h) => (
+                <li class="flex items-start gap-3 py-4">
+                  <Icon name="check" size={18} class="mt-0.5 text-signal-400" strokeWidth={2.25} />
+                  <span class="font-semibold text-white" set:html={html(h, locale)} />
+                </li>
+              ))
+            }
+          </ul>
+          <div class="border-t border-white/10 px-6 py-5">
+            <a href={quoteHref(locale)} class="group inline-flex min-h-6 items-center gap-2 text-sm font-bold text-royal-300 hover:text-white">
+              {m.common.ctaBand.project.title}
+              <Icon name="arrow" size={16} class="transition-transform group-hover:translate-x-1 rtl:group-hover:-translate-x-1" />
+            </a>
+          </div>
+        </div>
+
+        {
+          video && vertical && (
+            <div>
+              <p class="mb-3 flex items-center gap-2 type-label text-charcoal-600">
+                <Icon name="play" size={12} class="text-royal-600" />
+                {L.watchVideo}
+              </p>
+              <VideoPlayer locale={locale} src={video.src} poster={video.poster} title={videoTitle} aspect="9/16" caption={videoTitle} class="max-w-[22rem]" />
+            </div>
+          )
+        }
+      </aside>
+    </div>
+  </Section>
+
+  {/* Media: film (16:9) + photos */}
+  <Section variant="muted" id="media" aria-labelledby={video && !vertical ? "video-title" : "gallery-title"}>
+    {
+      sideBySide && video ? (
+        <>
+          <SectionHeading id="video-title" eyebrow={L.video} title={html(L.watchVideo, locale)} />
+          <div class="mt-8 grid items-start gap-8 lg:grid-cols-[minmax(0,2fr)_minmax(0,1fr)]">
+            <VideoPlayer locale={locale} src={video.src} poster={video.poster} title={videoTitle} aspect="16/9" caption={videoTitle} />
+            <div>
+              <h3 id="gallery-title" class="mb-3 type-label text-charcoal-600">{L.gallery}</h3>
+              <Gallery locale={locale} images={images} columns={images.length === 2 ? 2 : 1} class="lg:[&_ul]:grid-cols-1" />
+            </div>
+          </div>
+        </>
+      ) : (
+        <>
+          {video && !vertical && (
+            <div class="mb-16 sm:mb-20">
+              <SectionHeading id="video-title" eyebrow={L.video} title={html(L.watchVideo, locale)} />
+              <VideoPlayer locale={locale} src={video.src} poster={video.poster} title={videoTitle} aspect="16/9" caption={videoTitle} class="mt-8 max-w-5xl" />
+            </div>
+          )}
+          <SectionHeading id="gallery-title" eyebrow={c.client} title={html(L.gallery, locale)} />
+          <Gallery locale={locale} images={images} columns={galleryCols} class:list={["mt-8", galleryCols === 1 && "max-w-3xl"]} />
+        </>
+      )
+    }
+    <div class="mt-10 grid gap-3 text-sm text-charcoal-600 sm:grid-cols-2 sm:gap-8">
+      <p class="flex gap-2.5"><Icon name="shield" size={18} class="mt-0.5 shrink-0 text-royal-600" />{m.common.notes.anonymised}</p>
+      <p class="flex gap-2.5"><Icon name="file" size={18} class="mt-0.5 shrink-0 text-royal-600" />{m.common.notes.photos}</p>
+    </div>
+  </Section>
+
+  {/* Previous / next */}
+  <Section compact id="more">
+    <ProjectNav locale={locale} prev={prev} next={next} />
+  </Section>
+
+  <RelatedProjects locale={locale} projects={related} title={L.relatedProjects} eyebrow={m.common.breadcrumbs.projects} variant="muted" all={{ href: localePath(locale, "projects"), label: L.allProjects }} />
+
+  <CtaBand
+    locale={locale}
+    title={html(m.common.ctaBand.project.title, locale)}
+    text={m.common.ctaBand.project.text}
+    primary={{ label: m.ui.cta.quote, href: quoteHref(locale) }}
+    secondary={secondaryCta(locale, wa)}
+  />
+</BaseLayout>

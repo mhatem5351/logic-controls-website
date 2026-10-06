@@ -1,0 +1,201 @@
+---
+/**
+ * About — section order from src/i18n/CONTENT.md §4:
+ * hero → story + mission → numbers → founder (only when about.founder exists) → values → why → platforms →
+ * how we work → where we are (zones) → closing CTA.
+ */
+import BaseLayout from "~/layouts/BaseLayout.astro";
+import Hero from "~/components/Hero.astro";
+import Section from "~/components/Section.astro";
+import SectionHeading from "~/components/SectionHeading.astro";
+import Breadcrumbs from "~/components/Breadcrumbs.astro";
+import StatStrip from "~/components/StatStrip.astro";
+import LogoWall from "~/components/LogoWall.astro";
+import ProcessSteps from "~/components/ProcessSteps.astro";
+import CtaBand from "~/components/CtaBand.astro";
+import BrandMark from "~/components/BrandMark.astro";
+import Swoosh from "~/components/Swoosh.astro";
+import Button from "~/components/Button.astro";
+import Icon, { type IconName } from "~/components/Icon.astro";
+import FactoryLine from "~/components/illustrations/FactoryLine.astro";
+import ZonesBlock from "~/components/sections/main/ZonesBlock.astro";
+import FounderBlock, { type Founder } from "~/components/sections/main/FounderBlock.astro";
+import { html, emphasize } from "~/components/sections/main/rich";
+import { getMessages, localeStaticPaths, localePath, LOCALE_META, type Locale } from "~/i18n";
+import { SITE } from "~/data/site";
+import { STATS } from "~/data/stats";
+import { href, whatsappLink, prefersEmail } from "~/components/nav";
+import heroImage from "~/assets/projects/shampoo-filling-delta-wecon/panel.jpg";
+
+export const getStaticPaths = localeStaticPaths;
+const locale = Astro.params.lang as Locale;
+const t = getMessages(locale);
+const a = t.about;
+const c = t.common;
+const email = prefersEmail(locale);
+
+/** Optional copy added later by the content team; the block renders only when it exists. */
+const founder = ((a as Record<string, unknown>).founder ?? null) as Founder | null;
+const hasFounder = !!founder?.name;
+// Section indices follow what is actually rendered.
+let n = 0;
+const idx = () => String(++n).padStart(2, "0");
+const I = {
+  story: idx(),
+  founder: hasFounder ? idx() : undefined,
+  values: idx(),
+  why: idx(),
+  process: idx(),
+  location: idx(),
+};
+
+const heroAlt = (t.projects.items["shampoo-filling-delta-wecon"]?.imageAlts as Record<string, string> | undefined)?.panel ?? "";
+const stats = STATS.map((s) => ({ value: s.value, label: c.stats[s.key].label }));
+const valueIcons: IconName[] = ["check", "file", "shield", "map-pin"];
+const processIcons: IconName[] = ["map-pin", "file", "panel", "check", "gauge", "users"];
+
+const pageUrl = new URL(localePath(locale, "about"), SITE.url).href;
+const jsonLd = {
+  "@context": "https://schema.org",
+  "@type": "AboutPage",
+  "@id": `${pageUrl}#webpage`,
+  url: pageUrl,
+  name: a.seo.title,
+  description: a.seo.description,
+  inLanguage: LOCALE_META[locale].htmlLang,
+  isPartOf: { "@id": `${SITE.url}/#website` },
+  about: { "@id": `${SITE.url}/#organization` },
+};
+---
+
+<BaseLayout locale={locale} title={a.seo.title} description={a.seo.description} path="about" heroDark jsonLd={jsonLd} whatsappMessage={c.whatsapp.default}>
+  <Hero
+    locale={locale}
+    size="page"
+    title={emphasize(html(locale, a.h1), SITE.name)}
+    lead={html(locale, a.lead)}
+    chips={[c.company.addressLine]}
+    image={heroImage}
+    imageAlt={heroAlt}
+    secondary={email ? undefined : { label: t.ui.cta.whatsapp, href: whatsappLink(c.whatsapp.default) }}
+  >
+    <Breadcrumbs slot="breadcrumbs" locale={locale} items={[{ label: c.breadcrumbs.about }]} />
+  </Hero>
+
+  {/* ---------- story + mission ---------- */}
+  <Section aria-labelledby="story-title">
+    <div class="grid items-start gap-12 lg:grid-cols-12 lg:gap-16">
+      <div class="lg:col-span-7">
+        <SectionHeading id="story-title" index={I.story} eyebrow={a.eyebrows.story} title={html(locale, a.story.title)} swoosh />
+        <div class="prose-lc mt-8 text-[1.0625rem] text-charcoal-700">
+          {a.story.paragraphs.map((p) => <p set:html={html(locale, p)} />)}
+        </div>
+      </div>
+      <figure class="lg:col-span-5 lg:pt-14">
+        <div class="on-dark chamfer-lg relative isolate overflow-hidden bg-navy-950 p-8 text-navy-100 sm:p-10">
+          <div aria-hidden="true" class="pointer-events-none absolute inset-0 -z-10 bg-blueprint mask-fade-edges"></div>
+          <div aria-hidden="true" class="pointer-events-none absolute inset-0 -z-20 bg-[radial-gradient(ellipse_80%_70%_at_0%_100%,rgb(5_86_173/0.45),transparent_70%)] rtl:bg-[radial-gradient(ellipse_80%_70%_at_100%_100%,rgb(5_86_173/0.45),transparent_70%)]"></div>
+          <BrandMark tone="mono" class="pointer-events-none absolute -end-12 -top-8 -z-10 h-64 w-auto text-white/[0.04]" />
+          <figcaption class="flex items-center gap-3 type-label text-signal-300">
+            <span class="lc-led" aria-hidden="true"></span>
+            {a.mission.title}
+          </figcaption>
+          <blockquote class="mt-6">
+            <p class="type-h3 text-white" style="font-size: clamp(1.25rem, 1.05rem + 0.75vw, 1.75rem); line-height: 1.35" set:html={html(locale, a.mission.text)} />
+          </blockquote>
+          <Swoosh tone="light" class="mt-8 w-36" />
+        </div>
+      </figure>
+    </div>
+  </Section>
+
+  {/* ---------- numbers ---------- */}
+  <Section variant="dark" angle="both" aria-labelledby="numbers-title" class="overflow-hidden">
+    <h2 id="numbers-title" class="mb-10 flex items-center gap-3 type-label text-navy-200">
+      <span class="slant-bar text-signal-400" aria-hidden="true"></span>
+      {a.numbers.title}
+    </h2>
+    <StatStrip items={stats} class="-mx-4 sm:-mx-6" />
+    <div aria-hidden="true" class="mt-14 -mb-6 overflow-hidden sm:mt-16">
+      <div class="min-w-[56rem] lg:min-w-0">
+        <FactoryLine class="block w-full" />
+      </div>
+    </div>
+  </Section>
+
+  {/* ---------- founder (optional copy) ---------- */}
+  {hasFounder && <FounderBlock locale={locale} founder={founder} index={I.founder} />}
+
+  {/* ---------- values ---------- */}
+  <Section variant="muted" aria-labelledby="values-title">
+    <SectionHeading id="values-title" index={I.values} eyebrow={a.eyebrows.values} title={html(locale, a.values.title)} />
+    <ul role="list" class="mt-12 grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
+      {
+        a.values.items.map((v, i) => (
+          <li class="group relative flex flex-col border border-charcoal-200 bg-white p-6 transition duration-300 hover:-translate-y-0.5 hover:border-royal-300 hover:shadow-lift sm:p-7">
+            <span aria-hidden="true" class="absolute -top-px start-6 h-1 w-10 skew-x-[-10deg] bg-royal-600 transition-[width] duration-300 group-hover:w-20 sm:start-7 rtl:skew-x-[10deg]" />
+            <div class="flex items-center justify-between">
+              <span class="chamfer inline-grid size-12 place-items-center bg-navy-950 text-royal-300 [--chamfer:10px]">
+                <Icon name={valueIcons[i] ?? "check"} size={24} />
+              </span>
+              <span aria-hidden="true" class="font-mono text-xs text-charcoal-600 ltr" dir="ltr">{String(i + 1).padStart(2, "0")}</span>
+            </div>
+            <h3 class="mt-6 type-h3 text-navy-950">{v.title}</h3>
+            <p class="mt-3 text-charcoal-600" set:html={html(locale, v.text)} />
+          </li>
+        ))
+      }
+    </ul>
+  </Section>
+
+  {/* ---------- why + platforms ---------- */}
+  <Section aria-labelledby="why-title">
+    <div class="grid gap-10 lg:grid-cols-12 lg:gap-14">
+      <div class="lg:col-span-4">
+        <SectionHeading id="why-title" index={I.why} eyebrow={a.eyebrows.why} title={html(locale, a.why.title)} swoosh />
+        <Button href={href(locale, "contact/#quote")} class="mt-8" iconEnd="arrow">{t.ui.cta.quote}</Button>
+      </div>
+      <ul role="list" class="grid content-start gap-x-8 sm:grid-cols-2 lg:col-span-8">
+        {
+          a.why.items.map((item) => (
+            <li class="flex items-start gap-4 border-b border-charcoal-200 py-5">
+              <span class="mt-0.5 grid size-7 shrink-0 place-items-center bg-royal-600 text-white" aria-hidden="true">
+                <Icon name="check" size={16} strokeWidth={2.5} />
+              </span>
+              <span class="font-semibold text-navy-950" set:html={html(locale, item)} />
+            </li>
+          ))
+        }
+      </ul>
+    </div>
+    <div class="mt-10 border-t border-charcoal-200 pt-10 sm:mt-16 sm:pt-12">
+      <LogoWall locale={locale} class="[&_li]:text-charcoal-600" />
+      <Button href={href(locale, "technologies")} variant="ghost" class="mt-3 -ms-1">{c.platforms.cta}</Button>
+    </div>
+  </Section>
+
+  {/* ---------- how we work ---------- */}
+  <Section variant="muted" aria-labelledby="process-title">
+    <SectionHeading id="process-title" index={I.process} eyebrow={a.eyebrows.process} title={html(locale, c.process.title)} lead={html(locale, c.process.intro)} />
+    <ProcessSteps class="mt-14" locale={locale} steps={c.process.steps.map((s, i) => ({ ...s, icon: processIcons[i] }))} />
+  </Section>
+
+  {/* ---------- where we are ---------- */}
+  <Section aria-labelledby="location-title">
+    <div class="flex flex-wrap items-end justify-between gap-6">
+      <SectionHeading id="location-title" index={I.location} eyebrow={c.labels.location} title={html(locale, a.location.title)} lead={html(locale, a.location.text)} />
+      <p class="flex max-w-sm items-start gap-3 border-s-2 border-signal-400 ps-4 text-sm text-charcoal-700">
+        <Icon name="calendar" size={18} class="mt-0.5 shrink-0 text-royal-600" />
+        <span>{a.location.note}</span>
+      </p>
+    </div>
+    <ZonesBlock locale={locale} class="mt-12" />
+  </Section>
+
+  <CtaBand
+    locale={locale}
+    title={html(locale, a.cta.title)}
+    text={a.cta.text}
+    secondary={email ? undefined : { label: t.ui.cta.whatsapp, href: whatsappLink(c.whatsapp.default) }}
+  />
+</BaseLayout>

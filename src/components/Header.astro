@@ -2,7 +2,8 @@
 /**
  * Site header.
  *  - Utility bar (≥1024px): "Setting up in Egypt?" link, phone, email, full language list. Scrolls away.
- *  - Main bar (sticky): logo, 5 nav items, quick Arabic/English switch, language menu, "Request a quote", menu button.
+ *  - Main bar (sticky): logo, 5 nav items, quick Arabic/English switch, language menu (< 1024px only), "Request a quote",
+ *    menu button.
  *  - Mobile drawer: native <dialog> (focus trap, Esc, inert page) opened by a tiny script.
  * `heroDark`: starts transparent over a dark hero, turns solid once the page scrolls.
  */
@@ -22,8 +23,9 @@ interface Props {
 const { locale, path, heroDark = false } = Astro.props;
 const t = getMessages(locale).ui;
 const email = prefersEmail(locale);
-// Egyptian phones set to English land on /en/: keep a one-tap Arabic switch visible (and English on /ar/).
-const quick = locale === "en" ? languageLinks(path).find((l) => l.locale === "ar") : locale === "ar" ? languageLinks(path).find((l) => l.locale === "en") : undefined;
+// Egyptian phones set to English land on /en/: keep a one-tap Arabic switch visible on every non-Arabic page
+// (and English on /ar/). Desktop shows only this quick switch + the utility-bar list; the globe menu is mobile-only.
+const quick = languageLinks(path).find((l) => l.locale === (locale === "ar" ? "en" : "ar"));
 const foreignState = currentState(FOREIGN_PATH, path);
 ---
 
@@ -110,7 +112,7 @@ const foreignState = currentState(FOREIGN_PATH, path);
             </a>
           )
         }
-        <LanguageSwitcher locale={locale} path={path} variant="menu" class:list={[quick && "max-sm:hidden"]} />
+        <LanguageSwitcher locale={locale} path={path} variant="menu" class:list={["lg:hidden", quick && "max-sm:hidden"]} />
         <Button href={href(locale, QUOTE_PATH)} size="sm" class="max-sm:hidden lg:min-h-10">
           {t.cta.quote}
         </Button>

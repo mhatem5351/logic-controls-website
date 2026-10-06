@@ -43,7 +43,11 @@
         "title": "Support after the supplier leaves",
         "text": "Troubleshooting, program changes and preventive maintenance after the supplier's engineers return home."
       }
-    ]
+    ],
+    "columns": {
+      "need": "What the plant needs",
+      "answer": "How we close the gap"
+    }
   },
   "services": {
     "title": "What we do for new factories",
@@ -131,7 +135,13 @@
   },
   "languages": {
     "title": "Working across languages",
-    "text": "Our engineers work in Arabic and English. You can contact us through the Chinese or Turkish pages of this site. Technical work runs in English, operator material is in Arabic, and Chinese or Turkish versions of key documents are available on request."
+    "text": "Our engineers work in Arabic and English. You can contact us through the Chinese or Turkish pages of this site. Technical work runs in English, operator material is in Arabic, and Chinese or Turkish versions of key documents are available on request.",
+    "roles": {
+      "ar": "Operators: HMI screens, guides and training",
+      "en": "Engineering, management and technical documents",
+      "zh": "Key documents on request",
+      "tr": "Key documents on request"
+    }
   },
   "faq": {
     "title": "Questions from manufacturers setting up in Egypt",
@@ -169,5 +179,12 @@
         "a": "No. We are an engineering company and focus on automation. For investment procedures, contact GAFI or the SCZONE one-stop shop, or a legal adviser."
       }
     ]
+  },
+  "eyebrows": {
+    "needs": "What you need",
+    "timeline": "Timeline",
+    "standards": "Documentation",
+    "proof": "Experience",
+    "languages": "Languages"
   }
 }

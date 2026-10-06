@@ -68,11 +68,18 @@
   },
   "stats": {
     "title": "Logic Controls 数据一览",
-    "projects": { "label": "已交付项目" },
-    "experience": { "label": "年团队经验" },
-    "platforms": { "label": "PLC 与 HMI 平台" },
-    "industries": { "label": "服务行业" },
-    "founded": { "label": "公司成立年份" }
+    "projects": {
+      "label": "已交付项目"
+    },
+    "experience": {
+      "label": "年团队经验"
+    },
+    "platforms": {
+      "label": "PLC 与 HMI 平台"
+    },
+    "industries": {
+      "label": "服务行业"
+    }
   },
   "platforms": {
     "title": "我们编程与集成的平台",
@@ -146,13 +153,13 @@
     }
   },
   "whatsapp": {
-    "default": "您好，Logic Controls。我想就一个自动化项目与工程师沟通。",
-    "quote": "您好，Logic Controls。我想获取报价，可以在这里发送照片和图纸。",
-    "service": "您好，Logic Controls。我需要以下服务的报价：{service}。",
-    "industry": "您好，Logic Controls。我从“{industry}”页面联系您，咨询一个自动化项目。",
-    "project": "您好，Logic Controls。我看到了案例“{project}”，我们有一台类似的设备。",
-    "foreign": "您好，Logic Controls。我们正在埃及建厂，需要一家本地自动化合作伙伴。",
-    "drawings": "您好，Logic Controls。我发送图纸和照片，用于询价。"
+    "default": "您好，Logic Controls。我想就一个自动化项目与工程师沟通。\nHello Logic Controls, I would like to talk to an engineer about an automation project.",
+    "quote": "您好，Logic Controls。我想获取报价，可以在这里发送照片和图纸。\nHello Logic Controls, I would like a quote. I can send photos and drawings here.",
+    "service": "您好，Logic Controls。我需要以下服务的报价：{service}。\nHello Logic Controls, I need a quote for the service named above.",
+    "industry": "您好，Logic Controls。我从“{industry}”页面联系您，咨询一个自动化项目。\nHello Logic Controls, I am contacting you from the industry page named above about an automation project.",
+    "project": "您好，Logic Controls。我看到了案例“{project}”，我们有一台类似的设备。\nHello Logic Controls, I saw the case study named above and have a similar machine.",
+    "foreign": "您好，Logic Controls。我们正在埃及建厂，需要一家本地自动化合作伙伴。\nHello Logic Controls, we are setting up a factory in Egypt and need a local automation partner.",
+    "drawings": "您好，Logic Controls。我发送图纸和照片，用于询价。\nHello Logic Controls, I am sending drawings and photos for a quote."
   },
   "zones": {
     "title": "服务区域",
@@ -167,15 +174,42 @@
       "suez-canal": "苏伊士运河经济区"
     },
     "items": {
-      "6th-of-october": { "name": "十月六日城及新十月城（New October）", "governorate": "吉萨省" },
-      "obour": { "name": "奥布尔城（Obour）", "governorate": "盖勒尤比省" },
-      "badr": { "name": "巴德尔城", "governorate": "开罗省" },
-      "10th-of-ramadan": { "name": "斋月十日城", "governorate": "东部省" },
-      "sadat-city": { "name": "萨达特城", "governorate": "曼努菲亚省" },
-      "borg-el-arab": { "name": "阿拉伯塔及新阿拉伯塔（Borg El Arab）", "governorate": "亚历山大省" },
-      "ain-sokhna": { "name": "艾因苏赫纳（含中埃·泰达合作区）", "governorate": "苏伊士省" },
-      "qantara-west": { "name": "西坎塔拉", "governorate": "伊斯梅利亚省" },
-      "east-port-said": { "name": "东塞得港", "governorate": "塞得港省" }
+      "6th-of-october": {
+        "name": "十月六日城及新十月城（New October）",
+        "governorate": "吉萨省"
+      },
+      "obour": {
+        "name": "奥布尔城（Obour）",
+        "governorate": "盖勒尤比省"
+      },
+      "badr": {
+        "name": "巴德尔城",
+        "governorate": "开罗省"
+      },
+      "10th-of-ramadan": {
+        "name": "斋月十日城",
+        "governorate": "东部省"
+      },
+      "sadat-city": {
+        "name": "萨达特城",
+        "governorate": "曼努菲亚省"
+      },
+      "borg-el-arab": {
+        "name": "阿拉伯塔及新阿拉伯塔（Borg El Arab）",
+        "governorate": "亚历山大省"
+      },
+      "ain-sokhna": {
+        "name": "艾因苏赫纳（含中埃·泰达合作区）",
+        "governorate": "苏伊士省"
+      },
+      "qantara-west": {
+        "name": "西坎塔拉",
+        "governorate": "伊斯梅利亚省"
+      },
+      "east-port-said": {
+        "name": "东塞得港",
+        "governorate": "塞得港省"
+      }
     }
   },
   "locations": {
@@ -189,7 +223,7 @@
   "notes": {
     "brands": "品牌名称和商标归其各自所有者所有。列出某一品牌，表示我们为该品牌的产品编程并进行集成，并不代表合作伙伴关系。",
     "anonymised": "出于保密，客户名称不予公开。经客户同意，可应要求安排客户推荐。",
-    "preFounding": "2025 年之前的项目，由我们的工程师在 Logic Controls 成立前完成。",
+    "preFounding": "由我们的工程师在公司成立前完成。",
     "photos": "照片均来自实际项目，部分标志和铭牌已做模糊处理。"
   }
 }

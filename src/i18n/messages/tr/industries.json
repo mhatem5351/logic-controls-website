@@ -2,7 +2,7 @@
   "index": {
     "seo": {
       "title": "Mısır'da Hizmet Verdiğimiz Sektörler | Logic Controls",
-      "description": "Mısır'da gıda ve süt, ilaç, kozmetik, ambalaj, yapı malzemeleri, endüstriyel çamaşırhane ve test ekipmanları için otomasyon. Projelerimizi inceleyin."
+      "description": "Mısır'da gıda ve süt ürünleri, ilaç, kozmetik, ambalaj, yapı malzemeleri, çamaşırhaneler ve test ekipmanları için otomasyon. Projelerimizi inceleyin."
     },
     "h1": "Hizmet verdiğimiz sektörler",
     "intro": [
@@ -13,14 +13,14 @@
   "items": {
     "food-beverage": {
       "title": "Gıda, içecek ve süt ürünleri",
-      "navTitle": "Gıda ve süt ürünleri",
-      "summary": "Gıda güvenliği ve tutarlı kalite için kontrol edilen CIP'li pastörizatörler, peynir pişirme makineleri, sterilizasyon otoklavları ve tesis yardımcı sistemleri.",
-      "seoTitle": "Mısır'da Gıda ve Süt Ürünleri Otomasyonu | Logic Controls",
-      "seoDescription": "Mısır'da pastörizatör, CIP, peynir pişirme, otoklav ve gıda tesisi yardımcı sistemleri için PLC kontrol. Sıcaklık, kilitleme, reçete, veri kaydı.",
+      "navTitle": "Gıda ve içecek",
+      "summary": "CIP'li pastörizatörler, peynir pişirme makineleri, sterilizasyon otoklavları, içecek şurubu karıştırma ve tesis yardımcı sistemleri; gıda güvenliği ve tutarlı kalite için kontrol altında.",
+      "seoTitle": "Mısır'da Gıda ve İçecek Otomasyonu | Logic Controls",
+      "seoDescription": "Mısır'da pastörizatör, CIP, peynir pişirme, otoklav, şurup karıştırma ve gıda tesisi yardımcı sistemleri için PLC kontrolü. Sıcaklık, kilitleme, reçete.",
       "h1": "Gıda, içecek ve süt ürünleri tesisleri için otomasyon",
       "intro": [
-        "Gıda güvenliği kontrole dayanır: her partide, doğru sürede doğru sıcaklık. Gıda ve süt sistemlerimiz proses set değerlerini korur, güvensiz ürünü geri tutar ve kalite ekibinizin kullanabileceği kayıtlar oluşturur.",
-        "İki pastörizatör, bir peynir pişirme makinesi ve bir zeytin sterilizasyon otoklavı için kontrol sistemleri teslim ettik; bir gıda ve içecek tesisinde de atık arıtma sistemini devreye aldık."
+        "Gıda güvenliği kontrole dayanır: her partide, doğru sürede doğru sıcaklık. Gıda ve süt sistemlerimiz proses set değerlerini korur, güvenli olmayan ürünü geri tutar ve kalite ekibinizin kullanabileceği kayıtlar oluşturur.",
+        "İki pastörizatör, bir peynir pişirme makinesi, bir zeytin sterilizasyon otoklavı ve bir içecek şurubu karıştırma sistemi için kontrol sistemleri teslim ettik; bir gıda ve içecek tesisinde de atık arıtma sistemini devreye aldık. Mühendislerimizin deneyimi çikolata pişirme kazanlarını, unlu mamul hatlarını, sıvı yağ ve sıvı yumurta dolum makinelerini ve ultrafiltrasyon sistemlerini de kapsıyor."
       ],
       "needs": [
         {
@@ -43,8 +43,12 @@
       "applications": [
         "Plakalı eşanjörlü süt pastörizatörleri",
         "CIP (yerinde temizlik) sekansları",
+        "İçecek şurubu hazırlama ve jet karıştırma tankları",
         "Adım reçeteli peynir pişirme makineleri",
+        "Çikolata pişirme kazanları ve unlu mamul hatları",
         "Otoklav ve retort sterilizasyonu",
+        "Ultrafiltrasyon sistemleri",
+        "Sıvı yağ ve sıvı yumurta dolum makineleri",
         "Dolum ve ambalaj makineleri",
         "Atık ve atık su arıtma gibi tesis yardımcı sistemleri"
       ],
@@ -55,7 +59,7 @@
         },
         {
           "q": "Sistem, ürünün düşük sıcaklıkta işlendiği anları gösterebilir mi?",
-          "a": "Evet. Veri kaydı ve alarmlar sayesinde düşük sıcaklık olayları zaman ve değerleriyle kaydedilir; bekletme veya yönlendirme lojiği de güvensiz ürünün ilerlemesini engeller."
+          "a": "Evet. Veri kaydı ve alarmlar sayesinde düşük sıcaklık olayları zaman ve değerleriyle kaydedilir; bekletme veya yönlendirme lojiği de güvenli olmayan ürünün ilerlemesini engeller."
         }
       ],
       "cta": {
@@ -72,7 +76,7 @@
       "h1": "İlaç üretimi için otomasyon",
       "intro": [
         "İlaç üretimi tekrarlanabilir prosesler ve dokümantasyon gerektirir. Formülasyon reçeteleri, kullanıcı erişimi ve alarm geçmişi olan kontrol sistemleri kuruyoruz; böylece her parti aynı şekilde çalışır ve arkasında kayıt bırakır.",
-        "İlaç projelerimiz arasında Siemens S7-1200 PLC ve WinCC Professional SCADA ile çalışan bir tablet kaplama makinesi ve ilaç ve kozmetik şişelerine baskı yapan bir makinenin hareket kontrolü modernizasyonu var."
+        "İlaç projelerimiz arasında Siemens S7-1200 PLC ve WinCC Professional SCADA ile çalışan bir tablet kaplama makinesi ve ilaç ve kozmetik şişelerine baskı yapan bir makinenin hareket kontrolü modernizasyonu var. Mühendislerimizin deneyimi, GMP ortamında ampul dolumu, steril alanlar için çevresel izleme ve saf su sistemlerini de kapsıyor."
       ],
       "needs": [
         {
@@ -94,7 +98,10 @@
       ],
       "applications": [
         "Tablet film kaplama makineleri",
+        "Ampul dolum makineleri",
         "VFD ile sürülen hava işleme üniteleri, üfleyiciler ve egzoz fanları",
+        "Steril üretim alanları için çevresel izleme (EMS)",
+        "Saf su (purified water) yardımcı sistemleri",
         "Şişe baskı ve etiketleme makineleri",
         "Sıvı dolum makineleri",
         "Sıcaklık ve basınç kontrollü proses üniteleri (skid)"
@@ -123,7 +130,7 @@
       "h1": "Kozmetik ve kişisel bakım hatları için otomasyon",
       "intro": [
         "Kozmetik tesisleri aynı makinelerde çok sayıda ürün ve şişe boyutu çalıştırır. Üretim miktarını ve fireyi dolum hacmi, hız ve ürün değişim süresi belirler. Dolumları hassas tutan ve ürün değişimini HMI'da birkaç ayara indiren kontrol sistemleri kuruyoruz.",
-        "Biri LS Electric, diğeri Delta PLC ile çalışan ve her ikisi de Wecon HMI kullanan iki şampuan dolum makinesini otomatikleştirdik; bir şişe baskı makinesini de hareket kontrolüyle modernize ettik."
+        "Biri LS Electric, diğeri Delta PLC ile çalışan ve her ikisi de Wecon HMI kullanan iki şampuan dolum makinesini otomatikleştirdik; bir şişe baskı makinesini de hareket kontrolüyle modernize ettik. Mühendislerimiz ağda (wax) dolum ve kapak kapatma makinelerinde de çalıştı."
       ],
       "needs": [
         {
@@ -140,11 +147,12 @@
         },
         {
           "title": "Operatör ekranları",
-          "text": "Sayaçlar, alarmlar ve ayar için manuel modla Arapça veya İngilizce HMI'lar."
+          "text": "Sayaçlar, alarmlar ve ayar için manuel mod içeren Arapça veya İngilizce HMI'lar."
         }
       ],
       "applications": [
         "Çok nozullu pistonlu dolum makineleri",
+        "Ağda (wax) dolum ve kapak kapatma makineleri",
         "Şişe baskı makineleri",
         "Etiketleme makineleri",
         "Konveyörler ve şişe taşıma"
@@ -152,7 +160,7 @@
       "faq": [
         {
           "q": "Yarı otomatik bir dolum makinesini otomatiğe çevirebilir misiniz?",
-          "a": "Çoğu zaman evet. Yarı otomatik bir dolum makinesine şişe sensörleri, stoperler ve otomatik sekans eklemek sık yapılan bir yükseltmedir. Önce mekaniği kontrol ediyoruz."
+          "a": "Çoğu zaman evet. Yarı otomatik bir dolum makinesine şişe sensörleri, stoperler ve otomatik sekans eklemek sık yapılan bir modernizasyondur. Önce mekaniği kontrol ediyoruz."
         },
         {
           "q": "Tek bir makine birden fazla şişe boyutunda çalışabilir mi?",
@@ -206,7 +214,7 @@
         },
         {
           "q": "Makine üreticileriyle çalışıyor musunuz?",
-          "a": "Evet. Yerel bir üreticinin ürettiği makinelerin kontrol sistemini tasarlayıp programlayabilir, üreticinin müşterisinde ilk çalıştırmaya destek verebiliriz."
+          "a": "Evet. Yerel bir üreticinin ürettiği makinelerin kontrol sistemini tasarlayıp programlayabilir, üreticinin müşterisinin sahasında ilk çalıştırmaya destek verebiliriz."
         }
       ],
       "cta": {
@@ -268,7 +276,7 @@
       "title": "Oteller ve endüstriyel çamaşırhaneler",
       "navTitle": "Endüstriyel çamaşırhane",
       "summary": "Düzenlenebilir yıkama programları, su seviyesi, sıcaklık ve kimyasal dozajlama ile endüstriyel çamaşır makinesi kontrolleri.",
-      "seoTitle": "Mısır'da Çamaşır Makinesi Kontrolü | Logic Controls",
+      "seoTitle": "Mısır'da Çamaşırhane Makineleri Kontrolü | Logic Controls",
       "seoDescription": "Mısır'da otel ve endüstriyel çamaşır makineleri için PLC ve HMI kontrolü: yıkama programları, su seviyesi, sıcaklık, kimyasal dozajlama ve alarmlar.",
       "h1": "Otel ve endüstriyel çamaşırhane makineleri için kontrol sistemleri",
       "intro": [
@@ -277,7 +285,7 @@
       ],
       "needs": [
         {
-          "title": "Her yük için program",
+          "title": "Her çamaşır türüne özel program",
           "text": "Program başına en fazla 15 adım: ön yıkama, yıkama, durulama, boşaltma ve sıkma; her adımın kendi süresi, seviyesi, sıcaklığı ve kimyasalları."
         },
         {
@@ -319,7 +327,7 @@
       "navTitle": "Test ekipmanları",
       "summary": "Tekrarlanabilir test sekansları ve otomatik test raporlarıyla test düzenekleri ve kalite kontrol makineleri.",
       "seoTitle": "Mısır'da Test Düzeneği Otomasyonu | Logic Controls",
-      "seoDescription": "Mısır'da endüstriyel test düzenekleri için PLC ve HMI kontrolü: tekrarlanabilir test sekansları, canlı ölçümler, kalite kontrol için otomatik raporlar.",
+      "seoDescription": "Mısır'da test düzenekleri için PLC/HMI kontrolü: tekrarlanabilir test sekansları, canlı ölçümler, kalite kontrol ve izlenebilirlik için otomatik raporlar.",
       "h1": "Test düzenekleri ve kalite kontrol ekipmanları için kontrol sistemleri",
       "intro": [
         "Bir test ancak tekrarlanabilir ve kayıt altındaysa işe yarar. Test düzeneklerini, her test aynı sekansı izleyecek ve elle yazmaya gerek kalmadan rapor üretecek şekilde otomatikleştiriyoruz.",

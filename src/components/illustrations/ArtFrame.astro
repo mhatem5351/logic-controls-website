@@ -25,7 +25,7 @@ const style =
   ]
     .filter(Boolean)
     .join(";") || undefined;
-const a11y = label ? { role: "img", "aria-label": label } : { "aria-hidden": "true" as const };
+const a11y = label ? { role: "img" as const, "aria-label": label } : { "aria-hidden": "true" as const };
 ---
 
 <svg class:list={["lca", `lca-${name}`, cls]} viewBox={viewBox} data-lca data-variant={variant} style={style} {...a11y}>
@@ -129,17 +129,25 @@ const a11y = label ? { role: "img", "aria-label": label } : { "aria-hidden": "tr
   /* Brand signal: grey trace with 45° bends ending in a ring node (the logo's motif). */
   .lca .tr { stroke: var(--i-tr); stroke-width: 2.5; }
   .lca .rn { stroke: var(--i-tr); stroke-width: 2; }
-  /* Amber pulse running along a trace. Needs pathLength="100". --t duration, --d delay. Head arrives at 50%. */
+  /* Amber pulse running along a trace. Needs pathLength="100". --t duration, --d delay. Head arrives at ~50%.
+     Parked at 14 / −102 (not 12 / −100) so the round cap never paints a dot at either end of the path. */
   .lca .p {
     stroke: var(--i-sig);
     stroke-width: 2.5;
     stroke-dasharray: 12 200;
-    stroke-dashoffset: 12;
+    stroke-dashoffset: 14;
     animation: lca-p var(--t, 4s) var(--d, 0s) linear infinite;
     transition: stroke-width 0.3s;
   }
   /* Node lights up when the pulse arrives (same --t/--d as its pulse). */
-  .lca .nd { fill: var(--i-sig); stroke: none; opacity: 0; animation: lca-nd var(--t, 4s) var(--d, 0s) infinite; }
+  .lca .nd {
+    fill: var(--i-sig);
+    stroke: none;
+    opacity: 0;
+    transform-box: fill-box;
+    transform-origin: center;
+    animation: lca-nd var(--t, 4s) var(--d, 0s) infinite;
+  }
   .lca .pg {
     stroke: var(--i-sig);
     stroke-width: 1.5;
@@ -152,8 +160,8 @@ const a11y = label ? { role: "img", "aria-label": label } : { "aria-hidden": "tr
   .lca .fw { stroke-dasharray: 3 7; animation: lca-fw var(--t, 0.8s) linear infinite; }
 
   @keyframes lca-p {
-    0% { stroke-dashoffset: 12; }
-    56%, 100% { stroke-dashoffset: -100; }
+    0% { stroke-dashoffset: 14; }
+    56%, 100% { stroke-dashoffset: -102; }
   }
   @keyframes lca-nd {
     0%, 46% { opacity: 0; }

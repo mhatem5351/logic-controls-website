@@ -48,6 +48,11 @@ interface Props {
   traces?: boolean;
   /** Slanted bottom edge (rises towards the inline end, like the italic). Default on for size="home". */
   angle?: boolean;
+  /**
+   * Title scale for size="home". "display" (default) is the full display size; "fit" is one step smaller with
+   * tighter vertical rhythm so a long H1 + lead + CTAs + proof figures fit above the fold on a 1440×900 desktop.
+   */
+  titleSize?: "display" | "fit";
   class?: string;
 }
 
@@ -70,10 +75,12 @@ const {
   priority = false,
   traces = true,
   angle,
+  titleSize = "display",
   class: className,
 } = Astro.props;
 
 const home = size === "home";
+const fit = home && titleSize === "fit";
 const angled = angle ?? home;
 const hasMediaSlot = Astro.slots.has("media");
 const hasMedia = hasMediaSlot || !!video || !!image;
@@ -168,28 +175,31 @@ const posterSrcset = video?.posterSmall ? `${video.posterSmall} 640w, ${video.po
     class:list={[
       "wrap relative",
       home
-        ? "flex min-h-[min(46rem,100svh)] flex-col justify-center pt-[calc(var(--header-h)+var(--utility-h)+3rem)] pb-32 lg:min-h-[47rem] lg:pb-36"
+        ? fit
+          ? "flex min-h-[min(46rem,100svh)] flex-col justify-center pt-[calc(var(--header-h)+var(--utility-h)+2rem)] pb-28 lg:min-h-[min(47rem,100svh)] lg:pt-[calc(var(--header-h)+var(--utility-h)+1.75rem)] lg:pb-24"
+          : "flex min-h-[min(46rem,100svh)] flex-col justify-center pt-[calc(var(--header-h)+var(--utility-h)+3rem)] pb-32 lg:min-h-[47rem] lg:pb-36"
         : "pt-[calc(var(--header-h)+var(--utility-h)+2.5rem)] pb-24 lg:pb-28",
     ]}
   >
-    <div class:list={[home ? "max-w-2xl lg:max-w-[48%]" : "max-w-3xl lg:max-w-[58%]"]}>
+    <div class:list={[home ? (fit ? "max-w-2xl lg:max-w-[50%]" : "max-w-2xl lg:max-w-[48%]") : "max-w-3xl lg:max-w-[58%]"]}>
       {Astro.slots.has("breadcrumbs") && (
         <div class="mb-6">
           <slot name="breadcrumbs" />
         </div>
       )}
-      {chips && chips.length > 0 && <Chips items={chips} joined led class="lc-rise mb-6" />}
+      {chips && chips.length > 0 && <Chips items={chips} joined led class:list={["lc-rise", fit ? "mb-5" : "mb-6"]} />}
       <h1
         class:list={[
           home ? "type-display" : "type-h1",
           "text-white [&_em]:text-royal-300 [&_em]:[font-style:inherit]",
         ]}
+        style={fit ? "--text-display: clamp(2.125rem, 1.5rem + 2.25vw, 3.5rem)" : undefined}
         set:html={title}
       />
-      {lead && <p class="lc-rise mt-6 max-w-xl type-lead text-navy-200" style="--i:1" set:html={lead} />}
+      {lead && <p class:list={["lc-rise max-w-xl type-lead text-navy-200", fit ? "mt-5" : "mt-6"]} style="--i:1" set:html={lead} />}
       {
         (primary || secondary) && (
-          <div class="lc-rise mt-9 flex flex-wrap items-center gap-3" style="--i:2">
+          <div class:list={["lc-rise flex flex-wrap items-center gap-3", fit ? "mt-8" : "mt-9"]} style="--i:2" data-fab-avoid>
             {primary && (
               <Button href={primary.href} size="lg" iconEnd="arrow" class="max-sm:w-full">
                 {primary.label}
@@ -224,16 +234,25 @@ const posterSrcset = video?.posterSmall ? `${video.posterSmall} 640w, ${video.po
       <slot />
       {
         proof.length > 0 && (
-          <dl class="lc-rise mt-12 grid max-w-lg grid-cols-3 border-t border-white/10 pt-6" style="--i:3">
+          <dl
+            class:list={[
+              "lc-rise grid border-t border-white/10 pt-6",
+              fit ? "mt-10" : "mt-12",
+              proof.length === 4 ? "max-w-2xl grid-cols-2 gap-y-5 sm:grid-cols-4" : "max-w-lg grid-cols-3",
+            ]}
+            style="--i:3"
+            data-fab-avoid
+          >
             {proof.map((p, i) => (
               <div
                 class:list={[
                   "relative flex flex-col pe-3 sm:pe-6",
                   i > 0 &&
                     "ps-4 before:absolute before:inset-y-1 before:start-0 before:w-px before:-skew-x-[10deg] before:bg-white/15 sm:ps-6 rtl:before:skew-x-[10deg]",
+                  proof.length === 4 && i === 2 && "max-sm:ps-0 max-sm:before:hidden",
                 ]}
               >
-                <dt class="mt-1 text-sm text-navy-300">{p.label}</dt>
+                <dt class:list={["mt-1 text-sm text-navy-300", locale === "zh" && "break-keep"]}>{p.label}</dt>
                 <dd class="order-first type-stat text-white" style="font-size: clamp(1.5rem, 1.2rem + 1vw, 2rem)">
                   <span class="ltr" dir="ltr">{p.value}</span>
                 </dd>

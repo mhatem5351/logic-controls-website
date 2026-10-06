@@ -45,7 +45,7 @@ const plates = Array.from({ length: 10 }, (_, k) => 380 + k * 4);
     .lca-fl .ag{transform-box:fill-box;transform-origin:center;animation:flA .8s ease-in-out infinite alternate}
     .lca-fl .lv{transform-box:fill-box;transform-origin:50% 100%;animation:flLv 6s ease-in-out infinite alternate}
     .lca-fl .tw{stroke-dasharray:100 100;animation:flT 6s linear infinite}
-    .lca-fl .p.bus{stroke-dasharray:3 200;stroke-dashoffset:3;animation:flB 6s linear infinite}
+    .lca-fl .p.bus{stroke-dasharray:3 200;stroke-dashoffset:5;animation:flB 6s linear infinite}
     .lca-fl .p.dr{animation:flD 6s linear var(--d) infinite}
     .lca-fl .nd.dr{animation:flN 6s var(--d) infinite}
     .lca-fl .pg.dr{animation:flG 6s ease-out var(--d) infinite}
@@ -62,8 +62,8 @@ const plates = Array.from({ length: 10 }, (_, k) => 380 + k * 4);
     @keyframes flA{from{transform:scaleX(1)}to{transform:scaleX(-1)}}
     @keyframes flLv{from{transform:scaleY(.55)}to{transform:scaleY(.85)}}
     @keyframes flT{0%{stroke-dashoffset:100}85%,100%{stroke-dashoffset:0}}
-    @keyframes flB{0%{stroke-dashoffset:3}90%,100%{stroke-dashoffset:-100}}
-    @keyframes flD{0%{stroke-dashoffset:12}10%,100%{stroke-dashoffset:-100}}
+    @keyframes flB{0%{stroke-dashoffset:5}90%,100%{stroke-dashoffset:-102}}
+    @keyframes flD{0%{stroke-dashoffset:14}10%,100%{stroke-dashoffset:-102}}
     @keyframes flN{0%,8%{opacity:0}9%,22%{opacity:1}38%,100%{opacity:0}}
     @keyframes flG{0%,8.5%{opacity:0;transform:scale(1)}9%{opacity:1;transform:scale(1)}26%,100%{opacity:0;transform:scale(2.6)}}
     @media (prefers-reduced-motion:reduce){.lca-fl .p.bus{stroke-dashoffset:-50}.lca-fl .f1{transform:scaleY(.5)}.lca-fl .lb{transform:scaleX(.6)}.lca-fl .wv{opacity:.4}}

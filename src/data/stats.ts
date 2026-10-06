@@ -5,7 +5,7 @@
 import { SITE } from "./site";
 import { INDUSTRIES } from "./industries";
 
-export type StatKey = "projects" | "experience" | "platforms" | "industries" | "founded";
+export type StatKey = "projects" | "experience" | "platforms" | "industries";
 
 export interface Stat {
   key: StatKey;
@@ -17,5 +17,4 @@ export const STATS: readonly Stat[] = [
   { key: "experience", value: `${SITE.experienceYears}+` },
   { key: "platforms", value: String(SITE.brands.length) },
   { key: "industries", value: `${INDUSTRIES.length}+` },
-  { key: "founded", value: String(SITE.foundingYear) },
 ];

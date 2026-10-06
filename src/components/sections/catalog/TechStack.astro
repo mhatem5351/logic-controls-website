@@ -1,0 +1,33 @@
+---
+/**
+ * Technologies of a case study, grouped PLC / HMI / SCADA / drives / other (derived from the strings in projects.ts).
+ * Laid out like an I/O table: group label in the first column, chips in the second.
+ */
+import { getMessages, type Locale } from "~/i18n";
+import Chips from "~/components/Chips.astro";
+import { groupTechnologies, type TechGroup } from "./catalog";
+
+interface Props {
+  technologies: readonly string[];
+  locale: Locale;
+  class?: string;
+}
+const { technologies, locale, class: className } = Astro.props;
+const groupsT = ((getMessages(locale).projects as { labels?: { techGroups?: Record<TechGroup, string> } }).labels?.techGroups ?? {}) as Partial<
+  Record<TechGroup, string>
+>;
+const groups = groupTechnologies(technologies);
+---
+
+<dl class:list={["divide-y divide-charcoal-200 border-y border-charcoal-200", className]}>
+  {
+    groups.map((g) => (
+      <div class="grid gap-2 py-4 sm:grid-cols-[11rem_minmax(0,1fr)] sm:items-center sm:gap-6">
+        <dt class="type-label text-charcoal-600">{groupsT[g.group] ?? g.group.toUpperCase()}</dt>
+        <dd>
+          <Chips items={g.items} label={groupsT[g.group]} />
+        </dd>
+      </div>
+    ))
+  }
+</dl>

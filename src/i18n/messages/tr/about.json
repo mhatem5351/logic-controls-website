@@ -1,16 +1,40 @@
 {
   "seo": {
     "title": "Logic Controls Hakkında | Mısır'da Otomasyon Mühendisleri",
-    "description": "Logic Controls, Mısır'ın 6 Ekim Şehri'nde bir endüstriyel otomasyon şirketidir. 2025'te, 4+ yıllık deneyime sahip mühendisler tarafından kuruldu."
+    "description": "Logic Controls, Mısır'ın 6 Ekim Şehri'nde endüstriyel otomasyon şirketi. Mühendislerimiz 4+ yıllık deneyime ve 50'yi aşkın projeye sahip."
   },
   "h1": "Logic Controls hakkında",
   "lead": "Gize, 6 Ekim Şehri'nde endüstriyel otomasyon mühendisleriyiz. Mısır'daki fabrikalar için kontrol sistemleri tasarlıyor, programlıyor ve devreye alıyoruz.",
   "story": {
     "title": "Hikâyemiz",
     "paragraphs": [
-      "Logic Controls 2025'te kuruldu. Şirketimiz genç, ancak mühendislik ekibimiz dört yılı aşkın endüstriyel otomasyon deneyimine ve 50'yi aşkın tamamlanmış projeye sahip.",
-      "Bu projeler gıda ve süt makinelerini, ilaç kaplamayı, kozmetik dolumu, etiketleme ve şişe baskıyı, beton santrallerini, otel çamaşır makinelerini ve test ekipmanlarını kapsıyor; Siemens, Schneider Electric, Delta, LS Electric ve Wecon platformlarında.",
+      "Logic Controls genç bir şirket, ancak deneyimli bir mühendislik ekibine sahip: dört yılı aşkın endüstriyel otomasyon deneyimi ve 50'yi aşkın tamamlanmış proje.",
+      "Bu projeler Siemens, Schneider Electric, Delta, LS Electric ve Wecon platformlarında; gıda, içecek ve süt ürünleri makinelerinden ilaç kaplamaya, kozmetik dolumdan etiketleme ve şişe baskıya, beton santrallerinden otel çamaşır makinelerine ve test ekipmanlarına uzanıyor. Mühendislerimiz ayrıca drenaj istasyonları ve bir yem fabrikası için SCADA sistemlerinde, sac boy kesme (cut-to-length) ve taşlama makinelerinde ve dekal kâğıdı baskı makinelerinde çalıştı.",
       "Logic Controls'u, Mısır'daki fabrikalara tüm kontrol sistemi için tek bir mühendislik ekibi sunmak amacıyla kurduk: tasarım, pano, programlama, devreye alma ve destek."
+    ]
+  },
+  "founder": {
+    "eyebrow": "Kurucumuz",
+    "title": "Logic Controls'un arkasındaki mühendis",
+    "name": "Mohammed Tarek Aboalsafa",
+    "role": "Kurucu ve Otomasyon Mühendisi",
+    "bio": [
+      "Mohammed Tarek Aboalsafa; gıda ve içecek, ilaç ve diğer sektörlerde PLC, HMI ve SCADA sistemlerinin tasarımı, programlanması, devreye alınması ve bakımında dört yılı aşkın deneyime sahip bir endüstriyel otomasyon mühendisidir. Helwan Üniversitesi'nden Elektrik Gücü ve Makineleri alanında lisans derecesi (B.Sc., 2020) almıştır.",
+      "Logic Controls'tan önce Kahire'de çok uluslu bir ilaç şirketinin fabrikasında GMP ortamında otomasyon mühendisi olarak, mühendislik eğitim ekipmanları üreten bir Mısır şirketinde Ar-Ge alanında ve bir makine otomasyonu firmasında çalıştı."
+    ],
+    "highlights": [
+      {
+        "value": "4+",
+        "label": "yıllık endüstriyel otomasyon deneyimi"
+      },
+      {
+        "value": "B.Sc.",
+        "label": "Elektrik Gücü ve Makineleri"
+      },
+      {
+        "value": "GMP",
+        "label": "ilaç tesisi deneyimi"
+      }
     ]
   },
   "mission": {
@@ -34,7 +58,7 @@
       },
       {
         "title": "Tesise yakın",
-        "text": "Mısır'da yerleşik, sahanıza gelen ve operatörlerinizin dilini konuşan mühendisler."
+        "text": "Mısır'da yerleşik, sahanıza gelen ve operatörlerinizle Arapça iletişim kuran mühendisler."
       }
     ]
   },
@@ -60,5 +84,11 @@
   "cta": {
     "title": "Makineniz veya hattınız hakkında konuşalım",
     "text": "Bir açıklama ve fotoğraflar gönderin ya da WhatsApp'tan bir mühendise yazın."
+  },
+  "eyebrows": {
+    "story": "Şirket",
+    "values": "Değerlerimiz",
+    "why": "Neden biz",
+    "process": "Süreç"
   }
 }

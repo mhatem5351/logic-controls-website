@@ -1,0 +1,123 @@
+---
+/**
+ * Contact / RFQ. Compact dark header, then the two-step quote form overlapping it (form-first above the fold),
+ * sidebar with WhatsApp drawings (email on zh), channels, next steps and the address card; closing band with
+ * the "what we need to quote" checklist. Turnstile is loaded on this page only.
+ */
+import BaseLayout from "~/layouts/BaseLayout.astro";
+import Hero from "~/components/Hero.astro";
+import Breadcrumbs from "~/components/Breadcrumbs.astro";
+import Icon from "~/components/Icon.astro";
+import RfqForm from "~/components/sections/main/RfqForm.astro";
+import ContactChannels from "~/components/sections/main/ContactChannels.astro";
+import NextSteps from "~/components/sections/main/NextSteps.astro";
+import QuoteCta from "~/components/sections/main/QuoteCta.astro";
+import { html } from "~/components/sections/main/rich";
+import { getMessages, localeStaticPaths, localePath, LOCALE_META, type Locale } from "~/i18n";
+import { SITE } from "~/data/site";
+import { whatsappLink, mailtoLink, prefersEmail } from "~/components/nav";
+
+export const getStaticPaths = localeStaticPaths;
+const locale = Astro.params.lang as Locale;
+const t = getMessages(locale);
+const c = t.contact;
+const email = prefersEmail(locale);
+const url = new URL(localePath(locale, "contact"), SITE.url).href;
+const orgId = `${SITE.url}/#organization`;
+
+const jsonLd = {
+  "@context": "https://schema.org",
+  "@type": "ContactPage",
+  "@id": `${url}#page`,
+  url,
+  name: c.seo.title,
+  description: c.seo.description,
+  inLanguage: LOCALE_META[locale].htmlLang,
+  isPartOf: { "@id": `${SITE.url}/#website` },
+  about: { "@id": orgId },
+  mainEntity: {
+    "@type": "Organization",
+    "@id": orgId,
+    name: SITE.name,
+    url: SITE.url,
+    email: SITE.email,
+    telephone: SITE.phone.tel,
+    address: { "@type": "PostalAddress", addressLocality: SITE.address.locality, addressRegion: SITE.address.region, addressCountry: SITE.address.country },
+    contactPoint: [
+      { "@type": "ContactPoint", contactType: "sales", telephone: SITE.phone.tel, email: SITE.email, areaServed: "EG", availableLanguage: ["Arabic", "English"] },
+    ],
+  },
+};
+
+/* quick channel pills in the header: WhatsApp first on ar/en/tr, email first on zh */
+const pills = [
+  ...(email ? [] : [{ icon: "whatsapp" as const, label: t.common.labels.whatsapp, value: undefined, href: whatsappLink(t.common.whatsapp.quote), external: true, iconClass: "text-[#25d366]" }]),
+  { icon: "phone" as const, label: t.common.labels.phone, value: SITE.phone.display, href: `tel:${SITE.phone.tel}`, external: false, iconClass: "text-royal-300" },
+  { icon: "mail" as const, label: t.common.labels.email, value: SITE.email, href: mailtoLink(t.ui.email.subject), external: false, iconClass: "text-royal-300" },
+];
+if (email) pills.reverse();
+---
+
+<BaseLayout locale={locale} title={c.seo.title} description={c.seo.description} path="contact" heroDark jsonLd={jsonLd} whatsappMessage={t.common.whatsapp.quote}>
+  <Fragment slot="head">
+    <script is:inline>
+      // Turnstile callbacks (global names referenced by the widget's data-* attributes).
+      window.lcTurnstile = { token: "" };
+      window.lcTsOk = function (token) { window.lcTurnstile.token = token; };
+      window.lcTsErr = function () { window.lcTurnstile.token = ""; };
+      window.lcTsExp = function () { window.lcTurnstile.token = ""; };
+      window.lcTsShow = function () { var el = document.querySelector("[data-ts-label]"); if (el) el.hidden = false; };
+    </script>
+    <script is:inline src="https://challenges.cloudflare.com/turnstile/v0/api.js" async defer></script>
+  </Fragment>
+
+  <Hero locale={locale} size="page" title={html(locale, c.h1)} lead={html(locale, c.intro)} primary={false} secondary={false} traces class="lc-contact-hero">
+    <Breadcrumbs slot="breadcrumbs" locale={locale} items={[{ label: t.common.breadcrumbs.contact }]} />
+    <ul role="list" class="lc-rise mt-7 flex flex-wrap gap-2.5" style="--i:2">
+      {
+        pills.map((p) => (
+          <li>
+            <a
+              href={p.href}
+              target={p.external ? "_blank" : undefined}
+              rel={p.external ? "noopener" : undefined}
+              class="inline-flex min-h-11 items-center gap-2.5 border border-white/15 bg-white/[0.04] px-3.5 text-sm text-navy-100 transition-colors hover:border-white/40 hover:text-white"
+            >
+              <Icon name={p.icon} size={18} class={p.iconClass} />
+              {p.value ? (
+                <>
+                  <span class="sr-only">{p.label}: </span>
+                  <span class="ltr font-semibold" dir="ltr">{p.value}</span>
+                </>
+              ) : (
+                <span class="font-semibold">{p.label}</span>
+              )}
+              {p.external && <span class="sr-only">({t.ui.a11y.newTab})</span>}
+            </a>
+          </li>
+        ))
+      }
+    </ul>
+  </Hero>
+
+  <section class="relative pb-section" aria-label={c.form.title}>
+    <div class="wrap grid items-start gap-10 lg:grid-cols-12 lg:gap-10 xl:gap-14">
+      <div class="relative z-10 -mt-14 sm:-mt-16 lg:col-span-7 lg:-mt-20">
+        <RfqForm locale={locale} />
+        <NextSteps locale={locale} class="mt-10 hidden border border-charcoal-200 bg-navy-50/60 p-6 sm:p-8 lg:block" />
+      </div>
+      <aside class="lg:col-span-5 lg:pt-10" aria-label={c.channels.title}>
+        <ContactChannels locale={locale} />
+        <NextSteps locale={locale} class="mt-6 border border-charcoal-200 bg-navy-50/60 p-6 lg:hidden" />
+      </aside>
+    </div>
+  </section>
+
+  <QuoteCta
+    locale={locale}
+    title={t.common.ctaBand.default.title}
+    text={t.common.ctaBand.default.text}
+    primary={{ label: t.ui.cta.quote, href: "#quote" }}
+    whatsappMessage={t.common.whatsapp.drawings}
+  />
+</BaseLayout>

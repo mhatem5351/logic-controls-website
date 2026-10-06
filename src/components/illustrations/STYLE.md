@@ -85,7 +85,7 @@ The logo's **circuit trace ending in a ring node** links the controller to the p
 - Trace: `class="tr"`. Grey (like the logo's traces), 2.5 u, **only horizontal, vertical and 45° segments**.
 - Ring node: `class="rn"`, r 4–6, hollow. Put rings at free ends or at device terminals.
 - Signal: an amber pulse runs along a copy of the trace path: `class="p" pathLength="100"`, with `--t` (period) and `--d` (delay). The head arrives at 50 % of `--t`. At that moment the node fills (`.nd`, r ≈ ½ ring) and pings (`.pg`, same r as the ring).
-- For story-timed pulses, override the animation with a scoped class such as `.lca-xx .p.o1{animation:xxO 9s linear infinite}`. Keep the dash 12 and the offset 12 → −100.
+- For story-timed pulses, override the animation with a scoped class such as `.lca-xx .p.o1{animation:xxO 9s linear infinite}`. Keep the dash at 12 and **park it at offset 14 → −102**. At 12 or −100 the round cap paints a dot at the path ends while the pulse waits.
 - When several traces run in parallel, stagger the ring heights into a 45° staircase (the logo's three rings).
 
 ## Recurring parts (draw them the same way everywhere)
@@ -110,6 +110,7 @@ The logo's **circuit trace ending in a ring node** links the controller to the p
 
 ## Naming & budget
 
+- Your own modifier classes must never reuse a vocabulary name (`b`, `d`, `e`, `f`, `h`, `k`, `l`, `m`, `n`, `p`, `q`, `s`, `t`, `w`, `y`, `sh`, `tr`, `rn`, `nd`, `pg`, `sp`, `fw`, `bt`, `ink`, `m2`, `m3`, `b2`, `rmh`, `rms`). Use two or more letters that are clearly yours.
 - Root class `lca-<code>` (set by `name`). Keyframes are prefixed with the code (`cpOn`, `fbW`). Selectors are scoped `.lca-<code> .x`. `<defs>` ids are `${u}<letter>`: `uid()` ends with `-`, so ids never collide across instances. The frame reserves `${u}_g`, `${u}_r` and `${u}_m`.
 - **≤ 12 KB of SVG markup per illustration** (whitespace collapsed, inline style included). Shared JS ≤ 2 KB. Use `<use>`, generated path strings and the dash tricks to stay lean.
 - QA: the lab page `/<lang>/lab/illustrations/` (noindex) shows every piece on light cards, on a dark band and at hero scale.

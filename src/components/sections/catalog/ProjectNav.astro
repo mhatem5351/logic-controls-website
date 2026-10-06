@@ -1,0 +1,55 @@
+---
+/**
+ * Previous / next case study (portfolio order, wrapping around) + "Back to all projects".
+ */
+import type { ProjectData } from "~/data/projects";
+import { getMessages, localePath, type Locale } from "~/i18n";
+import Icon from "~/components/Icon.astro";
+import { industryCopy, keepCodes, projectCopy } from "./catalog";
+
+interface Props {
+  locale: Locale;
+  prev: ProjectData;
+  next: ProjectData;
+}
+const { locale, prev, next } = Astro.props;
+const L = getMessages(locale).common.labels;
+const meta = (p: ProjectData) => [industryCopy(locale, p.industries[0] ?? "")?.navTitle, String(p.year)].filter(Boolean).join(" / ");
+const links = [
+  { p: prev, label: L.previousProject, dir: "prev" as const },
+  { p: next, label: L.nextProject, dir: "next" as const },
+];
+---
+
+<nav aria-label={`${L.previousProject} / ${L.nextProject}`} class="grid gap-px border border-charcoal-200 bg-charcoal-200 sm:grid-cols-2">
+  {
+    links.map(({ p, label, dir }) => (
+      <a
+        href={localePath(locale, `projects/${p.slug}`)}
+        rel={dir}
+        class:list={[
+          "group flex min-h-32 flex-col justify-center gap-2 bg-white p-6 transition-colors hover:bg-navy-50 sm:p-8",
+          dir === "next" && "sm:items-end sm:text-end",
+        ]}
+      >
+        <span class="inline-flex items-center gap-2 type-label text-royal-700">
+          {dir === "prev" && (
+            <span class="inline-flex -scale-x-100" aria-hidden="true">
+              <Icon name="arrow" size={16} class="transition-transform group-hover:translate-x-1 rtl:group-hover:-translate-x-1" />
+            </span>
+          )}
+          {label}
+          {dir === "next" && <Icon name="arrow" size={16} class="transition-transform group-hover:translate-x-1 rtl:group-hover:-translate-x-1" />}
+        </span>
+        <span class="type-h4 text-navy-950 group-hover:text-royal-700">{keepCodes(projectCopy(locale, p.slug)?.cardTitle ?? "", locale)}</span>
+        <span class="type-label text-charcoal-600">{meta(p)}</span>
+      </a>
+    ))
+  }
+</nav>
+<p class="mt-6 text-center">
+  <a href={localePath(locale, "projects")} class="inline-flex min-h-11 items-center gap-2 text-sm font-bold text-royal-600 underline-offset-4 hover:underline">
+    <Icon name="layers" size={16} />
+    {L.backToProjects}
+  </a>
+</p>

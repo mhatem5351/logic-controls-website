@@ -17,7 +17,8 @@ interface Item {
 }
 interface Props {
   images: Item[];
-  columns?: 2 | 3 | 4;
+  /** 1 = one large image (e.g. a case study with a single photo). */
+  columns?: 1 | 2 | 3 | 4;
   /** "square" crops thumbnails to 1:1, "landscape" to 4:3. */
   crop?: "square" | "landscape";
   locale?: Locale;
@@ -28,7 +29,10 @@ const t = getMessages(locale).ui;
 const { images, columns = 3, crop = "landscape", class: className } = Astro.props;
 const id = uid("gal");
 const full = await Promise.all(images.map((img) => getImage({ src: img.src, width: Math.min(1800, img.src.width), format: "webp", quality: 82 })));
-const grid = { 2: "sm:grid-cols-2", 3: "sm:grid-cols-2 lg:grid-cols-3", 4: "grid-cols-2 lg:grid-cols-4" }[columns];
+const grid = { 1: "", 2: "sm:grid-cols-2", 3: "sm:grid-cols-2 lg:grid-cols-3", 4: "grid-cols-2 lg:grid-cols-4" }[columns];
+const thumbWidths = columns === 1 ? [480, 800, 1200] : [320, 480, 720];
+const thumbSizes =
+  columns === 1 ? "(min-width: 768px) 48rem, 100vw" : columns === 4 ? "(min-width: 1024px) 25vw, 50vw" : "(min-width: 1024px) 33vw, (min-width: 640px) 50vw, 100vw";
 const total = images.length;
 ---
 
@@ -49,8 +53,8 @@ const total = images.length;
               src={img.src}
               alt={img.alt}
               formats={["avif", "webp"]}
-              widths={[320, 480, 720]}
-              sizes={columns === 4 ? "(min-width: 1024px) 25vw, 50vw" : "(min-width: 1024px) 33vw, (min-width: 640px) 50vw, 100vw"}
+              widths={thumbWidths}
+              sizes={thumbSizes}
               loading="lazy"
               layout="full-width"
               class="size-full object-cover transition duration-500 group-hover:scale-[1.04] group-hover:opacity-90"

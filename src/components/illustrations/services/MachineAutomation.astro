@@ -1,5 +1,6 @@
 ---
-/* machine-automation — servo gantry pick-and-place over two conveyors, photo-eye, operator station.
+/* machine-automation — servo gantry pick-and-place over two conveyors, photo-eye, operator station,
+   cable drag chain on the beam (its bend travels at half the carriage speed, as a real chain does).
    Loop 7 s: carton rides in on the infeed → photo-eye beam is broken (input pulse to the station) →
    Z cylinder descends, vacuum grips, lifts → servo traverses (output pulse, encoder spins) → places on
    the outfeed → releases, returns while the outfeed carries the carton away. Seamless. */
@@ -17,8 +18,8 @@ const t1 = "M34 117V98L28 92V86";
     .lca-ma .mz{animation:maZ 7s cubic-bezier(.65,0,.35,1) infinite}
     .lca-ma .ct{animation:maC 7s cubic-bezier(.65,0,.35,1) infinite}
     .lca-ma .sl{stroke:var(--i-ln);stroke-width:12;stroke-dasharray:1 9}
-    .lca-ma .b1{animation:maB1 7s cubic-bezier(.65,0,.35,1) infinite}
-    .lca-ma .b2{animation:maB2 7s linear infinite}
+    .lca-ma .bl1{animation:maB1 7s cubic-bezier(.65,0,.35,1) infinite}
+    .lca-ma .bl2{animation:maB2 7s linear infinite}
     .lca-ma .enc{stroke:var(--i-b);stroke-width:3;stroke-dasharray:2 2.4;transform-box:fill-box;transform-origin:center;animation:maE 7s cubic-bezier(.65,0,.35,1) infinite}
     .lca-ma .sn{animation:maS 7s step-end infinite}
     .lca-ma .bm{animation:maBm 7s step-end infinite}
@@ -29,6 +30,13 @@ const t1 = "M34 117V98L28 92V86";
     .lca-ma .nd{transform-box:fill-box;transform-origin:center}
     .lca-ma .nd.i1,.lca-ma .pg.i1{animation:maN1 7s ease-out infinite}
     .lca-ma .nd.o1,.lca-ma .pg.o1{animation:maN2 7s ease-out infinite}
+    .lca-ma .chn{stroke:var(--i-ink);stroke-width:4;stroke-dasharray:2.4 1.1;stroke-linecap:butt}
+    .lca-ma .chl{transform-box:fill-box;transform-origin:0 50%;animation:maCl 7s cubic-bezier(.65,0,.35,1) infinite}
+    .lca-ma .chu{transform-box:fill-box;transform-origin:100% 50%;animation:maCu 7s cubic-bezier(.65,0,.35,1) infinite}
+    .lca-ma .chb{animation:maCb 7s cubic-bezier(.65,0,.35,1) infinite}
+    @keyframes maCl{0%,41%{transform:none}58.5%,76%{transform:scaleX(1.369)}93%,100%{transform:none}}
+    @keyframes maCu{0%,41%{transform:none}58.5%,76%{transform:translateX(72px) scaleX(.242)}93%,100%{transform:none}}
+    @keyframes maCb{0%,41%{transform:none}58.5%,76%{transform:translateX(72px)}93%,100%{transform:none}}
     @keyframes maX{0%,41%{transform:none}58.5%,76%{transform:translateX(144px)}93%,100%{transform:none}}
     @keyframes maZ{0%,20%{transform:none}28.5%,33%{transform:translateY(36px)}41%,58.5%{transform:none}66%,68.5%{transform:translateY(36px)}76%,100%{transform:none}}
     @keyframes maC{0%{transform:translate(-190px,0);opacity:1;animation-timing-function:cubic-bezier(.3,.5,.4,1)}17%,33%{transform:none}41%{transform:translate(0,-36px)}58.5%{transform:translate(144px,-36px)}66%,76%{transform:translate(144px,0);opacity:1;animation-timing-function:linear}88%{opacity:1}93%{opacity:0}100%{transform:translate(244px,0);opacity:0}}
@@ -39,8 +47,8 @@ const t1 = "M34 117V98L28 92V86";
     @keyframes maBm{0%{opacity:.9}17%{opacity:0}33%,100%{opacity:.9}}
     @keyframes maV{0%{opacity:0}28.5%{opacity:1}68.5%,100%{opacity:0}}
     @keyframes maPr{0%{transform:scaleX(0)}100%{transform:scaleX(1)}}
-    @keyframes maI{0%,17%{stroke-dashoffset:12}27%,100%{stroke-dashoffset:-100}}
-    @keyframes maO{0%,35%{stroke-dashoffset:12}41%{stroke-dashoffset:-100}41.1%,70%{stroke-dashoffset:12}76%,100%{stroke-dashoffset:-100}}
+    @keyframes maI{0%,17%{stroke-dashoffset:14}27%,100%{stroke-dashoffset:-102}}
+    @keyframes maO{0%,35%{stroke-dashoffset:14}41%{stroke-dashoffset:-102}41.1%,70%{stroke-dashoffset:14}76%,100%{stroke-dashoffset:-102}}
     @keyframes maN1{0%,16.5%{opacity:0;transform:scale(1)}17%{opacity:1;transform:scale(1)}27%,100%{opacity:0;transform:scale(2.4)}}
     @keyframes maN2{0%,40.5%{opacity:0;transform:scale(1)}41%{opacity:1;transform:scale(1)}51%,75.4%{opacity:0;transform:scale(2.4)}75.5%{opacity:0;transform:scale(1)}76%{opacity:1;transform:scale(1)}86%,100%{opacity:0;transform:scale(2.4)}}
   </style>
@@ -60,8 +68,8 @@ const t1 = "M34 117V98L28 92V86";
     <path d="M56 194 68 182H208L196 194ZM230 194 242 182H382L370 194Z"></path>
   </g>
   <g transform="translate(194 0) skewX(-45)">
-    <path class="sl bt b1" d="M58 188H195"></path>
-    <path class="sl bt b2" d="M232 188H369"></path>
+    <path class="sl bt bl1" d="M58 188H195"></path>
+    <path class="sl bt bl2" d="M232 188H369"></path>
   </g>
   <g class="m">
     <rect x="56" y="194" width="140" height="14"></rect>
@@ -99,8 +107,15 @@ const t1 = "M34 117V98L28 92V86";
   <circle class="enc" cx="28" cy="62" r="7"></circle>
   <circle class="ink n" cx="28" cy="62" r="2"></circle>
 
+  <!-- cable drag chain: fixed at the left, lower run on the beam, bend, upper run to the carriage -->
+  <path class="chn chl" d="M62 46H255"></path>
+  <path class="chn chu" d="M160 38H255"></path>
+  <path class="chb" d="M255 38a4 4 0 0 1 0 8" style="stroke:var(--i-ink);stroke-width:4"></path>
+  <rect class="m3 d" x="58" y="42" width="6" height="7"></rect>
+
   <!-- carriage + Z axis + vacuum gripper -->
   <g class="mx">
+    <rect class="m3 d" x="158" y="37" width="5" height="12"></rect>
     <g class="mz">
       <rect class="m3 d" x="158.5" y="64" width="3" height="48"></rect>
       <rect class="b d" x="142" y="112" width="36" height="6"></rect>

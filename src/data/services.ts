@@ -34,7 +34,7 @@ export const SERVICES: readonly ServiceData[] = [
     slug: "control-panels",
     icon: "circuit-board",
     industries: ["food-beverage", "cosmetics-personal-care", "packaging-labeling", "pharmaceutical"],
-    featuredProjects: ["shampoo-filling-delta-wecon", "shampoo-filling-ls-wecon"],
+    featuredProjects: ["beverage-syrup-jet-mixing", "shampoo-filling-delta-wecon", "shampoo-filling-ls-wecon"],
   },
   {
     slug: "plc-hmi-programming",

@@ -1,0 +1,84 @@
+---
+/**
+ * Home "two doors": local factories & machine builders → services, foreign manufacturers → foreign-manufacturers.
+ * Whole panel is one link (stretched title link, one tab stop). `foreignFirst` for /zh/ and /tr/ visitors.
+ */
+import { getMessages, type Locale } from "~/i18n";
+import Icon from "~/components/Icon.astro";
+import { href, FOREIGN_PATH } from "~/components/nav";
+
+interface Props {
+  locale: Locale;
+  foreignFirst?: boolean;
+  class?: string;
+}
+const { locale, foreignFirst = false, class: className } = Astro.props;
+const t = getMessages(locale);
+const a = t.home.audiences;
+const doors = [
+  { key: "local", ...a.local, href: href(locale, "services"), dark: false, icon: "factory" as const, chips: ["PLC", "HMI", "SCADA", "VFD"] },
+  { key: "foreign", ...a.foreign, href: href(locale, FOREIGN_PATH), dark: true, icon: "globe" as const, chips: ["FAT", "SAT", "I/O"] },
+];
+if (foreignFirst) doors.reverse();
+---
+
+<div class:list={["grid gap-5 md:grid-cols-2 lg:gap-6", className]}>
+  {
+    doors.map((d) => (
+      <article
+        class:list={[
+          "group relative isolate flex flex-col overflow-hidden p-7 transition duration-300 sm:p-9",
+          "has-[a:focus-visible]:outline-2 has-[a:focus-visible]:outline-offset-4 has-[a:focus-visible]:outline-(--focus)",
+          d.dark
+            ? "on-dark bg-navy-950 text-navy-100 hover:shadow-glow"
+            : "border border-charcoal-200 bg-white hover:-translate-y-0.5 hover:border-royal-300 hover:shadow-lift",
+        ]}
+      >
+        {d.dark && <div aria-hidden="true" class="pointer-events-none absolute inset-0 -z-10 bg-blueprint mask-fade-edges" />}
+        {d.dark && (
+          <div aria-hidden="true" class="pointer-events-none absolute inset-0 -z-20 bg-[radial-gradient(ellipse_70%_80%_at_100%_0%,rgb(5_86_173/0.45),transparent_70%)] rtl:bg-[radial-gradient(ellipse_70%_80%_at_0%_0%,rgb(5_86_173/0.45),transparent_70%)]" />
+        )}
+        <div class="flex items-start justify-between gap-4">
+          <span
+            class:list={[
+              "chamfer inline-grid size-14 place-items-center [--chamfer:12px]",
+              d.dark ? "bg-royal-600/25 text-signal-300" : "bg-navy-950 text-royal-300",
+            ]}
+          >
+            <Icon name={d.icon} size={28} />
+          </span>
+        </div>
+        <h3 class:list={["mt-7 type-h2 max-w-md", d.dark ? "text-white" : "text-navy-950"]} style="font-size: clamp(1.5rem, 1.2rem + 1.1vw, 2.125rem)">
+          <a href={d.href} class="after:absolute after:inset-0 after:z-10 after:content-[''] focus-visible:outline-none">
+            {d.title}
+          </a>
+        </h3>
+        <p class:list={["mt-4 max-w-lg", d.dark ? "text-navy-200" : "text-charcoal-600"]}>{d.text}</p>
+        <ul role="list" class="mt-6 flex flex-wrap gap-2" aria-hidden="true">
+          {d.chips.map((c) => (
+            <li
+              class:list={[
+                "rounded-xs border px-2 py-1 font-mono text-[0.6875rem] tracking-wider ltr",
+                d.dark ? "border-white/12 bg-white/[0.04] text-navy-200" : "border-charcoal-200 bg-charcoal-50 text-charcoal-700",
+              ]}
+              dir="ltr"
+            >
+              {c}
+            </li>
+          ))}
+        </ul>
+        <span
+          aria-hidden="true"
+          class:list={[
+            "mt-auto inline-flex items-center gap-2 pt-8 font-bold",
+            d.dark ? "text-signal-300 group-hover:text-white" : "text-royal-600 group-hover:text-royal-800",
+          ]}
+        >
+          {d.dark && <span class="lc-led" />}
+          {d.cta}
+          <Icon name="arrow" size={18} class="transition-transform duration-300 group-hover:translate-x-1 rtl:group-hover:-translate-x-1" />
+        </span>
+      </article>
+    ))
+  }
+</div>

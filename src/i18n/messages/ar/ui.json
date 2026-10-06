@@ -13,13 +13,13 @@
       "controlPanels": "لوحات التحكم",
       "plcHmi": "برمجة PLC و HMI",
       "machineAutomation": "أتمتة الماكينات",
-      "commissioning": "التشغيل والدعم الفني"
+      "commissioning": "الاختبار والتشغيل"
     },
     "industriesList": {
       "foodBeverage": "الأغذية والمشروبات",
       "pharma": "الصناعات الدوائية",
-      "cosmetics": "مستحضرات التجميل والتعبئة",
-      "packaging": "التغليف"
+      "cosmetics": "مستحضرات التجميل",
+      "packaging": "التغليف والليبل"
     }
   },
   "cta": {

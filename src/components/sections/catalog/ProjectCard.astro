@@ -1,0 +1,66 @@
+---
+/**
+ * Project card for the catalog pages: cover photo (astro:assets <Picture>), "Video" badge when the case study
+ * has a film, meta line (primary industry / year), card title, first technologies as chips, "Read case study".
+ */
+import { Picture } from "astro:assets";
+import Card from "~/components/Card.astro";
+import Icon from "~/components/Icon.astro";
+import type { ProjectData } from "~/data/projects";
+import { getMessages, localePath, type Locale } from "~/i18n";
+import { imageAlt, industryCopy, keepCodes, projectCopy } from "./catalog";
+
+interface Props {
+  project: ProjectData;
+  locale: Locale;
+  headingLevel?: "h2" | "h3" | "h4";
+  /** Load the cover eagerly (first row above the fold). */
+  eager?: boolean;
+  /** How many technology chips to show. */
+  maxTags?: number;
+  sizes?: string;
+  class?: string;
+}
+
+const { project: p, locale, headingLevel = "h3", eager = false, maxTags = 3, sizes, class: className } = Astro.props;
+const t = getMessages(locale).common;
+const c = projectCopy(locale, p.slug);
+const industry = industryCopy(locale, p.industries[0] ?? "");
+const meta = [industry?.navTitle, String(p.year)].filter((m): m is string => !!m);
+---
+
+{
+  c && (
+    <Card
+      variant="project"
+      title={keepCodes(c.cardTitle, locale)}
+      href={localePath(locale, `projects/${p.slug}`)}
+      meta={meta}
+      tags={p.technologies.slice(0, maxTags)}
+      cta={t.labels.readCaseStudy}
+      headingLevel={headingLevel}
+      class={className}
+    >
+      <Fragment slot="media">
+        <Picture
+          src={p.cover.image}
+          alt={imageAlt(locale, p.slug, p.cover.key)}
+          formats={["avif", "webp"]}
+          widths={[400, 640, 900]}
+          sizes={sizes ?? "(min-width: 1024px) 33vw, (min-width: 640px) 50vw, 100vw"}
+          loading={eager ? "eager" : "lazy"}
+          layout="full-width"
+          class="size-full object-cover transition duration-700 group-hover:scale-[1.04]"
+        />
+        {
+          p.video && (
+            <span class="absolute start-3 top-3 inline-flex items-center gap-1.5 bg-navy-950/85 px-2.5 py-1.5 type-label text-white backdrop-blur-sm">
+              <Icon name="play" size={12} class="text-signal-400" />
+              {t.labels.video}
+            </span>
+          )
+        }
+      </Fragment>
+    </Card>
+  )
+}

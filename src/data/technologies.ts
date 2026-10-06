@@ -16,7 +16,7 @@ export interface BrandData {
 }
 
 export const BRANDS: readonly BrandData[] = [
-  { slug: "siemens", name: "Siemens", products: ["S7-1200", "WinCC Professional", "S7-200 SMART"] },
+  { slug: "siemens", name: "Siemens", products: ["S7-1200", "WinCC Professional", "SIMATIC HMI", "S7-200 SMART"] },
   { slug: "schneider-electric", name: "Schneider Electric", products: ["Altivar VFDs", "Stepper drives", "C60N circuit breakers"] },
   { slug: "delta", name: "Delta", products: ["DVP series PLCs"] },
   { slug: "ls-electric", name: "LS Electric", products: ["PLCs", "M100 VFD"] },

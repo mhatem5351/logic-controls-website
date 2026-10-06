@@ -20,6 +20,7 @@ import type enTechnologies from "./messages/en/technologies.json";
 import type enAbout from "./messages/en/about.json";
 import type enContact from "./messages/en/contact.json";
 import type enPrivacy from "./messages/en/privacy.json";
+import type enHmi from "./messages/en/hmi.json";
 
 /** Extend this as namespaces are added (keeps `t.<ns>.<key>` fully typed from the English files). */
 export interface Messages {
@@ -35,6 +36,7 @@ export interface Messages {
   about: typeof enAbout;
   contact: typeof enContact;
   privacy: typeof enPrivacy;
+  hmi: typeof enHmi;
   [namespace: string]: any;
 }
 

@@ -20,14 +20,14 @@ export const SERVICE_LINKS = [
   { key: "controlPanels", path: "services/control-panels" },
   { key: "plcHmi", path: "services/plc-hmi-programming" },
   { key: "machineAutomation", path: "services/machine-automation" },
-  { key: "commissioning", path: "services/commissioning-support" },
+  { key: "commissioning", path: "services/testing-commissioning" },
 ] as const;
 
 export const INDUSTRY_LINKS = [
   { key: "foodBeverage", path: "industries/food-beverage", icon: "bottle" },
   { key: "pharma", path: "industries/pharmaceutical", icon: "flask" },
-  { key: "cosmetics", path: "industries/cosmetics-filling", icon: "droplet" },
-  { key: "packaging", path: "industries/packaging", icon: "box" },
+  { key: "cosmetics", path: "industries/cosmetics-personal-care", icon: "droplet" },
+  { key: "packaging", path: "industries/packaging-labeling", icon: "box" },
 ] as const;
 
 /** Locale-prefixed href that keeps an optional #hash: href("ar", "contact/#quote") → "/ar/contact/#quote". */

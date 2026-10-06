@@ -46,7 +46,7 @@
           "plc-hmi-programming": "PLC veya HMI programlama",
           "machine-automation": "Makine otomasyonu",
           "machine-retrofits": "Eski bir makinenin modernizasyonu (retrofit)",
-          "process-control": "Proses kontrolü (sıcaklık, CIP, dozajlama)",
+          "process-control": "Proses kontrolü (sıcaklık, CIP, harmanlama)",
           "scada-data-logging": "SCADA veya veri kaydı",
           "testing-commissioning": "Test ve devreye alma",
           "maintenance-support": "Arıza giderme veya bakım",
@@ -73,6 +73,10 @@
         "placeholder": "Bir konum seçin",
         "otherEgypt": "Mısır'da başka bir yer",
         "outsideEgypt": "Mısır dışında"
+      },
+      "country": {
+        "label": "Ülke",
+        "help": "Şirketiniz Mısır dışındaysa bulunduğu ülke."
       },
       "timeline": {
         "label": "Ne zaman ihtiyacınız var?",
@@ -103,10 +107,12 @@
       }
     },
     "whatsappHint": {
-      "text": "WhatsApp'ı mı tercih edersiniz? Makinenin, etiket plakalarının, panonun veya çizimlerin fotoğraflarını gönderin.",
+      "text": "WhatsApp'ı mı tercih edersiniz? Makinenin, cihaz etiketlerinin, panonun veya çizimlerin fotoğraflarını gönderin.",
       "cta": "Çizimleri WhatsApp'tan gönderin"
     },
     "privacyNote": "Bilgilerinizi yalnızca bu talebe yanıt vermek için kullanırız. Sizi herhangi bir e-posta listesine eklemeyiz.",
+    "sent": "Talebiniz gönderildi. Onay sayfası açılıyor…",
+    "noscript": "Güvenlik kontrolü için JavaScript gerekir. Form gönderilmezse bize doğrudan telefon, WhatsApp veya e-postayla ulaşın.",
     "security": {
       "label": "Güvenlik kontrolü",
       "help": "Bu kontrol, formu bir botun değil bir kişinin gönderdiğini doğrular."

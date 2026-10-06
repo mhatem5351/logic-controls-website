@@ -68,11 +68,18 @@
   },
   "stats": {
     "title": "Logic Controls in numbers",
-    "projects": { "label": "projects delivered" },
-    "experience": { "label": "years of team experience" },
-    "platforms": { "label": "PLC and HMI platforms" },
-    "industries": { "label": "industries served" },
-    "founded": { "label": "company founded" }
+    "projects": {
+      "label": "projects delivered"
+    },
+    "experience": {
+      "label": "years of team experience"
+    },
+    "platforms": {
+      "label": "PLC and HMI platforms"
+    },
+    "industries": {
+      "label": "industries served"
+    }
   },
   "platforms": {
     "title": "Platforms we program and integrate",
@@ -167,15 +174,42 @@
       "suez-canal": "Suez Canal Economic Zone"
     },
     "items": {
-      "6th-of-october": { "name": "6th of October and New October", "governorate": "Giza" },
-      "obour": { "name": "Obour City", "governorate": "Qalyubia" },
-      "badr": { "name": "Badr City", "governorate": "Cairo" },
-      "10th-of-ramadan": { "name": "10th of Ramadan City", "governorate": "Sharqia" },
-      "sadat-city": { "name": "Sadat City", "governorate": "Menoufia" },
-      "borg-el-arab": { "name": "Borg El Arab and New Borg El Arab", "governorate": "Alexandria" },
-      "ain-sokhna": { "name": "Ain Sokhna, including the TEDA zone", "governorate": "Suez" },
-      "qantara-west": { "name": "Qantara West", "governorate": "Ismailia" },
-      "east-port-said": { "name": "East Port Said", "governorate": "Port Said" }
+      "6th-of-october": {
+        "name": "6th of October and New October",
+        "governorate": "Giza"
+      },
+      "obour": {
+        "name": "Obour City",
+        "governorate": "Qalyubia"
+      },
+      "badr": {
+        "name": "Badr City",
+        "governorate": "Cairo"
+      },
+      "10th-of-ramadan": {
+        "name": "10th of Ramadan City",
+        "governorate": "Sharqia"
+      },
+      "sadat-city": {
+        "name": "Sadat City",
+        "governorate": "Menoufia"
+      },
+      "borg-el-arab": {
+        "name": "Borg El Arab and New Borg El Arab",
+        "governorate": "Alexandria"
+      },
+      "ain-sokhna": {
+        "name": "Ain Sokhna, including the TEDA zone",
+        "governorate": "Suez"
+      },
+      "qantara-west": {
+        "name": "Qantara West",
+        "governorate": "Ismailia"
+      },
+      "east-port-said": {
+        "name": "East Port Said",
+        "governorate": "Port Said"
+      }
     }
   },
   "locations": {
@@ -189,7 +223,7 @@
   "notes": {
     "brands": "Brand names and trademarks belong to their owners. Listing a brand means we program and integrate its products. It does not mean a partnership.",
     "anonymised": "Client names are withheld for confidentiality. References can be arranged on request, with the client's permission.",
-    "preFounding": "Projects dated before 2025 were delivered by our engineers before Logic Controls was founded.",
+    "preFounding": "Delivered by our engineers before the company was established.",
     "photos": "Photos are from the actual projects. Some logos and nameplates are blurred."
   }
 }

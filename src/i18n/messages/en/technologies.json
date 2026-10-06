@@ -11,9 +11,22 @@
   "brands": {
     "title": "PLC and HMI platforms we program and integrate",
     "productsLabel": "Used in our projects",
+    "productNames": {
+      "S7-1200": "S7-1200",
+      "WinCC Professional": "WinCC Professional",
+      "S7-200 SMART": "S7-200 SMART",
+      "Altivar VFDs": "Altivar VFDs",
+      "Stepper drives": "Stepper drives",
+      "C60N circuit breakers": "C60N circuit breakers",
+      "DVP series PLCs": "DVP series PLCs",
+      "PLCs": "PLCs",
+      "M100 VFD": "M100 VFD",
+      "LX3V PLCs": "LX3V PLCs",
+      "HMIs": "HMIs"
+    },
     "items": {
       "siemens": {
-        "text": "S7-1200 PLCs with WinCC Professional SCADA for process machines and plants, as in our tablet coating and concrete batching projects. We have also commissioned S7-200 SMART systems."
+        "text": "S7-1200 PLCs with WinCC Professional SCADA for process machines and plants, as in our tablet coating and concrete batching projects, and with a SIMATIC HMI on our beverage syrup mixing system. We have also commissioned S7-200 SMART systems."
       },
       "schneider-electric": {
         "text": "PLCs, Altivar variable-speed drives, stepper drives, and protection and control components. Schneider Electric stepper drives run the label dispensing on our labeling machine."
@@ -36,15 +49,18 @@
       "LS Electric M100 VFDs",
       "Schneider Electric Altivar VFDs",
       "VEICHI VFDs",
+      "Yaskawa VFDs",
       "Schneider Electric stepper drives",
       "PLC-based motion control for synchronized positioning"
     ]
   },
   "scada": {
-    "title": "SCADA, HMI and data",
-    "text": "From a single touch screen on a machine to a SCADA overview of a full process.",
+    "title": "Software, SCADA and data",
+    "text": "From electrical drawings in EPLAN Electric P8 to a single touch screen on a machine or a SCADA overview of a full process.",
     "items": [
+      "EPLAN Electric P8 for electrical design and panel drawings",
       "Siemens WinCC Professional SCADA",
+      "SQL database integration for SCADA reports and OEE dashboards",
       "Process mimics, recipes and alarm history on HMIs",
       "Arabic, English and bilingual HMI screens",
       "User log-in and access levels",
@@ -72,11 +88,17 @@
       "Level, pressure and gas measurement on process systems"
     ]
   },
+  "categories": {
+    "eyebrow": "By category",
+    "title": "Drives, SCADA, networks and signals",
+    "intro": "The controller is only one part of the system. These are the other layers we design, program and commission around it."
+  },
   "otherBrands": {
     "title": "Other equipment we have worked with",
-    "text": "On client machines we have also worked with MCGS HMIs, VEICHI drives, MEAN WELL power supplies and industrial Ethernet switches. If your machine uses another brand, send us the model and we will tell you what we can do."
+    "text": "On client machines we have also worked with MCGS HMIs, VEICHI and Yaskawa drives, MEAN WELL power supplies and industrial Ethernet switches. If your machine uses another brand, send us the model and we will tell you what we can do."
   },
   "choosing": {
+    "eyebrow": "Our approach",
     "title": "How we choose a platform",
     "items": [
       {

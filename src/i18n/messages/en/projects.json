@@ -10,7 +10,49 @@
       "Filter by industry or service to find a machine like yours."
     ]
   },
+  "labels": {
+    "countOne": "{count} project",
+    "techGroups": {
+      "plc": "PLC",
+      "hmi": "HMI",
+      "scada": "SCADA",
+      "drives": "Drives and motion",
+      "other": "Panel and network"
+    }
+  },
   "items": {
+    "beverage-syrup-jet-mixing": {
+      "title": "Beverage syrup preparation: complete control of a jet mixing system",
+      "cardTitle": "Syrup jet mixing system on Siemens S7-1200 and SIMATIC HMI",
+      "client": "Beverage manufacturer, Egypt",
+      "summary": "A complete control system for the syrup preparation of a beverage plant: Siemens S7-1200 PLC, a SIMATIC HMI at the tank, two Yaskawa VFDs for pump speed, and automatic filling and circulation of the jet mixer tanks.",
+      "seoTitle": "Syrup Jet Mixing Control | Siemens S7-1200 & SIMATIC HMI",
+      "seoDescription": "Case study: control of a beverage syrup jet mixing system in Egypt. Siemens S7-1200 PLC, SIMATIC HMI, Yaskawa VFDs, CIP-ready interlock, commissioning.",
+      "challenge": "A leading beverage plant needed a complete control system for its syrup preparation. The radial jet mixing system had to fill its mixer tanks, circulate the syrup at a controlled pump speed for a set time and work in step with the plant's CIP system, all operated from a screen at the tank.",
+      "solution": "We designed the control system around a Siemens S7-1200 PLC with I/O modules and two Yaskawa VFDs, with a Siemens SIMATIC HMI in a stainless-steel enclosure with an emergency stop at the tank. The PLC runs the process sequence in automatic mode: filling of the jet mixer tank, circulation against a time setpoint, and control of the process valves. The VFDs control pump speed, and the HMI shows the speed setpoint and actual value next to the live tank level. The CIP-ready status is used as an interlock and shown on the screen, and alarms are reset from the HMI. We integrated the instruments and I/O, including a pressure switch, then tested and commissioned the system and optimized the process on site.",
+      "scope": [
+        "Control system design",
+        "Control panel with a Siemens S7-1200 PLC, I/O modules and two Yaskawa VFDs",
+        "Siemens S7-1200 PLC programming",
+        "SIMATIC HMI screens for the jet mixer tanks",
+        "Filling, circulation and valve sequence in automatic mode",
+        "Pump speed control with setpoint and actual value",
+        "Tank level, circulation timers and CIP-ready interlock",
+        "Instrumentation and I/O integration",
+        "Testing and commissioning",
+        "Troubleshooting and process optimization"
+      ],
+      "result": "The syrup preparation system runs its filling and circulation sequence automatically, and operators follow pump speed, tank level, circulation time and interlock status on the HMI at the tank.",
+      "highlights": [
+        "Automatic filling and circulation",
+        "Pump speed on two Yaskawa VFDs",
+        "CIP-ready interlock"
+      ],
+      "imageAlts": {
+        "hmi": "Siemens SIMATIC HMI in a stainless-steel enclosure with an emergency stop, showing a jet mixer tank, valves, the pump speed setpoint and actual value, and circulation time",
+        "panel": "Control panel with two Yaskawa drives, a Siemens S7-1200 PLC with I/O modules, a power supply, circuit breakers, relays, terminals and a pressure switch"
+      }
+    },
     "shampoo-filling-ls-wecon": {
       "title": "Shampoo filling machine: control system design and implementation",
       "cardTitle": "Shampoo filling machine on LS PLC and Wecon HMI",
@@ -105,8 +147,8 @@
       "cardTitle": "Laundry washer control on Wecon PLC and HMI",
       "client": "Hotel laundry, Egypt",
       "summary": "A Wecon PLC and HMI control system for a laundry washer: programs by fabric type and soil level, automatic fill, wash, rinse and extract, and control of water, temperature and dosing.",
-      "seoTitle": "Hotel Laundry Washer Control System | Wecon PLC & HMI",
-      "seoDescription": "Case study: Wecon PLC and HMI control for a hotel laundry washer in Egypt. Wash recipes, water level, temperature and detergent dosing, alarms, logging.",
+      "seoTitle": "Laundry Washer Control System | Wecon PLC & HMI, Egypt",
+      "seoDescription": "Case study: Wecon PLC and HMI control for a laundry washer at a hotel laundry in Egypt. Wash recipes, water level, temperature, detergent dosing, alarms.",
       "challenge": "Hotel and commercial laundries wash many types of linen. The washer needed programs for each fabric type and soil level, precise control of water, temperature and detergent, and efficient, reliable operation that uses water and energy carefully.",
       "solution": "We implemented the control system on a Wecon PLC and Wecon HMI. The program manages filling, washing, rinsing and extraction automatically and controls water level, temperature and detergent dosing. Multiple programmable recipes cover different fabrics and soil levels. The HMI shows real-time status, alarms and fault messages, safety interlocks protect the operator and the machine, and the system logs operating data for performance monitoring. Before installation, the program was run and checked on the HMI on the bench.",
       "scope": [
@@ -299,7 +341,7 @@
         "Product counter",
         "Settings for different bottle sizes"
       ],
-      "result": "The system improved production accuracy, reduced manual intervention, waste and downtime, and made it easy to switch between bottle sizes and products.",
+      "result": "The system helped improve production accuracy and reduce manual intervention, waste and downtime, and made it easy to switch between bottle sizes and products.",
       "highlights": [
         "Arabic HMI",
         "Four nozzles controlled individually",

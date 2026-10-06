@@ -3,6 +3,9 @@
  * Floating contact button, bottom inline-end (bottom-left in RTL via logical inset).
  * WhatsApp with a pre-filled message in the page language; on zh (WhatsApp blocked in mainland China)
  * it becomes an email button.
+ *
+ * It never covers a call to action: while an element marked `data-fab-avoid` (hero CTAs and proof figures,
+ * form actions…) or a large button in <main> passes underneath it, the button fades out of the way.
  */
 import { getMessages, type Locale } from "~/i18n";
 import Icon from "./Icon.astro";
@@ -38,6 +41,17 @@ const link = email ? mailtoLink(t.email.subject) : whatsappLink(message ?? t.wha
 </aside>
 
 <style>
+  .lc-fab {
+    transition-property: transform, translate, opacity, visibility;
+    transition-duration: 0.3s, 0.3s, 0.25s, 0s;
+  }
+  .lc-fab[data-hidden] {
+    opacity: 0;
+    transform: translateY(1rem) scale(0.9);
+    visibility: hidden;
+    pointer-events: none;
+    transition-delay: 0s, 0s, 0s, 0.25s;
+  }
   .lc-fab:focus-visible {
     outline: 3px solid var(--color-signal-400);
     outline-offset: 3px;
@@ -56,3 +70,46 @@ const link = email ? mailtoLink(t.email.subject) : whatsappLink(message ?? t.wha
     }
   }
 </style>
+
+<script>
+  // Fade the button out while a CTA / proof figure / form action sits under it (bottom strip of the viewport,
+  // horizontally overlapping the button). One IntersectionObserver; rebuilt when the viewport height changes.
+  const fab = document.querySelector<HTMLElement>(".lc-fab");
+  if (fab && "IntersectionObserver" in window) {
+    const targets = document.querySelectorAll<HTMLElement>("[data-fab-avoid], main .lc-btn[data-size='lg']");
+    const hits = new Set<Element>();
+    let io: IntersectionObserver | undefined;
+    let lastH = 0;
+    const overlaps = (r: DOMRectReadOnly) => {
+      const f = fab.getBoundingClientRect();
+      return r.right > f.left - 12 && r.left < f.right + 12;
+    };
+    const setup = () => {
+      if (Math.abs(window.innerHeight - lastH) < 40 && io) return;
+      lastH = window.innerHeight;
+      io?.disconnect();
+      hits.clear();
+      const zone = fab.getBoundingClientRect().height + 48; // button + its offset + breathing room
+      io = new IntersectionObserver(
+        (entries) => {
+          for (const e of entries) {
+            if (e.isIntersecting && overlaps(e.boundingClientRect)) hits.add(e.target);
+            else hits.delete(e.target);
+          }
+          // Never hide it while it has keyboard focus.
+          fab.toggleAttribute("data-hidden", hits.size > 0 && document.activeElement !== fab);
+        },
+        { rootMargin: `-${Math.max(0, window.innerHeight - zone)}px 0px 0px 0px` },
+      );
+      targets.forEach((t) => io!.observe(t));
+    };
+    if (targets.length) {
+      setup();
+      let timer = 0;
+      window.addEventListener("resize", () => {
+        clearTimeout(timer);
+        timer = window.setTimeout(setup, 150);
+      });
+    }
+  }
+</script>

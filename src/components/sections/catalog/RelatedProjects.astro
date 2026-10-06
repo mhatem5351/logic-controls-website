@@ -1,0 +1,57 @@
+---
+/**
+ * Related case studies: heading, up to `limit` project cards, and a link to the (pre-filtered) portfolio.
+ * Renders nothing when the list is empty.
+ */
+import type { ProjectData } from "~/data/projects";
+import type { Locale } from "~/i18n";
+import Section from "~/components/Section.astro";
+import SectionHeading from "~/components/SectionHeading.astro";
+import Button from "~/components/Button.astro";
+import ProjectCard from "./ProjectCard.astro";
+import { html } from "./catalog";
+
+interface Props {
+  locale: Locale;
+  projects: readonly ProjectData[];
+  title: string;
+  eyebrow?: string;
+  index?: string;
+  lead?: string;
+  /** "All projects" link (e.g. the portfolio filtered by this service). */
+  all?: { href: string; label: string; count?: number };
+  limit?: number;
+  variant?: "light" | "muted";
+  id?: string;
+}
+const { locale, projects, title, eyebrow, index, lead, all, limit = 3, variant = "light", id = "related-projects" } = Astro.props;
+const list = projects.slice(0, limit);
+const cols = list.length >= 3 ? "sm:grid-cols-2 lg:grid-cols-3" : "sm:grid-cols-2";
+---
+
+{
+  list.length > 0 && (
+    <Section variant={variant} id={id} aria-labelledby={`${id}-title`}>
+      <div class="flex flex-wrap items-end justify-between gap-x-10 gap-y-6">
+        <SectionHeading id={`${id}-title`} index={index} eyebrow={eyebrow} title={html(title, locale)} lead={lead ? html(lead, locale) : undefined} />
+        {all && (
+          <Button href={all.href} variant="ghost" class="shrink-0">
+            {all.label}
+            {all.count != null && (
+              <span class="ms-1 inline-grid min-w-7 place-items-center bg-royal-50 px-1.5 py-0.5 font-mono text-xs text-royal-700 ltr" dir="ltr">
+                {all.count}
+              </span>
+            )}
+          </Button>
+        )}
+      </div>
+      <ul role="list" class:list={["mt-12 grid gap-x-8 gap-y-14", cols, list.length < 3 && "lg:max-w-5xl"]}>
+        {list.map((p) => (
+          <li>
+            <ProjectCard project={p} locale={locale} />
+          </li>
+        ))}
+      </ul>
+    </Section>
+  )
+}

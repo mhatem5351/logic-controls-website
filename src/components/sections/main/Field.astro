@@ -1,0 +1,32 @@
+---
+/**
+ * Form field scaffold for the RFQ form: label (+ required "*" / "optional" marker), the control (slot),
+ * help text (`{id}-help`) and an error slot (`{id}-error`, filled by the form script).
+ * The control must reference them itself: aria-describedby={`${id}-help ${id}-error`}.
+ *
+ * `requiredNoJs`: required only in the no-JS single-page form (shows "*" without JS, "optional" with JS).
+ */
+interface Props {
+  id: string;
+  label: string;
+  required?: boolean;
+  requiredNoJs?: boolean;
+  /** "optional" label text (shown for optional fields). */
+  optional?: string;
+  help?: string;
+  class?: string;
+}
+const { id, label, required = false, requiredNoJs = false, optional, help, class: className } = Astro.props;
+---
+
+<div class:list={["lc-field", className]} data-field={id}>
+  <label for={id} class="lc-label">
+    <span>{label}</span>
+    {required && <span class="lc-req" aria-hidden="true">*</span>}
+    {requiredNoJs && <span class="lc-req lc-nojs" aria-hidden="true">*</span>}
+    {optional && !required && <span class:list={["lc-opt", requiredNoJs && "lc-js"]}>({optional})</span>}
+  </label>
+  <slot />
+  {help && <p id={`${id}-help`} class="lc-help">{help}</p>}
+  <p id={`${id}-error`} class="lc-error" hidden></p>
+</div>

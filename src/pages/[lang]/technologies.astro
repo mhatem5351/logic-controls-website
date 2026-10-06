@@ -1,0 +1,182 @@
+---
+/**
+ * Technologies — platforms we program and integrate (never "partners").
+ * Hero (intro[0]) → PLC/HMI brand data sheet (intro[1] as its lead) + honest note → drives / SCADA / communication / signals → control loop →
+ * live HMI (compact) → other equipment + how we choose a platform → closing CTA. Order: CONTENT.md §4.
+ */
+import BaseLayout from "~/layouts/BaseLayout.astro";
+import Hero from "~/components/Hero.astro";
+import Section from "~/components/Section.astro";
+import SectionHeading from "~/components/SectionHeading.astro";
+import Breadcrumbs from "~/components/Breadcrumbs.astro";
+import Button from "~/components/Button.astro";
+import Chips from "~/components/Chips.astro";
+import CtaBand from "~/components/CtaBand.astro";
+import Icon, { type IconName } from "~/components/Icon.astro";
+import ControlLoop from "~/components/motion/ControlLoop.astro";
+import HmiDemo from "~/components/motion/HmiDemo.astro";
+import BrandPanel from "~/components/sections/main/BrandPanel.astro";
+import { html } from "~/components/sections/main/rich";
+import { href, QUOTE_PATH, whatsappLink, prefersEmail, mailtoLink } from "~/components/nav";
+import { getMessages, localeStaticPaths, type Locale } from "~/i18n";
+import { BRANDS, PROTOCOLS } from "~/data/technologies";
+import panelPhoto from "~/assets/projects/pasteurizer-cip-recipes/panel.jpg";
+
+export const getStaticPaths = localeStaticPaths;
+const locale = Astro.params.lang as Locale;
+const t = getMessages(locale);
+const tt = t.technologies;
+const c = t.common;
+const email = prefersEmail(locale);
+const panelAlt = (t.projects.items["pasteurizer-cip-recipes"]?.imageAlts as Record<string, string> | undefined)?.panel ?? "";
+
+const categories: { key: "drives" | "scada" | "networks" | "signals"; icon: IconName; title: string; text?: string; items: string[]; chips?: readonly string[] }[] = [
+  { key: "drives", icon: "gear", title: tt.drives.title, text: tt.drives.text, items: tt.drives.items },
+  { key: "scada", icon: "hmi", title: tt.scada.title, text: tt.scada.text, items: tt.scada.items },
+  { key: "networks", icon: "traces", title: tt.networks.title, text: tt.networks.text, items: tt.networks.items, chips: PROTOCOLS },
+  { key: "signals", icon: "gauge", title: tt.signals.title, items: tt.signals.items },
+];
+const choosingIcons: IconName[] = ["box", "layers", "users", "factory"];
+const pad = (n: number) => String(n).padStart(2, "0");
+---
+
+<BaseLayout locale={locale} title={tt.seo.title} description={tt.seo.description} path="technologies" heroDark>
+  <Hero
+    locale={locale}
+    size="page"
+    title={html(locale, tt.h1)}
+    lead={html(locale, tt.intro[0] ?? "")}
+    chips={["PLC", "HMI", "SCADA", "VFD"]}
+    image={panelPhoto}
+    imageAlt={panelAlt}
+  >
+    <Breadcrumbs slot="breadcrumbs" locale={locale} items={[{ label: c.breadcrumbs.technologies }]} />
+  </Hero>
+
+  {/* ---------- PLC / HMI platforms ---------- */}
+  <Section id="platforms" aria-labelledby="brands-title">
+    <SectionHeading
+      id="brands-title"
+      index="01"
+      eyebrow="PLC · HMI"
+      title={html(locale, tt.brands.title)}
+      lead={tt.intro[1] ? html(locale, tt.intro[1]) : undefined}
+    />
+    <div class="mt-10 border-t border-charcoal-200">
+      {
+        BRANDS.map((b, i) => (
+          <BrandPanel locale={locale} brand={b} text={tt.brands.items[b.slug].text} productsLabel={tt.brands.productsLabel} index={i + 1} />
+        ))
+      }
+    </div>
+    <aside class="relative mt-10 flex gap-4 border border-signal-600/25 bg-signal-50 p-5 sm:p-6" aria-label={t.ui.platforms.title}>
+      <span aria-hidden="true" class="absolute -top-px start-6 h-1 w-12 skew-x-[-10deg] bg-signal-400 rtl:skew-x-[10deg]"></span>
+      <Icon name="shield" size={24} class="mt-0.5 shrink-0 text-signal-800" />
+      <p class="max-w-4xl text-[0.9375rem] font-medium text-charcoal-800" set:html={html(locale, c.notes.brands)} />
+    </aside>
+  </Section>
+
+  {/* ---------- by category ---------- */}
+  <Section variant="muted" id="categories" aria-labelledby="categories-title">
+    <SectionHeading
+      id="categories-title"
+      index="02"
+      eyebrow={tt.categories.eyebrow}
+      title={html(locale, tt.categories.title)}
+      lead={html(locale, tt.categories.intro)}
+    />
+    <div class="mt-12 grid gap-5 md:grid-cols-2 lg:gap-6">
+      {
+        categories.map((cat, i) => (
+          <article id={cat.key} class="relative flex flex-col border border-charcoal-200 bg-white p-6 sm:p-8" aria-labelledby={`${cat.key}-title`}>
+            <span aria-hidden="true" class="absolute -top-px start-6 h-1 w-10 skew-x-[-10deg] bg-royal-600 sm:start-8 rtl:skew-x-[10deg]" />
+            <div class="flex items-start justify-between gap-4">
+              <span class="chamfer inline-grid size-12 shrink-0 place-items-center bg-navy-950 text-royal-300 [--chamfer:10px]">
+                <Icon name={cat.icon} size={24} />
+              </span>
+              <span aria-hidden="true" class="font-mono text-xs text-charcoal-600 ltr" dir="ltr">
+                02.{i + 1}
+              </span>
+            </div>
+            <h3 id={`${cat.key}-title`} class="mt-6 type-h3 text-navy-950" set:html={html(locale, cat.title)} />
+            {cat.text && <p class="mt-3 text-charcoal-600" set:html={html(locale, cat.text)} />}
+            {cat.chips && <Chips items={[...cat.chips]} size="sm" class="mt-5" label={cat.title} />}
+            <ul role="list" class="mt-6 space-y-2.5 border-t border-charcoal-200 pt-5 text-[0.9375rem] text-charcoal-700">
+              {cat.items.map((item) => (
+                <li
+                  class="relative ps-6 before:absolute before:start-0.5 before:top-[0.68em] before:h-[0.3em] before:w-[0.65em] before:-skew-x-[10deg] before:bg-royal-600 rtl:before:skew-x-[10deg]"
+                  set:html={html(locale, item)}
+                />
+              ))}
+            </ul>
+          </article>
+        ))
+      }
+    </div>
+  </Section>
+
+  {/* ---------- how a control loop works ---------- */}
+  <Section id="control-loop" aria-label={t.hmi.loop.title}>
+    <ControlLoop locale={locale} />
+  </Section>
+
+  {/* ---------- live HMI (compact) ---------- */}
+  <Section variant="dark" angle="both" id="hmi-demo" aria-labelledby="hmi-title">
+    <SectionHeading id="hmi-title" eyebrow={t.hmi.intro.eyebrow} title={html(locale, t.hmi.intro.title)} lead={html(locale, t.hmi.intro.lead)} class="mb-10" />
+    <HmiDemo locale={locale} variant="compact" tone="dark" headingLevel={3} />
+  </Section>
+
+  {/* ---------- other equipment + how we choose ---------- */}
+  <Section aria-labelledby="choosing-title">
+    <div class="grid gap-12 lg:grid-cols-12 lg:gap-14">
+      <aside class="lg:col-span-5" aria-labelledby="other-title">
+        <div class="chamfer-lg relative bg-navy-50 p-6 sm:p-8 lg:sticky lg:top-[calc(var(--header-h)+2rem)]">
+          <div aria-hidden="true" class="pointer-events-none absolute inset-0 bg-blueprint-light"></div>
+          <div class="relative">
+            <span class="chamfer inline-grid size-12 place-items-center bg-royal-600 text-white [--chamfer:10px]">
+              <Icon name="plus" size={24} />
+            </span>
+            <h2 id="other-title" class="mt-6 type-h3 text-navy-950" set:html={html(locale, tt.otherBrands.title)} />
+            <p class="mt-3 text-charcoal-700" set:html={html(locale, tt.otherBrands.text)} />
+            <div class="mt-6 flex flex-wrap gap-3">
+              <Button href={href(locale, QUOTE_PATH)} iconEnd="arrow">{t.ui.cta.quote}</Button>
+              {
+                email ? (
+                  <Button href={mailtoLink(t.ui.email.subject)} variant="secondary" icon="mail" iconClass="text-royal-600">
+                    {t.ui.cta.email}
+                  </Button>
+                ) : (
+                  <Button href={whatsappLink(c.whatsapp.default)} variant="secondary" icon="whatsapp" iconClass="text-[#128c4a]" external>
+                    {c.labels.whatsapp}
+                  </Button>
+                )
+              }
+            </div>
+          </div>
+        </div>
+      </aside>
+
+      <div class="lg:col-span-7">
+        <SectionHeading id="choosing-title" index="03" eyebrow={tt.choosing.eyebrow} title={html(locale, tt.choosing.title)} />
+        <ol role="list" class="mt-10 grid gap-px overflow-hidden border border-charcoal-200 bg-charcoal-200 sm:grid-cols-2">
+          {
+            tt.choosing.items.map((item, i) => (
+              <li class="bg-white p-6 sm:p-7">
+                <div class="flex items-center justify-between">
+                  <span class="chamfer inline-grid size-11 place-items-center bg-navy-950 text-royal-300 [--chamfer:9px]">
+                    <Icon name={choosingIcons[i] ?? "check"} size={22} />
+                  </span>
+                  <span aria-hidden="true" class="font-mono text-xs text-charcoal-600 ltr" dir="ltr">{pad(i + 1)}</span>
+                </div>
+                <h3 class="mt-5 type-h4 text-navy-950" set:html={html(locale, item.title)} />
+                <p class="mt-2 text-[0.9375rem] text-charcoal-600" set:html={html(locale, item.text)} />
+              </li>
+            ))
+          }
+        </ol>
+      </div>
+    </div>
+  </Section>
+
+  <CtaBand locale={locale} title={html(locale, c.ctaBand.default.title)} text={c.ctaBand.default.text} />
+</BaseLayout>

@@ -81,6 +81,15 @@
     "cream": "稀奶油",
     "juice": "果汁"
   },
+  "perm": {
+    "title": "出料许可条件",
+    "ok": "满足",
+    "blocked": "禁止",
+    "temp": "TT-102 ≥ {limit} °C",
+    "check": "持续 {s} s（确认时间）",
+    "dp": "热回收段压差：杀菌侧 > 原料侧",
+    "hold": "保温时间 ≥ {hold} s"
+  },
   "controls": {
     "run": "运行",
     "start": "启动",

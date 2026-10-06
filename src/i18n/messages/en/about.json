@@ -1,16 +1,40 @@
 {
   "seo": {
     "title": "About Logic Controls | Automation Engineers in Egypt",
-    "description": "Logic Controls is an industrial automation company in 6th of October City, Egypt. Founded in 2025 by engineers with 4+ years of experience."
+    "description": "Logic Controls is an industrial automation company in 6th of October City, Egypt. Our engineers bring 4+ years of experience and 50+ projects."
   },
   "h1": "About Logic Controls",
   "lead": "Industrial automation engineers in 6th of October City, Giza. We design, program and commission control systems for factories in Egypt.",
   "story": {
     "title": "Our story",
     "paragraphs": [
-      "Logic Controls was founded in 2025. The company is young, but our engineering team brings more than four years of industrial automation experience and more than 50 delivered projects.",
-      "That work covers food and dairy machines, pharmaceutical coating, cosmetics filling, labeling and bottle printing, concrete batching, hotel laundry machines and test equipment, on Siemens, Schneider Electric, Delta, LS Electric and Wecon platforms.",
+      "Logic Controls is a young company with an experienced engineering team: more than four years of industrial automation work and more than 50 delivered projects.",
+      "That work covers food, beverage and dairy machines, pharmaceutical coating, cosmetics filling, labeling and bottle printing, concrete batching, hotel laundry machines and test equipment, on Siemens, Schneider Electric, Delta, LS Electric and Wecon platforms. Our engineers have also worked on SCADA for drainage stations and a feed mill, metal-sheet cut-to-length and grinding machines, and decal-paper printing machines.",
       "We built Logic Controls to give factories in Egypt one engineering team for the whole control system: design, panel, programming, commissioning and support."
+    ]
+  },
+  "founder": {
+    "eyebrow": "Our founder",
+    "title": "The engineer behind Logic Controls",
+    "name": "Mohammed Tarek Aboalsafa",
+    "role": "Founder & Automation Engineer",
+    "bio": [
+      "Mohammed Tarek Aboalsafa is an industrial automation engineer with more than four years of experience designing, programming, commissioning and maintaining PLC, HMI and SCADA systems for food and beverage, pharmaceutical and other industries. He holds a B.Sc. in Electrical Power and Machines from Helwan University (2020).",
+      "Before Logic Controls, he worked as an automation engineer at a multinational pharmaceutical plant in Cairo, in a GMP environment; in R&D at an Egyptian manufacturer of engineering training equipment; and at a machine-automation company."
+    ],
+    "highlights": [
+      {
+        "value": "4+",
+        "label": "years in industrial automation"
+      },
+      {
+        "value": "B.Sc.",
+        "label": "Electrical Power & Machines"
+      },
+      {
+        "value": "GMP",
+        "label": "pharma plant experience"
+      }
     ]
   },
   "mission": {
@@ -60,5 +84,11 @@
   "cta": {
     "title": "Talk to us about your machine or line",
     "text": "Send a description and photos, or message an engineer on WhatsApp."
+  },
+  "eyebrows": {
+    "story": "Company",
+    "values": "Values",
+    "why": "Why us",
+    "process": "Process"
   }
 }

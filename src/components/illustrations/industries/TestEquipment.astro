@@ -13,10 +13,10 @@ const t1 = "M310 70H264L252 58";
 const t2 = "M201 230H306L322 214V133";
 const t3 = "M340 52V30H191";
 const bars = [
-  { x: 322, h: 38, c: "w", k: "b1" },
-  { x: 334, h: 24, c: "b2", k: "b2" },
-  { x: 352, h: 31, c: "w", k: "b3" },
-  { x: 364, h: 20, c: "b2", k: "b4" },
+  { x: 322, h: 38, c: "w", k: "tb1" },
+  { x: 334, h: 24, c: "b2", k: "tb2" },
+  { x: 352, h: 31, c: "w", k: "tb3" },
+  { x: 364, h: 20, c: "b2", k: "tb4" },
 ];
 ---
 
@@ -26,10 +26,10 @@ const bars = [
     .lca-te .jb{animation:teJb 8s cubic-bezier(.65,0,.35,1) infinite}
     .lca-te .st{animation:teSt 8s cubic-bezier(.45,0,.55,1) infinite}
     .lca-te .bf{transform-box:fill-box;transform-origin:50% 100%}
-    .lca-te .b1{animation:teB1 8s cubic-bezier(.2,.7,.3,1) infinite}
-    .lca-te .b2{animation:teB2 8s cubic-bezier(.2,.7,.3,1) infinite}
-    .lca-te .b3{animation:teB3 8s cubic-bezier(.2,.7,.3,1) infinite}
-    .lca-te .b4{animation:teB4 8s cubic-bezier(.2,.7,.3,1) infinite}
+    .lca-te .tb1{animation:teB1 8s cubic-bezier(.2,.7,.3,1) infinite}
+    .lca-te .tb2{animation:teB2 8s cubic-bezier(.2,.7,.3,1) infinite}
+    .lca-te .tb3{animation:teB3 8s cubic-bezier(.2,.7,.3,1) infinite}
+    .lca-te .tb4{animation:teB4 8s cubic-bezier(.2,.7,.3,1) infinite}
     .lca-te .ne{transform-box:fill-box;transform-origin:center;animation:teNe 8s cubic-bezier(.45,0,.55,1) infinite}
     .lca-te .rl{stroke-dasharray:100 100;animation:teR 8s linear calc(var(--s) - 8s) infinite}
     .lca-te .ok{stroke-dasharray:100 100;animation:teOk 8s linear infinite}
@@ -47,9 +47,9 @@ const bars = [
     @keyframes teNe{0%,7.5%{transform:rotate(-70deg)}37.5%{transform:rotate(40deg)}45%{transform:rotate(-50deg)}70%{transform:rotate(25deg)}78%,100%{transform:rotate(-70deg)}}
     @keyframes teR{0%,78%{stroke-dashoffset:100;opacity:1}82%,90%{stroke-dashoffset:0;opacity:1}95%,100%{stroke-dashoffset:0;opacity:0}}
     @keyframes teOk{0%,84%{stroke-dashoffset:100;opacity:1}87%,90%{stroke-dashoffset:0;opacity:1}95%,100%{stroke-dashoffset:0;opacity:0}}
-    @keyframes teP1{0%,.5%{stroke-dashoffset:12}7%,100%{stroke-dashoffset:-100}}
+    @keyframes teP1{0%,.5%{stroke-dashoffset:14}7%,100%{stroke-dashoffset:-102}}
     @keyframes teN1{0%,6%{opacity:0;transform:scale(1)}6.5%{opacity:1;transform:scale(1)}16%,100%{opacity:0;transform:scale(2.4)}}
-    @keyframes teP3{0%,70%{stroke-dashoffset:12}77.5%,100%{stroke-dashoffset:-100}}
+    @keyframes teP3{0%,70%{stroke-dashoffset:14}77.5%,100%{stroke-dashoffset:-102}}
     @keyframes teN3{0%,76.5%{opacity:0;transform:scale(1)}77%{opacity:1;transform:scale(1)}87%,100%{opacity:0;transform:scale(2.4)}}
   </style>
   <defs>

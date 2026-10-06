@@ -16,7 +16,6 @@ export const SITE = {
     country: "EG",
   },
   geo: { lat: 29.9285, lng: 30.9188 },
-  foundingYear: 2025,
   experienceYears: 4,
   projectsCount: 50,
   /** Public keys (safe to ship): Cloudflare Turnstile site key + Web Analytics beacon token. */

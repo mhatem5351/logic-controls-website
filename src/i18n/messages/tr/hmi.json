@@ -81,6 +81,15 @@
     "cream": "Krema",
     "juice": "Meyve suyu"
   },
+  "perm": {
+    "title": "İleri geçiş izni",
+    "ok": "Uygun",
+    "blocked": "Engelli",
+    "temp": "TT-102 ≥ {limit} °C",
+    "check": "{s} s boyunca korundu (kontrol süresi)",
+    "dp": "Rejen. ΔP: pastörize > ham",
+    "hold": "Bekletme süresi ≥ {hold} s"
+  },
   "controls": {
     "run": "Çalışma",
     "start": "Başlat",

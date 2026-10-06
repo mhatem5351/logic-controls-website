@@ -39,9 +39,9 @@ const leds = (x: number) => `M${x} 199V237M${x + 8} 199V237`;
     .lca-ph .pm{transform-box:fill-box;transform-origin:center;animation:phPm 8s linear infinite}
     .lca-ph .lv{transform-box:fill-box;transform-origin:50% 100%;animation:phL 8s cubic-bezier(.45,0,.55,1) infinite}
     .lca-ph .run{animation:phB 1s step-end infinite}
-    @keyframes phE{0%{stroke-dashoffset:12}12%,100%{stroke-dashoffset:-100}}
-    @keyframes phI{0%,1%{stroke-dashoffset:12}13%,100%{stroke-dashoffset:-100}}
-    @keyframes phO{0%,18.75%{stroke-dashoffset:12}30%,100%{stroke-dashoffset:-100}}
+    @keyframes phE{0%{stroke-dashoffset:14}12%,100%{stroke-dashoffset:-102}}
+    @keyframes phI{0%,1%{stroke-dashoffset:14}13%,100%{stroke-dashoffset:-102}}
+    @keyframes phO{0%,18.75%{stroke-dashoffset:14}30%,100%{stroke-dashoffset:-102}}
     @keyframes phN{0%,28%{opacity:0;transform:scale(1)}29%{opacity:1;transform:scale(1)}45%{opacity:0;transform:scale(2.4)}100%{opacity:0;transform:scale(2.4)}}
     @keyframes phR1{0%,12.5%{stroke-dashoffset:100;opacity:1}18.75%,81%{stroke-dashoffset:0;opacity:1}83%,100%{stroke-dashoffset:0;opacity:0}}
     @keyframes phR2{0%,28.75%{stroke-dashoffset:100;opacity:1}35%,81%{stroke-dashoffset:0;opacity:1}83%,100%{stroke-dashoffset:0;opacity:0}}
@@ -122,6 +122,7 @@ const leds = (x: number) => `M${x} 199V237M${x + 8} 199V237`;
     <rect class="b" x="312" y="182" width="22" height="8"></rect>
     <rect class="f" x="334" y="182" width="22" height="76"></rect>
     <rect class="b" x="334" y="182" width="22" height="8"></rect>
+    <path d="M256 242H356"></path>
   </g>
   <path d={`${leds(319)}${leds(341)}M283 203V209`} style="stroke:var(--i-s);stroke-width:2.6;stroke-dasharray:0 6"></path>
   <path d="M260 250H354" style="stroke:var(--i-ink);stroke-width:2;stroke-dasharray:0 4.5"></path>

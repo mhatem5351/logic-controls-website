@@ -81,6 +81,15 @@ Use this to keep the four languages consistent. "Keep" = write the term in Latin
 | Test rig / testing machine | Machine that tests products, here pipes | — | ماكينة اختبار |
 | Make and break values | Test values shown on the pipe tester (ft·lb, psi) | Keep "Make", "Break" in brackets | قيم عزم الربط (Make) والفك (Break) — ft·lb is a torque unit (make-up / break-out torque); the client's posts say التحمل والكسر, confirm with client |
 | Anaerobic reactor / waste treatment | Biological treatment of plant waste | — | مفاعل لاهوائي · معالجة المخلفات |
+| Syrup preparation / jet mixing (jet mixer tank) | Making beverage syrup in tanks mixed by recirculated jets | Keep "Radial Jet Mixing System" (HMI name) | تحضير السيرب (Syrup) · الخلط النفاث · خزانات الخلط النفاث (Jet mixer) |
+| CIP-ready interlock | Sequence blocked until the CIP system reports ready | — | حماية جاهزية CIP |
+| Ultrafiltration | Membrane filtration of liquids | Gloss | الترشيح الفائق (Ultrafiltration) |
+| Ampoule filling machine | Fills and seals glass ampoules | — | ماكينة تعبئة الأمبولات |
+| EMS / BMS | Environmental monitoring / building management systems in pharma areas | Keep "EMS", "BMS" | المراقبة البيئية (EMS) · أنظمة BMS |
+| Purified water (utility) | Pharma-grade water system | Gloss | المياه النقية (Purified water) |
+| Classic relay / hard-wired control | Control with relays and wiring instead of a PLC | — | التحكم الكلاسيكي بالريلايات والتوصيلات السلكية |
+| EPLAN Electric P8 / SQL / ISA-88 | Panel-design software / database / batch-control standard | Keep | Keep; ISA-88 only as "وفق مبادئ المعيار ISA-88" (never معتمد / مطابق) |
+| Wax filling and capping (cosmetics) | Filling depilatory/cosmetic wax and fitting caps | — | تعبئة الواكس (الشمع) وتركيب الأغطية (Capping) |
 
 ## Names, places and legal terms
 
@@ -107,7 +116,7 @@ Use this to keep the four languages consistent. "Keep" = write the term in Latin
 
 | EN | 中文 (suggested) | Türkçe (suggested) |
 |---|---|---|
-| Control panel | 电气控制柜 | Otomasyon panosu (service, SEO) · kumanda panosu (the physical panel in a project) |
+| Control panel | 电气控制柜 | Otomasyon panosu (kumanda panosu only in photo alt texts) |
 | PLC programming | PLC 编程 | PLC programlama |
 | HMI | HMI 触摸屏 · HMI 画面 (screens) | HMI · HMI ekranları · operatör paneli (HMI) |
 | VFD | 变频器 (VFD) | Frekans invertörü (VFD) |
@@ -170,6 +179,16 @@ Use this to keep the four languages consistent. "Keep" = write the term in Latin
 | Anaerobic waste treatment | 厌氧废弃物处理 | |
 | Process skid | 工艺撬装设备 | |
 | Qualification (pharma) | 确认（工作） | GMP validation = GMP 验证 |
+| Syrup preparation / jet mixer tank | 糖浆制备 / 射流混合罐 | "Radial Jet Mixing System" = 径向射流混合系统（Radial Jet Mixing System） |
+| CIP-ready interlock | CIP 就绪联锁 | |
+| Ultrafiltration / ampoule filler | 超滤系统 / 安瓿灌装机 | |
+| EMS (sterile areas) / BMS / purified water | 环境监测系统（EMS）/ BMS / 纯化水系统 | Recommissioning = 重新调试 |
+| Classic relay / hard-wired control | 传统继电器控制 / 硬接线控制 | |
+| SQL reports / OEE dashboard | SQL 报表 / OEE 看板 | Plant-wide OEE platforms remain out of scope |
+| ISA-88 principles | 参照 ISA-88 原则 | Never 符合 / 认证 |
+| Chocolate cooker / bakery line | 巧克力熬煮锅 / 烘焙生产线 | Edible-oil and liquid-egg fillers = 食用油与液蛋灌装机 |
+| Wax filling and capping | 蜡类产品灌装旋盖机 | |
+| Founder | 创始人 | Name stays Latin: Mohammed Tarek Aboalsafa |
 
 **Places.** Sources: Xinhua, China Daily, MOFCOM country guide. Names marked * have no single Chinese-media spelling, so the Latin name follows in brackets.
 
@@ -193,11 +212,11 @@ Use this to keep the four languages consistent. "Keep" = write the term in Latin
 
 **Register and typography.** Polite "siz" address, short plain business sentences. Turkish characters everywhere (ç, ğ, ı, İ, ö, ş, ü); capital İ for "İlaç", "İskenderiye", "İsmailiye". Suffixes on abbreviations and names follow pronunciation, after an apostrophe: PLC'ler / PLC'yi / PLC'den, HMI'lar / HMI'da / HMI'yı, SCADA'yı, VFD'ler, Wecon'u, Siemens'in, Logic Controls'un / 'tan, Mısır'da, Türkiye'den, 2025'te, 50'den / 50'yi. Multi-word place names take the apostrophe on the last word (6 Ekim Şehri'nde, Büyük Kahire'de). Where a suffix would sit on CIP, I/O, FAT, SAT, GAFI or a model number, rephrase instead (CIP çevrimleri, I/O noktaları).
 
-**Claims.** "Designed following IEC … practice" = "IEC 60204-1 ve IEC 61439 uygulamaları esas alınarak tasarlanır". Never "uygun", "uyumlu", "sertifikalı", "yetkili", "partner/iş ortağı" for brands. "We do not issue UL listing / CE marking" = "UL listelemesi veya CE işaretlemesi yapmıyoruz". "On request" = "talep halinde". Never claim Turkish-speaking staff: engineers work in Arabic and English ("Arapça ve İngilizce çalışır"); visitors can write in Turkish through the site; Turkish versions of key documents are "talep halinde". Where the English tells local readers our engineers "speak your language", the Turkish says "operatörlerinizin dilini konuşan" (the operators' language), so a Turkish reader does not read it as Turkish.
+**Claims.** "Designed following IEC … practice" = "IEC 60204-1 ve IEC 61439 uygulamaları esas alınarak tasarlanır". Never "uygun", "uyumlu", "sertifikalı", "yetkili", "partner/iş ortağı" for brands. "We do not issue UL listing / CE marking" = "UL listelemesi veya CE işaretlemesi yapmıyoruz". "On request" = "talep halinde". Never claim Turkish-speaking staff: engineers work in Arabic and English ("Arapça ve İngilizce çalışır"); visitors can write in Turkish through the site; Turkish versions of key documents are "talep halinde". Where the English tells local readers our engineers "speak your language", the Turkish says "operatörlerinizle Arapça konuşan" / "Arapça iletişim kuran", so a Turkish reader does not read it as Turkish. CTAs use the aorist ("size dönüş yaparız", "öneririz"), matching the English "we will".
 
 | EN | Türkçe (used) | Note |
 |---|---|---|
-| Control panel | otomasyon panosu · PLC kumanda panosu | Service/SEO = otomasyon panosu; a specific panel in a project or photo = kumanda panosu. `ui.json` nav still says "Kontrol panoları" (design agent's file). |
+| Control panel | otomasyon panosu · PLC otomasyon panosu | Used everywhere in copy. "Kumanda panosu" only in photo alt texts (the physical cabinet) and component terms (motor kumanda, kumanda trafosu). `ui.json` nav and footer now say "Otomasyon panoları" / "PLC otomasyon panoları" too. |
 | Electrical design / schematics / panel layout | elektrik tasarımı / elektrik şemaları / pano yerleşim planı | |
 | I/O list / BOM | I/O listesi / malzeme listesi (BOM) | |
 | As-built drawings | as-built çizimler | Turkish engineers use the English term |
@@ -213,15 +232,18 @@ Use this to keep the four languages consistent. "Keep" = write the term in Latin
 | Alarm history / user log-in / access levels | alarm geçmişi / kullanıcı girişi / yetki seviyeleri | |
 | Data logging / traceability | veri kaydı / izlenebilirlik | |
 | Changeover | ürün değişimi | |
-| Commissioning / start-up / tuning | devreye alma / ilk çalıştırma / ayar | "From design to start-up" = "tasarımdan ilk çalıştırmaya" |
+| Commissioning / start-up / tuning | devreye alma / ilk çalıştırma / ince ayar | "From design to start-up" = "tasarımdan ilk çalıştırmaya". Parameter tuning = parametre ayarı |
 | Loop check | loop testi | |
 | Punch list / commissioning observations | eksik listesi (punch list) / devreye alma bulguları | |
 | Handover | teslim | |
-| Site visit / survey | saha ziyareti / keşif | |
+| Site visit / survey | saha ziyareti / keşif | Trace the wiring = kablo takibi |
+| Nameplates | cihaz etiketleri · motor, sürücü ve PLC etiketleri | Not "etiket plakası" |
+| Witness (FAT/SAT) | şahitlik · testlere katılım ve şahitlik | Not "tanıklık" |
+| Phase (of a process cycle) | aşama · çok aşamalı çevrim | Not "faz", which reads as an electrical phase ("faz kontrolü" = phase monitoring) |
 | Retrofit / brand migration | makine modernizasyonu (retrofit) / marka geçişi | SEO titles may use "Makine Retrofit" |
 | Troubleshooting / preventive maintenance | arıza giderme · arıza tespiti / önleyici bakım | |
 | Support agreement / response time | teknik destek sözleşmesi / müdahale süresi | |
-| Case study (meta descriptions) | Proje: … | Page label "Read case study" = "Projeyi inceleyin" |
+| Case study (meta descriptions) | Proje: … | Page label "Read case study" = "Projeyi inceleyin". Avoid "Referanslar" (implies a named client list) |
 | Pasteurizer / holding time / FDV | pastörizatör / bekletme süresi / akış yönlendirme vanası (FDV) | |
 | CIP | CIP (yerinde temizlik) | |
 | Plate heat exchanger / balance tank / hot-water loop | plakalı eşanjör / denge tankı / sıcak su devresi | |
@@ -231,12 +253,25 @@ Use this to keep the four languages consistent. "Keep" = write the term in Latin
 | Filling machine (piston, multi-nozzle) / gate | (çok nozullu) pistonlu dolum makinesi / stoper | |
 | Labeling machine / dispense length | etiketleme makinesi / etiket bırakma uzunluğu | |
 | Bottle printing machine | şişe baskı makinesi | |
-| Batching / dosing | harmanlama · parti (batch) / dozajlama | Concrete plant = beton santrali; bins = bunkerler; hoppers = tartım hazneleri; aggregates = agrega; additives = katkı maddesi |
-| Washer-extractor / linen | yıkama-sıkma makinesi · endüstriyel çamaşır makinesi / çamaşır, tekstil ürünleri | |
+| Batching / dosing | harmanlama · parti (batch) / dozajlama | Process-control service title = "… CIP ve harmanlama". Concrete: beton santrali, "dozaj ve karıştırma"; bins = bunkerler; hoppers = tartım hazneleri; aggregates = agrega; additives = katkı maddesi |
+| Washer-extractor / linen | yıkama-sıkma makinesi · endüstriyel çamaşır makinesi / çamaşır, tekstil ürünleri | Commercial laundry = endüstriyel çamaşırhane · çamaşırhane |
+| IEC 61439 gloss | alçak gerilim şalt ve kumanda panoları | Descriptive gloss, not a quoted TSE title |
+| Dairy (sector) | süt ürünleri | Not bare "süt" (reads as milk) |
 | Test rig / test bench | test düzeneği / test tezgâhı | |
 | Make / Break values | sıkma (make) / sökme (break) değerleri | |
 | Process skid | proses ünitesi (skid) | |
 | Qualification (pharma) / GMP validation | kalifikasyon / GMP validasyonu | |
+| Syrup preparation / jet mixer tank | şurup hazırlama / jet karıştırma tankı | "Radial Jet Mixing System" = radyal jet karıştırma sistemi (Radial Jet Mixing System); circulation = sirkülasyon |
+| CIP-ready interlock | CIP hazır kilitlemesi | |
+| Pressure switch | basınç şalteri | |
+| Ultrafiltration / ampoule filler | ultrafiltrasyon sistemi / ampul dolum makinesi | |
+| EMS (sterile areas) / BMS / purified water | çevresel izleme (EMS) / BMS / saf su (purified water) | Recommissioning = yeniden devreye alma |
+| Classic relay / hard-wired control | klasik röleli kumanda / kablolu (hard-wired) kumanda | |
+| SQL reports / OEE dashboard | SQL tabanlı raporlar / OEE gösterge ekranı | Not "OEE panosu" ("pano" = electrical panel) |
+| ISA-88 principles | ISA-88 prensipleri esas alınarak | Never "uyumlu" / "sertifikalı" |
+| Chocolate cooker / bakery line | çikolata pişirme kazanı / unlu mamul hattı | Edible-oil and liquid-egg fillers = sıvı yağ ve sıvı yumurta dolum makineleri |
+| Wax filling and capping (cosmetics) | ağda (wax) dolum ve kapak kapatma | Cosmetic wax = ağda, not "mum" (candle) |
+| Founder | kurucu | Name stays Latin: Mohammed Tarek Aboalsafa |
 
 **Places.** Sources: Turkish Wikipedia (governorates, 6 Ekim Şehri), Ekonomi Gazetesi and Dünya (10. Ramazan Şehri, Sadat, Sokhna, Qantara Batı). Turkish press has no settled form for Ain Sokhna ("Sokhna", "Ain Sokhna"); "Ayn Suhna" is not in use, so the Latin name is kept.
 

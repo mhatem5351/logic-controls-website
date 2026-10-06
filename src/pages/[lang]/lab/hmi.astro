@@ -1,7 +1,7 @@
 ---
 /**
  * Internal lab page for the interactive HMI demo + control-loop explainer (noindex, excluded from the sitemap).
- * Shows: HmiDemo (full, on a dark band) · ControlLoop (light) · HmiDemo compact (muted band).
+ * Shows: HmiDemo (full, dark band) · ControlLoop (light) · ControlLoop (dark, no intro) · HmiDemo compact (muted band).
  */
 import BaseLayout from "~/layouts/BaseLayout.astro";
 import Section from "~/components/Section.astro";
@@ -27,6 +27,10 @@ const locale = Astro.params.lang as Locale;
 
   <Section variant="light" id="loop">
     <ControlLoop locale={locale} />
+  </Section>
+
+  <Section variant="dark" id="loop-dark">
+    <ControlLoop locale={locale} intro={false} tone="dark" />
   </Section>
 
   <Section variant="muted" id="compact">

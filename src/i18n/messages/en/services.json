@@ -10,6 +10,7 @@
       "Take the full scope, or only the part you need, such as programming or commissioning."
     ],
     "engagement": {
+      "eyebrow": "Scope options",
       "title": "Ways to work with us",
       "items": [
         {
@@ -30,6 +31,7 @@
         }
       ]
     },
+    "processEyebrow": "From survey to handover",
     "faq": {
       "title": "Common questions about our services",
       "items": [
@@ -67,7 +69,7 @@
       "capabilities": [
         {
           "title": "Electrical design",
-          "text": "Schematic drawings of power and control circuits, panel layouts, cable lists and the full I/O list."
+          "text": "Schematic drawings of power and control circuits in EPLAN Electric P8, panel layouts, cable lists and the full I/O list."
         },
         {
           "title": "PLC and motor-control panels",
@@ -91,7 +93,7 @@
         }
       ],
       "deliverables": [
-        "Schematic drawings and panel layout",
+        "Schematic drawings (EPLAN Electric P8) and panel layout",
         "I/O list and bill of materials",
         "Assembled, wired and labeled panel",
         "Completed pre-delivery test checklist",
@@ -110,7 +112,7 @@
         },
         {
           "q": "Which brands do you use inside the panel?",
-          "a": "It depends on your budget and preference. A recent panel used a Delta PLC, an LS Electric drive, Schneider Electric circuit breakers and a MEAN WELL power supply."
+          "a": "It depends on your budget and preference. Recent panels used a Siemens S7-1200 PLC with Yaskawa drives, and a Delta PLC with an LS Electric drive, Schneider Electric circuit breakers and a MEAN WELL power supply."
         },
         {
           "q": "Do your panels follow a standard?",
@@ -286,7 +288,7 @@
         },
         {
           "title": "PLC and HMI replacement",
-          "text": "Relay logic or an obsolete PLC replaced with a current PLC and touch-screen HMI, with spare parts available in Egypt."
+          "text": "Classic relay control or an obsolete PLC replaced with a current PLC and touch-screen HMI, with spare parts available in Egypt."
         },
         {
           "title": "Motion and drive upgrades",
@@ -346,7 +348,7 @@
       "h1": "Process control for thermal, CIP and batching systems",
       "intro": [
         "In food, dairy and pharma processes the product depends on the numbers: temperature, pressure, time, flow and dose. We build control systems that hold those numbers, stop the process when they are not met, and record what happened.",
-        "Our process work includes pasteurizers with CIP, an olive sterilization autoclave, a cheese cooker, a tablet coating machine, a concrete batching plant and laundry dosing."
+        "Our process work includes pasteurizers with CIP, an olive sterilization autoclave, a cheese cooker, a tablet coating machine, a concrete batching plant, laundry dosing and a beverage syrup mixing system. Our engineers have also recommissioned purified-water utility systems in a pharmaceutical plant."
       ],
       "capabilities": [
         {
@@ -363,7 +365,7 @@
         },
         {
           "title": "Batching and dosing",
-          "text": "Weighing and dosing of raw materials, water, additives and chemicals, with mix recipes and batch sequences."
+          "text": "Weighing and dosing of raw materials, water, additives and chemicals, with mix recipes and batch sequences. Batch logic can be structured following ISA-88 principles."
         },
         {
           "title": "Product-safety interlocks",
@@ -415,7 +417,7 @@
       "h1": "SCADA, monitoring and data logging",
       "intro": [
         "When a batch goes wrong, the first question is what happened. SCADA and data logging answer it. We build monitoring screens that show the whole process, alarm lists with time stamps, and records that link each batch to its settings.",
-        "For larger systems we use Siemens WinCC Professional with S7-1200 PLCs. For single machines the HMI itself can log data, store recipes and produce test reports."
+        "For larger systems we use Siemens WinCC Professional with S7-1200 PLCs, with an SQL database for reports and OEE dashboards where needed. For single machines the HMI itself can log data, store recipes and produce test reports. Our engineers' experience also includes environmental monitoring (EMS) for sterile production areas, and BMS and EMS recommissioning in pharmaceutical plants."
       ],
       "capabilities": [
         {
@@ -432,7 +434,7 @@
         },
         {
           "title": "Data logging and traceability",
-          "text": "Process values and batch data recorded on the HMI or SCADA for quality records."
+          "text": "Process values and batch data recorded on the HMI or SCADA, or in an SQL database, for quality records."
         },
         {
           "title": "Automatic reports",
@@ -440,7 +442,7 @@
         },
         {
           "title": "Production tracking",
-          "text": "Counters, cycle times and machine status for output per shift or batch."
+          "text": "Counters, cycle times and machine status for output per shift or batch, with SQL-based reports and OEE dashboards at line level."
         }
       ],
       "deliverables": [
@@ -467,7 +469,7 @@
         },
         {
           "q": "Is this the same as MES or OEE software?",
-          "a": "No. We build SCADA, data logging and reports at machine and line level. Plant-wide MES and OEE platforms are outside our scope."
+          "a": "No. We build SCADA, data logging and reports at machine and line level, including OEE dashboards fed from an SQL database. Plant-wide MES and OEE platforms are outside our scope."
         }
       ],
       "cta": {
@@ -558,7 +560,7 @@
       "capabilities": [
         {
           "title": "Breakdown troubleshooting",
-          "text": "On-site diagnosis of PLC, HMI, drive, sensor and wiring faults, on machines we built and on other machines."
+          "text": "On-site diagnosis of PLC, HMI, drive, sensor and wiring faults, including classic relay and hard-wired control circuits, on machines we built and on other machines."
         },
         {
           "title": "Program changes",

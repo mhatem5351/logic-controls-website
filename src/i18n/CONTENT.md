@@ -16,7 +16,7 @@ All strings are plain text: no HTML, no Markdown. Paragraphs are arrays. Render 
 | `projects.json` | `/projects/`, `/projects/{slug}/` | `index.{seo,h1,intro}`, `items[slug]` |
 | `foreign.json` | `/foreign-manufacturers/` | `seo`, `hero`, `needs`, `services`, `timeline`, `standards`, `proof`, `languages`, `faq` |
 | `technologies.json` | `/technologies/` | `seo`, `h1`, `intro`, `brands`, `drives`, `scada`, `networks`, `signals`, `otherBrands`, `choosing` |
-| `about.json` | `/about/` | `seo`, `h1`, `lead`, `story`, `mission`, `values`, `why`, `numbers`, `location`, `cta` |
+| `about.json` | `/about/` | `seo`, `h1`, `lead`, `story`, `founder`, `mission`, `values`, `why`, `numbers`, `location`, `cta` |
 | `contact.json` | `/contact/`, `/contact/thanks/` | `seo`, `h1`, `intro`, `form`, `validation`, `errors`, `channels`, `nextSteps`, `thanks` |
 | `privacy.json` | `/privacy/` | `seo`, `h1`, `lastUpdated`, `intro`, `sections[] {title, paragraphs[], items[]}` |
 | `ui.json` | header, footer, buttons | design agent's file. Button labels: `ui.cta.quote` / `ui.cta.whatsapp`. |
@@ -68,7 +68,7 @@ WhatsApp links: `whatsappLink(t.common.whatsapp.<key>)` after replacing placehol
 2. Platforms strip: `common.platforms` + `SITE.brands` (text or logos) → `technologies/`
 3. Two doors: `audiences.local` → `services/`, `audiences.foreign` → `foreign-manufacturers/`
 4. Services: `services.title/intro`, 8 cards from `services.json items[slug].{title,summary}` in `SERVICE_SLUGS` order
-5. Featured projects: `projects.title/intro`, `featuredProjects()` (tablet coating, pasteurizer CIP, shampoo filling LS/Wecon) with `cardTitle`, `client`, `cover`
+5. Featured projects: `projects.title/intro`, `featuredProjects()` (tablet coating, beverage syrup jet mixing, shampoo filling LS/Wecon) with `cardTitle`, `client`, `cover`
 6. Industries: `industries.title/intro`, 7 tiles (`industries.json items[slug].{title,summary}`)
 7. Why us: `why.items`
 8. How we work: `common.process`
@@ -82,14 +82,14 @@ Services index: `index.h1/intro` → 8 cards → `index.engagement` → `common.
 
 **Industry page**: H1 + `intro` → `needs` → `applications` → related projects (`projectsByIndustry`) → related services (`INDUSTRIES[].services`) → `faq` → `cta`. Index: `index.h1/intro` + 7 cards.
 
-**Case study**: breadcrumb → H1 `title` → meta row (`labels.client` `client` · `labels.industry` · `labels.year` `year` · `labels.location` `common.locations.egypt`) → cover → `highlights` → `challenge` → `solution` → `scope` → tech chips (`technologies[]` from data, `labels.technologiesUsed`) → `result` → video (`videoTitle`) → gallery (`imageAlts`) → related projects (`relatedProjects`) → `ctaBand.project`. Footer notes: `common.notes.anonymised`, `common.notes.photos`; if `year < 2025` also `common.notes.preFounding`.
+**Case study**: breadcrumb → H1 `title` → meta row (`labels.client` `client` · `labels.industry` · `labels.year` `year` · `labels.location` `common.locations.egypt`) → cover → `highlights` → `challenge` → `solution` → `scope` → tech chips (`technologies[]` from data, `labels.technologiesUsed`) → `result` → video (`videoTitle`) → gallery (`imageAlts`) → related projects (`relatedProjects`) → `ctaBand.project`. Footer notes: `common.notes.anonymised`, `common.notes.photos`; for projects delivered before the company existed (data logic, `year < 2025`) also `common.notes.preFounding` ("Delivered by our engineers before the company was established."). The site shows **no founding year anywhere** (client decision 2026-10-06): never print the threshold year in copy.
 Projects index: `index.h1/intro` → filters (`common.filters`, by `industries` and `services`) → cards sorted by `projectsSorted()` → `notes.anonymised` + `notes.preFounding`.
 
 **Foreign manufacturers**: hero (+ `chips`) → `needs` → `services` → `timeline` → `standards` → `proof` → `languages` → zones (`common.zones`) → `faq` → `ctaBand.foreign`. Suggested as the hero target for `/zh/` and `/tr/` visitors (link prominently from their home pages).
 
-**Technologies**: H1 + `intro` → `brands` (`BRANDS` + `brands.items[slug].text`, product chips with `brands.productsLabel`) → `drives` → `scada` → `networks` → `signals` → `otherBrands` → `choosing` → `common.notes.brands` → `ctaBand.default`.
+**Technologies**: H1 + `intro` → `brands` (`BRANDS` + `brands.items[slug].text`, product chips with `brands.productsLabel`) → `drives` → `scada` ("Software, SCADA and data": EPLAN Electric P8, WinCC, SQL/OEE) → `networks` → `signals` → `otherBrands` → `choosing` → `common.notes.brands` → `ctaBand.default`.
 
-**About**: H1 + `lead` → `story` → `mission` → stats (`numbers.title` + `STATS`) → `values` → `why` → `common.process` → `location` → `cta`.
+**About**: H1 + `lead` → `story` → `founder` (`eyebrow`, `title`, `name`, `role`, `bio[]`, `highlights[] {value,label}`; no photo until the founder approves one) → `mission` → stats (`numbers.title` + `STATS`) → `values` → `why` → `common.process` → `location` → `cta`.
 
 **Contact**
 - Two-step form. Step 1 (required): `name`, `company`, `phone`, `need`. Step 2 (optional): `industry`, `location`, `timeline`, `message`, `email`, `contactPreference`. Then `consent` (required, unticked) + Turnstile (`form.security`).
@@ -126,11 +126,11 @@ Projects index: `index.h1/intro` → filters (`common.filters`, by `industries` 
 - Chinese (investors, plant managers, HQ engineers): formal and precise. Lead with commissioning, local support, spare parts and documentation. Use the official Chinese names of zones (e.g. 苏赫纳, 泰达). No italics.
 - Turkish (investors and plant managers in 10th of Ramadan, Sadat, SCZONE): formal "siz" address, plain business Turkish. Use "Türkiye" and correct casing (İ/ı).
 
-**Keep exactly as written** (all languages): PLC, HMI, SCADA, VFD, CIP, FDV, I/O, FAT, SAT, MCC, BOM, PID, RTD, OEM, MES, OEE, GMP, 21 CFR Part 11, Modbus RTU, Modbus TCP, PROFINET, RS-485, 4-20 mA, 0-10 V, ft·lb, psi, IEC 60204-1, IEC 61439, UL, CE, WinCC Professional, TIA Portal, S7-1200, S7-200 SMART, DVP, LX3V, M100, Altivar, C60N, all brand names (Siemens, Schneider Electric, Delta, LS Electric, Wecon, MCGS, VEICHI, MEAN WELL), and "Logic Controls". See `GLOSSARY.md` for preferred renderings.
+**Keep exactly as written** (all languages): PLC, HMI, SCADA, VFD, CIP, FDV, I/O, FAT, SAT, MCC, BOM, PID, RTD, OEM, MES, OEE, GMP, 21 CFR Part 11, Modbus RTU, Modbus TCP, PROFINET, RS-485, 4-20 mA, 0-10 V, ft·lb, psi, IEC 60204-1, IEC 61439, UL, CE, WinCC Professional, TIA Portal, S7-1200, S7-200 SMART, SIMATIC HMI, DVP, LX3V, M100, Altivar, C60N, EPLAN Electric P8, SQL, ISA-88, EMS, BMS, all brand names (Siemens, Schneider Electric, Delta, LS Electric, Wecon, MCGS, VEICHI, MEAN WELL, Yaskawa), the founder's Latin name "Mohammed Tarek Aboalsafa" (Arabic: محمد طارق أبو الصفا), and "Logic Controls". See `GLOSSARY.md` for preferred renderings.
 
-**Numbers.** Western digits (0-9) in every locale, including Arabic. Keep "50+", "4+", "2025", "15-step", "380 V, 50 Hz" as is. Do not add numbers, percentages, results, certifications or client names that are not in the English.
+**Numbers.** Western digits (0-9) in every locale, including Arabic. Keep "50+", "4+", "15-step", "380 V, 50 Hz" as is. No founding year in any locale. Do not add numbers, percentages, results, certifications or client names that are not in the English.
 
-**Claims that must not change.** "Platforms we program and integrate" (never "partner", "authorized", "certified dealer"). "Designed following IEC 60204-1 and IEC 61439 practice" (never "certified" or "compliant"). No 24/7 promise, no stock or warehouse, no UL/CE certification, no named clients. Chinese and Turkish documents are "on request".
+**Claims that must not change.** "Platforms we program and integrate" (never "partner", "authorized", "certified dealer"). "Designed following IEC 60204-1 and IEC 61439 practice" (never "certified" or "compliant"). No 24/7 promise, no stock or warehouse, no UL/CE certification, no named clients. Chinese and Turkish documents are "on request". Batch control is "structured following ISA-88 principles" (never "ISA-88 certified/compliant"). The founder's past employers are described, never named ("a multinational pharmaceutical plant in Cairo", "an Egyptian manufacturer of engineering training equipment", "a machine-automation company"). Sub-sectors from LinkedIn (chocolate/bakery, oil and liquid-egg fillers, ultrafiltration, wax filling, ampoules, EMS/BMS, purified water, drainage/feed-mill SCADA, cut-to-length, grinding, decal printing) are "our engineers' experience", not Logic Controls case studies.
 
 **Length.** Aim for SEO titles of about 60 characters in Latin scripts and about 30 characters in Chinese; descriptions about 155 and 80 characters. Turkish runs longer: shorten wording rather than cut meaning. Button labels must stay short (2–4 words).
 

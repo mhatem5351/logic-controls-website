@@ -1,11 +1,130 @@
 ---
-/* process-control — TODO */
+/* process-control — closed temperature loop on a jacketed, agitated vessel: temperature transmitter →
+   PID controller (trend + output bar) → steam control valve with diaphragm actuator → steam jacket;
+   condensate through a trap. Loop 8 s: PV starts low after a load change → output 100 %, valve wide open,
+   steam (amber) floods the jacket → PV rises, overshoots slightly, settles on SP → valve trims back →
+   next load change pulls PV down again. The trend scrolls like a live chart. */
 import Frame from "../ArtFrame.astro";
 import { uid, type ArtProps } from "../types";
 const p = Astro.props as ArtProps;
 const u = uid("pc");
+const steam = "M300 258V134H214";
+const cond = "M158 219V232H284V250l7-7";
+const tIn = "M88 194V206L80 214H60V164";
+const tOut = "M52 80V22L60 14H250L258 22V68";
+const pv = "M20 118C28 118 30 96 34.7 96S41 101.5 45.2 100H57C59 100 60 118 62 118C70 118 72 96 76.7 96S83 101.5 87.2 100H99C101 100 102 118 104 118";
 ---
 
 <Frame {...p} uid={u} name="pc">
-  <rect class="f" x="140" y="100" width="120" height="120"></rect>
+  <style is:inline>
+    .lca-pc .po{stroke:var(--i-ink);stroke-width:7}
+    .lca-pc .pi{stroke:var(--i-m);stroke-width:4}
+    .lca-pc .ps{stroke:var(--i-sig);stroke-width:2;stroke-dasharray:3 7;animation:lca-fw .45s linear infinite}
+    .lca-pc .pw{stroke:var(--i-w);stroke-width:2;stroke-dasharray:3 7;animation:lca-fw .9s linear infinite}
+    .lca-pc .st{animation:pcS 8s cubic-bezier(.45,0,.55,1) infinite}
+    .lca-pc .stem{animation:pcV 8s cubic-bezier(.45,0,.55,1) infinite}
+    .lca-pc .bar{transform-box:fill-box;transform-origin:50% 100%;animation:pcB 8s cubic-bezier(.45,0,.55,1) infinite}
+    .lca-pc .tr2{animation:pcT 8s linear infinite}
+    .lca-pc .now{animation:pcD 8s ease-in-out infinite}
+    .lca-pc .bl{transform-box:fill-box;transform-origin:center;animation:pcA .9s ease-in-out infinite}
+    .lca-pc .wv{animation:pcW 1.6s linear infinite}
+    @keyframes pcS{0%,25%{opacity:1}40%{opacity:.25}55%,88%{opacity:.5}96%,100%{opacity:1}}
+    @keyframes pcV{0%,25%{transform:translateY(-6px)}40%{transform:translateY(-1.5px)}55%,88%{transform:translateY(-3px)}96%,100%{transform:translateY(-6px)}}
+    @keyframes pcB{0%,25%{transform:none}40%{transform:scaleY(.3)}55%,88%{transform:scaleY(.5)}96%,100%{transform:none}}
+    @keyframes pcT{to{transform:translateX(-42px)}}
+    @keyframes pcD{0%{transform:translateY(18px)}35%{transform:translateY(-4px)}47%{transform:translateY(1.5px)}60%,88%{transform:none}100%{transform:translateY(18px)}}
+    @keyframes pcA{0%,100%{transform:none}50%{transform:scaleX(.08)}}
+    @keyframes pcW{to{transform:translateX(-16px)}}
+    @media (prefers-reduced-motion:reduce){.lca-pc .stem{transform:translateY(-3px)}.lca-pc .bar{transform:scaleY(.5)}.lca-pc .st{opacity:.6}}
+  </style>
+  <defs>
+    <path id={`${u}s`} d={steam}></path>
+    <path id={`${u}c`} d={cond}></path>
+    <clipPath id={`${u}k`}><rect x="20" y="91" width="42" height="34"></rect></clipPath>
+    <clipPath id={`${u}w`}><rect x="132" y="136" width="52" height="60" rx="4"></rect></clipPath>
+  </defs>
+
+  <!-- shadows -->
+  <path class="sh" d="M34 258H62L68 252H40ZM104 258H222L232 248H112Z"></path>
+
+  <!-- PID controller on a pedestal -->
+  <path class="t d" d="M34 250 40 244H68L62 250Z"></path>
+  <rect class="s d" x="34" y="250" width="28" height="8"></rect>
+  <rect class="m d" x="44" y="164" width="8" height="86"></rect>
+  <path class="t" d="M12 84 20 76H90L82 84Z"></path>
+  <path class="s" d="M82 84 90 76V156L82 164Z"></path>
+  <rect class="f" x="12" y="84" width="70" height="80"></rect>
+  <rect class="k" x="18" y="90" width="58" height="36" rx="1"></rect>
+  <path class="h e" d="M20 100H62" style="stroke-dasharray:2 2"></path>
+  <g clip-path={`url(#${u}k)`}><path class="q tr2" d={pv} stroke-width="1.5"></path></g>
+  <circle class="y n now rmh" cx="62" cy="100" r="1.8"></circle>
+  <rect class="h q" x="66" y="94" width="6" height="28" opacity=".6"></rect>
+  <rect class="w n bar" x="66.5" y="94.5" width="5" height="27"></rect>
+  <g class="m2 d"><rect x="20" y="134" width="10" height="6"></rect><rect x="34" y="134" width="10" height="6"></rect><rect x="48" y="134" width="10" height="6"></rect></g>
+  <circle class="y n" cx="72" cy="137" r="1.6"></circle>
+  <path class="d l" d="M20 150h54M20 155h54"></path>
+
+  <!-- vessel: legs, shell + dished head, steam jacket, sight window -->
+  <rect class="m d" x="116" y="206" width="6" height="52"></rect>
+  <rect class="m d" x="194" y="206" width="6" height="52"></rect>
+  <path class="m" d="M110 126V96Q158 66 206 96V126Z"></path>
+  <path class="n" d="M201 93V126" style="stroke:var(--i-m2);stroke-width:7"></path>
+  <rect class="m3 d" x="122" y="80" width="8" height="8"></rect>
+  <use href={`#${u}c`} class="po"></use>
+  <use href={`#${u}c`} class="pi"></use>
+  <g class="st"><use href={`#${u}c`} class="pw"></use></g>
+  <path class="m" d="M102 124V200Q158 238 214 200V124Z"></path>
+  <path class="n" d="M208 125V203" style="stroke:var(--i-m2);stroke-width:7"></path>
+  <g class="st"><path class="ps" d="M205 130V196Q158 228 111 196V130"></path></g>
+  <path class="d" d="M102 124V200Q158 238 214 200V124Z"></path>
+  <path d="M99 124H217"></path>
+  <rect class="f" x="132" y="136" width="52" height="60" rx="4"></rect>
+  <g clip-path={`url(#${u}w)`}>
+    <rect class="w n" x="132" y="156" width="52" height="40" opacity=".45"></rect>
+    <path class="wv" d="M126 156q4-2.5 8 0t8 0 8 0 8 0 8 0 8 0 8 0 8 0 8 0" style="stroke:var(--i-w);stroke-width:1.5"></path>
+  </g>
+  <path class="d" d="M158 136V184M132 176H142"></path>
+  <rect class="b n bl" x="141" y="181.5" width="34" height="5" rx="1"></rect>
+  <rect class="b n bl" x="141" y="181.5" width="34" height="5" rx="1" style="animation-delay:-.45s;opacity:.55"></rect>
+  <circle class="ink n" cx="158" cy="184" r="3"></circle>
+  <rect x="132" y="136" width="52" height="60" rx="4"></rect>
+  <rect class="d" x="129" y="133" width="58" height="66" rx="6"></rect>
+
+  <!-- agitator drive -->
+  <path class="s d" d="M170 58 176 52V74L170 80Z"></path>
+  <rect class="m d" x="146" y="58" width="24" height="22"></rect>
+  <path class="k d" d="M168 30 174 24V52L168 58Z"></path>
+  <path class="t d" d="M148 30 154 24H174L168 30Z"></path>
+  <rect class="b d" x="148" y="30" width="20" height="28"></rect>
+  <path class="h q" d="M152 35V54M156 35V54M160 35V54M164 35V54"></path>
+
+  <!-- temperature transmitter -->
+  <path class="d" d="M96 176H102"></path>
+  <circle class="f" cx="88" cy="176" r="8"></circle>
+  <rect class="k n" x="84" y="172.5" width="8" height="5"></rect>
+
+  <!-- steam line + control valve + trap -->
+  <use href={`#${u}s`} class="po"></use>
+  <use href={`#${u}s`} class="pi"></use>
+  <g class="st"><use href={`#${u}s`} class="ps"></use></g>
+  <g class="m3 d"><rect x="244" y="127" width="4" height="14"></rect><rect x="268" y="127" width="4" height="14"></rect><rect x="254" y="116" width="8" height="10"></rect><rect x="228" y="225" width="16" height="14" rx="2"></rect></g>
+  <circle class="m" cx="258" cy="134" r="9"></circle>
+  <path class="d" d="M252 116V99M264 116V99M249 98H267M266 104h3M266 109h3M266 114h3"></path>
+  <g class="stem">
+    <rect class="m3 d" x="256.5" y="94" width="3" height="24"></rect>
+    <path class="e" d="M260 109h5" stroke-width="2"></path>
+  </g>
+  <path class="m" d="M236 98H280V94Q280 80 258 78Q236 80 236 94Z"></path>
+  <path class="d" d="M236 94H280"></path>
+
+  <!-- brand traces: TT → controller (PV in), controller → valve (output) -->
+  <path class="tr" d={`${tIn}${tOut}`}></path>
+  <circle class="rn" cx="88" cy="190" r="4"></circle>
+  <circle class="rn" cx="258" cy="72" r="4"></circle>
+  <g style="--t:2.4s">
+    <path class="p" pathLength="100" d={tIn}></path>
+    <path class="p" pathLength="100" d={tOut} style="--d:1.2s"></path>
+    <circle class="nd" cx="258" cy="72" r="2" style="--d:1.2s"></circle>
+    <circle class="pg" cx="258" cy="72" r="4" style="--d:1.2s"></circle>
+  </g>
 </Frame>

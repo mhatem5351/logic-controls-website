@@ -10,6 +10,7 @@
       "Kapsamın tamamını ya da yalnızca ihtiyacınız olan kısmını, örneğin programlamayı veya devreye almayı bize bırakabilirsiniz."
     ],
     "engagement": {
+      "eyebrow": "Çalışma modelleri",
       "title": "Çalışma modellerimiz",
       "items": [
         {
@@ -30,6 +31,7 @@
         }
       ]
     },
+    "processEyebrow": "Keşiften teslime",
     "faq": {
       "title": "Hizmetlerimizle ilgili sık sorulanlar",
       "items": [
@@ -56,10 +58,10 @@
     "control-panels": {
       "title": "Elektrik tasarımı ve otomasyon panoları",
       "navTitle": "Otomasyon panoları",
-      "summary": "Makineniz veya prosesiniz için tasarlanan, monte edilen, kablajı yapılan ve test edilen elektrik şemaları, I/O listeleri ve PLC kumanda panoları.",
-      "seoTitle": "Mısır'da Otomasyon Panosu Tasarımı | Logic Controls",
-      "seoDescription": "Mısır'daki makine ve proses hatları için tasarlanan, kablajı yapılan ve test edilen PLC kumanda panoları. Elektrik şemaları, I/O ve malzeme listesi dahil.",
-      "h1": "Elektrik tasarımı ve PLC kumanda panoları",
+      "summary": "Makineniz veya prosesiniz için elektrik şemaları, I/O listeleri ve PLC otomasyon panoları: tasarım, montaj, kablaj ve test.",
+      "seoTitle": "Otomasyon Panosu Tasarım ve İmalatı, Mısır | Logic Controls",
+      "seoDescription": "Mısır'daki makine ve proses hatları için tasarlanan, kablajlanan ve test edilen PLC otomasyon panoları. Elektrik şemaları, I/O ve malzeme listesi dahil.",
+      "h1": "Elektrik tasarımı ve PLC otomasyon panoları",
       "intro": [
         "Bir otomasyon panosu ancak çizimleri kadar iyidir. İşe elektrik tasarımıyla başlıyoruz: güç dağıtımı, motor devreleri, güvenlik devreleri ve eksiksiz I/O listesi. Ardından panoyu monte ediyor, kablajını yapıyor, etiketliyor ve sahanıza ulaşmadan önce test ediyoruz.",
         "Yeni makineler, mevcut makinelerin modernizasyonu ve proses ekipmanları için pano üretiyoruz. Bileşenleri bütçenize ve Mısır'da bulabileceğiniz yedek parçalara göre seçiyoruz."
@@ -67,7 +69,7 @@
       "capabilities": [
         {
           "title": "Elektrik tasarımı",
-          "text": "Güç ve kumanda devrelerinin elektrik şemaları, pano yerleşim planları, kablo listeleri ve eksiksiz I/O listesi."
+          "text": "EPLAN Electric P8 ile hazırlanan güç ve kumanda devresi elektrik şemaları, pano yerleşim planları, kablo listeleri ve eksiksiz I/O listesi."
         },
         {
           "title": "PLC ve motor kumanda panoları",
@@ -91,7 +93,7 @@
         }
       ],
       "deliverables": [
-        "Elektrik şemaları ve pano yerleşim planı",
+        "Elektrik şemaları (EPLAN Electric P8) ve pano yerleşim planı",
         "I/O listesi ve malzeme listesi (BOM)",
         "Monte edilmiş, kablajı yapılmış ve etiketlenmiş pano",
         "Doldurulmuş teslimat öncesi test kontrol listesi",
@@ -110,7 +112,7 @@
         },
         {
           "q": "Panoda hangi markaları kullanıyorsunuz?",
-          "a": "Bütçenize ve tercihinize bağlı. Yakın tarihli bir panoda Delta PLC, LS Electric sürücü, Schneider Electric devre kesiciler ve MEAN WELL güç kaynağı kullanıldı."
+          "a": "Bütçenize ve tercihinize bağlı. Yakın tarihli panolarımızdan birinde Siemens S7-1200 PLC ve Yaskawa sürücüler, bir diğerinde Delta PLC, LS Electric sürücü, Schneider Electric devre kesiciler ve MEAN WELL güç kaynağı kullanıldı."
         },
         {
           "q": "Panolarınız bir standarda göre mi tasarlanıyor?",
@@ -118,12 +120,12 @@
         },
         {
           "q": "Bir pano ne kadar sürede hazırlanır?",
-          "a": "Panonun büyüklüğüne ve bileşenlerin tedarik durumuna bağlıdır. Tasarım üzerinde mutabık kaldıktan sonra teklifte bir teslim tarihi veriyoruz."
+          "a": "Panonun büyüklüğüne ve bileşenlerin tedarik durumuna bağlıdır. Tasarım onaylandıktan sonra teklifte teslim tarihi veriyoruz."
         }
       ],
       "cta": {
         "title": "Otomasyon panosuna mı ihtiyacınız var?",
-        "text": "Makine açıklamasını, motor listesini veya mevcut çizimleri gönderin. Sorularımızla ya da teklifle size dönüş yapalım."
+        "text": "Makine açıklamasını, motor listesini veya mevcut çizimleri gönderin. Sorularımızla ya da teklifle size dönüş yaparız."
       }
     },
     "plc-hmi-programming": {
@@ -134,13 +136,13 @@
       "seoDescription": "Siemens, Delta, LS Electric, Schneider Electric ve Wecon için PLC programlama ve HMI tasarımı. Sekanslar, kilitlemeler, alarmlar, reçeteler, Arapça HMI.",
       "h1": "PLC programlama ve HMI tasarımı",
       "intro": [
-        "İyi bir PLC kodunu sizden sonraki mühendis de okuyabilir. Makine sekansları, kilitlemeler, alarmlar ve reçeteler için yapılandırılmış lojik yazıyor, bakım ekibinizin takip edebilmesi için açıklamalar ekliyoruz.",
+        "İyi bir PLC kodunu, sonradan gelen başka bir mühendis de okuyabilir. Makine sekansları, kilitlemeler, alarmlar ve reçeteler için yapılandırılmış lojik yazıyor, bakım ekibinizin takip edebilmesi için açıklamalar ekliyoruz.",
         "HMI tarafında operatörlerin bir bakışta anlayacağı ekranlar tasarlıyoruz: proses genel görünümü, manuel ve otomatik modlar, ayarlar, reçeteler ve alarm sayfası. Ekranlar Arapça, İngilizce veya iki dilli olabilir."
       ],
       "capabilities": [
         {
           "title": "Makine sekansları",
-          "text": "Besleme, dolum, etiketleme, yıkama, sterilizasyon veya dozajlama için adım adım lojik; manuel ve otomatik modlarla."
+          "text": "Besleme, dolum, etiketleme, yıkama, sterilizasyon veya harmanlama için adım adım lojik; manuel ve otomatik modlarla."
         },
         {
           "title": "Kilitlemeler ve alarmlar",
@@ -195,7 +197,7 @@
         }
       ],
       "cta": {
-        "title": "Program yazdırmak veya değiştirmek mi istiyorsunuz?",
+        "title": "Program yazılması veya değiştirilmesi mi gerekiyor?",
         "text": "PLC ve HMI modellerini ve makinenin ne yapması gerektiğini bize yazın. Pano ve ekran fotoğrafları işimizi kolaylaştırır."
       }
     },
@@ -260,33 +262,33 @@
         },
         {
           "q": "Hangi sürücülerle çalıştınız?",
-          "a": "Son projelerde LS Electric M100, Schneider Electric Altivar ve VEICHI VFD'ler ile Schneider Electric step motor sürücüleri. Makinenizde zaten kullanılan sürücü markasıyla da çalışabiliriz."
+          "a": "Son projelerde LS Electric M100, Schneider Electric Altivar ve VEICHI VFD'leri ile Schneider Electric step motor sürücülerini kullandık. Makinenizde zaten kullanılan sürücü markasıyla da çalışabiliriz."
         }
       ],
       "cta": {
         "title": "Makinenizin otomatik çalışmasını mı istiyorsunuz?",
-        "text": "Makinenin videosunu veya fotoğraflarını gönderin ve çalışma sırasını anlatın. Size bir kontrol konsepti ve teklif önerelim."
+        "text": "Makinenin videosunu veya fotoğraflarını gönderin ve çalışma sırasını anlatın. Size bir kontrol konsepti önerir ve teklif hazırlarız."
       }
     },
     "machine-retrofits": {
       "title": "Makine modernizasyonu (retrofit) ve kontrol sistemi yenileme",
       "navTitle": "Makine modernizasyonu",
       "summary": "İyi durumdaki makinenizi koruyun, eski kontrol sistemini yenileyin: yeni PLC, HMI, sürücüler ve hareket kontrolü; belgelenmiş, test edilmiş ve planlı geçişle.",
-      "seoTitle": "Mısır'da Makine Retrofit ve PLC Yenileme | Logic Controls",
+      "seoTitle": "Mısır'da Makine Retrofiti ve PLC Yenileme | Logic Controls",
       "seoDescription": "Eski makineleri değiştirmek yerine modernize edin: yeni PLC, HMI, sürücüler ve hareket kontrolü; çizimler ve testlerle. Mısır genelinde retrofit hizmeti.",
       "h1": "Makine modernizasyonu ve kontrol sistemi yenileme",
       "intro": [
         "Pek çok makine mekanik olarak sağlamdır ama kontrol sistemi değildir: üretimi durmuş PLC'ler, kayıp programlar, röleli lojik, yıpranmış kablaj veya artık satılmayan yedek parçalar. Makinenin tamamını değiştirmek pahalıdır. Kontrol sistemini yenilemek genellikle çok daha az maliyetlidir.",
-        "Makinede keşif yapıyor, mevcut durumu belgeliyor ve mevcut mekaniğin etrafında yeni bir kontrol sistemi tasarlıyoruz. Yeni lojiği duruştan önce test ediyoruz; böylece sahadaki geçiş süresi mümkün olduğunca kısa olur."
+        "Makinede keşif yapıyor, mevcut durumu belgeliyor ve mevcut mekaniği koruyarak yeni bir kontrol sistemi tasarlıyoruz. Yeni lojiği duruştan önce test ediyoruz; böylece sahadaki geçiş süresi mümkün olduğunca kısa olur."
       ],
       "capabilities": [
         {
           "title": "Keşif ve dokümantasyon",
-          "text": "Mevcut kablajı ve I/O noktalarını takip ediyor, etiket plakalarını kayıt altına alıyor ve makinenin hiç sahip olmadığı çizimleri hazırlıyoruz."
+          "text": "Kablo takibiyle mevcut kablajı ve I/O noktalarını çıkarıyor, cihaz etiketlerini kayıt altına alıyor ve makinenin hiç sahip olmadığı çizimleri hazırlıyoruz."
         },
         {
           "title": "PLC ve HMI değişimi",
-          "text": "Röleli lojik veya üretimi durmuş bir PLC yerine, yedek parçası Mısır'da bulunan güncel bir PLC ve dokunmatik HMI."
+          "text": "Klasik röleli kumanda veya üretimi durmuş bir PLC yerine, yedek parçası Mısır'da bulunan güncel bir PLC ve dokunmatik HMI."
         },
         {
           "title": "Hareket ve sürücü yenileme",
@@ -334,19 +336,19 @@
       ],
       "cta": {
         "title": "Korumaya değer eski bir makineniz mi var?",
-        "text": "Makinenin, panonun ve etiket plakalarının fotoğraflarını gönderin. Retrofitin neleri kapsadığını size anlatalım."
+        "text": "Makinenin, panonun ve cihaz etiketlerinin fotoğraflarını gönderin. Retrofitin neleri kapsadığını size anlatırız."
       }
     },
     "process-control": {
-      "title": "Proses kontrolü: sıcaklık, basınç, CIP ve dozajlama",
+      "title": "Proses kontrolü: sıcaklık, basınç, CIP ve harmanlama",
       "navTitle": "Proses kontrolü",
       "summary": "Pastörizasyon, sterilizasyon, pişirme, kaplama, CIP, harmanlama ve dozajlama kontrolü; reçeteler, kilitlemeler ve veri kaydıyla.",
-      "seoTitle": "Mısır'da Proses Kontrolü ve Dozajlama | Logic Controls",
+      "seoTitle": "Mısır'da Proses Kontrolü ve Harmanlama | Logic Controls",
       "seoDescription": "Mısır'da pastörizatörler, otoklavlar, pişirme kazanları, CIP, harmanlama ve dozajlama için PLC proses kontrolü. Sıcaklık, basınç, süre ve reçete kontrolü.",
-      "h1": "Termal prosesler, CIP ve dozajlama sistemleri için proses kontrolü",
+      "h1": "Termal prosesler, CIP ve harmanlama sistemleri için proses kontrolü",
       "intro": [
         "Gıda, süt ve ilaç proseslerinde ürünü sayılar belirler: sıcaklık, basınç, süre, debi ve doz. Bu değerleri koruyan, sağlanmadıklarında prosesi durduran ve olup biteni kaydeden kontrol sistemleri kuruyoruz.",
-        "Proses projelerimiz arasında CIP'li pastörizatörler, bir zeytin sterilizasyon otoklavı, bir peynir pişirme makinesi, bir tablet kaplama makinesi, bir beton santrali ve çamaşırhane kimyasal dozajlaması var."
+        "Proses projelerimiz arasında CIP'li pastörizatörler, bir zeytin sterilizasyon otoklavı, bir peynir pişirme makinesi, bir tablet kaplama makinesi, bir beton santrali, çamaşırhane kimyasal dozajlaması ve bir içecek şurubu karıştırma sistemi var. Mühendislerimiz bir ilaç tesisinde saf su (purified water) yardımcı sistemlerini de yeniden devreye aldı."
       ],
       "capabilities": [
         {
@@ -354,8 +356,8 @@
           "text": "Buhar, sıcak su ve ısıtma için kapalı çevrim kontrol; her ürün için ayrı set değerleri."
         },
         {
-          "title": "Süre ve faz kontrolü",
-          "text": "Isıtma, bekletme, sterilizasyon ve soğutma gibi çok fazlı çevrimler; her faz için süre, sıcaklık ve basınç set değerleri."
+          "title": "Süre ve aşama kontrolü",
+          "text": "Isıtma, bekletme, sterilizasyon ve soğutma gibi çok aşamalı çevrimler; her aşama için süre, sıcaklık ve basınç set değerleri."
         },
         {
           "title": "CIP sekansları",
@@ -363,7 +365,7 @@
         },
         {
           "title": "Harmanlama ve dozajlama",
-          "text": "Hammadde, su, katkı maddesi ve kimyasalların tartımı ve dozajlanması; karışım reçeteleri ve parti (batch) sekanslarıyla."
+          "text": "Hammadde, su, katkı maddesi ve kimyasalların tartımı ve dozajlanması; karışım reçeteleri ve parti (batch) sekanslarıyla. Parti lojiği ISA-88 prensipleri esas alınarak yapılandırılabilir."
         },
         {
           "title": "Ürün güvenliği kilitlemeleri",
@@ -378,8 +380,8 @@
         "Yazılı kontrol tanımı: sekanslar, kilitlemeler ve alarmlar",
         "Enstrüman ve I/O listesi",
         "Reçeteli PLC ve HMI ya da SCADA programları",
-        "İlk çalıştırmada loop testleri ve ayarlar",
-        "Belirlendiği şekilde kurulan veri kaydı"
+        "İlk çalıştırmada loop testleri ve ince ayar",
+        "Belirlenen kapsamda veri kaydı kurulumu"
       ],
       "situations": [
         "Sıcaklıklar veya süreler partiden partiye değişiyor",
@@ -403,7 +405,7 @@
       ],
       "cta": {
         "title": "Prosesinizi daha sıkı kontrol etmek mi istiyorsunuz?",
-        "text": "Prosesi, tutturmanız gereken set değerlerini ve mevcut enstrümanlarınızı anlatın. Size bir kontrol çözümü önerelim."
+        "text": "Prosesi, tutturmanız gereken set değerlerini ve mevcut enstrümanlarınızı anlatın. Size bir kontrol çözümü öneririz."
       }
     },
     "scada-data-logging": {
@@ -415,7 +417,7 @@
       "h1": "SCADA, izleme ve veri kaydı",
       "intro": [
         "Bir parti hatalı çıktığında ilk soru ne olduğudur. SCADA ve veri kaydı bu soruyu yanıtlar. Tüm prosesi gösteren izleme ekranları, zaman damgalı alarm listeleri ve her partiyi kendi ayarlarıyla ilişkilendiren kayıtlar oluşturuyoruz.",
-        "Büyük sistemlerde S7-1200 PLC'lerle birlikte Siemens WinCC Professional kullanıyoruz. Tekil makinelerde ise veri kaydı, reçete saklama ve test raporları doğrudan HMI üzerinde yapılabilir."
+        "Büyük sistemlerde S7-1200 PLC'lerle birlikte Siemens WinCC Professional kullanıyor, gerektiğinde raporlar ve OEE gösterge ekranları için bir SQL veritabanı ekliyoruz. Tekil makinelerde ise veri kaydı, reçete saklama ve test raporları doğrudan HMI üzerinde yapılabilir. Mühendislerimizin deneyimi, steril üretim alanları için çevresel izleme (EMS) sistemlerini ve ilaç tesislerinde BMS ve EMS sistemlerinin yeniden devreye alınmasını da kapsıyor."
       ],
       "capabilities": [
         {
@@ -432,7 +434,7 @@
         },
         {
           "title": "Veri kaydı ve izlenebilirlik",
-          "text": "Kalite kayıtları için proses değerleri ve parti verileri HMI veya SCADA üzerinde kaydedilir."
+          "text": "Kalite kayıtları için proses değerleri ve parti verileri HMI, SCADA veya bir SQL veritabanında kaydedilir."
         },
         {
           "title": "Otomatik raporlar",
@@ -440,7 +442,7 @@
         },
         {
           "title": "Üretim takibi",
-          "text": "Vardiya veya parti bazında üretim için sayaçlar, çevrim süreleri ve makine durumu."
+          "text": "Vardiya veya parti bazında üretim için sayaçlar, çevrim süreleri ve makine durumu; SQL tabanlı raporlar ve hat seviyesinde OEE gösterge ekranlarıyla."
         }
       ],
       "deliverables": [
@@ -459,26 +461,26 @@
       "faq": [
         {
           "q": "Hangi SCADA yazılımını kullanıyorsunuz?",
-          "a": "Son SCADA projelerimizde Siemens WinCC Professional. Tekil makinelerde veriyi çoğu zaman doğrudan HMI'da kaydediyoruz; bu da ek bir bilgisayar ihtiyacını ortadan kaldırıyor."
+          "a": "Son SCADA projelerimizde Siemens WinCC Professional kullandık. Tekil makinelerde veriyi çoğu zaman doğrudan HMI'da kaydediyoruz; bu da ek bir bilgisayar ihtiyacını ortadan kaldırıyor."
         },
         {
           "q": "SCADA farklı markalardaki makineleri birbirine bağlayabilir mi?",
-          "a": "Genellikle evet; Modbus TCP gibi standart protokoller veya PLC'nin kendi Ethernet bağlantısı üzerinden. Teklif vermeden önce her makinenin kontrolörünü kontrol ediyoruz."
+          "a": "Genellikle evet; Modbus TCP gibi standart protokoller veya PLC'nin kendi Ethernet bağlantısı üzerinden. Teklif vermeden önce her makinenin kontrolörünü inceliyoruz."
         },
         {
           "q": "Bu, MES veya OEE yazılımıyla aynı şey mi?",
-          "a": "Hayır. Makine ve hat seviyesinde SCADA, veri kaydı ve raporlar kuruyoruz. Tesis genelindeki MES ve OEE platformları kapsamımız dışındadır."
+          "a": "Hayır. Makine ve hat seviyesinde SCADA, veri kaydı ve raporlar kuruyoruz; bir SQL veritabanından beslenen OEE gösterge ekranları da buna dahil. Tesis genelindeki MES ve OEE platformları kapsamımız dışındadır."
         }
       ],
       "cta": {
         "title": "Prosesinizi görmek ve kayıt altına almak mı istiyorsunuz?",
-        "text": "Hangi makinelerin bağlanacağını ve neyi kaydetmeniz gerektiğini bize yazın. Size ekranlar, kayıt ve raporlar önerelim."
+        "text": "Hangi makinelerin bağlanacağını ve neyi kaydetmeniz gerektiğini bize yazın. Size ekranlar, kayıt yapısı ve raporlar öneririz."
       }
     },
     "testing-commissioning": {
       "title": "Test ve devreye alma",
       "navTitle": "Test ve devreye alma",
-      "summary": "Kendi kurduğumuz sistemler ile başka tedarikçilerin makine ve hatları için I/O ve loop testleri, kilitleme testleri, ilk çalıştırma ve ayarlar.",
+      "summary": "Kendi kurduğumuz sistemler ile başka tedarikçilerin makine ve hatları için I/O ve loop testleri, kilitleme testleri, ilk çalıştırma ve ince ayar.",
       "seoTitle": "Mısır'da Test ve Devreye Alma Hizmetleri | Logic Controls",
       "seoDescription": "Mısır'da yeni makineler ve ithal hatlar için I/O ve loop testleri, kilitleme testleri, FAT/SAT desteği ve ilk çalıştırma; eksik listesi kapanana kadar.",
       "h1": "Test ve devreye alma",
@@ -500,12 +502,12 @@
           "text": "Sekanslar, güvenlik kilitlemeleri ve koruma fonksiyonları ilk çalıştırmadan önce kontrollü koşullarda test edilir."
         },
         {
-          "title": "İlk çalıştırma ve ayar",
-          "text": "Gerçek çalışma koşullarında kademeli ilk çalıştırma; ardından hızların, zamanlamaların, set değerlerinin ve kontrol çevrimlerinin ayarı."
+          "title": "İlk çalıştırma ve ince ayar",
+          "text": "Gerçek çalışma koşullarında kademeli ilk çalıştırma; ardından hızların, zamanlamaların, set değerlerinin ve kontrol çevrimlerinin ince ayarı."
         },
         {
           "title": "FAT ve SAT desteği",
-          "text": "Fabrika ve saha kabul testlerine destek: test prosedürleri, testlere tanıklık ve kayıtlar; makine üreticisiyle birlikte."
+          "text": "Fabrika ve saha kabul testlerine destek: test prosedürleri, testlere katılım ve şahitlik, kayıtlar; makine üreticisiyle birlikte."
         },
         {
           "title": "Eksik listesi ve teslim",
@@ -515,7 +517,7 @@
       "deliverables": [
         "Devreye alma kontrol listesi ve I/O test kaydı",
         "Kilitleme ve alarm test kaydı",
-        "Kapanış durumlarıyla eksik listesi",
+        "Kapanış durumu işlenmiş eksik listesi (punch list)",
         "Ayarlanan parametrelerin kaydı",
         "Operatörler ve bakım personeliyle teslim oturumu"
       ],
@@ -541,7 +543,7 @@
       ],
       "cta": {
         "title": "Devreye alınacak bir hattınız mı var?",
-        "text": "I/O listesini veya tedarikçi dokümanlarını ve hedef ilk çalıştırma tarihinizi gönderin. Devreye alma planını sizinle birlikte hazırlayalım."
+        "text": "I/O listesini veya tedarikçi dokümanlarını ve hedef ilk çalıştırma tarihinizi gönderin. Devreye alma planını sizinle birlikte hazırlarız."
       }
     },
     "maintenance-support": {
@@ -558,7 +560,7 @@
       "capabilities": [
         {
           "title": "Arıza tespiti ve giderme",
-          "text": "Kendi kurduğumuz ve diğer makinelerde PLC, HMI, sürücü, sensör ve kablaj arızalarının sahada teşhisi."
+          "text": "Kendi kurduğumuz ve diğer makinelerde; klasik röleli ve kablolu (hard-wired) kumanda devreleri dahil, PLC, HMI, sürücü, sensör ve kablaj arızalarının sahada teşhisi."
         },
         {
           "title": "Program değişiklikleri",
@@ -614,7 +616,7 @@
       ],
       "cta": {
         "title": "Makineniz durdu mu, sorun mu çıkarıyor?",
-        "text": "Alarm metnini, ekranın fotoğrafını ve makine modelini gönderin. Bir mühendisimiz size bir sonraki adımı söylesin."
+        "text": "Alarm metnini, ekranın fotoğrafını ve makine modelini gönderin. Bir mühendisimiz size bir sonraki adımı bildirir."
       }
     }
   }

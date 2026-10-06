@@ -1,0 +1,74 @@
+---
+/**
+ * Portfolio: hero → filters (industry × service) + project cards → notes → CTA band.
+ */
+import BaseLayout from "~/layouts/BaseLayout.astro";
+import Hero from "~/components/Hero.astro";
+import Section from "~/components/Section.astro";
+import Breadcrumbs from "~/components/Breadcrumbs.astro";
+import CtaBand from "~/components/CtaBand.astro";
+import Icon from "~/components/Icon.astro";
+import ProjectBrowser from "~/components/sections/catalog/ProjectBrowser.astro";
+import { absUrl, html, imageAlt, projectCopy, projectsFor, quoteHref, secondaryCta } from "~/components/sections/catalog/catalog";
+import { getMessages, localePath, localeStaticPaths, type Locale } from "~/i18n";
+import { STATS } from "~/data/stats";
+import { featuredProjects } from "~/data/projects";
+
+export const getStaticPaths = localeStaticPaths;
+const locale = Astro.params.lang as Locale;
+const m = getMessages(locale);
+const idx = m.projects.index;
+const notes = m.common.notes;
+const projects = projectsFor(locale);
+const wa = m.common.whatsapp.default;
+/* Same static proof figures as everywhere else (stats.ts); the case studies are a subset of the projects delivered. */
+const proof = STATS.filter((s) => s.key === "projects" || s.key === "experience" || s.key === "industries").map((s) => ({
+  value: s.value,
+  label: m.common.stats[s.key].label,
+}));
+/* Hero photo: the first featured case study's cover (data-driven). */
+const heroProject = featuredProjects().find((p) => projectCopy(locale, p.slug)) ?? projects[0];
+
+const jsonLd = {
+  "@context": "https://schema.org",
+  "@type": "CollectionPage",
+  name: idx.h1,
+  description: idx.seo.description,
+  url: absUrl(localePath(locale, "projects")),
+  mainEntity: {
+    "@type": "ItemList",
+    itemListElement: projects.map((p, i) => ({
+      "@type": "ListItem",
+      position: i + 1,
+      name: projectCopy(locale, p.slug)!.cardTitle,
+      url: absUrl(localePath(locale, `projects/${p.slug}`)),
+    })),
+  },
+};
+---
+
+<BaseLayout locale={locale} title={idx.seo.title} description={idx.seo.description} path="projects" heroDark jsonLd={jsonLd} whatsappMessage={wa}>
+  <Hero
+    locale={locale}
+    size="page"
+    title={html(idx.h1, locale)}
+    lead={html(idx.intro.join(" "), locale)}
+    primary={{ label: m.ui.cta.quote, href: quoteHref(locale) }}
+    secondary={secondaryCta(locale, wa)}
+    proof={proof}
+    image={heroProject?.cover.image}
+    imageAlt={heroProject ? imageAlt(locale, heroProject.slug, heroProject.cover.key) : ""}
+  >
+    <Breadcrumbs slot="breadcrumbs" locale={locale} items={[{ label: m.common.breadcrumbs.projects }]} />
+  </Hero>
+
+  <Section id="portfolio" class="pt-12! sm:pt-16!">
+    <ProjectBrowser locale={locale} projects={projects} />
+
+    <div class="mt-16 border-t border-charcoal-200 pt-6 text-sm text-charcoal-600">
+      <p class="flex max-w-3xl gap-2.5"><Icon name="shield" size={18} class="mt-0.5 shrink-0 text-royal-600" />{notes.anonymised}</p>
+    </div>
+  </Section>
+
+  <CtaBand locale={locale} title={html(m.common.ctaBand.default.title, locale)} text={m.common.ctaBand.default.text} secondary={secondaryCta(locale, wa)} />
+</BaseLayout>

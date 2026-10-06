@@ -64,15 +64,22 @@
     "byService": "Hizmete göre",
     "reset": "Tüm projeleri göster",
     "count": "{count} proje",
-    "empty": "Bu filtreye uyan bir proje henüz yok. Yine de makinenizi bize anlatın: aynı yöntemler geçerli."
+    "empty": "Bu filtreye uyan bir proje henüz yok. Yine de makinenizi bize anlatın; aynı yöntemleri sizin makinenize de uygularız."
   },
   "stats": {
     "title": "Rakamlarla Logic Controls",
-    "projects": { "label": "tamamlanan proje" },
-    "experience": { "label": "yıllık ekip deneyimi" },
-    "platforms": { "label": "PLC ve HMI platformu" },
-    "industries": { "label": "hizmet verilen sektör" },
-    "founded": { "label": "kuruluş yılı" }
+    "projects": {
+      "label": "tamamlanan proje"
+    },
+    "experience": {
+      "label": "yıllık ekip deneyimi"
+    },
+    "platforms": {
+      "label": "PLC ve HMI platformu"
+    },
+    "industries": {
+      "label": "hizmet verilen sektör"
+    }
   },
   "platforms": {
     "title": "Programladığımız ve entegre ettiğimiz platformlar",
@@ -85,7 +92,7 @@
     "steps": [
       {
         "title": "Saha ziyareti ve keşif",
-        "text": "Makineyi veya hattı yerinde görüyor, etiket plakalarını ve çizimleri inceliyor, sistemin ne yapması gerektiğini sizinle birlikte netleştiriyoruz."
+        "text": "Makineyi veya hattı yerinde görüyor, cihaz etiketlerini ve çizimleri inceliyor, sistemin ne yapması gerektiğini sizinle birlikte netleştiriyoruz."
       },
       {
         "title": "Teklif ve tasarım",
@@ -97,11 +104,11 @@
       },
       {
         "title": "Sahaya gitmeden test",
-        "text": "Kablaj kontrolleri, I/O simülasyonu ve HMI ekranlarının tek tek gözden geçirilmesi; hepsi ekipman tesisinize ulaşmadan önce."
+        "text": "Ekipman tesisinize ulaşmadan önce kablaj kontrolleri, I/O simülasyonu ve HMI ekranlarının tek tek gözden geçirilmesi."
       },
       {
         "title": "Sahada devreye alma",
-        "text": "I/O ve loop testleri, kilitleme (interlock) testleri, operatörlerinizle birlikte ilk çalıştırma ve ayarlar."
+        "text": "I/O ve loop testleri, kilitleme (interlock) testleri, operatörlerinizle birlikte ilk çalıştırma ve ince ayar."
       },
       {
         "title": "Teslim ve destek",
@@ -114,9 +121,9 @@
     "intro": "Listedeki her şeye sahip olmanız gerekmez. Elinizde olanı gönderin, eksikleri biz sorarız.",
     "items": [
       "Makinenin veya hattın ne iş yaptığı ve neyi değiştirmek istediğiniz",
-      "Makinenin, mevcut panonun ve motor, sürücü ve PLC etiket plakalarının fotoğrafları",
+      "Makinenin, mevcut panonun ve motor, sürücü ve PLC etiketlerinin fotoğrafları",
       "Varsa çizimler, I/O listesi veya mevcut program",
-      "Tercih ettiğiniz PLC ve HMI markası ya da bir tercihiniz olmadığı",
+      "Tercih ettiğiniz PLC ve HMI markası (tercihiniz yoksa belirtin)",
       "Makinedeki besleme gerilimi ve frekansı, örneğin 380 V, 50 Hz",
       "Tesisin konumu ve hedef tarih",
       "HMI ekranları ve dokümanlar için gereken diller"
@@ -130,7 +137,7 @@
     },
     "service": {
       "title": "Bu hizmete tesisinizde ihtiyacınız mı var?",
-      "text": "Makineyi veya prosesi anlatın ve fotoğraf ekleyin. Teklif hazırlamak için neye ihtiyacımız olduğunu size bildirelim."
+      "text": "Makineyi veya prosesi anlatın ve fotoğraf ekleyin. Teklif hazırlamak için neye ihtiyacımız olduğunu size bildiririz."
     },
     "industry": {
       "title": "Benzer bir tesis mi işletiyorsunuz?",
@@ -146,17 +153,17 @@
     }
   },
   "whatsapp": {
-    "default": "Merhaba Logic Controls, bir otomasyon projesi hakkında bir mühendisle görüşmek istiyorum.",
-    "quote": "Merhaba Logic Controls, teklif almak istiyorum. Fotoğrafları ve çizimleri buradan gönderebilirim.",
-    "service": "Merhaba Logic Controls, şu hizmet için teklif almak istiyorum: {service}.",
-    "industry": "Merhaba Logic Controls, bir otomasyon projesi için \"{industry}\" sayfanızdan ulaşıyorum.",
-    "project": "Merhaba Logic Controls, \"{project}\" projenizi inceledim; benzer bir makinem var.",
-    "foreign": "Merhaba Logic Controls, Mısır'da fabrika kuruyoruz ve yerel bir otomasyon iş ortağına ihtiyacımız var.",
-    "drawings": "Merhaba Logic Controls, teklif için çizim ve fotoğraf gönderiyorum."
+    "default": "Merhaba Logic Controls, bir otomasyon projesi hakkında bir mühendisle görüşmek istiyorum.\nHello Logic Controls, I would like to talk to an engineer about an automation project.",
+    "quote": "Merhaba Logic Controls, teklif almak istiyorum. Fotoğrafları ve çizimleri buradan gönderebilirim.\nHello Logic Controls, I would like a quote. I can send photos and drawings here.",
+    "service": "Merhaba Logic Controls, şu hizmet için teklif almak istiyorum: {service}.\nHello Logic Controls, I need a quote for the service named above.",
+    "industry": "Merhaba Logic Controls, bir otomasyon projesi için \"{industry}\" sayfanızdan ulaşıyorum.\nHello Logic Controls, I am contacting you from the industry page named above about an automation project.",
+    "project": "Merhaba Logic Controls, \"{project}\" projenizi inceledim; benzer bir makinem var.\nHello Logic Controls, I saw the case study named above and have a similar machine.",
+    "foreign": "Merhaba Logic Controls, Mısır'da fabrika kuruyoruz ve yerel bir otomasyon iş ortağına ihtiyacımız var.\nHello Logic Controls, we are setting up a factory in Egypt and need a local automation partner.",
+    "drawings": "Merhaba Logic Controls, teklif için çizim ve fotoğraf gönderiyorum.\nHello Logic Controls, I am sending drawings and photos for a quote."
   },
   "zones": {
     "title": "Çalıştığımız bölgeler",
-    "intro": "Merkezimiz Gize'deki 6 Ekim Şehri'nde. Büyük Kahire'de ve aşağıdakiler dahil Mısır'ın sanayi bölgelerinde çalışıyoruz:",
+    "intro": "Merkezimiz Gize'deki 6 Ekim Şehri'nde. Büyük Kahire'de ve Mısır'ın sanayi bölgelerinde çalışıyoruz. Başlıca bölgeler:",
     "note": "Tesisiniz Mısır'ın başka bir yerinde mi? Bize sorun. Saha ziyaretlerini her talep için ayrıca planlıyoruz.",
     "homeBase": "Merkezimiz",
     "sczone": "SCZONE",
@@ -167,15 +174,42 @@
       "suez-canal": "Süveyş Kanalı Ekonomik Bölgesi"
     },
     "items": {
-      "6th-of-october": { "name": "6 Ekim ve Yeni Ekim Şehri", "governorate": "Gize" },
-      "obour": { "name": "Obour Şehri", "governorate": "Kalyubiye" },
-      "badr": { "name": "Badr Şehri", "governorate": "Kahire" },
-      "10th-of-ramadan": { "name": "10. Ramazan Şehri", "governorate": "Şarkiye" },
-      "sadat-city": { "name": "Sadat Şehri", "governorate": "Minufiye" },
-      "borg-el-arab": { "name": "Burg El Arab ve Yeni Burg El Arab", "governorate": "İskenderiye" },
-      "ain-sokhna": { "name": "TEDA bölgesi dahil Ain Sokhna", "governorate": "Süveyş" },
-      "qantara-west": { "name": "Batı Kantara", "governorate": "İsmailiye" },
-      "east-port-said": { "name": "Doğu Port Said", "governorate": "Port Said" }
+      "6th-of-october": {
+        "name": "6 Ekim ve Yeni Ekim Şehri",
+        "governorate": "Gize"
+      },
+      "obour": {
+        "name": "Obour Şehri",
+        "governorate": "Kalyubiye"
+      },
+      "badr": {
+        "name": "Badr Şehri",
+        "governorate": "Kahire"
+      },
+      "10th-of-ramadan": {
+        "name": "10. Ramazan Şehri",
+        "governorate": "Şarkiye"
+      },
+      "sadat-city": {
+        "name": "Sadat Şehri",
+        "governorate": "Minufiye"
+      },
+      "borg-el-arab": {
+        "name": "Burg El Arab ve Yeni Burg El Arab",
+        "governorate": "İskenderiye"
+      },
+      "ain-sokhna": {
+        "name": "TEDA bölgesi dahil Ain Sokhna",
+        "governorate": "Süveyş"
+      },
+      "qantara-west": {
+        "name": "Batı Kantara",
+        "governorate": "İsmailiye"
+      },
+      "east-port-said": {
+        "name": "Doğu Port Said",
+        "governorate": "Port Said"
+      }
     }
   },
   "locations": {
@@ -189,7 +223,7 @@
   "notes": {
     "brands": "Marka adları ve ticari markalar sahiplerine aittir. Bir markanın listelenmesi, o markanın ürünlerini programlayıp entegre ettiğimiz anlamına gelir; bir iş ortaklığı anlamına gelmez.",
     "anonymised": "Müşteri adları gizlilik nedeniyle paylaşılmamaktadır. Talep halinde, müşterinin izniyle referans görüşmesi ayarlanabilir.",
-    "preFounding": "2025'ten önceki projeler, Logic Controls kurulmadan önce mühendislerimiz tarafından gerçekleştirilmiştir.",
-    "photos": "Fotoğraflar gerçek projelerden alınmıştır. Bazı logolar ve etiket plakaları bulanıklaştırılmıştır."
+    "preFounding": "Şirket kurulmadan önce mühendislerimiz tarafından gerçekleştirildi.",
+    "photos": "Fotoğraflar gerçek projelerden alınmıştır. Bazı logolar ve cihaz etiketleri bulanıklaştırılmıştır."
   }
 }

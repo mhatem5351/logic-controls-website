@@ -74,6 +74,10 @@
         "otherEgypt": "埃及其他地区",
         "outsideEgypt": "埃及境外"
       },
+      "country": {
+        "label": "国家/地区",
+        "help": "如贵公司位于埃及境外，请填写所在国家或地区。"
+      },
       "timeline": {
         "label": "预计何时需要？",
         "placeholder": "请选择时间",
@@ -107,6 +111,8 @@
       "cta": "通过 WhatsApp 发送图纸"
     },
     "privacyNote": "您的信息仅用于回复本次需求，我们不会将您加入任何邮件列表。",
+    "sent": "需求已发送，正在打开确认页面……",
+    "noscript": "安全验证需要启用 JavaScript。如果表单无法提交，请直接通过电话、电子邮件或 WhatsApp 联系我们。",
     "security": {
       "label": "安全验证",
       "help": "此项验证用于确认提交表单的是真人，而非自动程序。"

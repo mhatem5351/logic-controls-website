@@ -1,0 +1,90 @@
+---
+/**
+ * One row of the technologies "platforms we program and integrate" data sheet:
+ * monochrome logo tile (or a text wordmark when no vector logo exists) · name + description · products used.
+ * Logos are decorative here (the brand name is the visible heading). Never labelled "partner".
+ *
+ *   <BrandPanel locale="en" brand={BRANDS[0]} text="…" productsLabel="Used in our projects" index={1} />
+ */
+import { getMessages, type Locale } from "~/i18n";
+import type { BrandData } from "~/data/technologies";
+import Chips from "~/components/Chips.astro";
+import siemens from "~/assets/brand/platforms/siemens.svg?raw";
+import schneider from "~/assets/brand/platforms/schneider-electric.svg?raw";
+import delta from "~/assets/brand/platforms/delta.svg?raw";
+import ls from "~/assets/brand/platforms/ls-electric.svg?raw";
+import { html } from "./rich";
+
+interface Props {
+  locale: Locale;
+  brand: BrandData;
+  text: string;
+  productsLabel: string;
+  /** 1-based position, shown as a mono index. */
+  index?: number;
+  headingLevel?: "h3" | "h4";
+  class?: string;
+}
+const { locale, brand, text, productsLabel, index, headingLevel: H = "h3", class: className } = Astro.props;
+/** Product names from data are English; technologies.json → brands.productNames localises the generic words. */
+const productNames = (getMessages(locale).technologies.brands as { productNames?: Record<string, string> }).productNames ?? {};
+const products = brand.products.map((p) => productNames[p] ?? p);
+
+// Equal-area sizing (same maths as LogoWall): height = sqrt(area / aspect).
+const AREA = 2900;
+const LOGOS: Record<string, { svg: string; aspect: number } | undefined> = {
+  siemens: { svg: siemens, aspect: 6.27 },
+  "schneider-electric": { svg: schneider, aspect: 3.385 },
+  delta: { svg: delta, aspect: 3.243 },
+  "ls-electric": { svg: ls, aspect: 6.271 },
+};
+const logo = LOGOS[brand.slug];
+const logoSvg = logo
+  ? logo.svg
+      .replace(/\s(role|aria-label)="[^"]*"/g, "")
+      .replace("<svg ", `<svg aria-hidden="true" focusable="false" class="block w-auto" style="height:${Math.sqrt(AREA / logo.aspect).toFixed(1)}px" `)
+  : undefined;
+const pad = (n: number) => String(n).padStart(2, "0");
+/** Keep model codes ("S7-200", "DVP-12SC") on one line; on Arabic pages html() already isolates them in <bdi>. */
+const body = html(locale, text).replace(/(?<![\w>-])([A-Za-z]+\d*-\d+[A-Za-z0-9]*)/g, '<span class="whitespace-nowrap">$1</span>');
+---
+
+<article
+  class:list={[
+    "group grid gap-6 border-b border-charcoal-200 py-8 sm:grid-cols-[13rem_1fr] sm:gap-8 lg:grid-cols-[14rem_1fr_19rem] lg:gap-10 lg:py-10",
+    className,
+  ]}
+>
+  <div
+    class="relative grid min-h-20 place-items-center border border-charcoal-200 bg-white px-6 py-5 text-charcoal-700 sm:min-h-28 sm:py-7 transition-colors duration-300 group-hover:border-royal-300 group-hover:text-navy-900 sm:row-span-2 lg:row-span-1"
+  >
+    <span aria-hidden="true" class="absolute -top-px start-4 h-1 w-8 skew-x-[-10deg] bg-royal-600 transition-[width] duration-300 group-hover:w-14 rtl:skew-x-[10deg]"></span>
+    {index != null && (
+      <span aria-hidden="true" class="absolute end-3 top-2.5 font-mono text-[0.6875rem] text-charcoal-600 ltr" dir="ltr">{pad(index)}</span>
+    )}
+    {
+      logoSvg ? (
+        <Fragment set:html={logoSvg} />
+      ) : (
+        <span aria-hidden="true" lang="en" class="font-sans text-[1.5rem] leading-none font-extrabold tracking-[0.14em] uppercase">
+          {brand.name}
+        </span>
+      )
+    }
+  </div>
+
+  <div class="min-w-0">
+    <H class="type-h3 text-navy-950">
+      <span lang="en" dir="ltr" class="ltr">{brand.name}</span>
+    </H>
+    <p class="mt-3 max-w-2xl text-charcoal-700 [&_bdi]:whitespace-nowrap" set:html={body} />
+  </div>
+
+  <div class="min-w-0 sm:col-start-2 lg:col-start-auto">
+    <p class="mb-3 flex items-center gap-2 type-label text-charcoal-600">
+      <span class="slant-bar w-3 text-royal-600" aria-hidden="true"></span>
+      {productsLabel}
+    </p>
+    <Chips items={products} label={`${brand.name}: ${productsLabel}`} />
+  </div>
+</article>

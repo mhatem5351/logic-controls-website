@@ -1,0 +1,199 @@
+---
+/**
+ * Schematic map of northern Egypt (Mediterranean coast, Nile and its delta, Suez Canal, Gulf of Suez) with
+ * numbered pins for the industrial zones we work across. Language-neutral (no text inside the SVG: pins carry
+ * the same numbers as the zone list next to it). Self-drawn, so no map tiles or third-party requests (zh-safe).
+ *
+ *   <ZoneMap />                    all zones, numbered, home base pulsing
+ *   <ZoneMap only="home" />        our base highlighted, the other zones as faint dots (contact address card)
+ *
+ * Projection: equirectangular around 30°N — x = (lon − 28.8) × 86.6, y = (31.8 − lat) × 100 → viewBox 380×260.
+ */
+import { ZONES, type ZoneSlug } from "~/data/zones";
+import { uid } from "~/components/uid";
+
+interface Props {
+  only?: "home";
+  /** Accessible name. Without it the map is decorative (the zone list carries the content). */
+  label?: string;
+  class?: string;
+}
+const { only, label, class: className } = Astro.props;
+
+const P: Record<ZoneSlug, [number, number]> = {
+  "6th-of-october": [184.5, 186],
+  obour: [231, 157],
+  badr: [250, 170],
+  "10th-of-ramadan": [257, 149],
+  "sadat-city": [150, 143],
+  "borg-el-arab": [74, 93],
+  "ain-sokhna": [306, 218],
+  "qantara-west": [297, 95],
+  "east-port-said": [316, 61],
+};
+const pins = ZONES.map((z, i) => ({ ...z, n: i + 1, x: P[z.slug][0], y: P[z.slug][1] }));
+const u = uid("map");
+const a11y = label ? { role: "img" as const, "aria-label": label } : { "aria-hidden": "true" as const };
+---
+
+<svg class:list={["lc-map block h-auto w-full", className]} viewBox="0 0 380 260" {...a11y} data-map>
+  <defs>
+    <pattern id={`${u}-sea`} width="6" height="6" patternUnits="userSpaceOnUse" patternTransform="rotate(-10)">
+      <path d="M0 3H6" stroke="currentColor" stroke-width=".6" class="text-royal-400/25"></path>
+    </pattern>
+    <radialGradient id={`${u}-glow`} cx=".5" cy=".5" r=".5">
+      <stop offset="0" stop-color="var(--color-signal-400)" stop-opacity=".45"></stop>
+      <stop offset="1" stop-color="var(--color-signal-400)" stop-opacity="0"></stop>
+    </radialGradient>
+  </defs>
+
+  {/* sea + gulf */}
+  <path d="M0 0H380V65L364 68L329 65L303 53L286 45L263 28L234 25L190 22L134 33L110 48L97 60L82 68L52 85L13 97L0 85Z" fill={`url(#${u}-sea)`}></path>
+  <path d="M323 183L308 220L325 250L333 260H359L355 250L342 220L329 185Z" fill={`url(#${u}-sea)`}></path>
+
+  {/* coastline + gulf shores */}
+  <path
+    class="lc-map-coast"
+    d="M0 85L13 97L52 85L82 68L97 60L110 48L134 33L190 22L234 25L263 28L286 45L303 53L329 65L364 68L380 65"
+    fill="none"
+    stroke-width="1.4"
+    stroke-linejoin="round"
+    stroke-linecap="round"
+  ></path>
+  <path class="lc-map-coast" d="M323 183L308 220L325 250L333 260M329 185L342 220L355 250L359 260" fill="none" stroke-width="1.2" stroke-linejoin="round" stroke-linecap="round"></path>
+
+  {/* Nile, delta branches, Suez Canal */}
+  <path
+    class="lc-map-water"
+    d="M212 260L211 215L210.4 175L201 160M201 160L177.5 130L160 95L143 60L134 33M201 160L208 130L225 90L247 60L263 28"
+    fill="none"
+    stroke-width="1.6"
+    stroke-linejoin="round"
+    stroke-linecap="round"
+  ></path>
+  <path class="lc-map-water" d="M304 54L305 95L301 122L310 145L325 183" fill="none" stroke-width="1.6" stroke-dasharray="1 0" stroke-linejoin="round"></path>
+  <ellipse class="lc-map-lake" cx="310" cy="146" rx="5" ry="7"></ellipse>
+
+  {/* the 45° trace from our base to every zone (logo motif) */}
+  {
+    !only && (
+      <g class="lc-map-links" fill="none" stroke-width=".8">
+        {pins
+          .filter((z) => !z.home)
+          .map((z) => (
+            <path d={`M184.5 186L${z.x} ${z.y}`} />
+          ))}
+      </g>
+    )
+  }
+
+  {/* pins */}
+  {
+    pins.map((z) =>
+      z.home ? (
+        <g class="lc-map-pin lc-map-home" data-zone={z.slug}>
+          <circle cx={z.x} cy={z.y} r={only ? 30 : 22} fill={`url(#${u}-glow)`} class="lc-map-pulse" />
+          <circle cx={z.x} cy={z.y} r={only ? 7 : 8.5} class="lc-map-home-dot" />
+          {!only && (
+            <text x={z.x} y={z.y + 3.3} text-anchor="middle" class="lc-map-num lc-map-num-home">
+              {z.n}
+            </text>
+          )}
+        </g>
+      ) : only ? (
+        <circle cx={z.x} cy={z.y} r="3" class="lc-map-dim" />
+      ) : (
+        <g class="lc-map-pin" data-zone={z.slug}>
+          <circle cx={z.x} cy={z.y} r="7" class="lc-map-dot" />
+          <text x={z.x} y={z.y + 3} text-anchor="middle" class="lc-map-num">
+            {z.n}
+          </text>
+        </g>
+      ),
+    )
+  }
+</svg>
+
+<style>
+  .lc-map {
+    --map-coast: var(--color-navy-300);
+    --map-water: var(--color-royal-400);
+    --map-dot: var(--color-navy-900);
+    --map-dot-stroke: var(--color-royal-300);
+    --map-num: var(--color-white);
+    --map-link: rgb(150 182 232 / 0.28);
+    color: var(--map-coast);
+    direction: ltr;
+  }
+  .lc-map-coast,
+  .lc-map-water,
+  .lc-map-links path {
+    vector-effect: non-scaling-stroke;
+  }
+  .lc-map-coast {
+    stroke: var(--map-coast);
+    opacity: 0.75;
+  }
+  .lc-map-water {
+    stroke: var(--map-water);
+  }
+  .lc-map-lake {
+    fill: var(--map-water);
+    opacity: 0.6;
+  }
+  .lc-map-links path {
+    stroke: var(--map-link);
+    stroke-dasharray: 2 3;
+  }
+  .lc-map-dot {
+    fill: var(--map-dot);
+    stroke: var(--map-dot-stroke);
+    stroke-width: 1.3;
+    transition: fill 0.2s ease, stroke 0.2s ease;
+  }
+  .lc-map-home-dot {
+    fill: var(--color-signal-400);
+    stroke: var(--color-navy-950);
+    stroke-width: 1.5;
+    vector-effect: non-scaling-stroke;
+  }
+  .lc-map-num {
+    fill: var(--map-num);
+    font: 700 8px/1 ui-monospace, "SFMono-Regular", Menlo, Consolas, monospace;
+    pointer-events: none;
+  }
+  .lc-map-num-home {
+    fill: var(--color-navy-950);
+    font-size: 9px;
+  }
+  .lc-map-dim {
+    fill: var(--color-royal-400);
+    opacity: 0.55;
+  }
+  .lc-map-pin[data-active] .lc-map-dot {
+    fill: var(--color-royal-500);
+    stroke: var(--color-white);
+  }
+  .lc-map-pulse {
+    transform-box: fill-box;
+    transform-origin: center;
+    animation: lc-map-pulse 3.2s ease-out infinite;
+  }
+  @keyframes lc-map-pulse {
+    0% {
+      transform: scale(0.45);
+      opacity: 1;
+    }
+    80%,
+    100% {
+      transform: scale(1.25);
+      opacity: 0;
+    }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .lc-map-pulse {
+      animation: none;
+      opacity: 0.6;
+    }
+  }
+</style>

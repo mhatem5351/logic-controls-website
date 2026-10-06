@@ -1,5 +1,5 @@
 /**
- * Case studies (14), built from the client's Facebook project posts. Clients are anonymised.
+ * Case studies (15), built from the client's Facebook and LinkedIn project posts. Clients are anonymised.
  * Copy lives in src/i18n/messages/<locale>/projects.json → items[slug]
  * (title, client, summary, challenge, solution, scope, result, highlights, imageAlts, seo…).
  *
@@ -54,8 +54,12 @@ import pipeHmi from "~/assets/projects/pipe-make-break-test-rig/hmi.jpg";
 import washerMachine from "~/assets/projects/hotel-washer-extractor-control/machine.jpg";
 import washerHmi from "~/assets/projects/hotel-washer-extractor-control/hmi.jpg";
 import washerEditor from "~/assets/projects/hotel-washer-extractor-control/program-editor.jpg";
+// 15 · Beverage syrup jet mixing (Siemens S7-1200 + SIMATIC HMI + Yaskawa), 2026 (from LinkedIn)
+import syrupHmi from "~/assets/projects/beverage-syrup-jet-mixing/hmi.jpg";
+import syrupPanel from "~/assets/projects/beverage-syrup-jet-mixing/panel.jpg";
 
 export const PROJECT_SLUGS = [
+  "beverage-syrup-jet-mixing",
   "shampoo-filling-ls-wecon",
   "bottle-printing-motion-retrofit",
   "anaerobic-waste-treatment-commissioning",
@@ -111,6 +115,18 @@ export interface ProjectData {
 }
 
 export const PROJECTS: readonly ProjectData[] = [
+  {
+    slug: "beverage-syrup-jet-mixing",
+    year: 2026,
+    yearEvidence: "Founder's LinkedIn post of 26 Sep 2026 presenting it as a recent project (HMI date in the photo is too blurred to read)",
+    industries: ["food-beverage"],
+    services: ["control-panels", "plc-hmi-programming", "process-control", "testing-commissioning"],
+    technologies: ["Siemens S7-1200 PLC", "Siemens S7-1200 I/O modules", "Siemens SIMATIC HMI", "Yaskawa VFDs"],
+    location: "egypt",
+    featured: true,
+    cover: { key: "hmi", image: syrupHmi },
+    gallery: [{ key: "panel", image: syrupPanel }],
+  },
   {
     slug: "shampoo-filling-ls-wecon",
     year: 2026,
@@ -188,7 +204,7 @@ export const PROJECTS: readonly ProjectData[] = [
     services: ["process-control", "plc-hmi-programming", "scada-data-logging"],
     technologies: ["Wecon LX3V PLC", "Wecon HMI", "Schneider Electric C60N circuit breakers"],
     location: "egypt",
-    featured: true,
+    featured: false,
     cover: { key: "hmi", image: pastHmi },
     gallery: [
       { key: "panel", image: pastPanel },
@@ -318,10 +334,14 @@ export const PROJECTS: readonly ProjectData[] = [
   },
 ];
 
-/** The 3 case studies on the home page, in this order. */
+/**
+ * The 3 case studies on the home page, in this order: pharma (Siemens + WinCC SCADA), beverage (Siemens + Yaskawa,
+ * newest), cosmetics (LS + Wecon, with video). Pasteurizers stay visible on the home page through the live HMI demo,
+ * and pasteurizer-cip-recipes still leads the process-control service page.
+ */
 export const FEATURED_PROJECT_SLUGS: readonly ProjectSlug[] = [
   "tablet-coating-scada",
-  "pasteurizer-cip-recipes",
+  "beverage-syrup-jet-mixing",
   "shampoo-filling-ls-wecon",
 ];
 

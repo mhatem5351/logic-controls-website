@@ -1,0 +1,109 @@
+---
+/**
+ * Services overview: hero → service cards (animated art) → how the pieces fit (control loop)
+ * → ways to work with us → how we work → FAQ → CTA band.
+ */
+import BaseLayout from "~/layouts/BaseLayout.astro";
+import Hero from "~/components/Hero.astro";
+import Section from "~/components/Section.astro";
+import SectionHeading from "~/components/SectionHeading.astro";
+import Breadcrumbs from "~/components/Breadcrumbs.astro";
+import Card from "~/components/Card.astro";
+import CtaBand from "~/components/CtaBand.astro";
+import FAQ from "~/components/FAQ.astro";
+import ProcessSteps from "~/components/ProcessSteps.astro";
+import ServiceArt from "~/components/illustrations/ServiceArt.astro";
+import ControlLoop from "~/components/motion/ControlLoop.astro";
+import FeatureGrid from "~/components/sections/catalog/FeatureGrid.astro";
+import { absUrl, html, quoteHref, secondaryCta, serviceCopy, serviceSlugs } from "~/components/sections/catalog/catalog";
+import { getMessages, localePath, localeStaticPaths, type Locale } from "~/i18n";
+import { STATS } from "~/data/stats";
+
+export const getStaticPaths = localeStaticPaths;
+const locale = Astro.params.lang as Locale;
+const m = getMessages(locale);
+const idx = m.services.index;
+const L = m.common.labels;
+const slugs = serviceSlugs(locale);
+const wa = m.common.whatsapp.quote;
+const proof = STATS.filter((st) => st.key === "projects" || st.key === "experience" || st.key === "platforms").map((st) => ({
+  value: st.value,
+  label: m.common.stats[st.key].label,
+}));
+
+const jsonLd = {
+  "@context": "https://schema.org",
+  "@type": "ItemList",
+  name: idx.h1,
+  itemListElement: slugs.map((s, i) => ({
+    "@type": "ListItem",
+    position: i + 1,
+    name: serviceCopy(locale, s)!.title,
+    url: absUrl(localePath(locale, `services/${s}`)),
+  })),
+};
+---
+
+<BaseLayout locale={locale} title={idx.seo.title} description={idx.seo.description} path="services" heroDark jsonLd={jsonLd} whatsappMessage={wa}>
+  <Hero
+    locale={locale}
+    size="page"
+    title={html(idx.h1, locale)}
+    lead={html(idx.intro.join(" "), locale)}
+    chips={["PLC", "HMI", "SCADA", "VFD"]}
+    primary={{ label: m.ui.cta.quote, href: quoteHref(locale) }}
+    secondary={secondaryCta(locale, wa)}
+    proof={proof}
+  >
+    <Breadcrumbs slot="breadcrumbs" locale={locale} items={[{ label: m.common.breadcrumbs.services }]} />
+  </Hero>
+
+  {/* The eight services */}
+  <Section id="services" aria-label={m.ui.nav.services}>
+    <ul role="list" class="grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
+      {
+        slugs.map((s) => {
+          const it = serviceCopy(locale, s)!;
+          return (
+            <li>
+              <Card variant="service" title={it.title} href={localePath(locale, `services/${s}`)} text={it.summary} cta={L.viewService} headingLevel="h2">
+                <Fragment slot="media">
+                  <div class="-mx-2 -mt-1 border-b border-charcoal-200/70 pb-3 sm:-mx-3">
+                    <ServiceArt slug={s} />
+                  </div>
+                </Fragment>
+              </Card>
+            </li>
+          );
+        })
+      }
+    </ul>
+  </Section>
+
+  {/* How the pieces fit */}
+  <Section variant="muted" id="control-loop">
+    <ControlLoop locale={locale} />
+  </Section>
+
+  {/* Ways to work with us */}
+  <Section variant="dark" id="engagement" aria-labelledby="engagement-title">
+    <SectionHeading id="engagement-title" eyebrow={idx.engagement.eyebrow} title={html(idx.engagement.title, locale)} />
+    <FeatureGrid items={idx.engagement.items} locale={locale} columns={4} class="mt-12" />
+  </Section>
+
+  {/* How we work */}
+  <Section id="process" aria-labelledby="process-title">
+    <SectionHeading id="process-title" eyebrow={idx.processEyebrow} title={html(m.common.process.title, locale)} lead={html(m.common.process.intro, locale)} />
+    <ProcessSteps locale={locale} steps={m.common.process.steps} class="mt-14" />
+  </Section>
+
+  {/* FAQ */}
+  <Section variant="muted" id="faq" aria-labelledby="faq-title">
+    <div class="grid gap-10 lg:grid-cols-[minmax(0,5fr)_minmax(0,8fr)] lg:gap-20">
+      <SectionHeading id="faq-title" eyebrow={L.faq} title={html(idx.faq.title, locale)} class="self-start" />
+      <FAQ items={idx.faq.items.map((f) => ({ q: f.q, a: html(f.a, locale) }))} openFirst />
+    </div>
+  </Section>
+
+  <CtaBand locale={locale} title={html(m.common.ctaBand.default.title, locale)} text={m.common.ctaBand.default.text} secondary={secondaryCta(locale, wa)} />
+</BaseLayout>

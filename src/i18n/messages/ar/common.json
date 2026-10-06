@@ -68,11 +68,18 @@
   },
   "stats": {
     "title": "Logic Controls بالأرقام",
-    "projects": { "label": "مشروع منفذ" },
-    "experience": { "label": "سنوات خبرة لفريقنا" },
-    "platforms": { "label": "منصات PLC و HMI" },
-    "industries": { "label": "قطاعات نخدمها" },
-    "founded": { "label": "سنة التأسيس" }
+    "projects": {
+      "label": "مشروع منفذ"
+    },
+    "experience": {
+      "label": "سنوات خبرة لفريقنا"
+    },
+    "platforms": {
+      "label": "منصات PLC و HMI"
+    },
+    "industries": {
+      "label": "قطاعات نخدمها"
+    }
   },
   "platforms": {
     "title": "منصات نبرمجها وندمجها",
@@ -167,15 +174,42 @@
       "suez-canal": "المنطقة الاقتصادية لقناة السويس"
     },
     "items": {
-      "6th-of-october": { "name": "السادس من أكتوبر وأكتوبر الجديدة", "governorate": "الجيزة" },
-      "obour": { "name": "مدينة العبور", "governorate": "القليوبية" },
-      "badr": { "name": "مدينة بدر", "governorate": "القاهرة" },
-      "10th-of-ramadan": { "name": "مدينة العاشر من رمضان", "governorate": "الشرقية" },
-      "sadat-city": { "name": "مدينة السادات", "governorate": "المنوفية" },
-      "borg-el-arab": { "name": "برج العرب وبرج العرب الجديدة", "governorate": "الإسكندرية" },
-      "ain-sokhna": { "name": "العين السخنة، ومنها منطقة تيدا (TEDA)", "governorate": "السويس" },
-      "qantara-west": { "name": "القنطرة غرب", "governorate": "الإسماعيلية" },
-      "east-port-said": { "name": "شرق بورسعيد", "governorate": "بورسعيد" }
+      "6th-of-october": {
+        "name": "السادس من أكتوبر وأكتوبر الجديدة",
+        "governorate": "الجيزة"
+      },
+      "obour": {
+        "name": "مدينة العبور",
+        "governorate": "القليوبية"
+      },
+      "badr": {
+        "name": "مدينة بدر",
+        "governorate": "القاهرة"
+      },
+      "10th-of-ramadan": {
+        "name": "مدينة العاشر من رمضان",
+        "governorate": "الشرقية"
+      },
+      "sadat-city": {
+        "name": "مدينة السادات",
+        "governorate": "المنوفية"
+      },
+      "borg-el-arab": {
+        "name": "برج العرب وبرج العرب الجديدة",
+        "governorate": "الإسكندرية"
+      },
+      "ain-sokhna": {
+        "name": "العين السخنة، ومنها منطقة تيدا (TEDA)",
+        "governorate": "السويس"
+      },
+      "qantara-west": {
+        "name": "القنطرة غرب",
+        "governorate": "الإسماعيلية"
+      },
+      "east-port-said": {
+        "name": "شرق بورسعيد",
+        "governorate": "بورسعيد"
+      }
     }
   },
   "locations": {
@@ -189,7 +223,7 @@
   "notes": {
     "brands": "الأسماء والعلامات التجارية مملوكة لأصحابها. وذكر أي علامة يعني أننا نبرمج منتجاتها وندمجها في أنظمة التحكم، ولا يعني وجود شراكة معها.",
     "anonymised": "لا نذكر أسماء العملاء حفاظًا على السرية. ويمكننا عند الطلب ترتيب تواصلك مع عملاء سابقين، بعد موافقتهم.",
-    "preFounding": "المشروعات المؤرخة قبل عام 2025 نفّذها مهندسونا قبل تأسيس Logic Controls.",
+    "preFounding": "نفّذه مهندسونا قبل تأسيس الشركة.",
     "photos": "الصور من المشروعات الفعلية، مع تمويه بعض الشعارات ولوحات البيانات."
   }
 }

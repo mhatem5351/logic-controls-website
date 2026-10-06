@@ -11,9 +11,22 @@
   "brands": {
     "title": "我们编程与集成的 PLC 和 HMI 平台",
     "productsLabel": "项目中使用",
+    "productNames": {
+      "S7-1200": "S7-1200",
+      "WinCC Professional": "WinCC Professional",
+      "S7-200 SMART": "S7-200 SMART",
+      "Altivar VFDs": "Altivar 变频器",
+      "Stepper drives": "步进驱动器",
+      "C60N circuit breakers": "C60N 断路器",
+      "DVP series PLCs": "DVP 系列 PLC",
+      "PLCs": "PLC",
+      "M100 VFD": "M100 变频器",
+      "LX3V PLCs": "LX3V 系列 PLC",
+      "HMIs": "HMI 触摸屏"
+    },
     "items": {
       "siemens": {
-        "text": "S7-1200 PLC 配合 WinCC Professional SCADA，用于工艺设备和工厂，例如我们的片剂包衣机和混凝土搅拌站项目。我们也调试过 S7-200 SMART 系统。"
+        "text": "S7-1200 PLC 配合 WinCC Professional SCADA，用于工艺设备和工厂，例如我们的片剂包衣机和混凝土搅拌站项目；在饮料糖浆混合系统中则配合 SIMATIC HMI 使用。我们也调试过 S7-200 SMART 系统。"
       },
       "schneider-electric": {
         "text": "PLC、Altivar 变频器、步进驱动器以及保护与控制元件。我们贴标机的出标就由 Schneider Electric 步进驱动器驱动。"
@@ -36,15 +49,18 @@
       "LS Electric M100 变频器",
       "Schneider Electric Altivar 变频器",
       "VEICHI 变频器",
+      "Yaskawa 变频器",
       "Schneider Electric 步进驱动器",
       "基于 PLC 的同步定位运动控制"
     ]
   },
   "scada": {
-    "title": "SCADA、HMI 与数据",
-    "text": "从设备上的单台触摸屏，到整个工艺的 SCADA 总览。",
+    "title": "软件、SCADA 与数据",
+    "text": "从 EPLAN Electric P8 电气图纸，到设备上的单台触摸屏，再到整个工艺的 SCADA 总览。",
     "items": [
+      "EPLAN Electric P8 电气设计与控制柜图纸",
       "Siemens WinCC Professional SCADA",
+      "SCADA 与 SQL 数据库集成，用于报表和 OEE 看板",
       "HMI 上的工艺流程画面、配方与历史报警",
       "阿拉伯语、英语及双语 HMI 画面",
       "用户登录与权限等级",
@@ -72,11 +88,17 @@
       "工艺系统中的液位、压力和气体测量"
     ]
   },
+  "categories": {
+    "eyebrow": "按类别",
+    "title": "驱动、SCADA、通讯与信号",
+    "intro": "控制器只是系统的一部分。以下是我们围绕它设计、编程和调试的其他环节。"
+  },
   "otherBrands": {
     "title": "我们用过的其他设备",
-    "text": "在客户设备上，我们还用过 MCGS 触摸屏、VEICHI 变频器、MEAN WELL 电源和工业以太网交换机。如果您的设备采用其他品牌，请发送型号，我们会告诉您能做什么。"
+    "text": "在客户设备上，我们还用过 MCGS 触摸屏、VEICHI 和 Yaskawa 变频器、MEAN WELL 电源和工业以太网交换机。如果您的设备采用其他品牌，请发送型号，我们会告诉您能做什么。"
   },
   "choosing": {
+    "eyebrow": "我们的做法",
     "title": "我们如何选择平台",
     "items": [
       {

@@ -15,6 +15,7 @@ import { getMessages, localePath, LOCALE_META, type Locale } from "~/i18n";
 import BrandMark from "~/components/BrandMark.astro";
 import { uid } from "~/components/uid";
 import { RECIPES } from "~/scripts/motion/hmi-sim";
+import { iso } from "~/scripts/motion/hmi-bidi";
 
 interface Props {
   locale: Locale;
@@ -39,6 +40,7 @@ const runtime = {
   status: t.status,
   mimic: { forward: t.mimic.forward, divert: t.mimic.divert, storage: t.mimic.storage, drain: t.mimic.drain },
   recipe: t.recipe,
+  perm: t.perm,
   trend: { show: t.trend.show, hide: t.trend.hide },
   alarms: t.alarms,
   msg: t.msg,
@@ -130,7 +132,7 @@ const TAGS = [
   }
 
   <figure class="lc-hmi" data-hmi data-i18n={JSON.stringify(runtime)} aria-labelledby={`${u}-cap`}>
-    <p class="lc-hmi-try"><span class="lc-led" data-blink aria-hidden="true"></span>{t.intro.try}</p>
+    <p class="lc-hmi-try"><span class="lc-led" aria-hidden="true"></span>{t.intro.try}</p>
     <div class="lc-hmi-dev">
       <div
         class="lc-hmi-screen"
@@ -167,6 +169,12 @@ const TAGS = [
               <pattern id={`${u}-pl`} width="4.5" height="8" patternUnits="userSpaceOnUse">
                 <rect width="2.2" height="8" class="m-plate" />
               </pattern>
+              <linearGradient id={`${u}-tg`}>
+                <stop offset="0" stop-color="rgb(95,136,184)" />
+                <stop offset="0.38" stop-color="rgb(150,157,170)" />
+                <stop offset="0.72" stop-color="rgb(196,152,104)" />
+                <stop offset="1" stop-color="rgb(206,104,58)" />
+              </linearGradient>
               <clipPath id={`${u}-raw`}><rect x="24" y="98" width="66" height="162" rx="9" /></clipPath>
               <clipPath id={`${u}-sto`}><rect x="746" y="236" width="60" height="94" rx="6" /></clipPath>
             </defs>
@@ -277,6 +285,13 @@ const TAGS = [
             <g class="m-alm" data-p="1" data-alm-ind="TT-102" transform="translate(628 63)"><path d="M-7-7h14v14h-14z" /><text y="3.5">1</text></g>
             <g class="m-alm" data-p="2" data-alm-ind="PT-201" transform="translate(818 378)"><path d="M0-8l8 14h-16z" /><text y="4.5">2</text></g>
 
+            <!-- product temperature colour key -->
+            <g class="m-key" transform="translate(24 410)">
+              <rect width="88" height="5" rx="2.5" fill={`url(#${u}-tg)`} />
+              <text x="0" y="17">4 °C</text>
+              <text x="88" y="17" class="m-e">85 °C</text>
+            </g>
+
             <!-- labels -->
             <g class="m-lbl">
               <text x="57" y="86">{t.mimic.raw}</text>
@@ -348,6 +363,16 @@ const TAGS = [
             </div>
           </div>
 
+          <div class="hs-box hs-perm" dir={dir}>
+            <p class="hs-h">{t.perm.title} <span class="hs-permst" data-v="permSt">{t.perm.blocked}</span></p>
+            <ul>
+              <li data-perm="temp"><i aria-hidden="true"></i><span data-v="permTemp">{iso(t.perm.temp.replace("{limit}", R.limit.toFixed(1)))}</span></li>
+              <li data-perm="check"><i aria-hidden="true"></i><span data-v="permCheck">{iso(t.perm.check.replace("{s}", "2"))}</span></li>
+              <li data-perm="dp"><i aria-hidden="true"></i><span>{t.perm.dp}</span></li>
+              <li data-perm="hold"><i aria-hidden="true"></i><span data-v="permHold">{iso(t.perm.hold.replace("{hold}", String(R.hold)))}</span></li>
+            </ul>
+          </div>
+
           <div class="hs-box hs-manual" data-show="manual" dir={dir}>
             <p class="hs-h">{t.controls.manualTitle}</p>
             <div class="hs-row">
@@ -388,7 +413,7 @@ const TAGS = [
         <div class="hs-trend" data-open="true">
           <div class="hs-th" dir={dir}>
             <button type="button" class="hs-tgl" aria-expanded="true" aria-controls={`${u}-trend`} data-c="trend">
-              <span>{t.trend.title}</span> <small>{t.trend.window}</small>
+              <span>{t.trend.title}</span> <small>{iso(t.trend.window)}</small>
             </button>
             <span class="hs-legend" aria-hidden="true">
               <i class="lg-pv"></i>TT-102 <i class="lg-th"></i>TT-101 <i class="lg-sp"></i>{t.trend.sp} <i class="lg-lim"></i>{t.trend.limit}
@@ -450,7 +475,7 @@ const TAGS = [
     <figcaption class="lc-hmi-foot">
       <p class="lc-hmi-cap" id={`${u}-cap`}>
         <span class="lc-hmi-isa">ISA-101</span>
-        {t.caption}
+        {iso(t.caption)}
       </p>
       <div class="lc-hmi-cta">
         <p>{t.intro.ctaQuestion}</p>
@@ -751,7 +776,7 @@ const TAGS = [
     margin: 0;
   }
   .lc-hmi-screen .hs-num,
-  .lc-hmi-screen [data-v]:not([data-v="msg"], [data-v="state"], [data-v="fdvTxt"], [data-v="outLbl"]) {
+  .lc-hmi-screen [data-v]:not([data-v="msg"], [data-v="state"], [data-v="fdvTxt"], [data-v="outLbl"], [data-v^="perm"], [data-v="cipLeft"]) {
     font-family: var(--font-mono);
     font-variant-numeric: tabular-nums;
   }
@@ -1089,7 +1114,7 @@ const TAGS = [
   }
   .hs-mimic .m-tagtx {
     font: 600 7.5px/1 var(--font-mono);
-    fill: #8a8c95;
+    fill: #6c6e77;
   }
   .hs-mimic .m-e {
     text-anchor: end;
@@ -1115,10 +1140,18 @@ const TAGS = [
   .lc-hmi-screen:lang(ar) .hs-mimic :is(.m-lbl, .m-sec) text:not(.m-tagtx, .m-holdv) {
     direction: rtl;
   }
-  .lc-hmi-screen:lang(ar) .hs-mimic .m-e {
+  .lc-hmi-screen:lang(ar) .m-lbl .m-e:not(.m-tagtx) {
     text-anchor: start;
   }
-  .lc-hmi-screen:lang(ar) .hs-mimic .m-s {
+  .lc-hmi-screen:lang(ar) .m-lbl .m-s:not(.m-tagtx) {
+    text-anchor: end;
+  }
+  .hs-mimic .m-key text {
+    font: 600 8px/1 var(--font-mono);
+    fill: #6c6e77;
+    text-anchor: start;
+  }
+  .hs-mimic .m-key .m-e {
     text-anchor: end;
   }
   .m-cipl {
@@ -1332,8 +1365,48 @@ const TAGS = [
   .lc-hmi-screen:not([data-cip="-1"]) .hs-cip {
     display: block;
   }
-  .lc-hmi-screen:not([data-cip="-1"]) .hs-recipe {
+  .lc-hmi-screen:not([data-cip="-1"]) :is(.hs-recipe, .hs-perm),
+  .lc-hmi-screen[data-mode="manual"] .hs-recipe {
     display: none;
+  }
+  .hs-perm ul {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: grid;
+    gap: 3px;
+  }
+  .hs-perm li {
+    display: flex;
+    align-items: center;
+    gap: 7px;
+    font-size: 11.5px;
+    color: var(--h-mut);
+  }
+  .hs-perm li i {
+    flex: none;
+    width: 11px;
+    height: 11px;
+    border: 1.5px solid var(--h-eq);
+    border-radius: 2px;
+  }
+  .hs-perm li[data-ok] {
+    color: var(--h-tx);
+  }
+  .hs-perm li[data-ok] i {
+    border-color: var(--h-dark);
+    background: var(--h-dark) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 12'%3E%3Cpath d='M2.5 6.2l2.2 2.2 4.8-4.9' fill='none' stroke='%23fff' stroke-width='1.8'/%3E%3C/svg%3E") center / 100% no-repeat;
+  }
+  .hs-permst {
+    padding: 1px 6px;
+    border-radius: 2px;
+    background: #dfe1e6;
+    color: var(--h-mut);
+    letter-spacing: 0.04em;
+  }
+  .hs-perm[data-ok] .hs-permst {
+    background: var(--h-dark);
+    color: #fff;
   }
   .hs-row {
     display: flex;
@@ -1809,8 +1882,33 @@ const TAGS = [
     }
   }
 
+  /* ----------------------------------------------------------------- stacked (tablet + phone) */
+  @container hmi (max-width: 860px) {
+    .lc-hmi-screen {
+      grid-template-columns: minmax(0, 1fr);
+      grid-template-areas: "bar" "mimic" "msg" "cmd" "side" "low";
+    }
+    .hs-side {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+      align-items: start;
+      border-inline-start: 0;
+      border-top: 1px solid var(--h-bd);
+    }
+    .hs-cmd {
+      border-top: 0;
+      border-bottom: 1px solid var(--h-bd);
+    }
+    .hs-low {
+      border-top: 1px solid var(--h-bd);
+    }
+    .hs-bigv {
+      font-size: 34px;
+    }
+  }
+
   /* ----------------------------------------------------------------- phone */
-  @container hmi (max-width: 700px) {
+  @container hmi (max-width: 560px) {
     .lc-hmi-dev {
       padding: 8px 8px 22px;
       border-radius: 16px;
@@ -1825,8 +1923,6 @@ const TAGS = [
       display: none;
     }
     .lc-hmi-screen {
-      grid-template-columns: minmax(0, 1fr);
-      grid-template-areas: "bar" "mimic" "msg" "cmd" "side" "low";
       font-size: 12.5px;
     }
     .hs-bar {
@@ -1846,6 +1942,7 @@ const TAGS = [
       padding: 4px 2px 0;
     }
     .m-lbl text:not(.m-fdvst),
+    .m-key,
     .m-ro,
     .m-tags,
     .m-sec,
@@ -1861,8 +1958,6 @@ const TAGS = [
       grid-template-columns: 1fr 1fr;
       gap: 8px;
       padding: 8px;
-      border-top: 0;
-      border-bottom: 1px solid var(--h-bd);
     }
     .hs-cmd .hs-seg {
       display: flex;
@@ -1879,18 +1974,18 @@ const TAGS = [
       grid-column: 1 / -1;
     }
     .hs-side {
-      border-inline-start: 0;
+      display: flex;
+      align-items: stretch;
       padding: 8px;
-    }
-    .hs-low {
-      grid-template-columns: minmax(0, 1fr);
     }
     .hs-bigv {
       font-size: 32px;
     }
+    .hs-low {
+      grid-template-columns: minmax(0, 1fr);
+    }
     .hs-trend {
       border-inline-end: 0;
-      border-top: 1px solid var(--h-bd);
       padding: 6px 8px 8px;
     }
     .lc-hmi-screen .hs-tgl {

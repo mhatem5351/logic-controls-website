@@ -32,7 +32,7 @@ for (let x = 30; x < 90; x += 5) calm += `Q${x + 2.5} ${x % 10 ? 146.5 : 139.5} 
 const hex = [0, 60, 120, 180, 240, 300].map((a) => `${f(248 + 5.5 * Math.cos((a * Math.PI) / 180))} ${f(191 + 5.5 * Math.sin((a * Math.PI) / 180))}`).join("L");
 const ta = "M150 106V52L142 44H78L72 50V66";
 const tb = "M36 66V40L28 32V24";
-const tc = "M246 104V74L258 62H334";
+const tc = "M286 79V70L298 58H334";
 const css =
   ".lca-mt .g1,.lca-mt .g2{transform-box:fill-box;transform-origin:center;animation:lca-sp 6.4s linear infinite}.lca-mt .g2{animation-duration:4s;animation-direction:reverse}" +
   ".lca-mt .wr{transform-box:view-box;transform-origin:248px 191px;animation:mtW 8s cubic-bezier(.65,0,.35,1) infinite}" +
@@ -45,7 +45,7 @@ const css =
   ".lca-mt .rf{animation:mtR 8s ease-in-out infinite}.lca-mt .cf{animation:mtC 8s ease-in-out infinite}" +
   "@keyframes mtR{0%,46.25%{opacity:1}53.75%,87.5%{opacity:0}100%{opacity:1}}@keyframes mtC{0%,46.25%{opacity:0}53.75%,87.5%{opacity:1}100%{opacity:0}}" +
   ".lca-mt .wn{animation:mtL 8s step-end infinite}@keyframes mtL{0%,6%,12%,18%,24%,30%,36%,42%{opacity:1}3%,9%,15%,21%,27%,33%,39%,45%,100%{opacity:.1}}" +
-  ".lca-mt .p.rp{animation:mtP 8s linear infinite}@keyframes mtP{0%,56.25%{stroke-dashoffset:12}66%,100%{stroke-dashoffset:-100}}" +
+  ".lca-mt .p.rp{animation:mtP 8s linear infinite}@keyframes mtP{0%,56.25%{stroke-dashoffset:14}66%,100%{stroke-dashoffset:-102}}" +
   ".lca-mt .nd.rp,.lca-mt .pg.rp{transform-box:fill-box;transform-origin:center;animation:mtQ 8s ease-out infinite}" +
   "@keyframes mtQ{0%,64.5%{opacity:0;transform:scale(1)}65%{opacity:1;transform:scale(1)}78%,100%{opacity:0;transform:scale(2.4)}}" +
   "@media (prefers-reduced-motion:reduce){.lca-mt .nl{transform:rotate(55deg)}.lca-mt .rf,.lca-mt .wn{opacity:0}}";
@@ -63,8 +63,9 @@ const css =
   <circle class="b" cx="286" cy="115" r="22"></circle>
   <path class="b" d="M210.4 159.4 270.4 99.4 301.6 130.6 241.6 190.6Z"></path>
   <path class="h" d="M246 151l40-40M252 157l40-40M240 145l40-40" style="stroke:var(--i-kl)"></path>
-  <path class="t d" d="M238 104 244 98H262L256 104Z"></path>
-  <rect class="f d" x="238" y="104" width="18" height="12"></rect>
+  <path class="t d" d="M278 82 283 77H299L294 82Z"></path>
+  <path class="s d" d="M294 82 299 77V89L294 94Z"></path>
+  <rect class="f d" x="278" y="82" width="16" height="12"></rect>
 
   <!-- gear unit -->
   <path class="t" d="M108 136 124 120H272L256 136Z"></path>
@@ -128,11 +129,11 @@ const css =
   <path class="tr" d={ta + tb + tc}></path>
   <circle class="rn" cx="150" cy="110" r="4"></circle>
   <circle class="rn" cx="28" cy="19" r="5"></circle>
-  <circle class="rn" cx="340" cy="62" r="6"></circle>
+  <circle class="rn" cx="340" cy="58" r="6"></circle>
   <path class="p" pathLength="100" d={ta} style="--t:2s"></path>
   <path class="p" pathLength="100" d={tc} style="--t:2.667s;--d:.6s"></path>
-  <circle class="nd" cx="340" cy="62" r="3" style="--t:2.667s;--d:.6s"></circle>
-  <circle class="pg" cx="340" cy="62" r="6" style="--t:2.667s;--d:.6s"></circle>
+  <circle class="nd" cx="340" cy="58" r="3" style="--t:2.667s;--d:.6s"></circle>
+  <circle class="pg" cx="340" cy="58" r="6" style="--t:2.667s;--d:.6s"></circle>
   <path class="p rp" pathLength="100" d={tb}></path>
   <circle class="nd rp" cx="28" cy="19" r="2.5"></circle>
   <circle class="pg rp" cx="28" cy="19" r="5"></circle>

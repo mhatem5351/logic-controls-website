@@ -1,0 +1,189 @@
+---
+/**
+ * Privacy notice (Egypt PDPL 151/2020). Readable legal layout: compact hero → sticky numbered TOC (desktop) /
+ * collapsible TOC (mobile) + prose column with numbered sections → closing CTA.
+ * {email} / {phone} in the copy become mailto / tel links, isolated LTR (CONTENT.md §4 Privacy).
+ */
+import BaseLayout from "~/layouts/BaseLayout.astro";
+import Hero from "~/components/Hero.astro";
+import Section from "~/components/Section.astro";
+import Breadcrumbs from "~/components/Breadcrumbs.astro";
+import CtaBand from "~/components/CtaBand.astro";
+import Icon from "~/components/Icon.astro";
+import { html, rich, ltr } from "~/components/sections/main/rich";
+import { getMessages, localeStaticPaths, type Locale } from "~/i18n";
+import { SITE } from "~/data/site";
+
+export const getStaticPaths = localeStaticPaths;
+const locale = Astro.params.lang as Locale;
+const t = getMessages(locale);
+const p = t.privacy;
+const c = t.common;
+
+const linkCls = "font-semibold text-royal-600 underline underline-offset-4 hover:text-royal-800";
+const vars = {
+  email: `<a href="mailto:${SITE.email}" class="${linkCls}">${ltr(SITE.email)}</a>`,
+  phone: `<a href="tel:${SITE.phone.tel}" class="${linkCls}">${ltr(SITE.phone.display)}</a>`,
+};
+const pad = (n: number) => String(n).padStart(2, "0");
+const sections = p.sections.map((s, i) => ({
+  id: `section-${i + 1}`,
+  n: pad(i + 1),
+  title: s.title,
+  paragraphs: (s.paragraphs as string[]).filter(Boolean).map((x) => rich(locale, x, vars)),
+  items: (s.items as string[]).filter(Boolean).map((x) => rich(locale, x, vars)),
+}));
+const tocTitle = c.labels.onThisPage;
+---
+
+<BaseLayout locale={locale} title={p.seo.title} description={p.seo.description} path="privacy" heroDark>
+  <Hero locale={locale} size="page" title={html(locale, p.h1)} lead={html(locale, p.intro[0] ?? "")} chips={[p.lastUpdated]} primary={false} secondary={false}>
+    <Breadcrumbs slot="breadcrumbs" locale={locale} items={[{ label: c.breadcrumbs.privacy }]} />
+    {p.intro.slice(1).map((para) => <p class="lc-rise mt-4 max-w-xl text-[0.9375rem] text-navy-300" style="--i:2" set:html={html(locale, para)} />)}
+  </Hero>
+
+  <Section class="lc-legal" aria-label={p.h1}>
+    <div class="grid gap-10 lg:grid-cols-12 lg:gap-14">
+      {/* ---------- table of contents ---------- */}
+      <aside class="lg:col-span-4 xl:col-span-3">
+        {/* mobile: collapsible */}
+        <details class="group border border-charcoal-200 bg-navy-50 lg:hidden">
+          <summary class="flex min-h-12 cursor-pointer list-none items-center justify-between gap-3 px-4 font-semibold text-navy-950 [&::-webkit-details-marker]:hidden">
+            <span class="flex items-center gap-3">
+              <span class="slant-bar text-royal-600" aria-hidden="true"></span>
+              {tocTitle}
+            </span>
+            <Icon name="chevron-down" size={20} class="text-royal-600 transition-transform group-open:rotate-180" />
+          </summary>
+          <nav aria-label={tocTitle} class="border-t border-charcoal-200 px-2 py-2">
+            <ol role="list">
+              {
+                sections.map((s) => (
+                  <li>
+                    <a href={`#${s.id}`} class="flex min-h-11 items-center gap-3 px-2 text-[0.9375rem] text-charcoal-700 hover:text-royal-700">
+                      <span class="w-6 shrink-0 font-mono text-xs text-royal-700 ltr" dir="ltr">{s.n}</span>
+                      <span>{s.title}</span>
+                    </a>
+                  </li>
+                ))
+              }
+            </ol>
+          </nav>
+        </details>
+
+        {/* desktop: sticky */}
+        <nav aria-label={tocTitle} class="hidden lg:sticky lg:top-[calc(var(--header-h)+2rem)] lg:block" data-toc>
+          <p class="mb-4 flex items-center gap-3 type-label text-charcoal-600">
+            <span class="slant-bar text-royal-600" aria-hidden="true"></span>
+            {tocTitle}
+          </p>
+          <ol role="list" class="border-s border-charcoal-200">
+            {
+              sections.map((s) => (
+                <li>
+                  <a
+                    href={`#${s.id}`}
+                    data-toc-link={s.id}
+                    class="lc-toc-link relative -ms-px flex min-h-9 items-baseline gap-3 border-s-2 border-transparent py-1.5 ps-4 text-sm text-charcoal-700 transition-colors hover:border-charcoal-300 hover:text-navy-950"
+                  >
+                    <span class="w-5 shrink-0 font-mono text-xs text-charcoal-600 ltr" dir="ltr">{s.n}</span>
+                    <span>{s.title}</span>
+                  </a>
+                </li>
+              ))
+            }
+          </ol>
+          <div class="mt-8 border-t border-charcoal-200 pt-6 text-sm">
+            <a href={`mailto:${SITE.email}`} class="flex min-h-10 items-center gap-3 text-charcoal-700 hover:text-royal-700">
+              <Icon name="mail" size={18} class="text-royal-600" />
+              <span class="sr-only">{c.labels.email}:</span>
+              <span class="ltr" dir="ltr">{SITE.email}</span>
+            </a>
+            <a href={`tel:${SITE.phone.tel}`} class="flex min-h-10 items-center gap-3 text-charcoal-700 hover:text-royal-700">
+              <Icon name="phone" size={18} class="text-royal-600" />
+              <span class="sr-only">{c.labels.phone}:</span>
+              <span class="ltr" dir="ltr">{SITE.phone.display}</span>
+            </a>
+          </div>
+        </nav>
+      </aside>
+
+      {/* ---------- notice ---------- */}
+      <article class="min-w-0 lg:col-span-8 xl:col-span-9">
+        <div class="max-w-(--container-prose)">
+          {
+            sections.map((s, i) => (
+              <section id={s.id} aria-labelledby={`${s.id}-title`} class:list={["scroll-mt-[calc(var(--header-h)+1.5rem)]", i > 0 && "mt-12 border-t border-charcoal-200 pt-10"]}>
+                <h2 id={`${s.id}-title`} class="flex items-center gap-4 type-h3 text-navy-950">
+                  <span
+                    class="grid h-7 min-w-9 shrink-0 place-items-center border border-royal-600/30 bg-royal-50 font-mono text-xs font-semibold text-royal-700 ltr"
+                    dir="ltr"
+                    aria-hidden="true"
+                  >
+                    {s.n}
+                  </span>
+                  <span>{s.title}</span>
+                </h2>
+                <div class="prose-lc mt-5 text-charcoal-700">
+                  {s.paragraphs.map((para) => <p set:html={para} />)}
+                  {s.items.length > 0 && (
+                    <ul role="list" class="space-y-2 [&>*+*]:mt-2">
+                      {s.items.map((item) => (
+                        <li set:html={item} />
+                      ))}
+                    </ul>
+                  )}
+                </div>
+              </section>
+            ))
+          }
+          <p class="mt-14 flex items-center gap-3 border-t border-charcoal-200 pt-6 text-sm text-charcoal-600">
+            <Icon name="calendar" size={18} class="text-royal-600" />
+            {p.lastUpdated}
+          </p>
+        </div>
+      </article>
+    </div>
+  </Section>
+
+  <CtaBand locale={locale} title={html(locale, c.ctaBand.default.title)} text={c.ctaBand.default.text} />
+</BaseLayout>
+
+<style>
+  .lc-toc-link[aria-current] {
+    border-inline-start-color: var(--color-royal-600);
+    color: var(--color-navy-950);
+    font-weight: 600;
+  }
+</style>
+
+<script>
+  // Highlight the section being read in the desktop table of contents (the last section whose top has passed
+  // 30% of the viewport; nothing while the reader is still above the first one).
+  const toc = document.querySelector<HTMLElement>("[data-toc]");
+  if (toc) {
+    const links = [...toc.querySelectorAll<HTMLAnchorElement>("[data-toc-link]")];
+    const targets = links.map((a) => document.getElementById(a.dataset.tocLink!));
+    let ticking = false;
+    const update = () => {
+      ticking = false;
+      const line = window.innerHeight * 0.3;
+      let current = -1;
+      targets.forEach((el, i) => {
+        if (el && el.getBoundingClientRect().top <= line) current = i;
+      });
+      links.forEach((a, i) => (i === current ? a.setAttribute("aria-current", "location") : a.removeAttribute("aria-current")));
+    };
+    window.addEventListener(
+      "scroll",
+      () => {
+        if (!ticking) {
+          ticking = true;
+          requestAnimationFrame(update);
+        }
+      },
+      { passive: true },
+    );
+    update();
+  }
+</script>

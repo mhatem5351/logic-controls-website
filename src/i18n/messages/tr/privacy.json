@@ -33,7 +33,7 @@
     {
       "title": "Teknik veriler",
       "paragraphs": [
-        "Formu spam'e karşı korumak için Cloudflare Turnstile, formu bir kişinin gönderdiğini doğrulamak amacıyla tarayıcınızdan IP adresiniz ve tarayıcı özellikleri gibi teknik bilgileri işler.",
+        "Formu spama karşı korumak için Cloudflare Turnstile, formu bir kişinin gönderdiğini doğrulamak amacıyla tarayıcınızdan IP adresiniz ve tarayıcı özellikleri gibi teknik bilgileri işler.",
         "Ziyaretleri Cloudflare Web Analytics ile ölçüyoruz. Bu araç çerez kullanmaz ve ziyaretçilerin tek tek profilini oluşturmaz. Biz yalnızca sayfa görüntüleme sayısı gibi toplam rakamları görürüz."
       ],
       "items": []
@@ -43,7 +43,7 @@
       "paragraphs": [],
       "items": [
         "Talebinize yanıt vermek, teklif hazırlamak ve projenizi takip etmek için",
-        "Bu web sitesini ve formu spam'e ve kötüye kullanıma karşı korumak için",
+        "Bu web sitesini ve formu spama ve kötüye kullanıma karşı korumak için",
         "Ziyaretçilerin hangi sayfaları kullandığını toplam rakamlar üzerinden anlamak için"
       ]
     },
@@ -110,7 +110,7 @@
     {
       "title": "Güvenlik",
       "paragraphs": [
-        "Web sitesi şifreli bağlantı (HTTPS) kullanır. Teklif taleplerine erişim yalnızca bunlara ihtiyaç duyan çalışanlarla sınırlıdır ve form otomatik spam'e karşı korunur."
+        "Web sitesi şifreli bağlantı (HTTPS) kullanır. Teklif taleplerine erişim yalnızca bunlara ihtiyaç duyan çalışanlarla sınırlıdır ve form otomatik spama karşı korunur."
       ],
       "items": []
     },

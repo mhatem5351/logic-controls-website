@@ -13,14 +13,14 @@
   "items": {
     "food-beverage": {
       "title": "Food, beverage and dairy",
-      "navTitle": "Food and dairy",
-      "summary": "Pasteurizers with CIP, cheese cookers, sterilization autoclaves and plant utilities, controlled for food safety and consistent quality.",
-      "seoTitle": "Food & Dairy Automation in Egypt | Logic Controls",
-      "seoDescription": "PLC control for pasteurizers, CIP, cheese cookers, autoclaves and food-plant utilities in Egypt. Temperature control, interlocks, recipes, data logging.",
+      "navTitle": "Food and beverage",
+      "summary": "Pasteurizers with CIP, cheese cookers, sterilization autoclaves, beverage syrup mixing and plant utilities, controlled for food safety and consistent quality.",
+      "seoTitle": "Food & Beverage Automation in Egypt | Logic Controls",
+      "seoDescription": "PLC control for pasteurizers, CIP, cheese cookers, autoclaves, syrup mixing and food-plant utilities in Egypt. Temperature control, interlocks, recipes.",
       "h1": "Automation for food, beverage and dairy plants",
       "intro": [
         "Food safety depends on control: the right temperature for the right time, in every batch. Our food and dairy systems hold process setpoints, hold back unsafe product and keep records your quality team can use.",
-        "We have delivered control systems for two pasteurizers, a cheese cooker and an olive sterilization autoclave, and commissioned a waste treatment system at a food and beverage plant."
+        "We have delivered control systems for two pasteurizers, a cheese cooker, an olive sterilization autoclave and a beverage syrup mixing system, and commissioned a waste treatment system at a food and beverage plant. Our engineers' wider experience includes chocolate cookers, bakery lines, edible-oil and liquid-egg fillers and ultrafiltration."
       ],
       "needs": [
         {
@@ -43,8 +43,12 @@
       "applications": [
         "Milk pasteurizers with plate heat exchangers",
         "CIP (cleaning-in-place) sequences",
+        "Beverage syrup preparation and jet mixing tanks",
         "Cheese cookers with step recipes",
+        "Chocolate cookers and bakery lines",
         "Autoclave and retort sterilization",
+        "Ultrafiltration systems",
+        "Edible-oil and liquid-egg fillers",
         "Filling and packaging machines",
         "Plant utilities such as waste and wastewater treatment"
       ],
@@ -72,7 +76,7 @@
       "h1": "Automation for pharmaceutical production",
       "intro": [
         "Pharma production needs repeatable processes and documentation. We build control systems with formulation recipes, user access and alarm history, so every batch runs the same way and leaves a record.",
-        "Our pharma work includes a tablet coating machine on a Siemens S7-1200 PLC with WinCC Professional SCADA, and a motion-control retrofit of a printing machine for pharmaceutical and cosmetic bottles."
+        "Our pharma work includes a tablet coating machine on a Siemens S7-1200 PLC with WinCC Professional SCADA, and a motion-control retrofit of a printing machine for pharmaceutical and cosmetic bottles. Our engineers' experience also includes ampoule filling, environmental monitoring for sterile areas and purified-water systems in a GMP environment."
       ],
       "needs": [
         {
@@ -94,7 +98,10 @@
       ],
       "applications": [
         "Tablet film-coating machines",
+        "Ampoule filling machines",
         "Air handling, blowers and exhaust fans on VFDs",
+        "Environmental monitoring (EMS) for sterile production areas",
+        "Purified-water utility systems",
         "Bottle printing and labeling machines",
         "Liquid filling machines",
         "Process skids with temperature and pressure control"
@@ -123,7 +130,7 @@
       "h1": "Automation for cosmetics and personal-care lines",
       "intro": [
         "Cosmetics plants run many products and bottle sizes on the same machines. Fill volume, speed and changeover time decide output and waste. We build controls that keep fills accurate and turn a changeover into a few settings on the HMI.",
-        "We have automated two shampoo filling machines, one on an LS Electric PLC and one on a Delta PLC, both with Wecon HMIs, and upgraded a bottle printing machine with motion control."
+        "We have automated two shampoo filling machines, one on an LS Electric PLC and one on a Delta PLC, both with Wecon HMIs, and upgraded a bottle printing machine with motion control. Our engineers have also worked on wax filling and capping machines."
       ],
       "needs": [
         {
@@ -145,6 +152,7 @@
       ],
       "applications": [
         "Multi-nozzle piston filling machines",
+        "Wax filling and capping machines",
         "Bottle printing machines",
         "Labeling machines",
         "Conveyors and bottle handling"

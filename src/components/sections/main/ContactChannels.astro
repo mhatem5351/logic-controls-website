@@ -1,0 +1,124 @@
+---
+/**
+ * Contact sidebar: alternative channels (WhatsApp first on ar/en/tr — "send drawings on WhatsApp";
+ * email first on zh, where WhatsApp is blocked and offered only to visitors already in Egypt), phone, and the
+ * address card with a self-drawn map + "Open in maps" (OpenStreetMap link, no embed, no third-party request).
+ */
+import { getMessages, type Locale } from "~/i18n";
+import { SITE } from "~/data/site";
+import Icon from "~/components/Icon.astro";
+import Button from "~/components/Button.astro";
+import ZoneMap from "./ZoneMap.astro";
+import { whatsappLink, mailtoLink, prefersEmail } from "~/components/nav";
+
+interface Props {
+  locale: Locale;
+  class?: string;
+}
+const { locale, class: className } = Astro.props;
+const t = getMessages(locale);
+const ch = t.contact.channels;
+const email = prefersEmail(locale);
+const osm = `https://www.openstreetmap.org/?mlat=${SITE.geo.lat}&mlon=${SITE.geo.lng}#map=12/${SITE.geo.lat}/${SITE.geo.lng}`;
+const rowCls = "group relative flex items-start gap-4 border-b border-charcoal-200 py-4 last:border-b-0";
+const iconCls = "grid size-10 shrink-0 place-items-center border border-charcoal-200 bg-white text-royal-600 transition-colors group-hover:border-royal-600";
+---
+
+<div class:list={["space-y-6", className]}>
+  {/* primary alternative: WhatsApp drawings (email on zh) */}
+  {
+    email ? (
+      <div class="on-dark chamfer-lg relative isolate overflow-hidden bg-navy-950 p-6 text-navy-100 sm:p-7">
+        <div aria-hidden="true" class="pointer-events-none absolute inset-0 -z-10 bg-blueprint mask-fade-edges" />
+        <p class="flex items-center gap-3 type-label text-navy-200">
+          <Icon name="mail" size={18} class="text-royal-300" />
+          {ch.email.label}
+        </p>
+        <p class="mt-3 text-navy-100">{ch.email.text}</p>
+        <a href={mailtoLink(t.ui.email.subject)} class="mt-4 inline-flex min-h-11 items-center text-lg font-bold text-white underline decoration-royal-400 underline-offset-4 hover:decoration-white">
+          <span class="ltr" dir="ltr">{SITE.email}</span>
+        </a>
+      </div>
+    ) : (
+      <div class="on-dark chamfer-lg relative isolate overflow-hidden bg-navy-950 p-6 text-navy-100 sm:p-7">
+        <div aria-hidden="true" class="pointer-events-none absolute inset-0 -z-10 bg-blueprint mask-fade-edges" />
+        <div aria-hidden="true" class="pointer-events-none absolute inset-0 -z-20 bg-[radial-gradient(ellipse_70%_80%_at_100%_0%,rgb(18_140_74/0.28),transparent_70%)] rtl:bg-[radial-gradient(ellipse_70%_80%_at_0%_0%,rgb(18_140_74/0.28),transparent_70%)]" />
+        <p class="flex items-center gap-3 type-label text-navy-200">
+          <Icon name="whatsapp" size={18} class="text-[#25d366]" />
+          {ch.whatsapp.label}
+        </p>
+        <p class="mt-3 font-semibold text-white">{t.contact.form.whatsappHint.text}</p>
+        <Button href={whatsappLink(t.common.whatsapp.drawings)} variant="on-dark" icon="whatsapp" iconClass="text-[#25d366]" external block class="mt-5">
+          {t.contact.form.whatsappHint.cta}
+        </Button>
+        <p class="mt-3 text-sm text-navy-300">{ch.whatsapp.text}</p>
+      </div>
+    )
+  }
+
+  <div class="border border-charcoal-200 bg-white px-5 sm:px-6">
+    <h2 class="border-b border-charcoal-200 py-4 type-label text-charcoal-600">{ch.title}</h2>
+    <ul role="list">
+      <li class={rowCls}>
+        <span class={iconCls}><Icon name="phone" size={20} /></span>
+        <div class="min-w-0">
+          <a href={`tel:${SITE.phone.tel}`} class="font-bold text-navy-950 after:absolute after:inset-0 after:content-[''] hover:text-royal-700">
+            <span class="sr-only">{ch.phone.label}: </span><span class="ltr" dir="ltr">{SITE.phone.display}</span>
+          </a>
+          <p class="mt-0.5 text-sm text-charcoal-600">{ch.phone.text}</p>
+        </div>
+      </li>
+      {
+        !email && (
+          <li class={rowCls}>
+            <span class={iconCls}><Icon name="mail" size={20} /></span>
+            <div class="min-w-0">
+              <a href={mailtoLink(t.ui.email.subject)} class="font-bold break-all text-navy-950 after:absolute after:inset-0 after:content-[''] hover:text-royal-700">
+                <span class="sr-only">{ch.email.label}: </span><span class="ltr" dir="ltr">{SITE.email}</span>
+              </a>
+              <p class="mt-0.5 text-sm text-charcoal-600">{ch.email.text}</p>
+            </div>
+          </li>
+        )
+      }
+      {
+        email && (
+          <li class={rowCls}>
+            <span class={iconCls}><Icon name="whatsapp" size={20} class="text-[#128c4a]" /></span>
+            <div class="min-w-0">
+              <a href={whatsappLink(t.common.whatsapp.quote)} target="_blank" rel="noopener" class="font-bold text-navy-950 after:absolute after:inset-0 after:content-[''] hover:text-royal-700">
+                {t.ui.cta.inEgyptWhatsapp}
+                <span class="sr-only"> ({t.ui.a11y.newTab})</span>
+              </a>
+              <p class="mt-0.5 text-sm text-charcoal-600">{ch.whatsapp.text}</p>
+            </div>
+          </li>
+        )
+      }
+    </ul>
+  </div>
+
+  {/* address + map */}
+  <div class="border border-charcoal-200 bg-white">
+    <div class="on-dark relative isolate overflow-hidden bg-navy-950 p-3">
+      <div aria-hidden="true" class="pointer-events-none absolute inset-0 -z-10 bg-blueprint opacity-60" />
+      <ZoneMap only="home" />
+    </div>
+    <div class="flex items-start gap-4 p-5 sm:p-6">
+      <span class="grid size-10 shrink-0 place-items-center bg-signal-400 text-navy-950"><Icon name="map-pin" size={20} /></span>
+      <div class="min-w-0 flex-1">
+        <h2 class="type-label text-charcoal-600">{ch.location.label}</h2>
+        <address class="mt-1 not-italic">
+          <span class="block font-bold text-navy-950">{SITE.name}</span>
+          <span class="block text-charcoal-700">{ch.location.text}</span>
+        </address>
+        <p class="mt-1 text-sm text-charcoal-600">{ch.location.note}</p>
+        <a href={osm} target="_blank" rel="noopener" class="mt-3 inline-flex min-h-10 items-center gap-2 text-sm font-bold text-royal-600 hover:text-royal-800 hover:underline">
+          {t.common.labels.openInMaps}
+          <Icon name="external" size={16} />
+          <span class="sr-only">({t.ui.a11y.newTab})</span>
+        </a>
+      </div>
+    </div>
+  </div>
+</div>

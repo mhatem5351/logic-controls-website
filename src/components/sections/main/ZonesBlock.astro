@@ -1,0 +1,96 @@
+---
+/**
+ * "Where we work": schematic zone map (navy panel) + the zone list grouped by region, numbered like the pins.
+ * Hovering / focusing a list item lights its pin. Content: common.zones + ZONES.
+ * Put a <SectionHeading> before it (the block itself has no heading).
+ */
+import { getMessages, type Locale } from "~/i18n";
+import { ZONES, type ZoneRegion } from "~/data/zones";
+import Icon from "~/components/Icon.astro";
+import ZoneMap from "./ZoneMap.astro";
+import { colon } from "./rich";
+
+interface Props {
+  locale: Locale;
+  /** Heading level for the region names. */
+  headingLevel?: "h3" | "h4";
+  /** Show common.zones.note under the list. */
+  note?: boolean;
+  class?: string;
+}
+const { locale, headingLevel: H = "h3", note = true, class: className } = Astro.props;
+const t = getMessages(locale).common.zones;
+const regions = [...new Set(ZONES.map((z) => z.region))] as ZoneRegion[];
+const numbered = ZONES.map((z, i) => ({ ...z, n: i + 1 }));
+---
+
+<div class:list={["lc-zones grid items-start gap-10 lg:grid-cols-12 lg:gap-12", className]} data-zones>
+  <div class="on-dark chamfer-lg relative isolate overflow-hidden bg-navy-950 p-4 sm:p-6 lg:sticky lg:top-[calc(var(--header-h)+1.5rem)] lg:col-span-7">
+    <div aria-hidden="true" class="pointer-events-none absolute inset-0 -z-10 bg-blueprint opacity-70"></div>
+    <ZoneMap />
+    <p class="mt-2 flex items-center gap-2 px-1 text-xs text-navy-200">
+      <span class="lc-led" aria-hidden="true"></span>{t.homeBase}{colon(locale)}{t.items["6th-of-october"].name}
+    </p>
+  </div>
+
+  <div class="lg:col-span-5">
+    <div class="grid gap-7 sm:grid-cols-2 lg:grid-cols-1">
+      {
+        regions.map((r) => (
+          <div>
+            <H class="mb-2 flex items-center gap-2 type-label text-charcoal-600">
+              <span class="slant-bar text-royal-600" aria-hidden="true" />
+              {t.regions[r]}
+            </H>
+            <ul role="list" class="divide-y divide-charcoal-200 border-y border-charcoal-200">
+              {numbered
+                .filter((z) => z.region === r)
+                .map((z) => (
+                  <li class="lc-zone-item flex items-center gap-3 py-2.5" data-zone={z.slug}>
+                    <span
+                      aria-hidden="true"
+                      class:list={[
+                        "grid size-6 shrink-0 place-items-center rounded-full font-mono text-[0.6875rem] font-bold ltr",
+                        z.home ? "bg-signal-400 text-navy-950" : "border border-royal-600/40 bg-royal-50 text-royal-700",
+                      ]}
+                      dir="ltr"
+                    >
+                      {z.n}
+                    </span>
+                    <span class="min-w-0 flex-1">
+                      <span class="block font-semibold text-navy-950">{t.items[z.slug].name}</span>
+                      <span class="block text-sm text-charcoal-600">{t.items[z.slug].governorate}</span>
+                    </span>
+                    {z.home && (
+                      <span class="inline-flex shrink-0 items-center gap-1.5 rounded-xs border border-signal-600/30 bg-signal-50 px-2 py-0.5 text-xs font-semibold text-signal-800">
+                        <Icon name="map-pin" size={13} />
+                        {t.homeBase}
+                      </span>
+                    )}
+                    {z.sczone && (
+                      <span class="shrink-0 rounded-xs border border-charcoal-200 bg-charcoal-50 px-2 py-0.5 font-mono text-[0.6875rem] tracking-wider text-charcoal-700 ltr" lang="en" dir="ltr">
+                        {t.sczone}
+                      </span>
+                    )}
+                  </li>
+                ))}
+            </ul>
+          </div>
+        ))
+      }
+    </div>
+    {note && <p class="mt-6 flex gap-2.5 text-sm text-charcoal-600"><Icon name="map-pin" size={18} class="mt-0.5 text-royal-600" />{t.note}</p>}
+  </div>
+</div>
+
+<script>
+  // Light the matching pin while a zone in the list is hovered.
+  for (const root of document.querySelectorAll<HTMLElement>("[data-zones]")) {
+    const set = (slug?: string) =>
+      root.querySelectorAll<SVGGElement>(".lc-map-pin").forEach((p) => p.toggleAttribute("data-active", p.dataset.zone === slug));
+    root.querySelectorAll<HTMLElement>(".lc-zone-item").forEach((li) => {
+      li.addEventListener("pointerenter", () => set(li.dataset.zone));
+      li.addEventListener("pointerleave", () => set());
+    });
+  }
+</script>

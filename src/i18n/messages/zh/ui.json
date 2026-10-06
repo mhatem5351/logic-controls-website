@@ -13,13 +13,13 @@
       "controlPanels": "电气控制柜",
       "plcHmi": "PLC 与 HMI 编程",
       "machineAutomation": "设备自动化",
-      "commissioning": "调试与技术支持"
+      "commissioning": "测试与调试"
     },
     "industriesList": {
       "foodBeverage": "食品饮料",
       "pharma": "制药",
-      "cosmetics": "化妆品与灌装",
-      "packaging": "包装"
+      "cosmetics": "化妆品",
+      "packaging": "包装与贴标"
     }
   },
   "cta": {
@@ -47,7 +47,7 @@
   },
   "whatsapp": {
     "fabLabel": "通过 WhatsApp 联系工程师",
-    "message": "Logic Controls 您好，我想就一个自动化项目与工程师沟通。"
+    "message": "您好，Logic Controls。我想就一个自动化项目与工程师沟通。\nHello Logic Controls, I would like to talk to an engineer about an automation project."
   },
   "email": {
     "fabLabel": "邮件联系工程师",

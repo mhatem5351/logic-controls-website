@@ -33,7 +33,7 @@ const pulse = (n: string, a: number, b: number) => {
   const [a0, a1, b0, b1] = [s(a) + 1, s(a) + 1.6, s(b) + 1, s(b) + 1.6].map(pc);
   const [ha, hb] = [s(a) + 1 + 0.6 * (100 / 112), s(b) + 1 + 0.6 * (100 / 112)];
   return (
-    `.lca-tc .p.${n}{animation:tcP${n} 8s linear infinite}@keyframes tcP${n}{0%,${a0}{stroke-dashoffset:12}${a1}{stroke-dashoffset:-100}${pc(s(a) + 1.61)},${b0}{stroke-dashoffset:12}${b1},100%{stroke-dashoffset:-100}}` +
+    `.lca-tc .p.${n}{animation:tcP${n} 8s linear infinite}@keyframes tcP${n}{0%,${a0}{stroke-dashoffset:14}${a1}{stroke-dashoffset:-102}${pc(s(a) + 1.61)},${b0}{stroke-dashoffset:14}${b1},100%{stroke-dashoffset:-102}}` +
     `.lca-tc .nd.${n},.lca-tc .pg.${n}{animation:tcR${n} 8s ease-out infinite}@keyframes tcR${n}{0%,${pc(ha - 0.05)}{opacity:0;transform:scale(1)}${pc(ha)}{opacity:1;transform:scale(1)}${pc(ha + 0.9)},${pc(hb - 0.05)}{opacity:0;transform:scale(2.4)}${pc(hb - 0.04)}{opacity:0;transform:scale(1)}${pc(hb)}{opacity:1;transform:scale(1)}${pc(hb + 0.9)},100%{opacity:0;transform:scale(2.4)}}`
   );
 };

@@ -21,7 +21,7 @@
     "items": [
       {
         "title": "Sahada mühendisler",
-        "text": "İthal hatlar ilk çalıştırma sırasında ve sonrasında sahada insan gerektirir. Mühendislerimiz Mısır'da yerleşik ve tesisinize gelir."
+        "text": "İthal hatlar ilk çalıştırma sırasında ve sonrasında sahada personel gerektirir. Mühendislerimiz Mısır'da yerleşik ve tesisinize gelir."
       },
       {
         "title": "Tedarikçinin yöntemiyle devreye alma",
@@ -33,7 +33,7 @@
       },
       {
         "title": "Temin edilebilen yedek parçalar",
-        "text": "Kritik yedek parça listesi ve yerel tedarik; böylece arızalanan tek bir parça, ithalatı beklerken hattınızı durdurmaz."
+        "text": "Kritik yedek parça listesi ve yerel tedarik; böylece ithal parçayı beklerken tek bir arızalı parça yüzünden hattınız durmaz."
       },
       {
         "title": "Ekiplerinizin okuyabileceği dokümanlar",
@@ -43,14 +43,18 @@
         "title": "Tedarikçi ayrıldıktan sonra destek",
         "text": "Tedarikçinin mühendisleri ülkelerine döndükten sonra arıza giderme, program değişiklikleri ve önleyici bakım."
       }
-    ]
+    ],
+    "columns": {
+      "need": "Tesisin ihtiyacı",
+      "answer": "Bu açığı nasıl kapatıyoruz"
+    }
   },
   "services": {
     "title": "Yeni fabrikalar için neler yapıyoruz",
     "items": [
       {
         "title": "İthal hatların devreye alınması",
-        "text": "Enerji verme, I/O ve loop testleri, kilitleme testleri, ilk çalıştırma ve ayarlar; tedarikçinin mühendisleriyle birlikte veya onlar adına."
+        "text": "Enerji verme, I/O ve loop testleri, kilitleme testleri, ilk çalıştırma ve ince ayar; tedarikçinin mühendisleriyle birlikte veya onlar adına."
       },
       {
         "title": "I/O ve loop testleri",
@@ -58,7 +62,7 @@
       },
       {
         "title": "FAT ve SAT desteği",
-        "text": "Fabrika kabul testi prosedürünü ve sonuçlarını inceliyor, saha kabul testini ekibinizle birlikte yürütüyor veya teste tanıklık ediyoruz."
+        "text": "Fabrika kabul testi prosedürünü ve sonuçlarını inceliyor, saha kabul testini ekibinizle birlikte yürütüyor veya teste şahitlik ediyoruz."
       },
       {
         "title": "HMI ekranlarının Arapçaya uyarlanması",
@@ -100,7 +104,7 @@
       },
       {
         "title": "Devreye alma ve SAT",
-        "text": "Tedarikçiyle birlikte I/O ve loop testleri, ilk çalıştırma, ayarlar ve saha kabul testi."
+        "text": "Tedarikçiyle birlikte I/O ve loop testleri, ilk çalıştırma, ince ayar ve saha kabul testi."
       },
       {
         "title": "Üretim ve destek",
@@ -111,7 +115,7 @@
   "standards": {
     "title": "Standartlar ve dokümantasyon",
     "paragraphs": [
-      "Otomasyon panolarımız ve makine elektrik işlerimiz, IEC 60204-1 (makinelerin elektrik donanımı) ve IEC 61439 (alçak gerilim anahtarlama ve kontrol düzeni panoları) uygulamaları esas alınarak tasarlanır.",
+      "Otomasyon panolarımız ve makine elektrik işlerimiz, IEC 60204-1 (makinelerin elektrik donanımı) ve IEC 61439 (alçak gerilim şalt ve kumanda panoları) uygulamaları esas alınarak tasarlanır.",
       "Her proje belgelenir: elektrik şemaları, I/O listesi, malzeme listesi, test kayıtları ve as-built çizimler. CE işaretlemesi veya UL listelemesi yapmıyoruz. Makineleriniz veya ürünleriniz bunları gerektiriyorsa, belgelendirme kuruluşunuzun istediği elektrik dokümantasyonunu sağlıyoruz."
     ],
     "items": [
@@ -125,13 +129,19 @@
     "title": "İthal hatlara uygun deneyim",
     "paragraphs": [
       "Çin menşeli bir PLC ve HMI markası olan Wecon ile her gün çalışıyoruz. Çin'de üretilen makinelerde yaygın bir kombinasyon olan Siemens S7-200 SMART PLC ve MCGS HMI ile kurulmuş bir sistemi de devreye aldık.",
-      "Siemens, Schneider Electric, Delta, LS Electric ve Wecon'u programlıyor ve entegre ediyoruz; Mısır'daki gıda, süt ürünleri, ilaç, kozmetik, ambalaj ve diğer tesislerde 50'den fazla proje tamamladık."
+      "Siemens, Schneider Electric, Delta, LS Electric ve Wecon platformlarını programlıyor ve entegre ediyoruz; Mısır'daki gıda, süt ürünleri, ilaç, kozmetik, ambalaj ve diğer tesislerde 50'den fazla proje tamamladık."
     ],
     "cta": "Devreye alma projesini inceleyin"
   },
   "languages": {
     "title": "Çok dilli çalışma",
-    "text": "Mühendislerimiz Arapça ve İngilizce çalışır. Bize bu sitenin Çince veya Türkçe sayfaları üzerinden ulaşabilirsiniz. Teknik çalışmalar İngilizce yürütülür, operatör materyalleri Arapçadır; temel dokümanların Çince veya Türkçe versiyonları talep halinde sağlanır."
+    "text": "Mühendislerimiz Arapça ve İngilizce çalışır. Bize bu sitenin Çince veya Türkçe sayfaları üzerinden ulaşabilirsiniz. Teknik çalışmalar İngilizce yürütülür, operatör materyalleri Arapçadır; temel dokümanların Çince veya Türkçe versiyonları talep halinde sağlanır.",
+    "roles": {
+      "ar": "Operatörler için: HMI ekranları, kılavuzlar ve eğitim",
+      "en": "Mühendislik, yönetim ve teknik dokümanlar",
+      "zh": "Temel dokümanlar talep üzerine",
+      "tr": "Temel dokümanlar talep üzerine"
+    }
   },
   "faq": {
     "title": "Mısır'da fabrika kuran üreticilerin soruları",
@@ -169,5 +179,12 @@
         "a": "Hayır. Otomasyona odaklanan bir mühendislik şirketiyiz. Yatırım işlemleri için Mısır Yatırım ve Serbest Bölgeler Genel Kurumu (GAFI), SCZONE tek durak ofisi veya bir hukuk danışmanıyla görüşün."
       }
     ]
+  },
+  "eyebrows": {
+    "needs": "İhtiyaçlar",
+    "timeline": "Zamanlama",
+    "standards": "Dokümantasyon",
+    "proof": "Deneyim",
+    "languages": "Diller"
   }
 }

@@ -11,15 +11,15 @@
     "privacy": "Privacy",
     "servicesList": {
       "controlPanels": "Control panels",
-      "plcHmi": "PLC & HMI programming",
+      "plcHmi": "PLC and HMI programming",
       "machineAutomation": "Machine automation",
-      "commissioning": "Commissioning & support"
+      "commissioning": "Testing and commissioning"
     },
     "industriesList": {
-      "foodBeverage": "Food & beverage",
+      "foodBeverage": "Food and beverage",
       "pharma": "Pharmaceutical",
-      "cosmetics": "Cosmetics & filling",
-      "packaging": "Packaging"
+      "cosmetics": "Cosmetics",
+      "packaging": "Packaging and labeling"
     }
   },
   "cta": {

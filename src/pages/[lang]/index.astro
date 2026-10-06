@@ -1,73 +1,448 @@
 ---
-// TEMPORARY home page — proves BaseLayout + Hero in every locale. Real copy/sections come after copywriting.
+/**
+ * Home — dual-path entry (factories in Egypt / setting up in Egypt). Section order: src/i18n/CONTENT.md §4.
+ * Hero → platforms → two doors → services → featured projects → live HMI demo → industries → why us →
+ * how we work → foreign-manufacturers band → zones → FAQ → closing CTA with the quote checklist.
+ */
+import { Picture } from "astro:assets";
 import BaseLayout from "~/layouts/BaseLayout.astro";
 import Hero from "~/components/Hero.astro";
 import Section from "~/components/Section.astro";
+import SectionHeading from "~/components/SectionHeading.astro";
 import LogoWall from "~/components/LogoWall.astro";
-import CtaBand from "~/components/CtaBand.astro";
-import { getMessages, localeStaticPaths, type Locale } from "~/i18n";
+import Card from "~/components/Card.astro";
+import Button from "~/components/Button.astro";
+import Icon, { type IconName } from "~/components/Icon.astro";
+import ProcessSteps from "~/components/ProcessSteps.astro";
+import FAQ from "~/components/FAQ.astro";
+import HmiDemo from "~/components/motion/HmiDemo.astro";
+import ServiceArt from "~/components/illustrations/ServiceArt.astro";
+import IndustryArt from "~/components/illustrations/IndustryArt.astro";
+import AudienceDoors from "~/components/sections/main/AudienceDoors.astro";
+import ZonesBlock from "~/components/sections/main/ZonesBlock.astro";
+import QuoteCta from "~/components/sections/main/QuoteCta.astro";
+import { html, emphasize } from "~/components/sections/main/rich";
+import { getMessages, localeStaticPaths, LOCALES, LOCALE_META, type Locale } from "~/i18n";
 import { SITE } from "~/data/site";
+import { STATS } from "~/data/stats";
+import { SERVICE_SLUGS } from "~/data/services";
+import { INDUSTRY_SLUGS } from "~/data/industries";
+import { PROJECTS, featuredProjects } from "~/data/projects";
+import { href, FOREIGN_PATH, whatsappLink, prefersEmail } from "~/components/nav";
+import arabicHmi from "~/assets/projects/shampoo-filling-delta-wecon/hmi-arabic.jpg";
 
 export const getStaticPaths = localeStaticPaths;
 const locale = Astro.params.lang as Locale;
 const t = getMessages(locale);
+const h = t.home;
+const c = t.common;
+const email = prefersEmail(locale);
+/** zh/tr visitors are mostly investors: lead with the "setting up in Egypt" door. */
+const investorFirst = locale === "zh" || locale === "tr";
 
-const COPY: Record<Locale, { title: string; lead: string; proof: [string, string, string]; cta: string }> = {
-  en: {
-    title: "PLC control panels &amp; <em>machine automation</em> for factories in Egypt",
-    lead: "Designed, built, programmed and commissioned by our own engineers — for filling, food &amp; beverage, pharma and cosmetics lines.",
-    proof: ["years of experience", "automation projects", "core industries"],
-    cta: "Tell us about your machine — an engineer replies the same working day.",
-  },
-  ar: {
-    title: "لوحات تحكم PLC وأنظمة <em>أتمتة الماكينات</em> للمصانع في مصر",
-    lead: "تصميم وتصنيع وبرمجة وتشغيل بأيدي مهندسينا — لخطوط التعبئة والأغذية والمشروبات والأدوية ومستحضرات التجميل.",
-    proof: ["سنوات من الخبرة", "مشروع أتمتة", "قطاعات رئيسية"],
-    cta: "أخبرنا عن ماكينتك — يرد عليك مهندس في يوم العمل نفسه.",
-  },
-  zh: {
-    title: "您在埃及的<em>本地自动化</em>与控制合作伙伴",
-    lead: "PLC 电气控制柜设计制造、编程、现场调试与售后支持——由我们自己的工程师团队完成。",
-    proof: ["年行业经验", "自动化项目", "核心行业"],
-    cta: "告诉我们您的设备情况——工程师将在同一工作日内回复。",
-  },
-  tr: {
-    title: "Mısır'daki yerel <em>otomasyon</em> ve kontrol ortağınız",
-    lead: "PLC kontrol panoları, makine otomasyonu, devreye alma ve satış sonrası destek — kendi mühendislerimiz tarafından.",
-    proof: ["yıllık deneyim", "otomasyon projesi", "ana sektör"],
-    cta: "Makinenizi anlatın — bir mühendisimiz aynı iş günü içinde size yanıt verir.",
-  },
+const EMPHASIS: Record<Locale, string> = {
+  en: "machine automation",
+  ar: "أتمتة ماكينات",
+  zh: "设备自动化",
+  tr: "makine otomasyonu",
 };
-const c = COPY[locale];
-const poster = { href: "/media/hero-filling-poster.webp", srcset: "/media/hero-filling-poster-640.webp 640w, /media/hero-filling-poster.webp 1280w", sizes: "(min-width: 1024px) 56vw, 100vw" };
-const org = {
+const heroTitle = emphasize(html(locale, h.hero.title), EMPHASIS[locale]);
+const statLabel = (key: (typeof STATS)[number]["key"]) => c.stats[key].label;
+const heroProof = STATS.map((s) => ({ value: s.value, label: statLabel(s.key) }));
+
+const projects = featuredProjects();
+const projectCount = PROJECTS.length;
+
+const whyIcons: IconName[] = ["users", "layers", "hmi", "shield"];
+const processIcons: IconName[] = ["map-pin", "file", "panel", "check", "gauge", "users"];
+
+const poster = {
+  href: "/media/hero-filling-poster.webp",
+  srcset: "/media/hero-filling-poster-640.webp 640w, /media/hero-filling-poster.webp 1280w",
+  sizes: "(min-width: 1024px) 56vw, 100vw",
+};
+
+/* ---------- structured data: Organization + LocalBusiness (ProfessionalService) + WebSite ---------- */
+const orgId = `${SITE.url}/#organization`;
+const address = {
+  "@type": "PostalAddress",
+  addressLocality: SITE.address.locality,
+  addressRegion: SITE.address.region,
+  addressCountry: SITE.address.country,
+};
+const areaServed = { "@type": "Country", name: "Egypt" };
+const founder = { "@type": "Person", name: "Mohammed Tarek Aboalsafa", jobTitle: "Founder & Automation Engineer" };
+const alternateName = ["Logic Controls Egypt", "لوجيك كنترولز"];
+const jsonLd = {
   "@context": "https://schema.org",
-  "@type": "Organization",
-  name: SITE.name,
-  url: SITE.url,
-  logo: `${SITE.url}/icon-512.png`,
-  email: SITE.email,
-  telephone: SITE.phone.tel,
-  sameAs: [SITE.facebook],
+  "@graph": [
+    {
+      "@type": "Organization",
+      "@id": orgId,
+      name: SITE.name,
+      alternateName,
+      url: SITE.url,
+      logo: { "@type": "ImageObject", url: `${SITE.url}/icon-512.png`, width: 512, height: 512 },
+      image: `${SITE.url}/og-default.png`,
+      description: t.seo.organizationDescription,
+      email: SITE.email,
+      telephone: SITE.phone.tel,
+      founder,
+      address,
+      areaServed,
+      sameAs: [SITE.facebook],
+      contactPoint: {
+        "@type": "ContactPoint",
+        contactType: "sales",
+        telephone: SITE.phone.tel,
+        email: SITE.email,
+        areaServed: "EG",
+        availableLanguage: ["Arabic", "English"],
+      },
+    },
+    {
+      "@type": "ProfessionalService",
+      "@id": `${SITE.url}/#localbusiness`,
+      name: SITE.name,
+      alternateName,
+      url: new URL(`/${locale}/`, SITE.url).href,
+      image: `${SITE.url}/og-default.png`,
+      logo: `${SITE.url}/icon-512.png`,
+      description: t.seo.organizationDescription,
+      telephone: SITE.phone.tel,
+      email: SITE.email,
+      address,
+      geo: { "@type": "GeoCoordinates", latitude: SITE.geo.lat, longitude: SITE.geo.lng },
+      areaServed,
+      founder,
+      parentOrganization: { "@id": orgId },
+      sameAs: [SITE.facebook],
+      knowsAbout: ["PLC programming", "HMI", "SCADA", "Control panels", "Machine automation", "Industrial automation"],
+    },
+    {
+      "@type": "WebSite",
+      "@id": `${SITE.url}/#website`,
+      url: `${SITE.url}/`,
+      name: SITE.name,
+      alternateName,
+      inLanguage: LOCALES.map((l) => LOCALE_META[l].htmlLang),
+      publisher: { "@id": orgId },
+    },
+  ],
 };
 ---
 
-<BaseLayout locale={locale} path="" heroDark preloadImage={poster} jsonLd={org}>
+<BaseLayout
+  locale={locale}
+  title={h.seo.title}
+  description={h.seo.description}
+  path=""
+  heroDark
+  preloadImage={poster}
+  jsonLd={jsonLd}
+  whatsappMessage={c.whatsapp.default}
+>
   <Hero
     locale={locale}
-    title={c.title}
-    lead={c.lead}
-    chips={["PLC", "HMI", "SCADA", "VFD"]}
+    title={heroTitle}
+    lead={html(locale, h.hero.lead)}
+    chips={[h.hero.eyebrow]}
+    titleSize="fit"
     priority
     video={{ src: "/media/hero-filling.mp4", poster: "/media/hero-filling-poster.webp", posterSmall: "/media/hero-filling-poster-640.webp" }}
-    proof={[
-      { value: `${SITE.experienceYears}+`, label: c.proof[0] },
-      { value: `${SITE.projectsCount}+`, label: c.proof[1] },
-      { value: "4", label: c.proof[2] },
-    ]}
-  />
-  <Section compact>
-    <LogoWall locale={locale} />
+    primary={{ label: h.hero.ctaPrimary, href: href(locale, "contact/#quote") }}
+    secondary={email ? undefined : { label: h.hero.ctaSecondary, href: whatsappLink(c.whatsapp.default) }}
+    proof={heroProof}
+  >
+    {
+      investorFirst && (
+        <a
+          href={href(locale, FOREIGN_PATH)}
+          class="lc-rise group mt-5 inline-flex min-h-11 max-w-xl items-center gap-3 border border-signal-400/40 bg-signal-400/[0.07] px-4 py-2 font-semibold text-signal-200 transition-colors hover:border-signal-400 hover:text-white"
+          style="--i:2"
+        >
+          <span class="lc-led" aria-hidden="true" />
+          <span class="flex-1">{h.audiences.foreign.title}</span>
+          <span class="inline-flex items-center gap-1.5 text-sm text-white">
+            {h.audiences.foreign.cta}
+            <Icon name="arrow" size={16} class="transition-transform group-hover:translate-x-0.5 rtl:group-hover:-translate-x-0.5" />
+          </span>
+        </a>
+      )
+    }
+  </Hero>
+
+  {/* ---------- platforms + two doors ---------- */}
+  <Section compact class="pt-12 sm:pt-14" aria-label={c.platforms.title}>
+    <div class="grid items-center gap-8 lg:grid-cols-12 lg:gap-12">
+      <div class="lg:col-span-4">
+        <p class="flex items-center gap-3 type-label text-royal-700">
+          <span class="slant-bar text-royal-600" aria-hidden="true"></span>
+          {c.platforms.title}
+        </p>
+        <p class="mt-3 text-charcoal-600">{c.platforms.intro}</p>
+        <Button href={href(locale, "technologies")} variant="ghost" class="mt-2 -ms-1">{c.platforms.cta}</Button>
+      </div>
+      <LogoWall locale={locale} title="" class="lg:col-span-8 [&_li]:text-charcoal-600" />
+    </div>
   </Section>
-  <CtaBand locale={locale} title={t.ui.cta.quote} text={c.cta} />
+
+  <Section class="pt-6 sm:pt-8" aria-labelledby="who-title">
+    <h2 id="who-title" class="mb-6 flex items-center gap-3 type-label text-charcoal-600">
+      <span class="slant-bar text-royal-600" aria-hidden="true"></span>
+      {h.audiences.title}
+    </h2>
+    <AudienceDoors locale={locale} foreignFirst={investorFirst} />
+  </Section>
+
+  {/* ---------- services ---------- */}
+  <Section variant="muted" id="services" aria-labelledby="services-title">
+    <div class="flex flex-wrap items-end justify-between gap-6">
+      <SectionHeading id="services-title" index="01" eyebrow={c.labels.services} title={html(locale, h.services.title)} lead={html(locale, h.services.intro)} />
+      <Button href={href(locale, "services")} variant="secondary" iconEnd="arrow">{h.services.cta}</Button>
+    </div>
+    <ul role="list" class="mt-12 grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
+      {
+        SERVICE_SLUGS.map((slug) => {
+          const s = t.services.items[slug];
+          return (
+            <li>
+              <Card variant="service" title={s.title} text={s.summary} href={href(locale, `services/${slug}`)} cta={c.labels.learnMore}>
+                <Fragment slot="media">
+                  <div class="-mx-2 -mt-2 overflow-hidden border border-charcoal-200/70 bg-navy-50/60 sm:-mx-3 sm:-mt-3">
+                    <ServiceArt slug={slug} variant="light" />
+                  </div>
+                </Fragment>
+              </Card>
+            </li>
+          );
+        })
+      }
+    </ul>
+  </Section>
+
+  {/* ---------- featured projects ---------- */}
+  <Section id="projects" aria-labelledby="projects-title">
+    <div class="flex flex-wrap items-end justify-between gap-6">
+      <SectionHeading id="projects-title" index="02" eyebrow={c.labels.featuredProjects} title={html(locale, h.projects.title)} lead={html(locale, h.projects.intro)} />
+      <Button href={href(locale, "projects")} variant="secondary" iconEnd="arrow">
+        {h.projects.cta}
+        <span class="ms-1 font-mono text-xs text-charcoal-500 ltr" dir="ltr">({projectCount})</span>
+      </Button>
+    </div>
+    <ul role="list" class="mt-12 grid gap-x-6 gap-y-12 md:grid-cols-2 lg:grid-cols-3">
+      {
+        projects.map((p, i) => {
+          const item = t.projects.items[p.slug as keyof typeof t.projects.items];
+          if (!item) return null;
+          const alts = item.imageAlts as Record<string, string>;
+          const industry = t.industries.items[p.industries[0]!];
+          return (
+            <li class:list={[i === 2 && "md:max-lg:col-span-2 md:max-lg:mx-auto md:max-lg:w-1/2"]}>
+              <Card
+                variant="project"
+                title={item.cardTitle}
+                text={item.summary}
+                href={href(locale, `projects/${p.slug}`)}
+                meta={[industry?.navTitle ?? "", String(p.year)].filter(Boolean)}
+                tags={p.technologies.slice(0, 2)}
+                cta={c.labels.readCaseStudy}
+              >
+                <Fragment slot="media">
+                  <Picture
+                    src={p.cover.image}
+                    alt={alts[p.cover.key] ?? ""}
+                    formats={["avif", "webp"]}
+                    widths={[400, 640, 900]}
+                    sizes="(min-width: 1024px) 33vw, (min-width: 768px) 50vw, 100vw"
+                    layout="full-width"
+                    class="size-full object-cover transition duration-700 group-hover:scale-[1.04]"
+                  />
+                  {p.video && (
+                    <span class="absolute start-4 bottom-4 inline-flex items-center gap-2 bg-navy-950/85 px-2.5 py-1.5 text-xs font-semibold text-white backdrop-blur-sm">
+                      <Icon name="play" size={14} class="text-signal-400" />
+                      {c.labels.video}
+                    </span>
+                  )}
+                </Fragment>
+              </Card>
+            </li>
+          );
+        })
+      }
+    </ul>
+    <p class="mt-10 flex items-start gap-2.5 text-sm text-charcoal-600">
+      <Icon name="shield" size={18} class="mt-0.5 shrink-0 text-royal-600" />
+      {c.notes.anonymised}
+    </p>
+  </Section>
+
+  {/* ---------- live HMI demo ---------- */}
+  <Section variant="dark" angle="both" id="hmi-demo" aria-label={t.hmi.intro.title}>
+    <HmiDemo locale={locale} tone="dark" />
+  </Section>
+
+  {/* ---------- industries ---------- */}
+  <Section id="industries" aria-labelledby="industries-title">
+    <div class="flex flex-wrap items-end justify-between gap-6">
+      <SectionHeading id="industries-title" index="03" eyebrow={c.labels.industries} title={html(locale, h.industries.title)} lead={html(locale, h.industries.intro)} />
+      <Button href={href(locale, "industries")} variant="secondary" iconEnd="arrow">{h.industries.cta}</Button>
+    </div>
+    <ul role="list" class="mt-12 grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
+      {
+        INDUSTRY_SLUGS.map((slug) => {
+          const ind = t.industries.items[slug];
+          return (
+            <li>
+              <Card variant="industry" title={ind.title} text={ind.summary} href={href(locale, `industries/${slug}`)} cta={c.labels.viewIndustry} class="h-full">
+                <Fragment slot="media">
+                  <div class="absolute inset-x-0 top-0 px-3 pt-3">
+                    <IndustryArt slug={slug} variant="dark" />
+                  </div>
+                </Fragment>
+              </Card>
+            </li>
+          );
+        })
+      }
+      <li>
+        <article class="group relative flex h-full flex-col justify-between border border-dashed border-royal-600/40 bg-royal-50/50 p-6 transition-colors hover:border-royal-600 sm:p-7 has-[a:focus-visible]:outline-2 has-[a:focus-visible]:outline-offset-4 has-[a:focus-visible]:outline-(--focus)">
+          <span class="chamfer inline-grid size-12 place-items-center bg-royal-600 text-white [--chamfer:10px]">
+            <Icon name="plus" size={24} />
+          </span>
+          <div class="mt-10">
+            <h3 class="type-h3 text-navy-950">
+              <a href={`${href(locale, "contact")}?industry=other#quote`} class="after:absolute after:inset-0 after:content-[''] focus-visible:outline-none">
+                {t.contact.form.fields.industry.options.other}
+              </a>
+            </h3>
+            <p class="mt-2 text-sm text-charcoal-600">{c.ctaBand.industry.text}</p>
+            <span aria-hidden="true" class="mt-5 inline-flex items-center gap-2 text-sm font-bold text-royal-600">
+              {t.ui.cta.quote}
+              <Icon name="arrow" size={16} class="transition-transform duration-300 group-hover:translate-x-1 rtl:group-hover:-translate-x-1" />
+            </span>
+          </div>
+        </article>
+      </li>
+    </ul>
+  </Section>
+
+  {/* ---------- why us ---------- */}
+  <Section variant="muted" aria-labelledby="why-title">
+    <div class="grid gap-12 lg:grid-cols-12 lg:gap-14">
+      <div class="lg:col-span-5">
+        <SectionHeading id="why-title" index="04" eyebrow={t.about.why.title} title={html(locale, h.why.title)} swoosh />
+        <figure class="mt-10">
+          <div class="rounded-[10px] bg-navy-950 p-2.5 shadow-lift ring-1 ring-navy-900 sm:p-3">
+            <div class="relative aspect-[797/478] overflow-hidden rounded-[3px] bg-navy-900">
+            <Picture
+              src={arabicHmi}
+              alt={(t.projects.items["shampoo-filling-delta-wecon"]?.imageAlts as Record<string, string> | undefined)?.hmiArabic ?? ""}
+              formats={["avif", "webp"]}
+              widths={[480, 720, 960]}
+              sizes="(min-width: 1024px) 40vw, 100vw"
+              layout="full-width"
+              class="size-full object-cover object-bottom"
+            />
+            </div>
+            <div class="flex items-center justify-end gap-3 px-1 pt-2" aria-hidden="true">
+              <span class="lc-led" style="--led:#2bd47d"></span>
+              <span class="lc-led" style="--led:var(--color-royal-400)"></span>
+            </div>
+          </div>
+          <figcaption class="mt-3 flex items-center gap-2 text-sm text-charcoal-600">
+            <Icon name="hmi" size={18} class="text-royal-600" />
+            {t.projects.items["shampoo-filling-delta-wecon"]?.cardTitle}
+          </figcaption>
+        </figure>
+      </div>
+      <ol role="list" class="grid content-start gap-px self-center overflow-hidden border border-charcoal-200 bg-charcoal-200 sm:grid-cols-2 lg:col-span-7">
+        {
+          h.why.items.map((item, i) => (
+            <li class="relative bg-white p-6 sm:p-8">
+              <div class="flex items-center justify-between">
+                <span class="chamfer inline-grid size-11 place-items-center bg-navy-950 text-royal-300 [--chamfer:9px]">
+                  <Icon name={whyIcons[i] ?? "check"} size={22} />
+                </span>
+                <span aria-hidden="true" class="font-mono text-xs text-charcoal-600 ltr" dir="ltr">{String(i + 1).padStart(2, "0")}</span>
+              </div>
+              <h3 class="mt-5 type-h4 text-navy-950">{item.title}</h3>
+              <p class="mt-2 text-[0.9375rem] text-charcoal-600" set:html={html(locale, item.text)} />
+            </li>
+          ))
+        }
+      </ol>
+    </div>
+  </Section>
+
+  {/* ---------- how we work ---------- */}
+  <Section id="process" aria-labelledby="process-title">
+    <SectionHeading id="process-title" index="05" title={html(locale, c.process.title)} lead={html(locale, c.process.intro)} />
+    <ProcessSteps class="mt-14" locale={locale} steps={c.process.steps.map((s, i) => ({ ...s, icon: processIcons[i] }))} />
+  </Section>
+
+  {/* ---------- foreign manufacturers band ---------- */}
+  <Section variant="dark" angle="both" aria-labelledby="foreign-title">
+    <div class="grid items-center gap-12 lg:grid-cols-12">
+      <div class="lg:col-span-7">
+        <p class="mb-4 flex items-center gap-3 type-label text-signal-300">
+          <span class="lc-led" aria-hidden="true"></span>
+          {t.ui.nav.foreign}
+        </p>
+        <h2 id="foreign-title" class="type-h2 text-white" set:html={html(locale, h.foreignBand.title)} />
+        <p class="mt-5 max-w-2xl type-lead text-navy-200" set:html={html(locale, h.foreignBand.text)} />
+        <div class="mt-9 flex flex-wrap gap-3">
+          <Button href={href(locale, FOREIGN_PATH)} size="lg" iconEnd="arrow" class="max-sm:w-full">{h.foreignBand.cta}</Button>
+        </div>
+      </div>
+      <ul role="list" class="grid gap-3 lg:col-span-5">
+        {
+          t.foreign.hero.chips.map((chip, i) => (
+            <li class="flex items-start gap-4 border border-white/10 bg-white/[0.04] p-4 sm:p-5">
+              <span class="grid size-9 shrink-0 place-items-center border border-royal-400/40 text-signal-300">
+                <Icon name={(["gear", "hmi", "file"] as IconName[])[i] ?? "check"} size={20} />
+              </span>
+              <span class="pt-1.5 font-semibold text-white" set:html={html(locale, chip)} />
+            </li>
+          ))
+        }
+        <li class="flex flex-wrap items-center gap-2 pt-2" aria-hidden="true">
+          {LOCALES.map((l) => (
+            <span lang={LOCALE_META[l].htmlLang} class="rounded-xs border border-white/12 px-2.5 py-1 text-sm text-navy-200">
+              {LOCALE_META[l].native}
+            </span>
+          ))}
+        </li>
+      </ul>
+    </div>
+  </Section>
+
+  {/* ---------- zones ---------- */}
+  <Section id="zones" aria-labelledby="zones-title">
+    <SectionHeading id="zones-title" index="06" eyebrow={c.labels.location} title={html(locale, c.zones.title)} lead={html(locale, c.zones.intro)} />
+    <ZonesBlock locale={locale} class="mt-12" />
+  </Section>
+
+  {/* ---------- FAQ ---------- */}
+  <Section variant="muted" id="faq" aria-labelledby="faq-title">
+    <div class="grid gap-10 lg:grid-cols-12 lg:gap-14">
+      <div class="lg:col-span-4">
+        <div class="lg:sticky lg:top-[calc(var(--header-h)+2rem)]">
+          <SectionHeading id="faq-title" index="07" eyebrow={c.labels.faq} title={html(locale, h.faq.title)} />
+          <div class="mt-8 flex flex-col items-start gap-3">
+            {
+              email ? (
+                <Button href={`mailto:${SITE.email}`} variant="secondary" icon="mail" iconClass="text-royal-600">{t.ui.cta.emailEngineer}</Button>
+              ) : (
+                <Button href={whatsappLink(c.whatsapp.default)} variant="secondary" icon="whatsapp" iconClass="text-[#128c4a]" external>{t.ui.cta.whatsapp}</Button>
+              )
+            }
+          </div>
+        </div>
+      </div>
+      <FAQ class="lg:col-span-8" items={h.faq.items.map((f) => ({ q: f.q, a: html(locale, f.a) }))} openFirst />
+    </div>
+  </Section>
+
+  <QuoteCta locale={locale} title={c.ctaBand.default.title} text={c.ctaBand.default.text} />
 </BaseLayout>

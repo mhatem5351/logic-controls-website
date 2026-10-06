@@ -74,6 +74,10 @@
         "otherEgypt": "Elsewhere in Egypt",
         "outsideEgypt": "Outside Egypt"
       },
+      "country": {
+        "label": "Country",
+        "help": "Where your company is based, if outside Egypt."
+      },
       "timeline": {
         "label": "When do you need it?",
         "placeholder": "Select a timeline",
@@ -107,6 +111,8 @@
       "cta": "Send drawings on WhatsApp"
     },
     "privacyNote": "We use your details only to reply to this request. We do not add you to any mailing list.",
+    "sent": "Request sent. Opening the confirmation page…",
+    "noscript": "The security check needs JavaScript. If the form does not send, contact us directly by phone, WhatsApp or email.",
     "security": {
       "label": "Security check",
       "help": "This check confirms that a person, not a bot, is sending the form."

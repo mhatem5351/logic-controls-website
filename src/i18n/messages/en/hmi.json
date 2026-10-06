@@ -81,6 +81,15 @@
     "cream": "Cream",
     "juice": "Juice"
   },
+  "perm": {
+    "title": "Forward permissive",
+    "ok": "OK",
+    "blocked": "Blocked",
+    "temp": "TT-102 ≥ {limit} °C",
+    "check": "Held for {s} s (check time)",
+    "dp": "Regen ΔP: pasteurized > raw",
+    "hold": "Holding time ≥ {hold} s"
+  },
   "controls": {
     "run": "Run",
     "start": "Start",

@@ -10,16 +10,16 @@
     "technologies": "Teknolojiler",
     "privacy": "Gizlilik",
     "servicesList": {
-      "controlPanels": "Kontrol panoları",
+      "controlPanels": "Otomasyon panoları",
       "plcHmi": "PLC ve HMI programlama",
       "machineAutomation": "Makine otomasyonu",
-      "commissioning": "Devreye alma ve destek"
+      "commissioning": "Test ve devreye alma"
     },
     "industriesList": {
       "foodBeverage": "Gıda ve içecek",
       "pharma": "İlaç",
-      "cosmetics": "Kozmetik ve dolum",
-      "packaging": "Ambalaj"
+      "cosmetics": "Kozmetik",
+      "packaging": "Ambalaj ve etiketleme"
     }
   },
   "cta": {
@@ -29,7 +29,7 @@
     "email": "E-posta gönderin",
     "emailEngineer": "Bir mühendise e-posta gönderin",
     "learnMore": "Daha fazla bilgi",
-    "viewProject": "Projeyi görüntüle",
+    "viewProject": "Projeyi inceleyin",
     "viewAll": "Tümünü görüntüle",
     "inEgyptWhatsapp": "Mısır'da mısınız? Bize WhatsApp'tan yazın"
   },
@@ -47,7 +47,7 @@
   },
   "whatsapp": {
     "fabLabel": "WhatsApp'ta bir mühendisle görüşün",
-    "message": "Merhaba Logic Controls, bir otomasyon projesi hakkında bir mühendisle görüşmek istiyorum."
+    "message": "Merhaba Logic Controls, bir otomasyon projesi hakkında bir mühendisle görüşmek istiyorum.\nHello Logic Controls, I would like to talk to an engineer about an automation project."
   },
   "email": {
     "fabLabel": "Bir mühendise e-posta gönderin",
@@ -61,7 +61,7 @@
     "addressValue": "6 Ekim Şehri, Gize, Mısır"
   },
   "footer": {
-    "pitch": "PLC kontrol panoları, HMI/SCADA ve makine otomasyonu — Mısır'daki kendi mühendislerimiz tarafından tasarlanır, üretilir, programlanır ve devreye alınır.",
+    "pitch": "PLC otomasyon panoları, HMI/SCADA ve makine otomasyonu — Mısır'daki kendi mühendislerimiz tarafından tasarlanır, üretilir, programlanır ve devreye alınır.",
     "servicesTitle": "Hizmetler",
     "industriesTitle": "Sektörler",
     "companyTitle": "Şirket",

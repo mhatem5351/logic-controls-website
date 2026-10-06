@@ -47,7 +47,7 @@ const spray = "M310 160H318V146H350V160H366";
     @keyframes rxD{to{stroke-dashoffset:-7}}
     @keyframes rxA{to{stroke-dashoffset:-12}}
     @keyframes rxT{0%{stroke-dashoffset:100}97%,100%{stroke-dashoffset:0}}
-    @keyframes rxO{0%,2%{stroke-dashoffset:12}8.5%{stroke-dashoffset:-100}8.6%,56%{stroke-dashoffset:12}62.5%,100%{stroke-dashoffset:-100}}
+    @keyframes rxO{0%,2%{stroke-dashoffset:14}8.5%{stroke-dashoffset:-102}8.6%,56%{stroke-dashoffset:14}62.5%,100%{stroke-dashoffset:-102}}
     @keyframes rxN{0%,7.5%{opacity:0;transform:scale(1)}8%{opacity:1;transform:scale(1)}18%,61.5%{opacity:0;transform:scale(2.4)}61.6%{opacity:0;transform:scale(1)}62%{opacity:1;transform:scale(1)}72%,100%{opacity:0;transform:scale(2.4)}}
   </style>
   <defs>
@@ -56,18 +56,16 @@ const spray = "M310 160H318V146H350V160H366";
     <path id={`${u}a`} d={arm}></path>
   </defs>
 
-  <!-- cleanroom wall seams -->
-  <path class="h l" d="M10 6H390M18 6V258M282 6V258" opacity=".5"></path>
-
-  <!-- ducts: heated inlet air (left), exhaust (right) -->
-  <path class="s" d="M82 60 90 52V6H82Z"></path>
-  <rect class="m" x="66" y="6" width="16" height="54"></rect>
-  <path class="s" d="M212 60 220 52V6H212Z"></path>
-  <rect class="m" x="196" y="6" width="16" height="54"></rect>
-  <path class="d" d="M62 6h32M192 6h32" stroke-width="2.5"></path>
-  <path class="d" d="M64 18h20M64 22h20M194 18h20M194 22h20"></path>
-  <path class="e air" d="M74 10V56" stroke-width="1.6"></path>
-  <path class="l air" d="M204 56V10" stroke-width="1.6"></path>
+  <!-- ducts: heated inlet air (left), exhaust (right); 45° elbows turn into the wall -->
+  <path class="s" d="M82 60 90 52V12L82 20Z"></path>
+  <path class="t" d="M66 20 74 12H90L82 20Z"></path>
+  <rect class="m" x="66" y="20" width="16" height="40"></rect>
+  <path class="s" d="M212 60 220 52V12L212 20Z"></path>
+  <path class="t" d="M196 20 204 12H220L212 20Z"></path>
+  <rect class="m" x="196" y="20" width="16" height="40"></rect>
+  <path class="d" d="M66 32h16M66 36h16M196 32h16M196 36h16"></path>
+  <path class="e air" d="M74 24V56" stroke-width="1.6"></path>
+  <path class="l air" d="M204 56V24" stroke-width="1.6"></path>
 
   <!-- shadows -->
   <path class="sh" d="M30 258H272L254 240H48ZM300 258H400L386 248H310Z"></path>

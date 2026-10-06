@@ -1,10 +1,9 @@
 ---
 /**
- * Internal lab page: every service / industry illustration on light cards and on a dark band.
- * noindex, excluded from the sitemap (astro.config filters /lab/).
+ * Internal lab page: every service / industry illustration on light cards, on a dark band and at hero
+ * scale, plus the factory-line band. noindex, excluded from the sitemap (astro.config filters /lab/).
  */
-import { Font } from "astro:assets";
-import "~/styles/global.css";
+import BaseLayout from "~/layouts/BaseLayout.astro";
 import { localeStaticPaths, LOCALES, LOCALE_META, localePath, type Locale } from "~/i18n";
 import { SERVICE_SLUGS } from "~/data/services";
 import { INDUSTRY_SLUGS } from "~/data/industries";
@@ -14,20 +13,10 @@ import FactoryLine from "~/components/illustrations/FactoryLine.astro";
 
 export const getStaticPaths = localeStaticPaths;
 const locale = Astro.params.lang as Locale;
-const meta = LOCALE_META[locale];
 const hero = ["control-panels", "plc-hmi-programming"] as const;
 ---
 
-<html lang={meta.htmlLang} dir={meta.dir}>
-  <head>
-    <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <meta name="robots" content="noindex, nofollow" />
-    <title>Illustration lab · Logic Controls</title>
-    <Font cssVariable="--font-latin" />
-    {locale === "ar" && <Font cssVariable="--font-arabic" />}
-  </head>
-  <body class="bg-charcoal-50">
+<BaseLayout locale={locale} title="Illustration lab" path="lab/illustrations" noindex alternates={false} bodyClass="bg-charcoal-50">
     <header class="wrap flex flex-wrap items-end justify-between gap-4 py-10">
       <div>
         <p class="type-label text-royal-600">Lab · noindex</p>
@@ -36,12 +25,11 @@ const hero = ["control-panels", "plc-hmi-programming"] as const;
           Inline SVG + CSS. 4:3, decorative by default. Hover a card to speed the loop up. Offscreen art pauses.
         </p>
       </div>
-      <nav class="flex gap-3 text-sm">
+      <nav class="flex gap-3 text-sm" aria-label="Language">
         {LOCALES.map((l) => <a class="text-royal-600 underline" href={localePath(l, "lab/illustrations")}>{LOCALE_META[l].native}</a>)}
       </nav>
     </header>
 
-    <main>
       <section class="wrap pb-12" aria-labelledby="svc">
         <h2 id="svc" class="type-h3 mb-5 text-navy-900">Services · light</h2>
         <ul class="grid gap-5 sm:grid-cols-2 lg:grid-cols-4" role="list">
@@ -123,6 +111,4 @@ const hero = ["control-panels", "plc-hmi-programming"] as const;
         <h2 id="line2" class="sr-only">Factory line band (light)</h2>
         <div data-art="factory-line" data-kind="band-light"><FactoryLine variant="light" /></div>
       </section>
-    </main>
-  </body>
-</html>
+</BaseLayout>

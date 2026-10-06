@@ -11,9 +11,22 @@
   "brands": {
     "title": "Programladığımız ve entegre ettiğimiz PLC ve HMI platformları",
     "productsLabel": "Projelerimizde kullanılanlar",
+    "productNames": {
+      "S7-1200": "S7-1200",
+      "WinCC Professional": "WinCC Professional",
+      "S7-200 SMART": "S7-200 SMART",
+      "Altivar VFDs": "Altivar VFD'ler",
+      "Stepper drives": "Step motor sürücüleri",
+      "C60N circuit breakers": "C60N devre kesiciler",
+      "DVP series PLCs": "DVP serisi PLC'ler",
+      "PLCs": "PLC'ler",
+      "M100 VFD": "M100 VFD",
+      "LX3V PLCs": "LX3V PLC'ler",
+      "HMIs": "HMI panelleri"
+    },
     "items": {
       "siemens": {
-        "text": "Tablet kaplama ve beton santrali projelerimizde olduğu gibi, proses makineleri ve tesisler için WinCC Professional SCADA ile S7-1200 PLC'ler. S7-200 SMART sistemlerini de devreye aldık."
+        "text": "Tablet kaplama ve beton santrali projelerimizde olduğu gibi, proses makineleri ve tesisler için WinCC Professional SCADA ile S7-1200 PLC'ler; içecek şurubu karıştırma sistemimizde ise SIMATIC HMI ile S7-1200. S7-200 SMART sistemlerini de devreye aldık."
       },
       "schneider-electric": {
         "text": "PLC'ler, Altivar frekans invertörleri, step motor sürücüleri ile koruma ve kumanda bileşenleri. Etiketleme makinemizde etiket bırakma işlemini Schneider Electric step motor sürücüleri yönetiyor."
@@ -36,15 +49,18 @@
       "LS Electric M100 VFD'ler",
       "Schneider Electric Altivar VFD'ler",
       "VEICHI VFD'ler",
+      "Yaskawa VFD'ler",
       "Schneider Electric step motor sürücüleri",
       "Senkronize konumlandırma için PLC tabanlı hareket kontrolü"
     ]
   },
   "scada": {
-    "title": "SCADA, HMI ve veri",
-    "text": "Makine üzerindeki tek bir dokunmatik ekrandan tüm prosesin SCADA genel görünümüne kadar.",
+    "title": "Yazılım, SCADA ve veri",
+    "text": "EPLAN Electric P8'deki elektrik çizimlerinden makine üzerindeki tek bir dokunmatik ekrana ve tüm prosesin SCADA genel görünümüne kadar.",
     "items": [
+      "Elektrik tasarımı ve pano çizimleri için EPLAN Electric P8",
       "Siemens WinCC Professional SCADA",
+      "Raporlar ve OEE gösterge ekranları için SCADA–SQL veritabanı entegrasyonu",
       "HMI'larda proses mimikleri, reçeteler ve alarm geçmişi",
       "Arapça, İngilizce ve iki dilli HMI ekranları",
       "Kullanıcı girişi ve yetki seviyeleri",
@@ -67,16 +83,22 @@
       "Dijital giriş ve çıkışlar: sensörler, anahtarlar, vanalar ve kontaktörler",
       "Analog sinyaller: 4-20 mA ve 0-10 V transmitterler ve pozisyonerler",
       "Sıcaklık sensörleri: RTD ve termokupl",
-      "Dozajlama sistemleri için yük hücresiyle (load cell) tartım",
+      "Harmanlama (batch) sistemleri için yük hücresiyle (load cell) tartım",
       "Uzunluk ve konum için enkoderler ve hızlı sayıcılar",
       "Proses sistemlerinde seviye, basınç ve gaz ölçümü"
     ]
   },
+  "categories": {
+    "eyebrow": "Kategoriye göre",
+    "title": "Sürücüler, SCADA, haberleşme ve sinyaller",
+    "intro": "Kontrolör sistemin yalnızca bir parçasıdır. Çevresinde tasarladığımız, programladığımız ve devreye aldığımız diğer katmanlar şunlardır."
+  },
   "otherBrands": {
     "title": "Çalıştığımız diğer ekipmanlar",
-    "text": "Müşteri makinelerinde MCGS HMI'lar, VEICHI sürücüler, MEAN WELL güç kaynakları ve endüstriyel Ethernet switch'leriyle de çalıştık. Makineniz başka bir marka kullanıyorsa modelini gönderin, neler yapabileceğimizi size söyleyelim."
+    "text": "Müşteri makinelerinde MCGS HMI'lar, VEICHI ve Yaskawa sürücüler, MEAN WELL güç kaynakları ve endüstriyel Ethernet switch'leriyle de çalıştık. Makineniz başka bir marka kullanıyorsa modelini gönderin, neler yapabileceğimizi size bildiririz."
   },
   "choosing": {
+    "eyebrow": "Yaklaşımımız",
     "title": "Platformu nasıl seçiyoruz",
     "items": [
       {
@@ -93,7 +115,7 @@
       },
       {
         "title": "Makine üreticisinin standardı",
-        "text": "İthal veya OEM makinelerde, değiştirmek için bir neden yoksa makinenin tasarlandığı platformu takip ediyoruz."
+        "text": "İthal veya OEM makinelerde, değiştirmek için bir neden yoksa makinenin tasarlandığı platformu koruyoruz."
       }
     ]
   }

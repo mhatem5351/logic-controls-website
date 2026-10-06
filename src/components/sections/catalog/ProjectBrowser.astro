@@ -1,0 +1,202 @@
+---
+/**
+ * Portfolio grid with industry × service filters.
+ *  - Without JS: the full list (filter controls are hidden, nothing is lost).
+ *  - With JS: toggle buttons (aria-pressed), instant filtering, live result count (role="status"),
+ *    URL sync (?industry=&service=, replaceState) and dynamic per-option counts.
+ *  - The initial state is applied by an inline script right after the markup, before first paint,
+ *    so a filtered deep link never flashes the full list (no layout shift).
+ * Options and counts are derived from the data: new projects, industries or services need no edits here.
+ */
+import type { ProjectData } from "~/data/projects";
+import { getMessages, type Locale } from "~/i18n";
+import Button from "~/components/Button.astro";
+import Icon from "~/components/Icon.astro";
+import ProjectCard from "./ProjectCard.astro";
+import { countLabel, industryCopy, industrySlugs, quoteHref, serviceCopy, serviceSlugs } from "./catalog";
+
+interface Props {
+  locale: Locale;
+  projects: readonly ProjectData[];
+}
+const { locale, projects } = Astro.props;
+const m = getMessages(locale);
+const F = m.common.filters;
+const labels = (m.projects as { labels?: { countOne?: string } }).labels;
+
+const has = (key: "industries" | "services", v: string) => projects.filter((p) => (p[key] as readonly string[]).includes(v)).length;
+const groups = [
+  {
+    key: "industry",
+    label: F.byIndustry,
+    options: industrySlugs(locale)
+      .map((s) => ({ value: s, label: industryCopy(locale, s)!.navTitle, n: has("industries", s) }))
+      .filter((o) => o.n > 0),
+  },
+  {
+    key: "service",
+    label: F.byService,
+    options: serviceSlugs(locale)
+      .map((s) => ({ value: s, label: serviceCopy(locale, s)!.navTitle, n: has("services", s) }))
+      .filter((o) => o.n > 0),
+  },
+] as const;
+const total = projects.length;
+const chip =
+  "group inline-flex min-h-10 shrink-0 items-center gap-2 whitespace-nowrap border border-charcoal-300 bg-white px-3.5 text-sm font-semibold text-navy-900 transition-colors hover:border-royal-600 hover:text-royal-700 aria-pressed:border-navy-950 aria-pressed:bg-navy-950 aria-pressed:text-white data-zero:border-dashed data-zero:text-charcoal-600";
+---
+
+<div class="lc-pf" data-pf data-count-one={labels?.countOne ?? F.count} data-count-other={F.count}>
+  <div data-pf-controls class="lc-pf-controls border-y border-charcoal-200 py-5 sm:py-6">
+    <h2 class="sr-only">{F.label}</h2>
+    <div class="grid gap-5">
+      {
+        groups.map((g) => (
+          <div role="group" aria-labelledby={`pf-${g.key}`} class="grid gap-2.5 lg:grid-cols-[10.5rem_minmax(0,1fr)] lg:items-start lg:gap-6">
+            <p id={`pf-${g.key}`} class="type-label text-charcoal-600 lg:pt-3">
+              {g.label}
+            </p>
+            <ul
+              role="list"
+              class="lc-pf-row flex gap-2 max-md:-mx-(--spacing-gutter) max-md:overflow-x-auto max-md:px-(--spacing-gutter) max-md:pb-2 md:flex-wrap"
+            >
+              <li class="shrink-0">
+                <button type="button" class={chip} aria-pressed="true" data-pf-key={g.key} data-pf-value="">
+                  <span aria-hidden="true" class="size-1.5 rounded-full bg-charcoal-300 group-aria-pressed:bg-signal-400" />
+                  {F.all}
+                  <span aria-hidden="true" data-pf-n class="font-mono text-xs font-medium text-charcoal-600 group-aria-pressed:text-navy-200">
+                    {total}
+                  </span>
+                </button>
+              </li>
+              {g.options.map((o) => (
+                <li class="shrink-0">
+                  <button type="button" class={chip} aria-pressed="false" data-pf-key={g.key} data-pf-value={o.value}>
+                    <span aria-hidden="true" class="size-1.5 rounded-full bg-charcoal-300 group-aria-pressed:bg-signal-400" />
+                    {o.label}
+                    <span aria-hidden="true" data-pf-n class="font-mono text-xs font-medium text-charcoal-600 group-aria-pressed:text-navy-200">
+                      {o.n}
+                    </span>
+                  </button>
+                </li>
+              ))}
+            </ul>
+          </div>
+        ))
+      }
+    </div>
+  </div>
+
+  <div class="mt-6 flex min-h-11 flex-wrap items-center justify-between gap-x-6 gap-y-2">
+    <p role="status" aria-live="polite" aria-atomic="true" data-pf-count class="type-label text-navy-900">
+      {countLabel(locale, total)}
+    </p>
+    <button type="button" data-pf-reset hidden class="inline-flex min-h-11 items-center gap-2 text-sm font-bold text-royal-600 underline-offset-4 hover:text-royal-800 hover:underline">
+      <Icon name="close" size={16} />
+      {F.reset}
+    </button>
+  </div>
+
+  <ul role="list" data-pf-grid class="mt-8 grid gap-x-8 gap-y-14 sm:grid-cols-2 lg:grid-cols-3">
+    {
+      projects.map((p) => (
+        <li data-pf-item data-industry={p.industries.join(" ")} data-service={p.services.join(" ")}>
+          <ProjectCard project={p} locale={locale} headingLevel="h3" />
+        </li>
+      ))
+    }
+  </ul>
+
+  <div data-pf-empty hidden class="mt-8 border border-dashed border-charcoal-300 bg-white p-8 text-center sm:p-12">
+    <p class="mx-auto max-w-xl type-lead text-charcoal-700">{F.empty}</p>
+    <div class="mt-6 flex flex-wrap justify-center gap-3">
+      <Button href={quoteHref(locale)} iconEnd="arrow">{m.ui.cta.quote}</Button>
+      <Button variant="secondary" data-pf-reset-alt>{F.reset}</Button>
+    </div>
+  </div>
+</div>
+
+<style>
+  /* No JS → no filters (the full list is shown). The html.js class is set in <head>, so there is no shift. */
+  :global(html:not(.js)) .lc-pf-controls {
+    display: none;
+  }
+  .lc-pf-row {
+    scrollbar-width: thin;
+    scroll-snap-type: x proximity;
+    -webkit-overflow-scrolling: touch;
+  }
+  .lc-pf-row > li {
+    scroll-snap-align: start;
+  }
+</style>
+
+<script is:inline>
+  (function () {
+    var root = document.currentScript && document.currentScript.previousElementSibling;
+    while (root && !root.hasAttribute("data-pf")) root = root.previousElementSibling;
+    if (!root) return;
+    var items = Array.prototype.slice.call(root.querySelectorAll("[data-pf-item]"));
+    var buttons = Array.prototype.slice.call(root.querySelectorAll("[data-pf-key]"));
+    var countEl = root.querySelector("[data-pf-count]");
+    var reset = root.querySelector("[data-pf-reset]");
+    var resetAlt = root.querySelector("[data-pf-reset-alt]");
+    var empty = root.querySelector("[data-pf-empty]");
+    var keys = ["industry", "service"];
+    var state = { industry: "", service: "" };
+    var valid = { industry: {}, service: {} };
+    buttons.forEach(function (b) { if (b.dataset.pfValue) valid[b.dataset.pfKey][b.dataset.pfValue] = true; });
+
+    function tags(el, key) { return (el.getAttribute("data-" + key) || "").split(" "); }
+    function matches(el, s) {
+      return keys.every(function (k) { return !s[k] || tags(el, k).indexOf(s[k]) !== -1; });
+    }
+    function label(n) {
+      var tpl = n === 1 ? root.dataset.countOne : root.dataset.countOther;
+      return (tpl || "{count}").replace("{count}", String(n));
+    }
+    function apply() {
+      var n = 0;
+      items.forEach(function (el) {
+        var ok = matches(el, state);
+        el.hidden = !ok;
+        if (ok) n++;
+      });
+      if (countEl) countEl.textContent = label(n);
+      if (empty) empty.hidden = n > 0;
+      var active = !!(state.industry || state.service);
+      if (reset) reset.hidden = !active;
+      buttons.forEach(function (b) {
+        var k = b.dataset.pfKey, v = b.dataset.pfValue || "";
+        b.setAttribute("aria-pressed", String(state[k] === v));
+        // How many projects this option would show, given the other filter.
+        var probe = { industry: state.industry, service: state.service };
+        probe[k] = v;
+        var c = items.filter(function (el) { return matches(el, probe); }).length;
+        var badge = b.querySelector("[data-pf-n]");
+        if (badge) badge.textContent = String(c);
+        if (c === 0 && state[k] !== v) b.setAttribute("data-zero", ""); else b.removeAttribute("data-zero");
+      });
+    }
+    function sync() {
+      var url = new URL(location.href);
+      keys.forEach(function (k) { if (state[k]) url.searchParams.set(k, state[k]); else url.searchParams.delete(k); });
+      history.replaceState(history.state, "", url.pathname + url.search + url.hash);
+    }
+    var q = new URLSearchParams(location.search);
+    keys.forEach(function (k) { var v = q.get(k); if (v && valid[k][v]) state[k] = v; });
+    apply();
+
+    buttons.forEach(function (b) {
+      b.addEventListener("click", function () {
+        var k = b.dataset.pfKey, v = b.dataset.pfValue || "";
+        state[k] = state[k] === v ? "" : v;
+        apply();
+        sync();
+      });
+    });
+    function clear() { state.industry = ""; state.service = ""; apply(); sync(); }
+    if (reset) reset.addEventListener("click", function () { clear(); var first = root.querySelector("[data-pf-key]"); if (first) first.focus(); });
+    if (resetAlt) resetAlt.addEventListener("click", function () { clear(); var first = root.querySelector("[data-pf-key]"); if (first) first.focus(); });
+  })();
+</script>
