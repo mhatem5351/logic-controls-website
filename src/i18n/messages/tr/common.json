@@ -71,6 +71,9 @@
     "projects": {
       "label": "tamamlanan proje"
     },
+    "caseStudies": {
+      "label": "proje incelemesi"
+    },
     "experience": {
       "label": "yıllık ekip deneyimi"
     },
@@ -148,9 +151,15 @@
       "text": "Aynı kapsamı sizin makineniz için de uygulayabilir veya ihtiyacınıza göre uyarlayabiliriz. Teklif için detayları bize gönderin."
     },
     "foreign": {
-      "title": "Mısır'da fabrika kurmayı mı planlıyorsunuz?",
-      "text": "Yerel bir otomasyon ekibini sürece erkenden dahil edin. Hat listenizi veya makine dokümanlarınızı ve iş takviminizi bize gönderin."
+      "title": "Yerel bir otomasyon ekibini sürece erkenden dahil edin",
+      "text": "Hat listenizi veya makine dokümanlarınızı ve iş takviminizi bize gönderin."
     }
+  },
+  "founderStrip": {
+    "eyebrow": "Kimlerle çalışacaksınız",
+    "title": "Bayi değil, mühendisiz",
+    "text": "Kurucumuz ve otomasyon mühendisimiz Mohammed Tarek Aboalsafa, gıda ve içecek, ilaç ve diğer sektörlerdeki tesisler için PLC, HMI ve SCADA sistemlerinin tasarımı, programlanması ve devreye alınmasında dört yılı aşkın deneyime sahiptir.",
+    "cta": "Ekibimizle tanışın"
   },
   "whatsapp": {
     "default": "Merhaba Logic Controls, bir otomasyon projesi hakkında bir mühendisle görüşmek istiyorum.\nHello Logic Controls, I would like to talk to an engineer about an automation project.",

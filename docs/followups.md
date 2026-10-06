@@ -24,7 +24,8 @@
 - [ ] Working hours + response time; zones actually served.
 - [ ] WeChat ID for zh pages.
 - [ ] Permission to name clients / testimonials.
-- [ ] Gmail verification click for Email Routing (blocks info@/sales@ rules + form delivery).
+- [x] Gmail verified; info@ + sales@ rules created (2026-10-06).
+- [ ] Client to confirm receipt of 2 TEST emails (website form 'New website inquiry (EN)' + info@ forward test from mhatem5351@gmail.com); check spam, mark 'Not spam'.
 - [x] Founder bio + photo approved by user 2026-10-06.
 - [ ] Confirm the syrup jet-mixing project (LinkedIn 2026-09-26) was delivered under Logic Controls and the beverage client is fine with the two photos (client name on the HMI is already blanked).
 
@@ -43,16 +44,16 @@
 - [ ] Remove local `as` casts of `getMessages().hmi` in HmiDemo/ControlLoop now that `Messages.hmi` is typed.
 
 ## Round 2 — copy changes (meaning-level, apply to ALL 4 locales together; from EN review)
-- [ ] home.services.intro → "Eight services, from electrical design and panels to commissioning and support. Take the full scope or only the part you need." (avoid repeating home.why.items[0])
-- [ ] Idioms: services.maintenance-support.cta.title "…acting up?" → "Machine stopped or showing faults?"; testing-commissioning.intro[0] "succeeds or slips" → "Commissioning decides whether a line starts on time."; packaging-labeling intro[0]+cta.title "in step with" → "synchronized with"; beverage-syrup challenge "in step with the plant's CIP system" → "together with…"; machine-retrofits.capabilities[4].text "while the controls are open" → "in the same upgrade".
-- [ ] Honesty: drop "Leading" (anaerobic client; syrup challenge); olive-autoclave + milk-pasteurizer result "ensure safe, high-quality" → "support safe, consistent"; hmi.caption "built to ISA-101" → "designed following ISA-101".
-- [ ] hmi.intro.lead: explain HTST on first use (high-temperature, short-time); add to glossary.
-- [ ] industries.food-beverage.needs[3].text "customer complaints" → "complaint investigations".
-- [ ] cheese-cooker + pipe-tester results → full sentences.
-- [ ] projects.*.client: drop ", Egypt" (location row already says Egypt).
-- [ ] home.foreignBand.cta → "For foreign manufacturers".
-- [ ] about.why.items[5] → "Written scope and clear limits before work starts".
-- [ ] projects.*.solution → split into 2-paragraph arrays (template change needed).
+- [x] home.services.intro → "Eight services, from electrical design and panels to commissioning and support. Take the full scope or only the part you need." (avoid repeating home.why.items[0])
+- [x] Idioms: services.maintenance-support.cta.title "…acting up?" → "Machine stopped or showing faults?"; testing-commissioning.intro[0] "succeeds or slips" → "Commissioning decides whether a line starts on time."; packaging-labeling intro[0]+cta.title "in step with" → "synchronized with"; beverage-syrup challenge "in step with the plant's CIP system" → "together with…"; machine-retrofits.capabilities[4].text "while the controls are open" → "in the same upgrade". → done in all 4 locales (zh retrofit line and ar/zh packaging lines already read "synchronized" / "in the same upgrade").
+- [x] Honesty: drop "Leading" (anaerobic client; syrup challenge); olive-autoclave + milk-pasteurizer result "ensure safe, high-quality" → "support safe, consistent"; hmi.caption "built to ISA-101" → "designed following ISA-101". → done; ar/zh/tr "رائدة/知名/Önde gelen" removed; pasteurizer "support compliance" kept (modest in all locales).
+- [x] hmi.intro.lead: explain HTST on first use (high-temperature, short-time); add to glossary. → done; HTST row added to the AR, ZH and TR glossary sections.
+- [x] industries.food-beverage.needs[3].text "customer complaints" → "complaint investigations".
+- [x] cheese-cooker + pipe-tester results → full sentences.
+- [x] projects.*.client: drop ", Egypt" (location row already says Egypt).
+- [x] home.foreignBand.cta → "For foreign manufacturers". → also: home.foreignBand.title/text reworded ("A local engineering team for your new plant") so the eyebrow ui.nav.foreign no longer repeats it; common.ctaBand.foreign title/text aligned to the zh structure ("Involve a local automation team early" + send-us line); about.eyebrows.why → "Working with us".
+- [x] about.why.items[5] → "Written scope and clear limits before work starts".
+- [x] projects.*.solution → split into 2-paragraph arrays (template change needed). → done: arrays of 2 paragraphs (syrup: 3), same count in all locales; renderer in src/pages/[lang]/projects/[slug].astro accepts string | string[].
 
 ## Round 2 — UX changes (pages/components; after motion director)
 - [ ] Mobile language access: show all-4 language menu on mobile and for zh/tr visitors (not only the quick switch).
@@ -63,11 +64,11 @@
 - [ ] Case study mobile: move gallery right after meta row.
 - [ ] Home: foreign pitch appears 3× — differentiate the dark band (e.g. feature commissioning case).
 - [ ] Chips: stop uppercasing (PLCs → PLCS bug).
-- [ ] 404: add Services/Projects/Quote links; services index: add case studies; footer: "All services"/"All industries".
-- [ ] Hero stats: lead with "50+ projects" + "15 case studies" (data-driven count) instead of "4+ years".
+- [ ] 404: add Services/Projects/Quote links; services index: add case studies; footer: "All services"/"All industries". → strings ready: ui.notFound.links.{title,services,projects,quote}, ui.footer.{allServices,allIndustries} (wiring pending).
+- [ ] Hero stats: lead with "50+ projects" + "15 case studies" (data-driven count) instead of "4+ years". → label ready: common.stats.caseStudies.label (wiring pending).
 - [ ] About: merge "What we stand for" and "Why choose us" overlap.
 - [ ] Foreign page: second CTA "Email an engineer".
-- [ ] Founder photo APPROVED by user 2026-10-06 → `src/assets/people/founder.jpg` (800×800, light-grey bg). Use on About founder block + small founder strip on home and foreign-manufacturers pages.
+- [ ] Founder photo APPROVED by user 2026-10-06 → `src/assets/people/founder.jpg` (800×800, light-grey bg). Use on About founder block + small founder strip on home and foreign-manufacturers pages. → copy ready: common.founderStrip.{eyebrow,title,text,cta} (cta → about/).
 
 ## Round 2 — zh layout fixes (from native zh review; screenshots scratchpad/review-zh/shots/)
 - [ ] catalog.ts `html()`/`keepCodes()` must use rich.ts zh word-wrap helper for H1/H2, FAQ questions, card titles (zh headings break mid-word: 维⏎护, 个人护⏎理).
@@ -75,7 +76,7 @@
 - [ ] `text-wrap: balance` on ProjectNav `.type-h4`; `text-wrap: pretty` on FAQ `.prose-lc`.
 - [ ] rich.ts `zhWords()`: glue digit runs to following measure word ("50⏎多个项目").
 - [ ] Chips.astro: join with " · " so "·" never starts a line.
-- [ ] Tech chips on case studies come from projects.ts `technologies[]` in English and uppercase ("YASKAWA VFDS") — localise generic terms (VFDs, Motion control…) via messages; keep brand/model Latin; stop uppercase.
+- [ ] Tech chips on case studies come from projects.ts `technologies[]` in English and uppercase ("YASKAWA VFDS") — localise generic terms (VFDs, Motion control…) via messages; keep brand/model Latin; stop uppercase. → strings ready: messages/<locale>/tech.json items{English → localised}, 43 strings incl. technologies.ts products + PROTOCOLS; `Messages.tech` typed (wiring pending).
 - [ ] Field.astro optional marker: localise brackets (zh （选填）).
 - [ ] Footer.astro:123 `". "` join → locale-aware (zh "Logic Controls 版权所有").
 - [ ] QuoteCta extra space after 。; ASCII colons in sr-only labels (Footer, QuoteCta, ContactChannels) → localise.
@@ -83,11 +84,11 @@
 
 ## Round 2 — tr layout fixes (from native tr review; screenshots scratchpad/review-tr/slices/)
 - [ ] Chips.astro `isCode()` treats any basic-Latin text as English code → wrong Turkish uppercase (i→I not İ). Only real codes (model numbers, abbreviations) should get lang="en".
-- [ ] (same as zh) project technology chips from projects.ts are English-only ("Yaskawa VFDs", "Motion control", "VFD-driven fans and drum", "MEAN WELL power supply", "…with expansion module") — localise.
+- [ ] (same as zh) project technology chips from projects.ts are English-only ("Yaskawa VFDs", "Motion control", "VFD-driven fans and drum", "MEAN WELL power supply", "…with expansion module") — localise. → see tech.json (wiring pending).
 - [ ] Home hero foreign-box (index.astro ~l.159) squeezes into two narrow columns at 390px + WhatsApp FAB overlaps — stack on mobile.
 - [ ] Card summaries split "S7-1200" at hyphen — use non-breaking hyphen / keepCodes in summaries too.
 - [ ] HMI demo: "Meyve suyu" recipe button wraps on desktop (minor).
-- [ ] GLOSSARY TR additions: set değeri, lojik, Tag, Engellendi, Ham ürün tankı.
+- [x] GLOSSARY TR additions: set değeri, lojik, Tag, Engellendi, Ham ürün tankı.
 
 ## Round 2 — ar layout fixes (from native ar review; screenshots scratchpad/review-ar/)
 - [ ] HmiDemo status bar "…HTST-01نظرة عامة" no gap: `.hs-screen` margin-inline-start lands wrong in RTL span → use flex gap.
@@ -95,6 +96,6 @@
 - [ ] Parenthesised Latin glosses wrap with inverted brackets ("ضغط Pressure)" / "(switch"): in rich.ts html(), wrap "(" + run + ")" in nowrap span.
 - [ ] Project & service cards skip html()/keepCodes → "S7-" / "1200" breaks (same as zh/tr item).
 - [ ] Industry tiles: text-wrap: balance on titles (AR wraps to 3 lines with orphan).
-- [ ] HMI mode chip hard-coded "AUTO/MAN" (hmi-demo.ts:182) → localise via hmi.json keys (all 4 locales).
+- [ ] HMI mode chip hard-coded "AUTO/MAN" (hmi-demo.ts:182) → localise via hmi.json keys (all 4 locales). → keys ready: hmi.mode.{auto,manual} (AUTO/MAN · آلي/يدوي · 自动/手动 · OTO/MAN); CIP state can reuse hmi.controls.cip (wiring pending).
 - [ ] Mobile hero brand chip breaks inside brand names.
 - [ ] Header logo overlaps utility link (check after motion director).

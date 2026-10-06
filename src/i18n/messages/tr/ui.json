@@ -64,6 +64,8 @@
     "pitch": "PLC otomasyon panoları, HMI/SCADA ve makine otomasyonu — Mısır'daki kendi mühendislerimiz tarafından tasarlanır, üretilir, programlanır ve devreye alınır.",
     "servicesTitle": "Hizmetler",
     "industriesTitle": "Sektörler",
+    "allServices": "Tüm hizmetler",
+    "allIndustries": "Tüm sektörler",
     "companyTitle": "Şirket",
     "contactTitle": "İletişim",
     "zonesTitle": "Hizmet verdiğimiz sanayi bölgeleri",
@@ -96,6 +98,12 @@
   "notFound": {
     "title": "Sayfa bulunamadı",
     "body": "Aradığınız sayfa mevcut değil veya taşınmış.",
-    "home": "Ana sayfaya git"
+    "home": "Ana sayfaya git",
+    "links": {
+      "title": "Sık ziyaret edilen sayfalar",
+      "services": "Hizmetler",
+      "projects": "Projeler",
+      "quote": "Teklif isteyin"
+    }
   }
 }

@@ -27,7 +27,7 @@
   },
   "services": {
     "title": "Neler yapıyoruz",
-    "intro": "Elektrik tasarımından ilk çalıştırmaya kadar tek ekip. Sisteminizi tasarlayan mühendisler onu programlar ve devreye de alır.",
+    "intro": "Elektrik tasarımı ve otomasyon panolarından devreye alma ve desteğe kadar sekiz hizmet. İşin tamamını bize bırakabilir veya yalnızca ihtiyacınız olan kısmı seçebilirsiniz.",
     "cta": "Tüm hizmetler"
   },
   "projects": {
@@ -62,9 +62,9 @@
     ]
   },
   "foreignBand": {
-    "title": "Mısır'da yeni bir tesis mi kuruyorsunuz?",
-    "text": "Yeni tesisler için yerel mühendislik ekibiyiz: ithal hatların devreye alınması, I/O ve loop testleri, yerel operatörler için Arapça HMI'lar ve ilk çalıştırma sonrası destek.",
-    "cta": "Mısır'da fabrika kurulumu"
+    "title": "Yeni tesisiniz için yerel mühendislik ekibi",
+    "text": "İthal hatları devreye alıyor, I/O ve loop testlerini yapıyor, yerel operatörler için Arapça HMI'lar hazırlıyor ve ilk çalıştırmadan sonra tesisinize destek veriyoruz.",
+    "cta": "Yabancı üreticiler için"
   },
   "faq": {
     "title": "Tesis yöneticilerinin sorduğu sorular",

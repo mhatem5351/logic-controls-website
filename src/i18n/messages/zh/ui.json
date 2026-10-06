@@ -64,6 +64,8 @@
     "pitch": "PLC 电气控制柜、HMI/SCADA 与设备自动化——由我们在埃及的工程师团队设计、制造、编程并现场调试。",
     "servicesTitle": "服务",
     "industriesTitle": "行业",
+    "allServices": "全部服务",
+    "allIndustries": "全部行业",
     "companyTitle": "公司",
     "contactTitle": "联系方式",
     "zonesTitle": "我们服务的工业区",
@@ -96,6 +98,12 @@
   "notFound": {
     "title": "页面未找到",
     "body": "您访问的页面不存在或已被移动。",
-    "home": "返回首页"
+    "home": "返回首页",
+    "links": {
+      "title": "常用页面",
+      "services": "服务",
+      "projects": "项目案例",
+      "quote": "获取报价"
+    }
   }
 }

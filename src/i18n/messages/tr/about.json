@@ -70,7 +70,7 @@
       "Makine otomasyonu ve proses kontrolü deneyimi aynı ekipte",
       "Arapça, İngilizce veya iki dilli HMI ekranları",
       "Her I/O noktası, kilitleme ve alarm üretimden önce test edilir",
-      "Net kapsam ve dürüst sınırlar: kanıtlayamayacağımız iddialarda bulunmayız"
+      "İşe başlamadan önce yazılı kapsam ve net sınırlar"
     ]
   },
   "numbers": {
@@ -88,7 +88,7 @@
   "eyebrows": {
     "story": "Şirket",
     "values": "Değerlerimiz",
-    "why": "Neden biz",
+    "why": "Bizimle çalışmak",
     "process": "Süreç"
   }
 }

@@ -37,7 +37,7 @@
         },
         {
           "title": "Records",
-          "text": "Data logging of temperatures, cycle times and alarms for audits and customer complaints."
+          "text": "Data logging of temperatures, cycle times and alarms for audits and complaint investigations."
         }
       ],
       "applications": [
@@ -180,7 +180,7 @@
       "seoDescription": "Controls for labeling, filling and bottle printing machines in Egypt: stepper and motion control, missing-label detection, recipes and counters.",
       "h1": "Automation for packaging, labeling and printing machines",
       "intro": [
-        "Packaging machines depend on timing: the label must meet the bottle, the print must meet the surface, and every product must be counted. We design the motion, sensing and logic that keep them in step with the line.",
+        "Packaging machines depend on timing: the label must meet the bottle, the print must meet the surface, and every product must be counted. We design the motion, sensing and logic that keep them synchronized with the line.",
         "Our packaging work includes a labeling machine with a Delta PLC, Wecon HMI and Schneider Electric stepper drives, a motion-control retrofit of a bottle printing machine, and two filling machines."
       ],
       "needs": [
@@ -218,7 +218,7 @@
         }
       ],
       "cta": {
-        "title": "Need a packaging machine in step with your line?",
+        "title": "Need a packaging machine synchronized with your line?",
         "text": "Send the machine type, your line speed and the product formats you run."
       }
     },

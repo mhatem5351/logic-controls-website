@@ -27,7 +27,7 @@
   },
   "services": {
     "title": "What we do",
-    "intro": "One team from electrical design to start-up. The engineers who design your system also program it and commission it.",
+    "intro": "Eight services, from electrical design and panels to commissioning and support. Take the full scope or only the part you need.",
     "cta": "All services"
   },
   "projects": {
@@ -62,9 +62,9 @@
     ]
   },
   "foreignBand": {
-    "title": "Building a factory in Egypt?",
-    "text": "We are a local engineering team for new plants: commissioning of imported lines, I/O and loop checks, Arabic HMIs for local operators, and support after start-up.",
-    "cta": "Setting up in Egypt"
+    "title": "A local engineering team for your new plant",
+    "text": "We commission imported lines, run I/O and loop checks, build Arabic HMIs for local operators and support the plant after start-up.",
+    "cta": "For foreign manufacturers"
   },
   "faq": {
     "title": "Questions plant managers ask",

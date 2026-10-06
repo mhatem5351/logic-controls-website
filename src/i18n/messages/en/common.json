@@ -71,6 +71,9 @@
     "projects": {
       "label": "projects delivered"
     },
+    "caseStudies": {
+      "label": "case studies"
+    },
     "experience": {
       "label": "years of team experience"
     },
@@ -148,9 +151,15 @@
       "text": "We can deliver the same scope for your machine or adapt it. Send us the details for a quote."
     },
     "foreign": {
-      "title": "Planning a factory in Egypt?",
-      "text": "Involve a local automation team early. Send us your line list or machine documents and your schedule."
+      "title": "Involve a local automation team early",
+      "text": "Send us your line list or machine documents and your schedule."
     }
+  },
+  "founderStrip": {
+    "eyebrow": "Who you will work with",
+    "title": "Engineers, not resellers",
+    "text": "Mohammed Tarek Aboalsafa, our founder and automation engineer, has more than four years of experience designing, programming and commissioning PLC, HMI and SCADA systems for food and beverage, pharmaceutical and other plants.",
+    "cta": "Meet the team"
   },
   "whatsapp": {
     "default": "Hello Logic Controls, I would like to talk to an engineer about an automation project.",

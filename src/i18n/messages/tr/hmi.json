@@ -2,7 +2,7 @@
   "intro": {
     "eyebrow": "Canlı HMI demosu",
     "title": "Bir pastörizatörü tarayıcınızdan çalıştırın",
-    "lead": "Bir HTST süt pastörizatörünün çalışan simülasyonu; süt işletmeleri için kurduğumuz türden bir PLC ve HMI sistemi. Başlatın, reçeteyi değiştirin, arıza oluşturun, CIP yıkaması çalıştırın: kontrol lojiği gerçek makine gibi tepki verir.",
+    "lead": "Bir HTST (yüksek sıcaklık, kısa süre) süt pastörizatörünün çalışan simülasyonu; süt işletmeleri için kurduğumuz türden bir PLC ve HMI sistemi. Başlatın, reçeteyi değiştirin, arıza oluşturun, CIP yıkaması çalıştırın: kontrol lojiği gerçek makine gibi tepki verir.",
     "seeing": "Neler görüyorsunuz",
     "bullets": [
       {
@@ -22,7 +22,7 @@
     "cta": "Teklif isteyin",
     "try": "Deneyin: “Başlat” düğmesine basın, “İleri” durumunu bekleyin, ardından “Arıza simüle et” düğmesine basın."
   },
-  "caption": "ISA-101 yüksek performanslı HMI ilkeleri esas alınarak hazırlanmış simüle 10,1″ operatör paneli: her şey normalken gri, renk yalnızca anormal durumlarda, dokunabileceğiniz her şey mavi.",
+  "caption": "ISA-101 yüksek performanslı HMI ilkeleri esas alınarak tasarlanmış simüle 10,1″ operatör paneli: her şey normalken gri, renk yalnızca anormal durumlarda, dokunabileceğiniz her şey mavi.",
   "a11y": {
     "panel": "Etkileşimli pastörizatör HMI simülasyonu",
     "mimic": "Proses şeması: ham ürün tankı, denge tankı, besleme pompası, rejenerasyon, ısıtma ve soğutma bölümlerine sahip plakalı eşanjör, sıcak su devresi, bekletme borusu, akış yönlendirme vanası ve depolama tankı. Canlı değerler proses panelinde listelenir.",
@@ -39,6 +39,10 @@
     "divert": "Geri dönüş",
     "cip": "CIP yıkama",
     "stopped": "Durdu"
+  },
+  "mode": {
+    "auto": "OTO",
+    "manual": "MAN"
   },
   "mimic": {
     "raw": "Ham ürün tankı",

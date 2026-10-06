@@ -2,7 +2,7 @@
   "intro": {
     "eyebrow": "Live HMI demo",
     "title": "Run a pasteurizer from your browser",
-    "lead": "A working simulation of an HTST milk pasteurizer, the kind of PLC and HMI system we build for dairy plants. Start it, change the recipe, cause a fault, run a CIP clean: the control logic reacts like the real machine.",
+    "lead": "A working simulation of an HTST (high-temperature, short-time) milk pasteurizer, the kind of PLC and HMI system we build for dairy plants. Start it, change the recipe, cause a fault, run a CIP clean: the control logic reacts like the real machine.",
     "seeing": "What you are seeing",
     "bullets": [
       {
@@ -22,7 +22,7 @@
     "cta": "Request a quote",
     "try": "Try it: press Start, wait for Forward, then Simulate fault."
   },
-  "caption": "Simulated 10.1″ operator panel built to ISA-101 high-performance HMI principles: gray when all is normal, color only for abnormal states, blue for what you can touch.",
+  "caption": "Simulated 10.1″ operator panel designed following ISA-101 high-performance HMI principles: gray when all is normal, color only for abnormal states, blue for what you can touch.",
   "a11y": {
     "panel": "Interactive pasteurizer HMI simulation",
     "mimic": "Process diagram: raw tank, balance tank, feed pump, plate heat exchanger with regeneration, heating and cooling sections, hot-water loop, holding tube, flow-diversion valve and storage tank. Live values are listed in the process panel.",
@@ -39,6 +39,10 @@
     "divert": "Diverting",
     "cip": "CIP cleaning",
     "stopped": "Stopped"
+  },
+  "mode": {
+    "auto": "AUTO",
+    "manual": "MAN"
   },
   "mimic": {
     "raw": "Raw tank",

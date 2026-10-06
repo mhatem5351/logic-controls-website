@@ -66,6 +66,7 @@ Use this to keep the four languages consistent. "Keep" = write the term in Latin
 |---|---|---|---|
 | CIP (cleaning-in-place) | Automatic cleaning of a machine without dismantling it | Keep "CIP" | التنظيف الموضعي (CIP) |
 | Pasteurizer | Machine that heats product to a set temperature for a set time | — | ماكينة بسترة |
+| HTST (high-temperature, short-time) | Continuous pasteurization: product heated to a high temperature and held for a short time | Keep "HTST"; explain on first use | بسترة بنظام HTST (درجة حرارة عالية لزمن قصير) · وحدة بسترة HTST |
 | Flow-diversion valve (FDV) | Valve that returns under-temperature product | Keep "FDV" | صمام تحويل التدفق (FDV) |
 | Plate heat exchanger | Heat exchanger made of plates | — | مبادل حراري بالألواح |
 | Autoclave / retort | Pressure vessel for sterilization | — | أوتوكلاف |
@@ -164,6 +165,7 @@ Use this to keep the four languages consistent. "Keep" = write the term in Latin
 | Troubleshooting / preventive maintenance | 故障排查 / 预防性维护 | |
 | Brand migration | 平台迁移 | |
 | Pasteurizer / holding time | 巴氏杀菌机 / 保持时间 | |
+| HTST (high-temperature, short-time) | HTST（高温短时） | Gloss on first use per page; the tag "HTST-01" stays Latin |
 | FDV (flow-diversion valve) | 回流阀（FDV）· 回流联锁 | |
 | CIP | CIP 就地清洗 (first use) · CIP | |
 | Plate heat exchanger / balance tank | 板式换热器 / 平衡缸 | |
@@ -226,7 +228,10 @@ Use this to keep the four languages consistent. "Keep" = write the term in Latin
 | Stepper drive / motion control | step motor sürücüsü / hareket kontrolü | |
 | Sequence | sekans | "çalışma sırası" only in plain-language CTAs |
 | Interlock | kilitleme (interlock) | Glossed in the process steps and on the PLC programming page; plain "kilitleme" elsewhere |
-| Setpoint / actual value | set değeri / gerçek (anlık) değer | |
+| Setpoint / actual value | set değeri / gerçek (anlık) değer | Not "ayar değeri". On HMI controls: "ısıtma set değeri", "set değerini artır / düşür" |
+| (Control) logic | lojik · kontrol lojiği · lojik testleri | Not "mantık", which reads as everyday reasoning |
+| Tag (instrument / alarm tag, e.g. TT-102) | Tag | Column header in alarm tables stays "Tag". Not "etiket" (label, clashes with labeling machines) |
+| Blocked (interlock / permissive status) | Engellendi | Not "Engelli" (= disabled person) |
 | Recipe / step recipe | reçete / adım reçetesi | |
 | Process mimic / overview | proses mimik ekranı / proses genel görünümü | |
 | Alarm history / user log-in / access levels | alarm geçmişi / kullanıcı girişi / yetki seviyeleri | |
@@ -245,6 +250,8 @@ Use this to keep the four languages consistent. "Keep" = write the term in Latin
 | Support agreement / response time | teknik destek sözleşmesi / müdahale süresi | |
 | Case study (meta descriptions) | Proje: … | Page label "Read case study" = "Projeyi inceleyin". Avoid "Referanslar" (implies a named client list) |
 | Pasteurizer / holding time / FDV | pastörizatör / bekletme süresi / akış yönlendirme vanası (FDV) | |
+| HTST (high-temperature, short-time) | HTST (yüksek sıcaklık, kısa süre) | Gloss on first use per page; the tag "HTST-01" stays Latin |
+| Raw tank (process mimic) | ham ürün tankı | Not "ham tank" |
 | CIP | CIP (yerinde temizlik) | |
 | Plate heat exchanger / balance tank / hot-water loop | plakalı eşanjör / denge tankı / sıcak su devresi | |
 | Autoclave / retort / sterilization | otoklav / retort / sterilizasyon | |

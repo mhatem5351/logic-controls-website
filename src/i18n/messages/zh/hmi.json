@@ -40,6 +40,10 @@
     "cip": "CIP 清洗",
     "stopped": "已停止"
   },
+  "mode": {
+    "auto": "自动",
+    "manual": "手动"
+  },
   "mimic": {
     "raw": "原料罐",
     "balance": "平衡罐",

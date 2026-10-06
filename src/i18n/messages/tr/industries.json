@@ -37,7 +37,7 @@
         },
         {
           "title": "Kayıtlar",
-          "text": "Denetimler ve müşteri şikâyetleri için sıcaklıkların, çevrim sürelerinin ve alarmların kaydı."
+          "text": "Denetimler ve şikâyet incelemeleri için sıcaklıkların, çevrim sürelerinin ve alarmların kaydı."
         }
       ],
       "applications": [
@@ -180,7 +180,7 @@
       "seoDescription": "Mısır'da etiketleme, dolum ve şişe baskı makineleri için kontrol sistemleri: step motor ve hareket kontrolü, eksik etiket algılama, reçeteler ve sayaçlar.",
       "h1": "Ambalaj, etiketleme ve baskı makineleri için otomasyon",
       "intro": [
-        "Ambalaj makineleri zamanlamaya bağlıdır: etiket şişeyle, baskı yüzeyle buluşmalı ve her ürün sayılmalıdır. Bu makineleri hatla uyum içinde tutan hareket, algılama ve lojiği tasarlıyoruz.",
+        "Ambalaj makineleri zamanlamaya bağlıdır: etiket şişeyle, baskı yüzeyle buluşmalı ve her ürün sayılmalıdır. Bu makineleri hatla senkronize çalıştıran hareket, algılama ve lojiği tasarlıyoruz.",
         "Ambalaj projelerimiz arasında Delta PLC, Wecon HMI ve Schneider Electric step motor sürücüleriyle çalışan bir etiketleme makinesi, bir şişe baskı makinesinin hareket kontrolü modernizasyonu ve iki dolum makinesi var."
       ],
       "needs": [
@@ -218,7 +218,7 @@
         }
       ],
       "cta": {
-        "title": "Ambalaj makinenizin hattınızla uyumlu çalışmasını mı istiyorsunuz?",
+        "title": "Hattınızla senkronize çalışan bir ambalaj makinesine mi ihtiyacınız var?",
         "text": "Makine tipini, hat hızınızı ve çalıştırdığınız ürün formatlarını gönderin."
       }
     },

@@ -9,7 +9,7 @@ All strings are plain text: no HTML, no Markdown. Paragraphs are arrays. Render 
 | File | Used by | Top-level keys |
 |---|---|---|
 | `seo.json` | `<head>` defaults, JSON-LD | `siteName`, `defaultTitle`, `defaultDescription`, `organizationDescription`, `ogImageAlt` |
-| `common.json` | every page | `labels`, `breadcrumbs`, `filters`, `stats`, `platforms`, `process`, `quoteChecklist`, `ctaBand.{default,service,industry,project,foreign}`, `whatsapp`, `zones`, `locations`, `company`, `notes` |
+| `common.json` | every page | `labels`, `breadcrumbs`, `filters`, `stats`, `platforms`, `process`, `quoteChecklist`, `ctaBand.{default,service,industry,project,foreign}`, `founderStrip` (home + foreign pages → `about/`), `whatsapp`, `zones`, `locations`, `company`, `notes` |
 | `home.json` | `/{lang}/` | `seo`, `hero`, `audiences`, `services`, `projects`, `industries`, `why`, `foreignBand`, `faq` |
 | `services.json` | `/services/`, `/services/{slug}/` | `index.{seo,h1,intro,engagement,faq}`, `items[slug]` |
 | `industries.json` | `/industries/`, `/industries/{slug}/` | `index.{seo,h1,intro}`, `items[slug]` |
@@ -20,12 +20,13 @@ All strings are plain text: no HTML, no Markdown. Paragraphs are arrays. Render 
 | `contact.json` | `/contact/`, `/contact/thanks/` | `seo`, `h1`, `intro`, `form`, `validation`, `errors`, `channels`, `nextSteps`, `thanks` |
 | `privacy.json` | `/privacy/` | `seo`, `h1`, `lastUpdated`, `intro`, `sections[] {title, paragraphs[], items[]}` |
 | `ui.json` | header, footer, buttons | design agent's file. Button labels: `ui.cta.quote` / `ui.cta.whatsapp`. |
+| `tech.json` | technology / product / protocol chips | `items{"<English string from projects.ts or technologies.ts>": "<localised chip>"}`. Brand and model names stay Latin; generic words are translated. Add a key whenever a new string appears in the data files. |
 
 **Item shapes**
 
 - `services.items[slug]`: `title`, `navTitle`, `summary` (cards), `seoTitle`, `seoDescription`, `h1`, `intro[]`, `capabilities[] {title,text}`, `deliverables[]`, `situations[]`, `faq[] {q,a}`, `cta {title,text}`
 - `industries.items[slug]`: `title`, `navTitle`, `summary`, `seoTitle`, `seoDescription`, `h1`, `intro[]`, `needs[] {title,text}`, `applications[]`, `faq[] {q,a}`, `cta {title,text}`
-- `projects.items[slug]`: `title` (H1), `cardTitle` (cards), `client` (anonymised), `summary`, `seoTitle`, `seoDescription`, `challenge`, `solution`, `scope[]`, `result`, `highlights[3]` ("At a glance" chips), `imageAlts{key}`, plus `videoTitle` **only** on projects with a video.
+- `projects.items[slug]`: `title` (H1), `cardTitle` (cards), `client` (anonymised), `summary`, `seoTitle`, `seoDescription`, `challenge`, `solution[]` (2–3 paragraphs; same count in every locale), `scope[]`, `result`, `highlights[3]` ("At a glance" chips), `imageAlts{key}`, plus `videoTitle` **only** on projects with a video.
 
 TypeScript note: `imageAlts` keys differ per project and `videoTitle` is not on every item. Read them with a guard, e.g. `(item.imageAlts as Record<string, string>)[img.key]` and `"videoTitle" in item ? item.videoTitle : undefined`.
 
@@ -126,7 +127,7 @@ Projects index: `index.h1/intro` → filters (`common.filters`, by `industries` 
 - Chinese (investors, plant managers, HQ engineers): formal and precise. Lead with commissioning, local support, spare parts and documentation. Use the official Chinese names of zones (e.g. 苏赫纳, 泰达). No italics.
 - Turkish (investors and plant managers in 10th of Ramadan, Sadat, SCZONE): formal "siz" address, plain business Turkish. Use "Türkiye" and correct casing (İ/ı).
 
-**Keep exactly as written** (all languages): PLC, HMI, SCADA, VFD, CIP, FDV, I/O, FAT, SAT, MCC, BOM, PID, RTD, OEM, MES, OEE, GMP, 21 CFR Part 11, Modbus RTU, Modbus TCP, PROFINET, RS-485, 4-20 mA, 0-10 V, ft·lb, psi, IEC 60204-1, IEC 61439, UL, CE, WinCC Professional, TIA Portal, S7-1200, S7-200 SMART, SIMATIC HMI, DVP, LX3V, M100, Altivar, C60N, EPLAN Electric P8, SQL, ISA-88, EMS, BMS, all brand names (Siemens, Schneider Electric, Delta, LS Electric, Wecon, MCGS, VEICHI, MEAN WELL, Yaskawa), the founder's Latin name "Mohammed Tarek Aboalsafa" (Arabic: محمد طارق أبو الصفا), and "Logic Controls". See `GLOSSARY.md` for preferred renderings.
+**Keep exactly as written** (all languages): PLC, HMI, SCADA, VFD, CIP, FDV, I/O, FAT, SAT, MCC, BOM, PID, RTD, OEM, MES, OEE, GMP, 21 CFR Part 11, Modbus RTU, Modbus TCP, PROFINET, RS-485, 4-20 mA, 0-10 V, ft·lb, psi, IEC 60204-1, IEC 61439, UL, CE, WinCC Professional, TIA Portal, S7-1200, S7-200 SMART, SIMATIC HMI, DVP, LX3V, M100, Altivar, C60N, EPLAN Electric P8, SQL, ISA-88, EMS, BMS, HTST (explain on first use: high-temperature, short-time), all brand names (Siemens, Schneider Electric, Delta, LS Electric, Wecon, MCGS, VEICHI, MEAN WELL, Yaskawa), the founder's Latin name "Mohammed Tarek Aboalsafa" (Arabic: محمد طارق أبو الصفا), and "Logic Controls". See `GLOSSARY.md` for preferred renderings.
 
 **Numbers.** Western digits (0-9) in every locale, including Arabic. Keep "50+", "4+", "15-step", "380 V, 50 Hz" as is. No founding year in any locale. Do not add numbers, percentages, results, certifications or client names that are not in the English.
 

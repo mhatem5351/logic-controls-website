@@ -49,6 +49,8 @@ const m = getMessages(locale);
 const L = m.common.labels;
 const p = getProject(slug)!;
 const c = projectCopy(locale, slug)!;
+/* `solution` is a list of paragraphs (a single string is still accepted). */
+const solution: string[] = ([] as string[]).concat(c.solution as string | string[]);
 const path = `projects/${slug}`;
 const url = absUrl(localePath(locale, path));
 
@@ -195,7 +197,11 @@ const jsonLd = {
 
         <section aria-labelledby="solution-title" class="mt-14">
           <SectionHeading id="solution-title" index={num("solution")} title={html(L.solution, locale)} size="h3" />
-          <p class="mt-5 max-w-prose text-lg/relaxed text-charcoal-700" set:html={html(c.solution, locale)} />
+          {
+            solution.map((para, i) => (
+              <p class:list={["max-w-prose text-lg/relaxed text-charcoal-700", i === 0 ? "mt-5" : "mt-4"]} set:html={html(para, locale)} />
+            ))
+          }
         </section>
 
         <section aria-labelledby="scope-title" class="mt-14">

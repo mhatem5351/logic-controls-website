@@ -300,7 +300,7 @@
         },
         {
           "title": "Yeni özellikler",
-          "text": "Kontrol sistemi elden geçirilirken reçeteler, sayaçlar, anlaşılır alarmlar ve veri kaydı eklenir."
+          "text": "Aynı modernizasyon kapsamında reçeteler, sayaçlar, anlaşılır alarmlar ve veri kaydı eklenir."
         },
         {
           "title": "Planlı geçiş",
@@ -485,7 +485,7 @@
       "seoDescription": "Mısır'da yeni makineler ve ithal hatlar için I/O ve loop testleri, kilitleme testleri, FAT/SAT desteği ve ilk çalıştırma; eksik listesi kapanana kadar.",
       "h1": "Test ve devreye alma",
       "intro": [
-        "Bir projenin başarısı ya da gecikmesi devreye almada belli olur. Üretim bunlara bağımlı hale gelmeden önce her sinyali, her kilitlemeyi ve her sekansı test ediyor, teslimden önce eksik listesini kapatıyoruz.",
+        "Bir hattın zamanında üretime başlayıp başlamayacağını devreye alma belirler. Üretim bunlara bağımlı hale gelmeden önce her sinyali, her kilitlemeyi ve her sekansı test ediyor, teslimden önce eksik listesini kapatıyoruz.",
         "Kendi kurduğumuz sistemleri ve başkalarının tedarik ettiği ekipmanları devreye alıyoruz: ithal hatlar, paket üniteler ve tedarikçisinin yerel bir ekibe ihtiyaç duyduğu proses sistemleri."
       ],
       "capabilities": [
@@ -615,7 +615,7 @@
         }
       ],
       "cta": {
-        "title": "Makineniz durdu mu, sorun mu çıkarıyor?",
+        "title": "Makineniz durdu mu ya da arıza mı veriyor?",
         "text": "Alarm metnini, ekranın fotoğrafını ve makine modelini gönderin. Bir mühendisimiz size bir sonraki adımı bildirir."
       }
     }

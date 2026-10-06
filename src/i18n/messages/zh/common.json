@@ -71,6 +71,9 @@
     "projects": {
       "label": "已交付项目"
     },
+    "caseStudies": {
+      "label": "项目案例"
+    },
     "experience": {
       "label": "年团队经验"
     },
@@ -151,6 +154,12 @@
       "title": "尽早让本地自动化团队参与",
       "text": "请发送您的生产线清单或设备资料，以及项目进度安排。"
     }
+  },
+  "founderStrip": {
+    "eyebrow": "与您合作的团队",
+    "title": "我们是工程师，不是经销商",
+    "text": "创始人 Mohammed Tarek Aboalsafa 是一名自动化工程师，拥有 4 年以上经验，为食品饮料、制药及其他行业的工厂设计、编程和调试 PLC、HMI 与 SCADA 系统。",
+    "cta": "了解我们的团队"
   },
   "whatsapp": {
     "default": "您好，Logic Controls。我想就一个自动化项目与工程师沟通。\nHello Logic Controls, I would like to talk to an engineer about an automation project.",

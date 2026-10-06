@@ -300,7 +300,7 @@
         },
         {
           "title": "New features",
-          "text": "Recipes, counters, clear alarms and data logging added while the controls are open."
+          "text": "Recipes, counters, clear alarms and data logging added in the same upgrade."
         },
         {
           "title": "Planned changeover",
@@ -485,7 +485,7 @@
       "seoDescription": "I/O testing, loop checks, interlock tests, FAT/SAT support and start-up for new machines and imported lines in Egypt, through to punch-list closure.",
       "h1": "Testing and commissioning",
       "intro": [
-        "Commissioning is where a project succeeds or slips. We test every signal, every interlock and every sequence before production depends on them, and we close the punch list before handover.",
+        "Commissioning decides whether a line starts on time. We test every signal, every interlock and every sequence before production depends on them, and we close the punch list before handover.",
         "We commission the systems we build, and we commission equipment supplied by others: imported lines, packaged units and process systems whose supplier needs a local team."
       ],
       "capabilities": [
@@ -615,7 +615,7 @@
         }
       ],
       "cta": {
-        "title": "Machine stopped or acting up?",
+        "title": "Machine stopped or showing faults?",
         "text": "Send the alarm text, a photo of the screen and the machine model. An engineer will tell you the next step."
       }
     }
