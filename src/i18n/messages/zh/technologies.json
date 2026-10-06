@@ -1,16 +1,16 @@
 {
   "seo": {
-    "title": "PLC、HMI 与 SCADA 技术平台 | Logic Controls 埃及",
-    "description": "我们编程和集成 Siemens、Schneider Electric、Delta、LS Electric 和 Wecon 的 PLC、HMI 与变频器，以及 WinCC SCADA 和 Modbus 网络。"
+    "title": "埃及 PLC、HMI 与 SCADA 技术平台 | Logic Controls",
+    "description": "我们为 Siemens、Schneider Electric、Delta、LS Electric 和 Wecon 的 PLC、HMI 与变频器编程和集成，也集成 WinCC SCADA 与 Modbus 网络。"
   },
   "h1": "平台与技术",
   "intro": [
-    "我们不绑定任何单一品牌。我们编程和集成五个 PLC 与 HMI 平台，并根据您的设备、预算以及在埃及能买到的备件选择合适的平台。",
+    "我们不绑定任何单一品牌。我们可对五个 PLC 与 HMI 平台进行编程与集成，并根据您的设备、预算以及在埃及可采购到的备件选择合适的平台。",
     "以下是我们使用的平台、驱动、软件和信号类型，以及近期项目中用过的产品。"
   ],
   "brands": {
     "title": "我们编程与集成的 PLC 和 HMI 平台",
-    "productsLabel": "项目中使用",
+    "productsLabel": "项目中用过",
     "productNames": {
       "S7-1200": "S7-1200",
       "WinCC Professional": "WinCC Professional",
@@ -74,7 +74,7 @@
       "基于 RS-485 的 Modbus RTU",
       "Modbus TCP",
       "用于 Siemens 系统的 PROFINET",
-      "配合网管型与非网管型交换机的工业以太网"
+      "工业以太网（网管型与非网管型交换机）"
     ]
   },
   "signals": {
@@ -94,8 +94,8 @@
     "intro": "控制器只是系统的一部分。以下是我们围绕它设计、编程和调试的其他环节。"
   },
   "otherBrands": {
-    "title": "我们用过的其他设备",
-    "text": "在客户设备上，我们还用过 MCGS 触摸屏、VEICHI 和 Yaskawa 变频器、MEAN WELL 电源和工业以太网交换机。如果您的设备采用其他品牌，请发送型号，我们会告诉您能做什么。"
+    "title": "我们接触过的其他设备",
+    "text": "在客户设备上，我们还接触过 MCGS 触摸屏、VEICHI 和 Yaskawa 变频器、MEAN WELL 电源和工业以太网交换机。如果您的设备采用其他品牌，请发送型号，我们会告知能提供哪些服务。"
   },
   "choosing": {
     "eyebrow": "我们的做法",
@@ -115,7 +115,7 @@
       },
       {
         "title": "设备制造商的标准",
-        "text": "对于进口设备或 OEM 设备，我们沿用设备原设计所用的平台，除非有理由更换。"
+        "text": "对于进口设备或 OEM 设备，我们沿用设备原设计所用的平台，除非确有更换的必要。"
       }
     ]
   }

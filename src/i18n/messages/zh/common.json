@@ -11,7 +11,7 @@
     "highlights": "项目要点",
     "capabilities": "服务内容",
     "deliverables": "交付内容",
-    "situations": "适用情形",
+    "situations": "适用场景",
     "needs": "行业关注重点",
     "applications": "我们实现自动化的设备与工艺",
     "faq": "常见问题",
@@ -78,17 +78,17 @@
       "label": "PLC 与 HMI 平台"
     },
     "industries": {
-      "label": "服务行业"
+      "label": "覆盖行业"
     }
   },
   "platforms": {
     "title": "我们编程与集成的平台",
-    "intro": "我们根据您的设备、预算以及在埃及能买到的备件来选择平台。",
+    "intro": "我们根据您的设备、预算以及在埃及可采购到的备件来选择平台。",
     "cta": "查看技术平台"
   },
   "process": {
     "title": "合作流程",
-    "intro": "从首次现场考察到设备运行，共六个步骤。全程由同一组工程师与您对接。",
+    "intro": "从首次现场考察到设备正式运行，共六个步骤。全程由同一组工程师与您对接。",
     "steps": [
       {
         "title": "现场考察与勘查",
@@ -104,7 +104,7 @@
       },
       {
         "title": "出厂前测试",
-        "text": "在任何设备运抵您的车间之前，完成接线检查、I/O 模拟测试和 HMI 画面逐页走查。"
+        "text": "在控制系统运抵您的车间之前，先完成接线检查、I/O 模拟测试和 HMI 画面逐页走查。"
       },
       {
         "title": "现场调试",
@@ -132,8 +132,8 @@
   },
   "ctaBand": {
     "default": {
-      "title": "介绍一下您的设备或生产线",
-      "text": "请发送简要说明和几张照片。工程师审阅后，会回复问题或直接报价。"
+      "title": "请介绍您的设备或生产线",
+      "text": "请发送简要说明和几张照片。工程师审阅后，会向您提出问题或直接报价。"
     },
     "service": {
       "title": "您的工厂需要这项服务？",
@@ -148,8 +148,8 @@
       "text": "我们可以为您的设备完成相同的工作范围，或按需调整。请发送详细信息以获取报价。"
     },
     "foreign": {
-      "title": "计划在埃及建厂？",
-      "text": "尽早让本地自动化团队参与。请发送您的生产线清单或设备资料，以及项目进度安排。"
+      "title": "尽早让本地自动化团队参与",
+      "text": "请发送您的生产线清单或设备资料，以及项目进度安排。"
     }
   },
   "whatsapp": {
@@ -159,7 +159,7 @@
     "industry": "您好，Logic Controls。我从“{industry}”页面联系您，咨询一个自动化项目。\nHello Logic Controls, I am contacting you from the industry page named above about an automation project.",
     "project": "您好，Logic Controls。我看到了案例“{project}”，我们有一台类似的设备。\nHello Logic Controls, I saw the case study named above and have a similar machine.",
     "foreign": "您好，Logic Controls。我们正在埃及建厂，需要一家本地自动化合作伙伴。\nHello Logic Controls, we are setting up a factory in Egypt and need a local automation partner.",
-    "drawings": "您好，Logic Controls。我发送图纸和照片，用于询价。\nHello Logic Controls, I am sending drawings and photos for a quote."
+    "drawings": "您好，Logic Controls。现发送图纸和照片，供报价参考。\nHello Logic Controls, I am sending drawings and photos for a quote."
   },
   "zones": {
     "title": "服务区域",
@@ -195,7 +195,7 @@
         "governorate": "曼努菲亚省"
       },
       "borg-el-arab": {
-        "name": "阿拉伯塔及新阿拉伯塔（Borg El Arab）",
+        "name": "阿拉伯堡及新阿拉伯堡（Borg El Arab）",
         "governorate": "亚历山大省"
       },
       "ain-sokhna": {
@@ -222,7 +222,7 @@
   },
   "notes": {
     "brands": "品牌名称和商标归其各自所有者所有。列出某一品牌，表示我们为该品牌的产品编程并进行集成，并不代表合作伙伴关系。",
-    "anonymised": "出于保密，客户名称不予公开。经客户同意，可应要求安排客户推荐。",
+    "anonymised": "出于保密，客户名称不予公开。经客户许可，可应要求提供参考客户。",
     "preFounding": "由我们的工程师在公司成立前完成。",
     "photos": "照片均来自实际项目，部分标志和铭牌已做模糊处理。"
   }

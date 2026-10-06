@@ -10,7 +10,7 @@
       "Kapsamın tamamını ya da yalnızca ihtiyacınız olan kısmını, örneğin programlamayı veya devreye almayı bize bırakabilirsiniz."
     ],
     "engagement": {
-      "eyebrow": "Çalışma modelleri",
+      "eyebrow": "Kapsam seçenekleri",
       "title": "Çalışma modellerimiz",
       "items": [
         {
@@ -271,7 +271,7 @@
       }
     },
     "machine-retrofits": {
-      "title": "Makine modernizasyonu (retrofit) ve kontrol sistemi yenileme",
+      "title": "Makine modernizasyonu ve kontrol sistemi yenileme",
       "navTitle": "Makine modernizasyonu",
       "summary": "İyi durumdaki makinenizi koruyun, eski kontrol sistemini yenileyin: yeni PLC, HMI, sürücüler ve hareket kontrolü; belgelenmiş, test edilmiş ve planlı geçişle.",
       "seoTitle": "Mısır'da Makine Retrofiti ve PLC Yenileme | Logic Controls",
@@ -309,7 +309,7 @@
       ],
       "deliverables": [
         "Mevcut makinenin keşif notları ve I/O listesi",
-        "Yeni elektrik çizimleri",
+        "Yeni elektrik şemaları",
         "Yeni PLC ve HMI programları",
         "Geçiş planı ve sahada devreye alma",
         "Operatörler ve bakım personeli için bilgilendirme"
@@ -347,13 +347,13 @@
       "seoDescription": "Mısır'da pastörizatörler, otoklavlar, pişirme kazanları, CIP, harmanlama ve dozajlama için PLC proses kontrolü. Sıcaklık, basınç, süre ve reçete kontrolü.",
       "h1": "Termal prosesler, CIP ve harmanlama sistemleri için proses kontrolü",
       "intro": [
-        "Gıda, süt ve ilaç proseslerinde ürünü sayılar belirler: sıcaklık, basınç, süre, debi ve doz. Bu değerleri koruyan, sağlanmadıklarında prosesi durduran ve olup biteni kaydeden kontrol sistemleri kuruyoruz.",
+        "Gıda, süt ürünleri ve ilaç proseslerinde ürünü sayılar belirler: sıcaklık, basınç, süre, debi ve doz. Bu değerleri koruyan, sağlanmadıklarında prosesi durduran ve olup biteni kaydeden kontrol sistemleri kuruyoruz.",
         "Proses projelerimiz arasında CIP'li pastörizatörler, bir zeytin sterilizasyon otoklavı, bir peynir pişirme makinesi, bir tablet kaplama makinesi, bir beton santrali, çamaşırhane kimyasal dozajlaması ve bir içecek şurubu karıştırma sistemi var. Mühendislerimiz bir ilaç tesisinde saf su (purified water) yardımcı sistemlerini de yeniden devreye aldı."
       ],
       "capabilities": [
         {
           "title": "Sıcaklık ve basınç kontrolü",
-          "text": "Buhar, sıcak su ve ısıtma için kapalı çevrim kontrol; her ürün için ayrı set değerleri."
+          "text": "Buhar, sıcak su ve ısıtma için kapalı çevrim kontrolü; her ürün için ayrı set değerleri."
         },
         {
           "title": "Süre ve aşama kontrolü",
@@ -580,7 +580,7 @@
         },
         {
           "title": "Operatör ve bakım eğitimi",
-          "text": "Kendi makinelerinizde Arapça veya İngilizce eğitim: günlük çalıştırma, alarmlar, reçeteler ve temel arıza bulma."
+          "text": "Kendi makinelerinizde Arapça veya İngilizce eğitim: günlük çalıştırma, alarmlar, reçeteler ve temel arıza tespiti."
         }
       ],
       "deliverables": [

@@ -2,12 +2,12 @@
   "intro": {
     "eyebrow": "Canlı HMI demosu",
     "title": "Bir pastörizatörü tarayıcınızdan çalıştırın",
-    "lead": "Bir HTST süt pastörizatörünün çalışan simülasyonu; süt işletmeleri için kurduğumuz türden bir PLC ve HMI sistemi. Başlatın, reçeteyi değiştirin, arıza oluşturun, CIP yıkaması çalıştırın: kontrol mantığı gerçek makine gibi tepki verir.",
+    "lead": "Bir HTST süt pastörizatörünün çalışan simülasyonu; süt işletmeleri için kurduğumuz türden bir PLC ve HMI sistemi. Başlatın, reçeteyi değiştirin, arıza oluşturun, CIP yıkaması çalıştırın: kontrol lojiği gerçek makine gibi tepki verir.",
     "seeing": "Neler görüyorsunuz",
     "bullets": [
       {
         "title": "Kilitlemeler",
-        "text": "Akış yönlendirme vanası (FDV), ürünü ancak bekletme borusu çıkışı yasal sıcaklığı koruduktan sonra ileri gönderir. Manuel modda bunu aşmayı deneyin: PLC izin vermez."
+        "text": "Akış yönlendirme vanası (FDV), ürünü ancak bekletme borusu çıkışı yasal sıcaklıkta yeterli süre kaldıktan sonra ileri gönderir. Manuel modda bunu aşmayı deneyin: PLC izin vermez."
       },
       {
         "title": "Alarmlar",
@@ -15,14 +15,14 @@
       },
       {
         "title": "Trendler",
-        "text": "Canlı sıcaklık, ayar değeri ve geri dönüş limitiyle birlikte izlenir; operatörler sapmayı bir partiye mal olmadan önce görür."
+        "text": "Canlı sıcaklık, set değeri ve geri dönüş limitiyle birlikte izlenir; operatörler sapmayı bir partiye mal olmadan önce görür."
       }
     ],
     "ctaQuestion": "Makineniz için böyle bir HMI ister misiniz?",
     "cta": "Teklif isteyin",
     "try": "Deneyin: “Başlat” düğmesine basın, “İleri” durumunu bekleyin, ardından “Arıza simüle et” düğmesine basın."
   },
-  "caption": "ISA-101 yüksek performanslı HMI ilkelerine göre hazırlanmış simüle 10.1″ operatör paneli: her şey normalken gri, renk yalnızca anormal durumlarda, dokunabileceğiniz her şey mavi.",
+  "caption": "ISA-101 yüksek performanslı HMI ilkeleri esas alınarak hazırlanmış simüle 10,1″ operatör paneli: her şey normalken gri, renk yalnızca anormal durumlarda, dokunabileceğiniz her şey mavi.",
   "a11y": {
     "panel": "Etkileşimli pastörizatör HMI simülasyonu",
     "mimic": "Proses şeması: ham ürün tankı, denge tankı, besleme pompası, rejenerasyon, ısıtma ve soğutma bölümlerine sahip plakalı eşanjör, sıcak su devresi, bekletme borusu, akış yönlendirme vanası ve depolama tankı. Canlı değerler proses panelinde listelenir.",
@@ -41,7 +41,7 @@
     "stopped": "Durdu"
   },
   "mimic": {
-    "raw": "Ham tank",
+    "raw": "Ham ürün tankı",
     "balance": "Denge tankı",
     "feedPump": "Besleme pompası",
     "phe": "Plakalı eşanjör",
@@ -84,14 +84,14 @@
   "perm": {
     "title": "İleri geçiş izni",
     "ok": "Uygun",
-    "blocked": "Engelli",
+    "blocked": "Engellendi",
     "temp": "TT-102 ≥ {limit} °C",
     "check": "{s} s boyunca korundu (kontrol süresi)",
     "dp": "Rejen. ΔP: pastörize > ham",
     "hold": "Bekletme süresi ≥ {hold} s"
   },
   "controls": {
-    "run": "Çalışma",
+    "run": "Çalıştırma",
     "start": "Başlat",
     "stop": "Durdur",
     "mode": "Mod",
@@ -102,8 +102,8 @@
     "ack": "Onayla",
     "manualTitle": "Manuel kontrol",
     "sp": "Isıtma SP",
-    "spDown": "Isıtma ayar değerini düşür",
-    "spUp": "Isıtma ayar değerini artır",
+    "spDown": "Isıtma set değerini düşür",
+    "spUp": "Isıtma set değerini artır",
     "fdv": "FDV",
     "fwd": "İleri",
     "div": "Geri dönüş"
@@ -122,7 +122,7 @@
     "unacked": "onaylanmamış",
     "time": "Zaman",
     "prio": "Öncelik",
-    "tag": "Etiket",
+    "tag": "Tag",
     "message": "Mesaj",
     "state": "Durum",
     "p1": "Yüksek",
@@ -149,11 +149,11 @@
     "heating": "Isınıyor. Bekletme çıkışı {limit} °C'ye ulaşana kadar FDV ürünü geri döndürür.",
     "recovering": "{limit} °C altındaki ürün, sıcaklık toparlanana kadar denge tankına geri döndürülüyor.",
     "forward": "Ürün {hold} s boyunca {limit} °C'yi sağladı: FDV ileri konumda, ürün depolamaya gidiyor.",
-    "manual": "Manuel: FDV'yi ve ısıtma ayar değerini siz kumanda edersiniz. Kilitleme ürünü korumaya devam eder.",
+    "manual": "Manuel: FDV'yi ve ısıtma set değerini siz kumanda edersiniz. Kilitleme ürünü korumaya devam eder.",
     "blocked": "Kilitleme: ileri geçiş engellendi. TT-102 {t} °C, {limit} °C limitinin altında.",
     "fault": "Buhar besleme basıncı düştü. Soğuk ürünün bekletme borusunda ilerleyişini izleyin.",
     "cipDone": "CIP tamamlandı. Hat temiz ve üretime hazır.",
-    "stopped": "Durduruldu. Pompalar kapalı, buhar vanası kapalı, FDV geri dönüş konumunda (arızada emniyetli).",
+    "stopped": "Durduruldu. Pompalar kapalı, buhar vanası kapalı, FDV geri dönüş konumunda (fail-safe).",
     "acked": "Alarmlar onaylandı.",
     "fdvFwd": "FDV ileri.",
     "fdvDiv": "FDV geri dönüş.",
@@ -181,7 +181,7 @@
       },
       "plc": {
         "label": "PLC",
-        "text": "Ölçülen değeri ayar değeriyle karşılaştırır ve mantığı yürütür: PID, kilitlemeler, sekanslar.",
+        "text": "Ölçülen değeri set değeriyle karşılaştırır ve lojiği yürütür: PID, kilitlemeler, sekanslar.",
         "spec": "PID · 10 ms tarama"
       },
       "hmi": {
@@ -197,7 +197,7 @@
       "process": {
         "label": "Proses",
         "text": "Makine tepki verir ve sensör yeni değeri ölçer.",
-        "spec": "72.4 °C"
+        "spec": "72,4 °C"
       }
     }
   }

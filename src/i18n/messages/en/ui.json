@@ -41,7 +41,7 @@
     "mainNav": "Main",
     "footerNav": "Footer",
     "breadcrumbs": "Breadcrumb",
-    "homeLink": "Logic Controls — home page",
+    "homeLink": "Logic Controls — homepage",
     "newTab": "opens in a new tab",
     "currentLanguage": "current language"
   },
@@ -72,7 +72,7 @@
     "rights": "All rights reserved."
   },
   "platforms": {
-    "title": "Platforms we program & integrate",
+    "title": "Platforms we program and integrate",
     "note": "Brand names and logos belong to their owners. They are shown only to identify the hardware our engineers work with."
   },
   "gallery": {

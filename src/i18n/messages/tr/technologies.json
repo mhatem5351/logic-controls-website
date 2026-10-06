@@ -17,12 +17,12 @@
       "S7-200 SMART": "S7-200 SMART",
       "Altivar VFDs": "Altivar VFD'ler",
       "Stepper drives": "Step motor sürücüleri",
-      "C60N circuit breakers": "C60N devre kesiciler",
-      "DVP series PLCs": "DVP serisi PLC'ler",
+      "C60N circuit breakers": "C60N minyatür devre kesiciler",
+      "DVP series PLCs": "DVP PLC'ler",
       "PLCs": "PLC'ler",
       "M100 VFD": "M100 VFD",
       "LX3V PLCs": "LX3V PLC'ler",
-      "HMIs": "HMI panelleri"
+      "HMIs": "HMI'lar"
     },
     "items": {
       "siemens": {

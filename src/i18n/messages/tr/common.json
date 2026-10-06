@@ -45,7 +45,7 @@
     "openInMaps": "Haritada aç"
   },
   "breadcrumbs": {
-    "label": "İçerik yolu",
+    "label": "Sayfa yolu",
     "home": "Ana sayfa",
     "services": "Hizmetler",
     "industries": "Sektörler",
@@ -175,7 +175,7 @@
     },
     "items": {
       "6th-of-october": {
-        "name": "6 Ekim ve Yeni Ekim Şehri",
+        "name": "6 Ekim Şehri ve Yeni Ekim",
         "governorate": "Gize"
       },
       "obour": {

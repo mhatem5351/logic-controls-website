@@ -121,7 +121,7 @@
     "intro": "You do not need everything on this list. Send what you have and we will ask for the rest.",
     "items": [
       "What the machine or line does, and what you want to change",
-      "Photos of the machine, the existing panel and the nameplates of motors, drives and PLC",
+      "Photos of the machine, the existing panel and the nameplates of the motors, drives and PLC",
       "Drawings, an I/O list or the existing program, if you have them",
       "Preferred PLC and HMI brand, or no preference",
       "Supply voltage and frequency at the machine, for example 380 V, 50 Hz",

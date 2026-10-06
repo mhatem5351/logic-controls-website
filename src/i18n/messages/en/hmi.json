@@ -3,15 +3,15 @@
     "eyebrow": "Live HMI demo",
     "title": "Run a pasteurizer from your browser",
     "lead": "A working simulation of an HTST milk pasteurizer, the kind of PLC and HMI system we build for dairy plants. Start it, change the recipe, cause a fault, run a CIP clean: the control logic reacts like the real machine.",
-    "seeing": "What you're seeing",
+    "seeing": "What you are seeing",
     "bullets": [
       {
         "title": "Interlocks",
-        "text": "The flow-diversion valve (FDV) sends product forward only after the holding-tube outlet has held the legal temperature. Try to override it in Manual: the PLC won't let you."
+        "text": "The flow-diversion valve (FDV) sends product forward only after the holding-tube outlet has held the legal temperature. Try to override it in Manual: the PLC will not let you."
       },
       {
         "title": "Alarms",
-        "text": "Prioritised, time-stamped alarms with acknowledge and return-to-normal states, as ISA-18.2 recommends."
+        "text": "Prioritized, time-stamped alarms with acknowledge and return-to-normal states, as ISA-18.2 recommends."
       },
       {
         "title": "Trends",
@@ -22,7 +22,7 @@
     "cta": "Request a quote",
     "try": "Try it: press Start, wait for Forward, then Simulate fault."
   },
-  "caption": "Simulated 10.1″ operator panel built to ISA-101 high-performance HMI principles: grey when all is normal, colour only for abnormal states, blue for what you can touch.",
+  "caption": "Simulated 10.1″ operator panel built to ISA-101 high-performance HMI principles: gray when all is normal, color only for abnormal states, blue for what you can touch.",
   "a11y": {
     "panel": "Interactive pasteurizer HMI simulation",
     "mimic": "Process diagram: raw tank, balance tank, feed pump, plate heat exchanger with regeneration, heating and cooling sections, hot-water loop, holding tube, flow-diversion valve and storage tank. Live values are listed in the process panel.",
@@ -160,7 +160,7 @@
     "alarm": "{prio} priority alarm: {text}"
   },
   "cip": {
-    "title": "CIP programme",
+    "title": "CIP program",
     "left": "{s} s left",
     "pre": "Pre-rinse",
     "caustic": "Caustic wash",
@@ -177,7 +177,7 @@
       "sensor": {
         "label": "Sensor",
         "text": "Measures the process: temperature, pressure, level, flow or position.",
-        "spec": "PT100 · 4–20 mA"
+        "spec": "PT100 · 4-20 mA"
       },
       "plc": {
         "label": "PLC",
@@ -192,7 +192,7 @@
       "actuator": {
         "label": "Actuator",
         "text": "A VFD, control valve or contactor applies the PLC's output to the machine.",
-        "spec": "VFD 0–50 Hz"
+        "spec": "VFD 0-50 Hz"
       },
       "process": {
         "label": "Process",

@@ -1,7 +1,7 @@
 {
   "seo": {
     "title": "Logic Controls Hakkında | Mısır'da Otomasyon Mühendisleri",
-    "description": "Logic Controls, Mısır'ın 6 Ekim Şehri'nde endüstriyel otomasyon şirketi. Mühendislerimiz 4+ yıllık deneyime ve 50'yi aşkın projeye sahip."
+    "description": "Logic Controls, Mısır'ın 6 Ekim Şehri'nde bir endüstriyel otomasyon şirketidir. Mühendislerimiz 4+ yıllık deneyime ve 50'yi aşkın projeye sahiptir."
   },
   "h1": "Logic Controls hakkında",
   "lead": "Gize, 6 Ekim Şehri'nde endüstriyel otomasyon mühendisleriyiz. Mısır'daki fabrikalar için kontrol sistemleri tasarlıyor, programlıyor ve devreye alıyoruz.",
@@ -9,7 +9,7 @@
     "title": "Hikâyemiz",
     "paragraphs": [
       "Logic Controls genç bir şirket, ancak deneyimli bir mühendislik ekibine sahip: dört yılı aşkın endüstriyel otomasyon deneyimi ve 50'yi aşkın tamamlanmış proje.",
-      "Bu projeler Siemens, Schneider Electric, Delta, LS Electric ve Wecon platformlarında; gıda, içecek ve süt ürünleri makinelerinden ilaç kaplamaya, kozmetik dolumdan etiketleme ve şişe baskıya, beton santrallerinden otel çamaşır makinelerine ve test ekipmanlarına uzanıyor. Mühendislerimiz ayrıca drenaj istasyonları ve bir yem fabrikası için SCADA sistemlerinde, sac boy kesme (cut-to-length) ve taşlama makinelerinde ve dekal kâğıdı baskı makinelerinde çalıştı.",
+      "Bu projeler Siemens, Schneider Electric, Delta, LS Electric ve Wecon platformlarında; gıda, içecek ve süt ürünleri makinelerinden ilaç kaplamaya, kozmetik dolumdan etiketleme ve şişe baskıya, beton santrallerinden otel çamaşır makinelerine ve test ekipmanlarına uzanıyor. Mühendislerimiz ayrıca drenaj pompa istasyonları ve bir yem fabrikası için SCADA sistemlerinde, sac boy kesme (cut-to-length) ve taşlama makinelerinde ve dekal kâğıdı baskı makinelerinde çalıştı.",
       "Logic Controls'u, Mısır'daki fabrikalara tüm kontrol sistemi için tek bir mühendislik ekibi sunmak amacıyla kurduk: tasarım, pano, programlama, devreye alma ve destek."
     ]
   },
@@ -46,7 +46,7 @@
     "items": [
       {
         "title": "Dürüst mühendislik",
-        "text": "Neler yapabileceğimizi açıkça söyler, tam olarak teslim edeceğimiz işin teklifini veririz. Bir retrofit değmeyecekse bunu size söyleriz."
+        "text": "Neler yapabileceğimizi açıkça söyler, tam olarak teslim edeceğimiz işin teklifini veririz. Retrofit yapmaya değmeyecekse bunu size açıkça söyleriz."
       },
       {
         "title": "Belgelenmiş iş",
@@ -54,7 +54,7 @@
       },
       {
         "title": "Önce güvenlik",
-        "text": "Üretimden önce kilitlemeler, acil stoplar ve testler. Zaman kazanmak için güvenlikten taviz vermeyiz."
+        "text": "Üretimden önce kilitlemeler, acil stop devreleri ve testler. Zaman kazanmak için güvenlikten taviz vermeyiz."
       },
       {
         "title": "Tesise yakın",

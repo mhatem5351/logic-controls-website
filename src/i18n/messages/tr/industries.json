@@ -16,10 +16,10 @@
       "navTitle": "Gıda ve içecek",
       "summary": "CIP'li pastörizatörler, peynir pişirme makineleri, sterilizasyon otoklavları, içecek şurubu karıştırma ve tesis yardımcı sistemleri; gıda güvenliği ve tutarlı kalite için kontrol altında.",
       "seoTitle": "Mısır'da Gıda ve İçecek Otomasyonu | Logic Controls",
-      "seoDescription": "Mısır'da pastörizatör, CIP, peynir pişirme, otoklav, şurup karıştırma ve gıda tesisi yardımcı sistemleri için PLC kontrolü. Sıcaklık, kilitleme, reçete.",
+      "seoDescription": "Mısır'da pastörizatör, CIP, peynir pişirme, otoklav, şurup karıştırma ve yardımcı sistemler için PLC kontrolü. Sıcaklık kontrolü, kilitlemeler, reçeteler.",
       "h1": "Gıda, içecek ve süt ürünleri tesisleri için otomasyon",
       "intro": [
-        "Gıda güvenliği kontrole dayanır: her partide, doğru sürede doğru sıcaklık. Gıda ve süt sistemlerimiz proses set değerlerini korur, güvenli olmayan ürünü geri tutar ve kalite ekibinizin kullanabileceği kayıtlar oluşturur.",
+        "Gıda güvenliği kontrole dayanır: her partide, doğru sürede doğru sıcaklık. Gıda ve süt ürünleri tesislerine kurduğumuz sistemler proses set değerlerini korur, güvenli olmayan ürünün ilerlemesini engeller ve kalite ekibinizin kullanabileceği kayıtlar oluşturur.",
         "İki pastörizatör, bir peynir pişirme makinesi, bir zeytin sterilizasyon otoklavı ve bir içecek şurubu karıştırma sistemi için kontrol sistemleri teslim ettik; bir gıda ve içecek tesisinde de atık arıtma sistemini devreye aldık. Mühendislerimizin deneyimi çikolata pişirme kazanlarını, unlu mamul hatlarını, sıvı yağ ve sıvı yumurta dolum makinelerini ve ultrafiltrasyon sistemlerini de kapsıyor."
       ],
       "needs": [
@@ -63,7 +63,7 @@
         }
       ],
       "cta": {
-        "title": "Bir gıda veya süt prosesini mi otomatikleştiriyorsunuz?",
+        "title": "Bir gıda veya süt ürünleri prosesini mi otomatikleştiriyorsunuz?",
         "text": "Ürünü, proses sıcaklıklarını ve sürelerini ve mevcut ekipmanınızı bize anlatın."
       }
     },
@@ -99,7 +99,7 @@
       "applications": [
         "Tablet film kaplama makineleri",
         "Ampul dolum makineleri",
-        "VFD ile sürülen hava işleme üniteleri, üfleyiciler ve egzoz fanları",
+        "VFD kontrollü hava işleme üniteleri, üfleyiciler ve egzoz fanları",
         "Steril üretim alanları için çevresel izleme (EMS)",
         "Saf su (purified water) yardımcı sistemleri",
         "Şişe baskı ve etiketleme makineleri",
@@ -159,7 +159,7 @@
       ],
       "faq": [
         {
-          "q": "Yarı otomatik bir dolum makinesini otomatiğe çevirebilir misiniz?",
+          "q": "Yarı otomatik bir dolum makinesini tam otomatiğe çevirebilir misiniz?",
           "a": "Çoğu zaman evet. Yarı otomatik bir dolum makinesine şişe sensörleri, stoperler ve otomatik sekans eklemek sık yapılan bir modernizasyondur. Önce mekaniği kontrol ediyoruz."
         },
         {
@@ -214,7 +214,7 @@
         },
         {
           "q": "Makine üreticileriyle çalışıyor musunuz?",
-          "a": "Evet. Yerel bir üreticinin ürettiği makinelerin kontrol sistemini tasarlayıp programlayabilir, üreticinin müşterisinin sahasında ilk çalıştırmaya destek verebiliriz."
+          "a": "Evet. Yerel bir makine üreticisinin ürettiği makinelerin kontrol sistemini tasarlayıp programlayabilir, üreticinin müşterisinin sahasında ilk çalıştırmaya destek verebiliriz."
         }
       ],
       "cta": {
@@ -260,7 +260,7 @@
       "faq": [
         {
           "q": "Mevcut bir beton santralinin kontrol sistemini yenileyebilir misiniz?",
-          "a": "Evet. Kantarları, motorları ve mevcut panoyu inceliyor, ardından mekanik tesisi koruyarak kontrol sistemini ve SCADA'yı değiştiriyor veya yükseltiyoruz."
+          "a": "Evet. Tartım sistemlerini, motorları ve mevcut panoyu inceliyor, ardından mekanik tesisi koruyarak kontrol sistemini ve SCADA'yı değiştiriyor veya yükseltiyoruz."
         },
         {
           "q": "Sistem parti kayıtlarını saklayabilir mi?",
@@ -290,7 +290,7 @@
         },
         {
           "title": "Kimyasal dozajlama",
-          "text": "Beşe kadar kimyasal girişinde zamanlı dozajlama."
+          "text": "En fazla beş kimyasal giriş için zamanlı dozajlama."
         },
         {
           "title": "Güvenli çalışma",

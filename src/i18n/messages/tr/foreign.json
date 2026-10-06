@@ -1,6 +1,6 @@
 {
   "seo": {
-    "title": "Mısır'da Yeni Fabrikalar için Yerel Otomasyon Ortağı",
+    "title": "Mısır'da Yeni Fabrikalara Otomasyon Desteği",
     "description": "Mısır'da fabrika kuranlar için yerel otomasyon mühendisleri: ithal hatların devreye alınması, I/O testleri, FAT/SAT desteği, Arapça HMI, yerel yedek parça."
   },
   "hero": {
@@ -20,7 +20,7 @@
     "intro": "Makineleriniz Türkiye'de veya başka bir ülkede üretiliyor; tesisiniz ise Mısır'da çalışıyor. Aradaki boşlukları biz kapatıyoruz.",
     "items": [
       {
-        "title": "Sahada mühendisler",
+        "title": "Sahada mühendis desteği",
         "text": "İthal hatlar ilk çalıştırma sırasında ve sonrasında sahada personel gerektirir. Mühendislerimiz Mısır'da yerleşik ve tesisinize gelir."
       },
       {
@@ -32,7 +32,7 @@
         "text": "Yerel çalışanlarınız için Arapça HMI ekranları ve operatör kılavuzları."
       },
       {
-        "title": "Temin edilebilen yedek parçalar",
+        "title": "Temin edilebilir yedek parçalar",
         "text": "Kritik yedek parça listesi ve yerel tedarik; böylece ithal parçayı beklerken tek bir arızalı parça yüzünden hattınız durmaz."
       },
       {
@@ -46,7 +46,7 @@
     ],
     "columns": {
       "need": "Tesisin ihtiyacı",
-      "answer": "Bu açığı nasıl kapatıyoruz"
+      "answer": "Bu boşluğu nasıl kapatıyoruz"
     }
   },
   "services": {
@@ -78,7 +78,7 @@
       },
       {
         "title": "Operatör ve bakım eğitimi",
-        "text": "Kendi makinelerinizde Arapça eğitim: günlük çalıştırma, alarmlar, reçeteler ve temel arıza bulma."
+        "text": "Kendi makinelerinizde Arapça eğitim: günlük çalıştırma, alarmlar, reçeteler ve temel arıza tespiti."
       },
       {
         "title": "Teknik destek sözleşmeleri",
@@ -88,7 +88,7 @@
   },
   "timeline": {
     "title": "Bizi ne zaman dahil etmelisiniz",
-    "intro": "Ne kadar erken katılırsak sahada o kadar az sürprizle karşılaşırsınız.",
+    "intro": "Sürece ne kadar erken dahil olursak, sahada o kadar az sürprizle karşılaşırsınız.",
     "steps": [
       {
         "title": "Hat spesifikasyonu",
@@ -139,8 +139,8 @@
     "roles": {
       "ar": "Operatörler için: HMI ekranları, kılavuzlar ve eğitim",
       "en": "Mühendislik, yönetim ve teknik dokümanlar",
-      "zh": "Temel dokümanlar talep üzerine",
-      "tr": "Temel dokümanlar talep üzerine"
+      "zh": "Talep halinde temel dokümanlar",
+      "tr": "Talep halinde temel dokümanlar"
     }
   },
   "faq": {

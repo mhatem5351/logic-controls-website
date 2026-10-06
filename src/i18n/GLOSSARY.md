@@ -199,7 +199,7 @@ Use this to keep the four languages consistent. "Keep" = write the term in Latin
 | Badr City | 巴德尔城 |
 | 10th of Ramadan City | 斋月十日城 |
 | Sadat City | 萨达特城 |
-| Borg El Arab / New Borg El Arab* | 阿拉伯塔 / 新阿拉伯塔（Borg El Arab）. Variants: 阿拉伯堡, 博格阿拉伯 |
+| Borg El Arab / New Borg El Arab* | 阿拉伯堡 / 新阿拉伯堡（Borg El Arab）. Variants: 阿拉伯堡, 博格阿拉伯 |
 | Ain Sokhna | 艾因苏赫纳. Variant: 苏赫奈泉, used in TEDA coverage |
 | Qantara West / East Port Said | 西坎塔拉 / 东塞得港 |
 | SCZONE | 苏伊士运河经济区（SCZONE） |

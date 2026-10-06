@@ -1,6 +1,6 @@
 {
   "seo": {
-    "title": "获取报价 | Logic Controls 埃及",
+    "title": "埃及自动化项目询价 | Logic Controls",
     "description": "为埃及项目询价：控制柜、PLC/HMI 编程、设备改造、SCADA 或调试。可通过表单、电子邮件或 WhatsApp 发送需求。"
   },
   "h1": "获取报价",
@@ -31,7 +31,7 @@
         "help": "工厂或公司名称。"
       },
       "phone": {
-        "label": "手机或 WhatsApp 号码",
+        "label": "电话 / WhatsApp 号码",
         "help": "请包含国家或地区代码，例如 +20 10 1234 5678。"
       },
       "email": {
@@ -50,7 +50,7 @@
           "scada-data-logging": "SCADA 或数据记录",
           "testing-commissioning": "测试与调试",
           "maintenance-support": "故障排查或维护",
-          "new-factory": "埃及新建工厂：整体自动化范围",
+          "new-factory": "埃及新建工厂：全套自动化服务",
           "other": "其他需求"
         }
       },
@@ -63,7 +63,7 @@
           "cosmetics-personal-care": "化妆品与个人护理",
           "packaging-labeling": "包装、贴标与印刷",
           "building-materials": "建材",
-          "commercial-laundry": "酒店与商业洗衣",
+          "commercial-laundry": "酒店与商用洗衣",
           "test-equipment": "工业测试设备",
           "other": "其他行业"
         }
@@ -126,14 +126,14 @@
     "select": "请选择一项。",
     "consent": "请确认同意我们使用您的信息进行回复。",
     "messageTooLong": "描述请控制在 {max} 个字符以内。",
-    "summary": "请检查标出的字段。"
+    "summary": "请检查已标出的项目。"
   },
   "errors": {
     "title": "您的需求未能发送",
     "invalid": "部分信息缺失或无效，请检查表单后重试。",
-    "verification": "安全验证未完成。请重试，或通过电子邮件或 WhatsApp 联系我们。",
-    "send": "由于技术问题，您的需求未能发送。请几分钟后重试，或通过电子邮件或 WhatsApp 联系我们。",
-    "unknown": "出现错误。请重试，或通过电子邮件或 WhatsApp 联系我们。",
+    "verification": "安全验证未完成。请重试，或通过电子邮件、WhatsApp 联系我们。",
+    "send": "由于技术问题，您的需求未能发送。请几分钟后重试，或通过电子邮件、WhatsApp 联系我们。",
+    "unknown": "出现错误。请重试，或通过电子邮件、WhatsApp 联系我们。",
     "fallback": "您也可以直接联系我们："
   },
   "channels": {
@@ -183,7 +183,7 @@
     "text": "工程师会审阅您的需求，并通过您选择的方式与您联系。",
     "urgent": {
       "title": "设备已停机？",
-      "text": "如需紧急协助，请立即致电或通过 WhatsApp 联系我们，并说明您已提交的需求。",
+      "text": "如需紧急协助，请立即致电或发送邮件，并注明您已提交过需求；如您在埃及，也可通过 WhatsApp 联系我们。",
       "cta": "WhatsApp 联系工程师"
     },
     "more": {
