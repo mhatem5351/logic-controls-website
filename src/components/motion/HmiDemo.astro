@@ -17,10 +17,11 @@
  *   status bar → mimic → message → command bar → faceplate → trend / alarms (the desktop grid only places them).
  */
 import { getMessages, localePath, LOCALE_META, type Locale } from "~/i18n";
-import { colon, html } from "~/lib/text";
+import { colon, heading, html, markup, punct } from "~/lib/text";
 import BrandMark from "~/components/BrandMark.astro";
 import { uid } from "~/components/uid";
-import { RECIPES } from "~/scripts/motion/hmi-sim";
+import { CHECK_S, RECIPES } from "~/scripts/motion/hmi-sim";
+import { fmt } from "~/lib/format";
 import { iso } from "~/scripts/motion/hmi-bidi";
 import { fmt1, keyStops, KEY_T0, KEY_T1 } from "~/scripts/motion/hmi-fmt";
 import hmiCss from "./hmi-demo.css?url";
@@ -40,11 +41,14 @@ const t = getMessages(locale).hmi;
 const H = headingLevel === 3 ? "h3" : "h2";
 const dir = LOCALE_META[locale].dir; // natural-language blocks inside the (always LTR) screen follow the page
 const u = uid("hmi");
-const quote = `${localePath(locale, "contact")}#quote`;
+/* UX2-16: the demo's next steps. The quote form opens with the matching need / industry preselected (rfq-form.ts reads
+   ?service= / ?industry=); the case study is the real pasteurizer behind the demo (CIP, recipes, flow diversion). */
+const quote = `${localePath(locale, "contact")}?service=plc-hmi-programming&industry=food-beverage#quote`;
+const project = localePath(locale, "projects/pasteurizer-cip-recipes");
 const R = RECIPES.milk;
 const n1 = (v: number) => fmt1(v, locale);
 /** Separator before a visually hidden state word ("TT-102 ≥ 72.0 °C, not met"). */
-const comma = locale === "ar" ? "، " : locale === "zh" ? "，" : ", ";
+const comma = punct(locale).comma;
 
 const mode = { auto: t.mode.auto, manual: t.mode.manual };
 
@@ -64,12 +68,13 @@ const runtime = {
   cip: t.cip,
   controls: { start: t.controls.start, ack: t.controls.ack },
   tour: { done: t.tour.done },
+  quote,
 };
 
-// The idle message with the Start key drawn as a key cap ("Press [▶ Start] to run the pasteurizer.").
-const esc = (s: string) => s.replace(/[&<>"]/g, (c) => `&#${c.charCodeAt(0)};`);
-const startKey = `<span class="hs-key"><svg viewBox="0 0 16 16" aria-hidden="true"><path d="M4.5 3l8 5-8 5z"/></svg>${esc(t.controls.start)}</span>`;
-const pressHtml = esc(iso(t.msg.press)).replace("{key}", startKey);
+// The idle message with the Start key drawn as a key cap ("Press [▶ Start] to run the pasteurizer."), assembled with
+// markup`` (values escaped; same markup as the controller's PRESS in hmi-demo.ts).
+const [pressA = "", pressB = ""] = iso(t.msg.press).split("{key}");
+const pressHtml = markup`${pressA}<span class="hs-key"><svg viewBox="0 0 16 16" aria-hidden="true"><path d="M4.5 3l8 5-8 5z"/></svg>${t.controls.start}</span>${pressB}`;
 
 // Holding tube, inlet → outlet, split into segments so the product temperature can travel along it.
 const HOLD: [string, number][] = [
@@ -140,7 +145,7 @@ const STEPS = ["start", "forward", "fault", "ack"] as const;
             <span class="slant-bar" aria-hidden="true" />
             {t.intro.eyebrow}
           </p>
-          <H class="type-h2 lc-hmi-title" set:html={html(locale, t.intro.title)} />
+          <H class="type-h2 lc-hmi-title" set:html={heading(locale, t.intro.title)} />
           <p class="type-lead lc-hmi-lead" set:html={html(locale, t.intro.lead)} />
         </div>
         <div class="lc-hmi-seeing">
@@ -176,6 +181,12 @@ const STEPS = ["start", "forward", "fault", "ack"] as const;
             <li data-step={k}>
               <span class="lc-hmi-stepn" aria-hidden="true">{i + 1}</span>
               <span>{t.tour[k]}</span>
+              {/* while the fault develops: what to watch (the step stays current until the plant has diverted and recovered) */}
+              {k === "fault" && (
+                <span class="lc-hmi-hint" data-step-hint hidden>
+                  {t.tour.watch}
+                </span>
+              )}
               <span class="lc-hmi-sr" data-step-st />
             </li>
           ))
@@ -375,7 +386,11 @@ const STEPS = ["start", "forward", "fault", "ack"] as const;
         </div>
 
         <!-- operator message line -->
-        <p class="hs-msg" dir={dir}><span data-msg set:html={pressHtml} /></p>
+        <p class="hs-msg" dir={dir}>
+          <span data-msg set:html={pressHtml} />
+          {/* phones: the "Try it" list is off screen while playing; the current step mirrors it here (the list says it to AT) */}
+          <span class="hs-tourn" aria-hidden="true" data-tour-n dir="ltr">1/4</span>
+        </p>
 
         <!-- command bar (function keys) -->
         <div class="hs-cmd">
@@ -394,10 +409,10 @@ const STEPS = ["start", "forward", "fault", "ack"] as const;
           <button type="button" class="hs-btn" data-c="cip" aria-pressed="false">
             <svg viewBox="0 0 16 16" aria-hidden="true"><path d="M8 2c2.6 3 4 5 4 7a4 4 0 0 1-8 0c0-2 1.4-4 4-7z" /></svg>{t.controls.cip}
           </button>
-          <button type="button" class="hs-btn hs-fault" data-c="fault" aria-pressed="false" aria-disabled="true">
+          <button type="button" class="hs-btn hs-fault" data-c="fault" aria-pressed="false" aria-disabled="true" aria-describedby={`${u}-why-fault`}>
             <svg viewBox="0 0 16 16" aria-hidden="true"><path d="M9.5 1.5L3.5 9h4l-1 5.5 6-7.5h-4z" /></svg>{t.controls.fault}
           </button>
-          <button type="button" class="hs-btn hs-ack" data-c="ack" aria-disabled="true">
+          <button type="button" class="hs-btn hs-ack" data-c="ack" aria-disabled="true" aria-describedby={`${u}-why-ack`}>
             <svg viewBox="0 0 16 16" aria-hidden="true"><path d="M8 2.2a4 4 0 0 0-4 4V9l-1.4 2.2h10.8L12 9V6.2a4 4 0 0 0-4-4zM6.4 13a1.6 1.6 0 0 0 3.2 0" /></svg>{t.controls.ack}
           </button>
         </div>
@@ -407,7 +422,8 @@ const STEPS = ["start", "forward", "fault", "ack"] as const;
           <section class="hs-main" aria-label={t.kpi.title}>
             <div class="hs-k">
               <span class="hs-tag">TT-102</span> {t.kpi.tt102}
-              <span class="hs-fdv"><span class="hs-tag">FDV</span> <b data-v="fdvTxt">{t.mimic.divert}</b></span>
+              {/* both words stacked in one cell, so the label keeps the width of the longer one (no re-wrap at a flip) */}
+              <span class="hs-fdv"><span class="hs-tag">FDV</span> <b class="hs-stk"><span data-v="fdvTxt">{t.mimic.divert}</span><span class="hs-sz" aria-hidden="true">{t.mimic.forward}</span><span class="hs-sz" aria-hidden="true">{t.mimic.divert}</span></b></span>
             </div>
             <div class="hs-big" data-alm-ro="TT-102">
               <span class="hs-bigv" data-v="tt102">{n1(24)}</span><span class="hs-u">°C</span>
@@ -450,12 +466,12 @@ const STEPS = ["start", "forward", "fault", "ack"] as const;
           </div>
 
           <div class="hs-box hs-perm" dir={dir}>
-            <p class="hs-h">{t.perm.title} <span class="hs-permst" data-v="permSt">{t.perm.blocked}</span></p>
+            <p class="hs-h">{t.perm.title} <span class="hs-permst hs-stk"><span data-v="permSt">{t.perm.blocked}</span><span class="hs-sz" aria-hidden="true">{t.perm.blocked}</span><span class="hs-sz" aria-hidden="true">{t.perm.ok}</span></span></p>
             <ul>
-              <li data-perm="temp"><i aria-hidden="true"></i><span data-v="permTemp">{iso(t.perm.temp.replace("{limit}", n1(R.limit)))}</span><span class="lc-hmi-sr" data-perm-st>{comma}{t.perm.notMet}</span></li>
-              <li data-perm="check"><i aria-hidden="true"></i><span data-v="permCheck">{iso(t.perm.check.replace("{s}", "2"))}</span><span class="lc-hmi-sr" data-perm-st>{comma}{t.perm.notMet}</span></li>
+              <li data-perm="temp"><i aria-hidden="true"></i><span data-v="permTemp">{iso(fmt(t.perm.temp, { limit: n1(R.limit) }))}</span><span class="lc-hmi-sr" data-perm-st>{comma}{t.perm.notMet}</span></li>
+              <li data-perm="check"><i aria-hidden="true"></i><span data-v="permCheck">{iso(fmt(t.perm.check, { s: CHECK_S }))}</span><span class="lc-hmi-sr" data-perm-st>{comma}{t.perm.notMet}</span></li>
               <li data-perm="dp"><i aria-hidden="true"></i><span>{t.perm.dp}</span><span class="lc-hmi-sr" data-perm-st>{comma}{t.perm.notMet}</span></li>
-              <li data-perm="hold"><i aria-hidden="true"></i><span data-v="permHold">{iso(t.perm.hold.replace("{hold}", String(R.hold)))}</span><span class="lc-hmi-sr" data-perm-st>{comma}{t.perm.notMet}</span></li>
+              <li data-perm="hold"><i aria-hidden="true"></i><span data-v="permHold">{iso(fmt(t.perm.hold, { hold: R.hold }))}</span><span class="lc-hmi-sr" data-perm-st>{comma}{t.perm.notMet}</span></li>
             </ul>
           </div>
 
@@ -541,16 +557,25 @@ const STEPS = ["start", "forward", "fault", "ack"] as const;
       </div>
     </div>
     <p class="lc-hmi-sr" aria-live="polite" data-live></p>
+    {/* why Simulate fault / Acknowledge are dimmed (aria-describedby; hmi-demo.ts fills them while the key is aria-disabled) */}
+    <span id={`${u}-why-fault`} data-why="fault" hidden>{t.msg.faultNeedsRun}</span>
+    <span id={`${u}-why-ack`} data-why="ack" hidden>{t.msg.noAlarms}</span>
     <figcaption class="lc-hmi-foot">
+      {/* through the text engine (I18N2-11): "ISA-101" never splits, zh breaks between words, Latin isolated in ar,
+          and the screen size "10.1″" is one atom (an LTR isolate in Arabic, so the inch mark follows the number). */}
       <p class="lc-hmi-cap" id={`${u}-cap`}>
         <span class="lc-hmi-isa">ISA-101</span>
-        {iso(t.caption)}
+        <Fragment set:html={html(locale, t.caption)} />
       </p>
       <div class="lc-hmi-cta">
         <p>{t.intro.ctaQuestion}</p>
         <a href={quote} class="lc-hmi-btn">
           {t.intro.cta}
           <svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true" class="rtl:-scale-x-100"><path d="M5 12h14M12 5l7 7-7 7" /></svg>
+        </a>
+        <a href={project} class="lc-hmi-more">
+          <span set:html={html(locale, t.intro.project)} />
+          <svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true" class="rtl:-scale-x-100"><path d="M5 12h14M12 5l7 7-7 7" /></svg>
         </a>
       </div>
     </figcaption>

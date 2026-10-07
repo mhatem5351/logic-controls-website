@@ -179,8 +179,16 @@ export class Pasteurizer {
     this.produced = false; // new grade: temperature alarms re-arm after the first forward
     this.event("evRecipe", "RCP", 0, id);
   }
-  nudgeSp(d: number): void {
-    this.sp = clamp(Math.round((this.sp + d) * 10) / 10, this.R.limit - 6, this.R.limit + 6);
+  /** Step the heating setpoint (manual mode). Returns false when it is already at its limit (limit ± 6 °C). */
+  nudgeSp(d: number): boolean {
+    const v = clamp(Math.round((this.sp + d) * 10) / 10, this.R.limit - 6, this.R.limit + 6);
+    const moved = v !== this.sp;
+    this.sp = v;
+    return moved;
+  }
+  /** The setpoint sits on its lower / upper limit. */
+  get spAtLimit(): boolean {
+    return this.sp <= this.R.limit - 6 || this.sp >= this.R.limit + 6;
   }
   /** Manual FDV command. Returns false when the interlock blocks a forward request. */
   commandFdv(forward: boolean): boolean {
@@ -315,7 +323,10 @@ export class Pasteurizer {
     const tt102 = this.tt102;
     const regenHot = this.fwd ? tt102 : this.tbt;
     const tRegT = this.q > 50 ? this.tbt + (this.fwd ? effR : 0) * (regenHot - this.tbt) : this.tReg;
-    this.tReg += (tRegT - this.tReg) * Math.min(1, dt / 4);
+    // the regen section's thermal mass (~16 s): when the FDV first goes forward, hot product starts preheating the
+    // raw milk; a faster response kicked TT-101 up ~1.5 °C, which reached TT-102 one holding time later, right when a
+    // visitor's "Simulate fault" story expects it to fall (MOT2-23). Now TT-102 stays within ~0.3 °C of its value.
+    this.tReg += (tRegT - this.tReg) * Math.min(1, dt / 16);
 
     // holding tube: plug flow
     if (this.q > 50) {

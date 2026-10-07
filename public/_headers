@@ -32,8 +32,11 @@
   Cache-Control: public, max-age=31536000, immutable
   X-Robots-Tag: noindex
 
+# Hero / case-study media: every file name carries a version (-v3…); a changed file gets a new name (-v4) and the
+# pages point to it, so a cached copy never goes stale (PERF2-15). tests/static/check-budgets.mjs fails on an
+# unversioned file in public/media/.
 /media/*
-  Cache-Control: public, max-age=2592000, stale-while-revalidate=86400
+  Cache-Control: public, max-age=31536000, immutable
 
 /favicon.ico
   Cache-Control: public, max-age=604800

@@ -17,7 +17,7 @@ import { SITE } from "~/data/site";
 import { SERVICE_SLUGS } from "~/data/services";
 import { INDUSTRY_SLUGS } from "~/data/industries";
 import { PROJECT_SLUGS, getProject } from "~/data/projects";
-import { techLabel } from "~/lib/text";
+import { cleanText, techLabel } from "~/lib/text";
 
 export interface OgCard {
   url: string;
@@ -43,16 +43,8 @@ export interface OgSpec {
 
 /* ------------------------------------------------------------------ text helpers */
 
-/** Display-only controls (NBSP, word joiner, isolates, soft hyphen, ZWSP, marks) → plain text for alt / meta. */
-export const plainText = (s: string) =>
-  s
-    .replace(/ /g, " ")
-    .replace(/[­​-‏⁠⁦-⁩]/g, "")
-    .replace(/\s+/g, " ")
-    .trim();
-
 const altFor = (title: string) => {
-  const t = plainText(title);
+  const t = cleanText(title);
   return t.includes(SITE.name) ? t : `${t} · ${SITE.name}`;
 };
 
@@ -125,7 +117,7 @@ function specsFor(locale: Locale): OgSpec[] {
     path: "default",
     kind: "default",
     title: company.tagline,
-    alt: plainText(t.seo.ogImageAlt),
+    alt: cleanText(t.seo.ogImageAlt),
   });
   return list;
 }

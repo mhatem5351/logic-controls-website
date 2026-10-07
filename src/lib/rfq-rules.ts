@@ -8,14 +8,14 @@
  *   industry, timeline, message, page, locale, consent=yes,
  *   files (0–3 attachments, multipart only), honeypot lc_hp, cf-turnstile-response,
  *   name.dir / company.dir / message.dir (the browser's `dirname`: "ltr" | "rtl").
- * A request needs a name, a phone OR an email (zh visitors may give only an email), an email when the visitor asks for
- * replies by email, consent, and a Turnstile token.
+ * A request needs a name, a phone OR an email (zh visitors may give only an email), the contact detail its preferred
+ * reply channel needs (email → an email address; phone call / WhatsApp → a phone number), consent, and a Turnstile
+ * token.
  */
 
-import { LOCALES, isLocale, type Locale } from "../i18n/config";
+import { isLocale, type Locale } from "../i18n/config";
 
 /** The site's locales (src/i18n/config.ts, plain data: safe to bundle into the Worker). */
-export const RFQ_LOCALES = LOCALES;
 export type RfqLocale = Locale;
 export const isRfqLocale = isLocale;
 
@@ -56,13 +56,21 @@ export const RFQ_NAME_MIN = 2;
 
 /** "How should we reply?" choices (zh offers phone and email only: WhatsApp is blocked in mainland China). */
 export const REPLY_CHANNELS = ["whatsapp", "phone", "email"] as const;
+export type ReplyChannel = (typeof REPLY_CHANNELS)[number];
+/** The contact detail each reply channel needs. */
+export const REPLY_NEEDS: Record<ReplyChannel, "phone" | "email"> = { whatsapp: "phone", phone: "phone", email: "email" };
 
 /** The timeline choice that means "a machine is stopped": flagged [URGENT] in the subject, triggers the call-now panel. */
 export const URGENT_TIMELINE = "urgent";
 /** Services where a stopped machine is the usual reason to write: the form offers the call-now panel right away. */
 export const URGENT_SERVICES: readonly string[] = ["maintenance-support"];
 
-export const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/;
+/**
+ * local@domain.tld, deliberately loose (any language, plus addressing, punycode and Unicode domains) but never with
+ * whitespace or the characters that change the meaning of an address header: <>()[]\,;:" — "a@b.com, c@d.com",
+ * "a@b.com>" or "a@b.com;bcc" would otherwise reach the email's Reply-To (and could make the send fail).
+ */
+export const EMAIL_RE = /^[^\s@<>()[\]\\,;:"]+@[^\s@<>()[\]\\,;:"]+\.[^\s@<>()[\]\\,;:"]{2,}$/;
 /** After toLatinDigits() and stripping separators: optional + or 00, then 8–15 digits. */
 export const PHONE_RE = /^(\+|00)?\d{8,15}$/;
 
@@ -73,7 +81,8 @@ export const RFQ_FILES = {
   field: "files",
   maxCount: 3,
   /** Total raw bytes of all files. The email binding allows 25 MiB to a verified address; this keeps uploads quick on
-   *  mobile data and the Worker's multipart parsing far inside the Free plan's 10 ms CPU. */
+   *  mobile data and the Worker's multipart parsing far inside the Free plan's 10 ms CPU. Large photos are reduced in
+   *  the browser before they count against it (src/scripts/rfq-form.ts → IMAGE_MAX_SIDE). */
   maxTotal: 4 * 1024 * 1024,
   /** Lower-case extensions → MIME type used for the attachment. */
   types: {
@@ -92,42 +101,72 @@ export const RFQ_FILES_ACCEPT = Object.keys(RFQ_FILES.types)
   .join(",");
 /** Request body cap (bytes): attachments + generous room for the text fields and multipart framing. */
 export const RFQ_MAX_BODY = RFQ_FILES.maxTotal + 64 * 1024;
+/** How many leading bytes sniffOk() looks at (a PDF header may sit anywhere in the first 1024 bytes). */
+export const SNIFF_BYTES = 1024;
 
 export type FileProblem = "count" | "size" | "type";
 export const fileExt = (name: string) => /\.([a-z0-9]{1,5})$/i.exec(name)?.[1]?.toLowerCase() ?? "";
+const acceptedExt = (name: string) => Object.hasOwn(RFQ_FILES.types, fileExt(name));
+
+/** Names of the files whose extension the form does not accept (empty files are ignored). */
+export const badTypeNames = (files: readonly { name: string; size: number }[]) => files.filter((f) => f.size > 0 && !acceptedExt(f.name)).map((f) => f.name);
 
 /** Checks a selection of files ({ name, size }) against the limits; null when fine. Empty files are ignored. */
 export function checkFiles(files: readonly { name: string; size: number }[]): FileProblem | null {
   const real = files.filter((f) => f.size > 0);
-  if (real.some((f) => !(fileExt(f.name) in RFQ_FILES.types))) return "type";
+  if (badTypeNames(real).length) return "type";
   if (real.length > RFQ_FILES.maxCount) return "count";
   if (real.reduce((n, f) => n + f.size, 0) > RFQ_FILES.maxTotal) return "size";
   return null;
 }
 
-/** Does the file start with the signature its extension promises? (A renamed .exe is not a PDF.) */
+/**
+ * Does the file start with the signature its extension promises? (A renamed .exe is not a PDF.) `head` is the file's
+ * first bytes (up to SNIFF_BYTES); the checks are lenient where real files are:
+ *   pdf  "%PDF-" anywhere in the first 1024 bytes (the PDF spec's tolerance: BOMs, blank lines, mail headers)
+ *   dxf  text DXF ("0 / SECTION" or a "999" comment first, optional UTF-8 BOM and indentation) or binary DXF
+ *        ("AutoCAD Binary DXF\r\n\x1a\0")
+ *   dwg  "AC" + a version digit ("AC1015", "AC1032", "AC2.10" …)
+ *   zip  local file header, empty archive or spanned-archive marker
+ */
 export function sniffOk(ext: string, head: Uint8Array): boolean {
   const starts = (...sig: number[]) => sig.every((b, i) => head[i] === b);
   const ascii = (s: string, at = 0) => [...s].every((c, i) => head[at + i] === c.charCodeAt(0));
   switch (ext) {
     case "pdf":
-      return ascii("%PDF");
+      return indexOfAscii(head, "%PDF-", SNIFF_BYTES) >= 0;
     case "png":
-      return starts(0x89, 0x50, 0x4e, 0x47);
+      return starts(0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a);
     case "jpg":
     case "jpeg":
       return starts(0xff, 0xd8, 0xff);
     case "webp":
       return ascii("RIFF") && ascii("WEBP", 8);
     case "zip":
-      return starts(0x50, 0x4b, 0x03, 0x04) || starts(0x50, 0x4b, 0x05, 0x06);
-    case "dwg": // "AC1015", "AC1032", …
+      return starts(0x50, 0x4b, 0x03, 0x04) || starts(0x50, 0x4b, 0x05, 0x06) || starts(0x50, 0x4b, 0x07, 0x08);
+    case "dwg":
       return ascii("AC") && head[2] !== undefined && head[2] >= 0x30 && head[2] <= 0x39;
-    case "dxf": // text DXF (group codes and values); binary DXF starts with "AutoCAD Binary DXF"
-      return head.length > 0 && [...head.subarray(0, 64)].every((b) => b === 9 || b === 10 || b === 13 || (b >= 32 && b < 127));
+    case "dxf": {
+      if (ascii("AutoCAD Binary DXF")) return true;
+      const at = starts(0xef, 0xbb, 0xbf) ? 3 : 0;
+      const text = head.subarray(at, at + 64);
+      // text DXF: printable ASCII, tabs and line breaks only at the start (a binary file has NULs and control bytes)
+      if (!text.length || text.some((b) => b === 127 || (b < 32 && b !== 9 && b !== 10 && b !== 13))) return false;
+      return /^\s*(?:0\r?\n\s*SECTION\b|999\r?\n)/.test(String.fromCharCode(...text));
+    }
     default:
       return false;
   }
+}
+function indexOfAscii(head: Uint8Array, s: string, within: number): number {
+  const first = s.charCodeAt(0);
+  const end = Math.min(head.length, within) - s.length;
+  outer: for (let i = 0; i <= end; i++) {
+    if (head[i] !== first) continue;
+    for (let j = 1; j < s.length; j++) if (head[i + j] !== s.charCodeAt(j)) continue outer;
+    return i;
+  }
+  return -1;
 }
 
 /** A safe attachment filename: no path, no control/bidi characters, at most 100 characters, extension kept. */
@@ -168,19 +207,90 @@ export const compactPhone = (s: string) => toLatinDigits(s).replace(/[\s().\-–
 export const isValidPhone = (s: string) => PHONE_RE.test(compactPhone(s));
 export const isValidEmail = (s: string) => EMAIL_RE.test(s.trim());
 
+/** Countries whose local number formats the form can complete with a country code (the site's three markets). */
+export type PhoneCountry = "EG" | "TR" | "CN";
+/** What the request says about where the visitor is: the country field, the plant location, the page language. */
+export interface PhoneContext {
+  locale?: string;
+  /** Free text "Country" field (any language). */
+  country?: string;
+  /** "Plant location" select: an Egyptian zone slug, "otherEgypt" or "outsideEgypt". */
+  location?: string;
+}
+
+const DIAL: Record<PhoneCountry, string> = { EG: "20", TR: "90", CN: "86" };
 /**
- * International digits for wa.me / tel: links, or null if the number is not usable.
- *   +20 100 123 4567 / 0020 100 123 4567 → 201001234567
- *   01001234567 (Egyptian mobile, local format: 010/011/012/015 + 8 digits) → 201001234567
- *   anything else that already looks international is kept as typed (digits only).
+ * National formats → the national significant number (what follows the country code).
+ *   EG mobile 010/011/012/015 + 8 digits (also typed without the 0), landline 0 + 9 digits (02 Cairo, 03 Alexandria …)
+ *   TR mobile 05xx xxx xx xx (also without the 0), landline 0 + area 2xx–4xx + 7 digits
+ *   CN mobile 1[3-9] + 9 digits, landline 0 + area code + 7–8 digits (010 Beijing, 021 Shanghai …)
  */
-export function intlPhone(raw: string): string | null {
+const NATIONAL: Record<PhoneCountry, { mobile: RegExp[]; other: RegExp[] }> = {
+  EG: { mobile: [/^0(1[0125]\d{8})$/, /^(1[0125]\d{8})$/], other: [/^0([2-9]\d{8})$/] },
+  TR: { mobile: [/^0?(5\d{9})$/], other: [/^0?([2-4]\d{9})$/] },
+  CN: { mobile: [/^(1[3-9]\d{9})$/], other: [/^0([1-9]\d{8,10})$/] },
+};
+/** Typed with the country code but without "+"/"00" ("201001234567"): specific enough to accept anywhere. */
+const BARE_INTL = [/^20(1[0125]\d{8})$/, /^90(5\d{9})$/, /^86(1[3-9]\d{9})$/];
+
+/** Country names as visitors write them (accents folded, lower case): whole words, plus CJK names anywhere. */
+const COUNTRY_WORDS: Record<PhoneCountry, { words: string[]; cjk: string[] }> = {
+  EG: { words: ["egypt", "egyptian", "misir", "mısır", "eg", "egy", "مصر"], cjk: ["埃及"] },
+  TR: { words: ["turkey", "turkiye", "turkei", "tr", "tur", "تركيا"], cjk: ["土耳其"] },
+  CN: { words: ["china", "chinese", "prc", "cin", "cn", "chn", "الصين"], cjk: ["中国", "中國", "中华人民共和国"] },
+};
+
+/** The country the free-text country field names, "other" for any other non-empty text, null when empty. */
+export function countryOf(text: string | undefined): PhoneCountry | "other" | null {
+  const s = (text ?? "").trim();
+  if (!s) return null;
+  const folded = s.normalize("NFKD").replace(/\p{M}/gu, "").toLowerCase();
+  const words = new Set(folded.split(/[^\p{L}\p{N}]+/u).filter(Boolean));
+  const hits = (Object.keys(COUNTRY_WORDS) as PhoneCountry[]).filter(
+    (c) => COUNTRY_WORDS[c].words.some((w) => words.has(w)) || COUNTRY_WORDS[c].cjk.some((w) => s.includes(w)),
+  );
+  return hits.length === 1 ? hits[0]! : "other";
+}
+
+/**
+ * International digits for wa.me / tel: links, or null when the number is not usable or its country cannot be told
+ * (the owner then gets the number as typed and a "check the country code" note, never a link that dials a stranger).
+ *   "+…" / "00…"                         → as typed (a country code never starts with 0)
+ *   "201001234567", "905321234567", …    → as typed (full Egyptian / Turkish / Chinese number without the +)
+ *   local format, country known          → country code + national number (country field, else an Egyptian plant
+ *                                           location; a field naming another country disables local guessing)
+ *   local format, only the page language → mobile formats that cannot be read two ways: Egyptian mobiles on en/ar/tr,
+ *                                           Turkish mobiles on tr, Chinese mobiles on zh. Everything else → null
+ *                                           (e.g. 010 1234 5678 on zh: an Egyptian mobile or a Beijing landline).
+ */
+export function intlPhone(raw: string, ctx: PhoneContext = {}): string | null {
   const c = compactPhone(raw);
   if (!PHONE_RE.test(c)) return null;
-  if (c.startsWith("+")) return c.slice(1);
-  if (c.startsWith("00")) return c.slice(2);
-  if (/^01[0125]\d{8}$/.test(c)) return `20${c.slice(1)}`;
-  return c;
+  const international = c.startsWith("+") ? c.slice(1) : c.startsWith("00") ? c.slice(2) : null;
+  if (international !== null) return /^[1-9]\d{6,14}$/.test(international) ? international : null;
+  for (const re of BARE_INTL) if (re.test(c)) return c;
+
+  const named = countryOf(ctx.country);
+  const loc = (ctx.location ?? "").trim();
+  const known: PhoneCountry | "other" | null = named ?? (loc && loc !== "outsideEgypt" && /^[a-zA-Z0-9-]{2,40}$/.test(loc) ? "EG" : null);
+  if (known === "other") return null;
+  const match = (country: PhoneCountry, kinds: ("mobile" | "other")[]) => {
+    for (const kind of kinds)
+      for (const re of NATIONAL[country][kind]) {
+        const m = re.exec(c);
+        if (m) return DIAL[country] + m[1]!;
+      }
+    return null;
+  };
+  if (known) return match(known, ["mobile", "other"]);
+  switch (ctx.locale) {
+    case "zh":
+      return match("CN", ["mobile"]);
+    case "tr":
+      return match("TR", ["mobile"]) ?? match("EG", ["mobile"]);
+    default: // en, ar, or unknown: the site's Egyptian visitors
+      return match("EG", ["mobile"]);
+  }
 }
 
 /* ------------------------------------------------------------------ whole request */
@@ -206,12 +316,53 @@ export function rfqProblems(data: RfqData, consent: unknown): RfqProblem[] {
   if (!data.phone && !data.email) out.push("contact");
   if (data.phone && !isValidPhone(data.phone)) out.push("phone");
   if (data.email && !isValidEmail(data.email)) out.push("email");
-  if (data.reply === "email" && !data.email) out.push("reply");
+  if (data.reply && !data[REPLY_NEEDS[data.reply as ReplyChannel]]) out.push("reply");
   if (consent !== "yes") out.push("consent");
   return out;
 }
 
+/**
+ * How urgent the request is for the owner's inbox:
+ *   "urgent"  the visitor said a machine is stopped (timeline "urgent", or the "a machine is stopped now" switch)
+ *   "likely"  troubleshooting / maintenance sent without any timeline (typically "Skip and send now"): flagged so it
+ *             is read first, but labelled as not confirmed
+ */
+export type Urgency = "urgent" | "likely" | "";
+export function urgencyOf(data: Pick<RfqData, "timeline" | "service">): Urgency {
+  if (data.timeline === URGENT_TIMELINE) return "urgent";
+  if (!data.timeline && URGENT_SERVICES.includes(data.service)) return "likely";
+  return "";
+}
 export const isUrgent = (data: Pick<RfqData, "timeline">) => data.timeline === URGENT_TIMELINE;
+
+/* ------------------------------------------------------------------ hand-over: form → thanks page, links */
+
+/**
+ * sessionStorage keys (same tab only):
+ *   draft  what the visitor typed or chose, kept across a language switch (src/scripts/rfq-draft.ts); cleared on success
+ *   sent   the form's summary of a sent request (RfqSent in src/scripts/rfq-form.ts); read once, then deleted by the
+ *          thanks page (it holds the visitor's name and company)
+ *   last   the last request number and its urgency, no personal data: the thanks page falls back to it when ?ref= is
+ *          missing (a language switch from a page that did not keep it, a link without it), so the number stays
+ */
+export const RFQ_SESSION = { draft: "lcRfqDraft", sent: "lcRfqSent", last: "lcRfqLast" } as const;
+
+/** A link slot as it appears in a URL the server built: hrefSlot("text") → "%7Btext%7D" (whatsappLink("{text}")). */
+export const hrefSlot = (key: string) => encodeURIComponent(`{${key}}`);
+
+/**
+ * Fills a link template the server rendered with the site's own builders (whatsappLink("{text}"),
+ * mailtoLink(subject) + "&body=" + hrefSlot("text") …): each slot becomes the percent-encoded value, so the browser
+ * never rebuilds wa.me / mailto: URLs itself (CODE2-09). In mailto: links, line breaks become CRLF (RFC 6068).
+ * A slot without a value is left as it is.
+ */
+export function fillHref(template: string, values: Readonly<Record<string, string | undefined>>): string {
+  const mailto = /^mailto:/i.test(template);
+  return template.replace(/%7B(\w+)%7D/gi, (slot, key: string) => {
+    const v = values[key];
+    return v === undefined ? slot : encodeURIComponent(mailto ? v.replace(/\r?\n/g, "\r\n") : v);
+  });
+}
 
 /** Short reference for the visitor and the owner, e.g. "LC-7K3F9" (Crockford base32, no I/L/O/U). */
 export function rfqReference(random: Uint8Array = crypto.getRandomValues(new Uint8Array(5))): string {
@@ -219,3 +370,30 @@ export function rfqReference(random: Uint8Array = crypto.getRandomValues(new Uin
   return `LC-${[...random.subarray(0, 5)].map((b) => A[b % 32]).join("")}`;
 }
 export const REF_RE = /^LC-[0-9A-HJKMNP-TV-Z]{5}$/;
+
+/* ------------------------------------------------------------------ click counts (POST /api/evt) */
+
+/** What a counted click was: a channel or the quote form (no personal data, ever). */
+export const EVT_KINDS = ["whatsapp", "call", "email", "copy-email", "quote", "form-sent"] as const;
+/** Where on the page it was (the analytics script derives it from the clicked element's container). */
+export const EVT_PLACES = ["header", "drawer", "hero", "band", "fab", "footer", "form", "contact", "thanks", "body"] as const;
+export type EvtKind = (typeof EVT_KINDS)[number];
+export type EvtPlace = (typeof EVT_PLACES)[number];
+export interface Evt {
+  kind: EvtKind;
+  place: EvtPlace;
+  locale: Locale;
+  /** Path without query or hash, e.g. /ar/services/control-panels/ */
+  path: string;
+}
+export const EVT_MAX_BODY = 512;
+
+/** Validates a click event posted by src/scripts/analytics.ts; null when anything is off (never echoed back). */
+export function parseEvt(raw: unknown): Evt | null {
+  if (!raw || typeof raw !== "object") return null;
+  const o = raw as Record<string, unknown>;
+  const kind = o.k, place = o.p, locale = o.l, path = o.u;
+  if (!(EVT_KINDS as readonly unknown[]).includes(kind) || !(EVT_PLACES as readonly unknown[]).includes(place) || !isLocale(locale)) return null;
+  if (typeof path !== "string" || path.length > 120 || !/^\/(?:[a-z]{2}\/)?(?:[a-z0-9-]+\/)*$/.test(path)) return null;
+  return { kind: kind as EvtKind, place: place as EvtPlace, locale, path };
+}

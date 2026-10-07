@@ -12,6 +12,8 @@ import { afterAll, describe, expect, it } from "vitest";
 import { LINK_TOKEN_SOURCE } from "~/lib/text";
 
 const SCRIPT = fileURLToPath(new URL("../../scripts/check-i18n.mjs", import.meta.url));
+/** The external-host allow-list check-i18n shares with the text engine. */
+const LINK_POLICY = fileURLToPath(new URL("../../src/lib/link-policy.mjs", import.meta.url));
 const LOCALES = ["en", "ar", "zh", "tr"] as const;
 type L = (typeof LOCALES)[number];
 type Tree = Record<L, Record<string, unknown>>;
@@ -25,6 +27,8 @@ function run(tree: Tree, files: Record<string, string> = {}) {
   roots.push(root);
   mkdirSync(join(root, "scripts"));
   copyFileSync(SCRIPT, join(root, "scripts", "check-i18n.mjs"));
+  mkdirSync(join(root, "src", "lib"), { recursive: true });
+  copyFileSync(LINK_POLICY, join(root, "src", "lib", "link-policy.mjs"));
   for (const l of LOCALES) {
     const dir = join(root, "src", "i18n", "messages", l);
     mkdirSync(dir, { recursive: true });
@@ -99,6 +103,27 @@ describe("check-i18n guards", () => {
     const { code, out } = run(t, { "src/i18n/config.ts": `export const LOCALES = ["en", "ar"] as const;` });
     expect(code).toBe(0);
     expect(out).toContain("× 2 locales");
+  });
+
+  it("fails when two pages of a locale share a rendered <title> or meta description (CS2-02)", () => {
+    const page = (title: string, description: string) => ({ seo: { title, description } });
+    const t = Object.fromEntries(
+      LOCALES.map((l) => [l, { home: page("Concrete batching automation in Egypt", "Home page."), about: page("About us", "About page."), seo: { siteName: "Logic Controls" } }]),
+    ) as unknown as Tree;
+    expect(run(t).code).toBe(0);
+    // zh: the case study repeats the industry title (one with the brand suffix already written out, one without)
+    (t.zh.about as { seo: { title: string } }).seo.title = "Concrete batching automation in Egypt | Logic Controls";
+    (t.tr.about as { seo: { description: string } }).seo.description = "Home page.";
+    const { code, out } = run(t);
+    expect(code).toBe(1);
+    expect(out).toContain("zh: home.seo.title has the same title as about.seo.title");
+    expect(out).toContain("tr: home.seo.description has the same description as about.seo.description");
+  });
+
+  it("warns (does not fail) on bidi isolate controls in copy, which the engine drops", () => {
+    const { code, out } = run(tree({ a: "Example" }, { ar: { a: "مثال: \u2066010 1234 5678\u2069" } }));
+    expect(code).toBe(0);
+    expect(out).toContain("ar/home.json: a contains bidi isolate controls");
   });
 
   describe("link tokens", () => {

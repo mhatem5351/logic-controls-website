@@ -8,7 +8,9 @@
  * - Arabic: a title or description whose first strong character is Latin ("Logic Controls | …") gets a leading
  *   RIGHT-TO-LEFT MARK, so plain-text surfaces that guess direction from the first letter (WhatsApp / Telegram link
  *   previews, tab strips, share sheets) lay it out right-to-left instead of scrambling it.
- * - og:image: the page's card (or the locale's default card), then an extra image the page passes (case-study cover).
+ * - og:image: the page's generated card, or the locale's default card (+ the image the page passes, `ogImage`). A page
+ *   with a card of its own gets no second og:image: the card already shows its cover photo, and a second image with
+ *   the page title as alt text added nothing (CS2-07).
  * - og:type is "article" when the JSON-LD has an Article (case studies), with its publication dates.
  */
 import { LOCALES, LOCALE_META, getMessages, localePath, type Locale } from "~/i18n";
@@ -28,7 +30,7 @@ interface Props {
   alternates?: boolean;
   /** Emit <link rel="canonical"> and og:url (disable for 404). */
   canonical?: boolean;
-  /** An extra social image (absolute or root-relative), emitted after the page's generated card. */
+  /** A social image (absolute or root-relative) for a page without a generated card (else the card is used alone). */
   ogImage?: string;
   /** Pixel size of `ogImage` (default 1200×630). */
   ogImageSize?: { width: number; height: number };
@@ -68,11 +70,13 @@ const abs = (p: string) => new URL(p, SITE.url).href;
 const canonical = abs(localePath(locale, path));
 const xDefault = isHome ? abs("/") : abs(localePath("en", path));
 
-/* Social images: the generated card first (WhatsApp / Facebook / LinkedIn use the first), then the page's own image. */
-const card = ogCard(locale, path) ?? ogDefault(locale);
+/* Social images: the page's generated card (it already contains the cover photo) or the locale's default card; the
+   page's own image only when it has no card of its own. */
+const pageCard = ogCard(locale, path);
+const card = pageCard ?? ogDefault(locale);
 const images = [
   { url: abs(card.url), width: card.width, height: card.height, type: card.type, alt: cleanText(card.alt) },
-  ...(ogImage ? [{ url: abs(ogImage), ...ogImageSize, type: undefined, alt: cleanText(ogImageAlt ?? plainTitle) }] : []),
+  ...(ogImage && !pageCard ? [{ url: abs(ogImage), ...ogImageSize, type: undefined, alt: cleanText(ogImageAlt ?? plainTitle) }] : []),
 ];
 
 const ld = jsonLd ? (Array.isArray(jsonLd) ? jsonLd : [jsonLd]) : [];

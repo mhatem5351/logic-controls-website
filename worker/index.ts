@@ -1,35 +1,46 @@
 /**
  * Logic Controls — Cloudflare Worker in front of the static Astro build.
  *
- * Only two paths run this code (see `run_worker_first` in wrangler.jsonc), everything else
- * is served straight from static assets for free:
+ * Only these paths run this code (see `run_worker_first` in wrangler.jsonc), everything else is served straight from
+ * static assets for free:
  *   /          → 302 to the visitor's language (cookie → Accept-Language → English)
  *   /api/rfq   → quote/contact form: size + type guard, honeypot, validation (src/lib/rfq-rules.ts, shared with the
  *                form), Turnstile, then one email to the owner's verified inbox (send_email binding) with the
  *                visitor's drawings/photos attached (≤ 3 files, ≤ 4 MB in total).
+ *   /api/evt   → one anonymous click count (WhatsApp / call / email / quote; src/scripts/analytics.ts) written to
+ *                Workers Analytics Engine (binding CLICKS; free on Workers Free: 100,000 data points a day). No
+ *                cookies, no IP, no identifier: kind, placement, locale and path only.
  *
- * Response contract for /api/rfq (unchanged for old cached pages):
- *   Accept: application/json → 200 { ok: true, ref } | 4xx/5xx { ok: false, error }
- *   otherwise (no-JS form post) → 303 → /{locale}/contact/thanks/?ref=… | /{locale}/contact/?error=<code>#rfq-error-<code>
+ * Response contract for /api/rfq (old cached pages keep working: new fields are additions):
+ *   Accept: application/json → 200 { ok: true, ref, skipped? } | 4xx/5xx { ok: false, error, problem?, files? }
+ *     skipped: names of attachments whose content did not match their extension. They are left out of the email
+ *              (which lists them) instead of failing the whole request after the visitor passed Turnstile.
+ *     422 attachments: problem "count" | "size" | "type", files = the names with a type we do not accept.
+ *   otherwise (no-JS form post) → 303 → /{locale}/contact/thanks/?ref=…[&skipped=n] | /{locale}/contact/?error=<code>#rfq-error-<code>
  *   error codes: invalid · attachments · verification · send
  *
  * Free plan budget (10 ms CPU): multipart parsing is native, file bytes are handed to the email binding as
- * ArrayBuffers (no base64 in JS), and the only JS work per file is a 64-byte signature check.
+ * ArrayBuffers (no base64 in JS), and the only JS work per file is a signature check on its first 1 KB.
  */
 import {
   RFQ_FIELDS,
   RFQ_FILES,
   RFQ_MAX_BODY,
+  EVT_MAX_BODY,
+  SNIFF_BYTES,
+  badTypeNames,
   checkFiles,
   fileExt,
   intlPhone,
   isRfqLocale,
-  isUrgent,
   normalizeRfq,
+  parseEvt,
   rfqProblems,
   rfqReference,
   safeFilename,
   sniffOk,
+  urgencyOf,
+  type FileProblem,
   type RfqData,
   type RfqLocale,
 } from "../src/lib/rfq-rules";
@@ -38,6 +49,8 @@ import { optionLabel } from "./labels";
 interface Env {
   ASSETS: Fetcher;
   RFQ_MAIL: SendEmail;
+  /** Workers Analytics Engine dataset for click counts (optional: without it /api/evt just answers 204). */
+  CLICKS?: AnalyticsEngineDataset;
   OWNER_EMAIL: string;
   MAIL_FROM: string;
   TURNSTILE_SECRET?: string;
@@ -47,6 +60,7 @@ interface Env {
 
 type Locale = RfqLocale;
 type ErrorCode = "invalid" | "attachments" | "verification" | "send";
+type Result = { ref: string; skipped?: string[] } | { error: ErrorCode; problem?: FileProblem; files?: string[] };
 
 /** Headers the static assets get from public/_headers; the Worker's own responses need them too. */
 const SECURITY_HEADERS = {
@@ -107,15 +121,19 @@ function refererLocale(req: Request): Locale {
   }
 }
 
-function reply(req: Request, locale: Locale, status: number, result: { ref: string } | { error: ErrorCode }): Response {
+function reply(req: Request, locale: Locale, status: number, result: Result): Response {
   const headers = { ...SECURITY_HEADERS, "Cache-Control": "no-store" };
   if (wantsJson(req)) {
-    return Response.json("ref" in result ? { ok: true, ref: result.ref } : { ok: false, error: result.error }, { status, headers });
+    const body =
+      "ref" in result
+        ? { ok: true, ref: result.ref, ...(result.skipped?.length ? { skipped: result.skipped } : {}) }
+        : { ok: false, error: result.error, ...(result.problem ? { problem: result.problem } : {}), ...(result.files?.length ? { files: result.files } : {}) };
+    return Response.json(body, { status, headers });
   }
   // No-JS round trip: the error hash targets a <noscript> alert on the form (shown with :target, no script needed).
   const target =
     "ref" in result
-      ? `/${locale}/contact/thanks/?ref=${result.ref}`
+      ? `/${locale}/contact/thanks/?ref=${result.ref}${result.skipped?.length ? `&skipped=${result.skipped.length}` : ""}`
       : `/${locale}/contact/?error=${result.error}#rfq-error-${result.error}`;
   return new Response(null, { status: 303, headers: { ...headers, Location: target } });
 }
@@ -188,6 +206,11 @@ const kb = (n: number) => (n >= 1024 * 1024 ? `${(n / 1024 / 1024).toFixed(1)} M
 const SELECTS = new Set(["service", "industry", "timeline", "location", "reply"]);
 const shown = (data: RfqData, key: keyof RfqData) => (SELECTS.has(key) ? (optionLabel(key, data[key]) ?? data[key]) : data[key]);
 
+const BANNERS = {
+  urgent: { text: "URGENT: a machine is stopped.", color: "#b42318", bg: "#fdf3f2" },
+  likely: { text: "POSSIBLY URGENT: troubleshooting request sent without a timeline. Call first.", color: "#93370d", bg: "#fffaeb" },
+} as const;
+
 async function handleRfq(req: Request, env: Env): Promise<Response> {
   const form = await readForm(req);
   if (typeof form === "string") return reply(req, refererLocale(req), form === "attachments" ? 413 : 400, { error: form });
@@ -202,48 +225,68 @@ async function handleRfq(req: Request, env: Env): Promise<Response> {
 
   // Attachments (optional): count / total size / extension first (cheap, no bytes read).
   const files = form.getAll(RFQ_FILES.field).filter((f): f is File => typeof f !== "string" && f.size > 0);
-  if (checkFiles(files)) return reply(req, locale, 422, { error: "attachments" });
+  const problem = checkFiles(files);
+  if (problem) return reply(req, locale, 422, { error: "attachments", problem, files: problem === "type" ? badTypeNames(files) : undefined });
 
   const token = String(form.get("cf-turnstile-response") ?? "");
   if (!token || !(await verifyTurnstile(env, token, req.headers.get("CF-Connecting-IP")))) {
     return reply(req, locale, 403, { error: "verification" });
   }
 
+  // Content check: a file whose bytes don't match its extension is left out (and named in the email and the reply),
+  // never a reason to lose a request the visitor has already completed.
   const attachments: { disposition: "attachment"; filename: string; type: string; content: ArrayBuffer }[] = [];
+  const attachedSizes: number[] = [];
+  const skipped: string[] = [];
   for (const file of files) {
     const ext = fileExt(file.name);
     const content = await file.arrayBuffer();
-    if (!sniffOk(ext, new Uint8Array(content, 0, Math.min(64, content.byteLength)))) return reply(req, locale, 422, { error: "attachments" });
-    attachments.push({ disposition: "attachment", filename: safeFilename(file.name), type: RFQ_FILES.types[ext]!, content });
+    const name = safeFilename(file.name);
+    if (!sniffOk(ext, new Uint8Array(content, 0, Math.min(SNIFF_BYTES, content.byteLength)))) {
+      skipped.push(name);
+      continue;
+    }
+    attachments.push({ disposition: "attachment", filename: name, type: RFQ_FILES.types[ext]!, content });
+    attachedSizes.push(file.size);
   }
 
   // Step 2 (details) is optional: fall back to the selections so the email is never empty.
   if (!data.message) data.message = ["service", "industry", "timeline"].map((k) => (data[k as keyof RfqData] ? shown(data, k as keyof RfqData) : "")).filter(Boolean).join(" · ") || "(no details provided)";
 
   const ref = rfqReference();
-  const urgent = isUrgent(data);
-  const wa = data.phone ? intlPhone(data.phone) : null;
+  const urgency = urgencyOf(data);
+  const banner = urgency ? BANNERS[urgency] : null;
+  const wa = data.phone ? intlPhone(data.phone, { locale, country: data.country, location: data.location }) : null;
   const dirOf = (key: string) => {
     const d = form.get(`${key}.dir`);
     return d === "rtl" || d === "ltr" ? d : "auto";
   };
 
   const rows: [label: string, value: string, key: string][] = RFQ_FIELDS.filter(([key]) => data[key]).map(([key, label]) => [label, shown(data, key), key]);
-  if (attachments.length) rows.push(["Attachments", files.map((f, i) => `${attachments[i]!.filename} (${kb(f.size)})`).join(", "), "files"]);
+  if (attachments.length) rows.push(["Attachments", attachments.map((a, i) => `${a.filename} (${kb(attachedSizes[i]!)})`).join(", "), "files"]);
+  if (skipped.length) rows.push(["Not attached", `${skipped.join(", ")} (the content does not match the file type; ask the sender to email it)`, "skipped"]);
   rows.push(["Consent", "Yes (privacy notice accepted on the form)", "consent"], ["Reference", ref, "ref"]);
 
   const service = data.service ? shown(data, "service") : "Inquiry";
-  const subject = `${urgent ? "[URGENT] " : ""}[Website ${locale.toUpperCase()}] ${service} — ${data.company || data.name} · ${ref}`.slice(0, 200);
-  const actions = wa ? `\n\nReply on WhatsApp: https://wa.me/${wa}\nCall: +${wa}` : "";
+  const flag = urgency === "urgent" ? "[URGENT] " : urgency === "likely" ? "[URGENT?] " : "";
+  const subject = `${flag}[Website ${locale.toUpperCase()}] ${service} — ${data.company || data.name} · ${ref}`.slice(0, 200);
+  const noCode = "No recognisable country code: check the number before calling or messaging (no WhatsApp / call link).";
+  const actions = wa ? `\n\nReply on WhatsApp: https://wa.me/${wa}\nCall: +${wa}` : data.phone ? `\n\nPhone ${data.phone}: ${noCode}` : "";
   const text =
-    (urgent ? "URGENT: a machine is stopped.\n\n" : "") +
+    (banner ? `${banner.text}\n\n` : "") +
     rows.map(([label, value]) => `${label}: ${value}`).join("\n") +
     actions +
     `\n\nLanguage: ${locale}`;
   const html = `<div style="font-family:system-ui,sans-serif;font-size:15px;line-height:1.6;color:#111">
-${urgent ? `<p style="margin:0 0 12px;padding:8px 12px;border-left:4px solid #b42318;background:#fdf3f2;color:#b42318;font-weight:700">URGENT: a machine is stopped</p>` : ""}
+${banner ? `<p style="margin:0 0 12px;padding:8px 12px;border-left:4px solid ${banner.color};background:${banner.bg};color:${banner.color};font-weight:700">${banner.text.replace(/\.$/, "")}</p>` : ""}
 <h2 style="margin:0 0 12px;color:#0b3a8c">New website inquiry (${locale.toUpperCase()}) · ${ref}</h2>
-${wa ? `<p style="margin:0 0 12px"><a href="https://wa.me/${wa}">Reply on WhatsApp</a> &nbsp;·&nbsp; <a href="tel:+${wa}">Call +${wa}</a></p>` : ""}
+${
+  wa
+    ? `<p style="margin:0 0 12px"><a href="https://wa.me/${wa}">Reply on WhatsApp</a> &nbsp;·&nbsp; <a href="tel:+${wa}">Call +${wa}</a></p>`
+    : data.phone
+      ? `<p style="margin:0 0 12px;color:#93370d"><b>Phone ${escapeHtml(data.phone)}:</b> ${noCode}</p>`
+      : ""
+}
 <table cellpadding="6" style="border-collapse:collapse">${rows
     .map(
       ([label, value, key]) =>
@@ -266,7 +309,41 @@ ${wa ? `<p style="margin:0 0 12px"><a href="https://wa.me/${wa}">Reply on WhatsA
     console.error("RFQ email failed", err);
     return reply(req, locale, 502, { error: "send" });
   }
-  return reply(req, locale, 200, { ref });
+  return reply(req, locale, 200, { ref, skipped });
+}
+
+/* ------------------------------------------------------------------ click counts */
+
+const NO_CONTENT = () => new Response(null, { status: 204, headers: { ...SECURITY_HEADERS, "Cache-Control": "no-store" } });
+
+/**
+ * One anonymous click → one Analytics Engine data point: blobs [kind, place, locale, path], double [1], index kind.
+ * Answers 204 whatever happens (a beacon cannot read the answer): malformed, oversized or cross-site posts are simply
+ * not counted. Each call counts against the Worker's 100,000 requests a day, so the client sends at most a handful
+ * per page view (src/scripts/analytics.ts).
+ */
+async function handleEvt(req: Request, env: Env): Promise<Response> {
+  const origin = req.headers.get("Origin");
+  if (origin && new URL(req.url).origin !== origin) return NO_CONTENT();
+  if (req.headers.get("Sec-Fetch-Site") === "cross-site") return NO_CONTENT();
+  if (Number(req.headers.get("Content-Length") ?? 0) > EVT_MAX_BODY) return NO_CONTENT();
+  let raw: unknown;
+  try {
+    const body = await req.text();
+    if (body.length > EVT_MAX_BODY) return NO_CONTENT();
+    raw = JSON.parse(body);
+  } catch {
+    return NO_CONTENT();
+  }
+  const evt = parseEvt(raw);
+  if (evt && env.CLICKS) {
+    try {
+      env.CLICKS.writeDataPoint({ blobs: [evt.kind, evt.place, evt.locale, evt.path], doubles: [1], indexes: [evt.kind] });
+    } catch (err) {
+      console.error("click count failed", err);
+    }
+  }
+  return NO_CONTENT();
 }
 
 export default {
@@ -276,6 +353,10 @@ export default {
     if (url.pathname === "/api/rfq") {
       if (req.method !== "POST") return new Response("Method Not Allowed", { status: 405, headers: { ...SECURITY_HEADERS, Allow: "POST" } });
       return handleRfq(req, env);
+    }
+    if (url.pathname === "/api/evt") {
+      if (req.method !== "POST") return new Response("Method Not Allowed", { status: 405, headers: { ...SECURITY_HEADERS, Allow: "POST" } });
+      return handleEvt(req, env);
     }
     return env.ASSETS.fetch(req);
   },

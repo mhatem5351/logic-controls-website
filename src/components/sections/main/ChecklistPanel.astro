@@ -11,7 +11,7 @@ import { getMessages, type Locale } from "~/i18n";
 import { SITE } from "~/data/site";
 import Icon from "~/components/Icon.astro";
 import { whatsappLink, mailtoLink, prefersEmail } from "~/components/nav";
-import { html, ltr } from "./rich";
+import { heading, html, ltr } from "~/lib/text";
 
 interface Props {
   locale: Locale;
@@ -50,24 +50,25 @@ const toggle = (cls: string) => `relative grid shrink-0 place-items-center borde
         <summary class={summaryCls}>
           <H class="flex flex-1 items-center gap-3 type-h3 text-white">
             <Icon name="file" size={24} class="shrink-0 text-signal-300" />
-            {q.title}
+            <span set:html={heading(locale, q.title)} />
           </H>
+          {/* a chevron that turns, not a "+" that becomes "×" (read as "dismiss", VIS2-14) */}
           <span aria-hidden="true" class={toggle("size-7 border-white/25 text-royal-300 group-open:border-royal-400 group-open:bg-royal-600 group-open:text-white")}>
-            <Icon name="plus" size={16} class="transition-[rotate] duration-(--dur-ui) ease-mech group-open:rotate-45" />
+            <Icon name="chevron-down" size={16} class="transition-[rotate] duration-(--dur-ui) ease-mech group-open:rotate-180" />
           </span>
         </summary>
       ) : (
         <summary class:list={[summaryCls, "chamfer bg-navy-950 px-5 py-3.5 text-navy-100 [--chamfer:12px] sm:px-6"]}>
           <span class="lc-led" style="--led:#2bd47d" aria-hidden="true" />
-          <H class="flex-1 type-label text-navy-100">{q.title}</H>
+          <H class="flex-1 type-label text-navy-100" set:html={heading(locale, q.title)} />
           <span aria-hidden="true" class={toggle("size-6 border-white/25 text-royal-300 group-open:border-royal-400 group-open:text-white")}>
-            <Icon name="plus" size={14} class="transition-[rotate] duration-(--dur-ui) ease-mech group-open:rotate-45" />
+            <Icon name="chevron-down" size={14} class="transition-[rotate] duration-(--dur-ui) ease-mech group-open:rotate-180" />
           </span>
         </summary>
       )
     }
     <div class:list={[!dark && "px-5 pb-2 sm:px-6"]}>
-      <p class:list={["text-sm", dark ? "mt-3 text-navy-200" : "pt-4 text-charcoal-600"]}>{q.intro}</p>
+      <p class:list={["text-sm", dark ? "mt-3 text-navy-200" : "pt-4 text-charcoal-600"]} set:html={html(locale, q.intro)} />
       <ol role="list" class:list={["divide-y", dark ? "mt-6 divide-white/8 border-y border-white/8" : "mt-3 divide-charcoal-200"]}>
         {
           q.items.map((item, i) => (
@@ -100,7 +101,7 @@ const toggle = (cls: string) => `relative grid shrink-0 place-items-center borde
           class:list={["mt-5 inline-flex min-h-11 items-center gap-3 font-semibold underline-offset-4 hover:underline", dark ? "text-navy-100 hover:text-white" : "mx-5 mb-3 text-navy-950 sm:mx-6"]}
         >
           <Icon name="whatsapp" size={20} class={dark ? "shrink-0 text-whatsapp-500" : "shrink-0 text-whatsapp-700"} />
-          <span>{q.whatsappHint}</span>
+          <span set:html={html(locale, q.whatsappHint)} />
           <span class="sr-only">({t.ui.a11y.newTab})</span>
         </a>
       ))

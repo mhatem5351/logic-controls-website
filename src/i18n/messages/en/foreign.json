@@ -1,7 +1,9 @@
 {
   "seo": {
     "title": "Automation Partner for New Plants in Egypt",
-    "description": "Local automation engineers for new factories in Egypt: commissioning of imported lines, I/O checks, FAT/SAT support, Arabic HMIs, local spares."
+    "description": "Local automation engineers for new factories in Egypt: commissioning of imported lines, I/O checks, FAT/SAT support, Arabic HMIs, local spares.",
+    "serviceName": "Automation and commissioning support for new factories in Egypt",
+    "serviceType": "Commissioning and automation support"
   },
   "hero": {
     "eyebrow": "For manufacturers setting up or relocating a factory in Egypt",
@@ -47,7 +49,8 @@
     "columns": {
       "need": "What the plant needs",
       "answer": "How we close the gap"
-    }
+    },
+    "more": "Show all {count} needs"
   },
   "services": {
     "title": "What we do for new factories",
@@ -210,5 +213,16 @@
     "standards": "Documentation",
     "proof": "Experience",
     "languages": "Languages"
+  },
+  "toc": {
+    "needs": "Needs",
+    "services": "Services",
+    "oem": "Machine builders",
+    "timeline": "Timeline",
+    "standards": "Documents",
+    "proof": "Experience",
+    "languages": "Languages",
+    "zones": "Location",
+    "faq": "FAQ"
   }
 }

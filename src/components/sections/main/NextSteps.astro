@@ -5,6 +5,7 @@
  *   <NextSteps locale="en" headingLevel="h3" />    inside a sidebar card
  */
 import { getMessages, type Locale } from "~/i18n";
+import { heading as headingHtml, html } from "~/lib/text";
 import Icon, { type IconName } from "~/components/Icon.astro";
 
 interface Props {
@@ -21,7 +22,7 @@ const S = H === "h2" ? "h3" : "h4";
 ---
 
 <div class={className}>
-  {heading && <H class="type-h4 text-navy-950 on-dark:text-white">{t.title}</H>}
+  {heading && <H class="type-h4 text-navy-950 on-dark:text-white" set:html={headingHtml(locale, t.title)} />}
   <ol role="list" class:list={["relative", heading && "mt-5"]}>
     {
       t.steps.map((s, i) => (
@@ -37,10 +38,12 @@ const S = H === "h2" ? "h3" : "h4";
           </span>
           <div class="pt-1">
             <S class="flex items-baseline gap-2 font-bold text-navy-950 on-dark:text-white">
-              <span class="font-mono text-xs text-royal-700 ltr on-dark:text-royal-300" dir="ltr">{String(i + 1).padStart(2, "0")}</span>
-              <span>{s.title}</span>
+              {/* the list is already numbered for screen readers; the visible index ends with a space so extracted
+                  text reads "01 We review your request", not "01We review…" */}
+              <span class="font-mono text-xs text-royal-700 ltr on-dark:text-royal-300" dir="ltr" aria-hidden="true">{String(i + 1).padStart(2, "0")}</span>{" "}
+              <span set:html={headingHtml(locale, s.title)} />
             </S>
-            <p class="mt-1 text-sm text-charcoal-600 on-dark:text-navy-200">{s.text}</p>
+            <p class="mt-1 text-sm text-charcoal-600 on-dark:text-navy-200" set:html={html(locale, s.text)} />
           </div>
         </li>
       ))

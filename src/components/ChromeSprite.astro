@@ -1,0 +1,35 @@
+---
+/**
+ * One SVG sprite for the icons the site chrome repeats on every page (PERF2-02): the service / industry icons of the
+ * desktop menus and the drawer accordions (each was inlined twice), and WhatsApp / phone / mail (header, drawer,
+ * footer, floating button). Rendered once by <Header>; <ChromeIcon name="…"> draws one with <use href>.
+ * The symbols wrap <Icon> itself, so they stay pixel-identical to the inline icons (24×24 grid, 1.75 stroke,
+ * currentColor = the colour of the <ChromeIcon> using it).
+ */
+import Icon, { type IconName } from "./Icon.astro";
+import { SERVICE_SLUGS } from "~/data/services";
+import { INDUSTRY_SLUGS } from "~/data/industries";
+import { serviceIcon, industryIcon } from "./sections/catalog/catalog";
+import { CHROME_ICONS } from "./chrome-icons";
+
+const names = [...new Set<IconName>([...SERVICE_SLUGS.map(serviceIcon), ...INDUSTRY_SLUGS.map(industryIcon), ...CHROME_ICONS])];
+---
+
+<svg class="lc-sprite" width="0" height="0" aria-hidden="true" focusable="false">
+  {
+    names.map((n) => (
+      <symbol id={`lc-ci-${n}`} viewBox="0 0 24 24">
+        <Icon name={n} size={24} />
+      </symbol>
+    ))
+  }
+</svg>
+
+<style>
+  .lc-sprite {
+    position: absolute;
+    width: 0;
+    height: 0;
+    overflow: hidden;
+  }
+</style>

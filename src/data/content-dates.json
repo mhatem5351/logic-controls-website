@@ -1,0 +1,782 @@
+{
+  "/ar/": {
+    "hash": "ea46d9960233a876",
+    "modified": "2026-10-07T09:22:20+03:00",
+    "published": "2026-10-06T15:10:10+03:00"
+  },
+  "/ar/about/": {
+    "hash": "30a3b2e6de29deb9",
+    "modified": "2026-10-07T06:47:56+03:00",
+    "published": "2026-10-06T15:10:10+03:00"
+  },
+  "/ar/contact/": {
+    "hash": "ac343a8b651b2fb9",
+    "modified": "2026-10-07T09:22:20+03:00",
+    "published": "2026-10-06T15:10:10+03:00"
+  },
+  "/ar/foreign-manufacturers/": {
+    "hash": "6fed5acd497e09cf",
+    "modified": "2026-10-07T06:47:56+03:00",
+    "published": "2026-10-06T15:10:10+03:00"
+  },
+  "/ar/industries/": {
+    "hash": "53110d0f0881166e",
+    "modified": "2026-10-07T06:47:56+03:00",
+    "published": "2026-10-06T15:10:10+03:00"
+  },
+  "/ar/industries/building-materials/": {
+    "hash": "3149cd458a36be7c",
+    "modified": "2026-10-07T06:47:56+03:00",
+    "published": "2026-10-06T15:10:10+03:00"
+  },
+  "/ar/industries/commercial-laundry/": {
+    "hash": "e81628fd353880ca",
+    "modified": "2026-10-07T06:47:56+03:00",
+    "published": "2026-10-06T15:10:10+03:00"
+  },
+  "/ar/industries/cosmetics-personal-care/": {
+    "hash": "3eed8adbd49ca420",
+    "modified": "2026-10-07T06:47:56+03:00",
+    "published": "2026-10-06T15:10:10+03:00"
+  },
+  "/ar/industries/food-beverage/": {
+    "hash": "79f79f3159a015c0",
+    "modified": "2026-10-07T06:47:56+03:00",
+    "published": "2026-10-06T15:10:10+03:00"
+  },
+  "/ar/industries/packaging-labeling/": {
+    "hash": "beefae948516a202",
+    "modified": "2026-10-07T06:47:56+03:00",
+    "published": "2026-10-06T15:10:10+03:00"
+  },
+  "/ar/industries/pharmaceutical/": {
+    "hash": "6c1bf1f5a47c67f9",
+    "modified": "2026-10-07T06:47:56+03:00",
+    "published": "2026-10-06T15:10:10+03:00"
+  },
+  "/ar/industries/test-equipment/": {
+    "hash": "327b45ffc65f1087",
+    "modified": "2026-10-07T06:47:56+03:00",
+    "published": "2026-10-06T15:10:10+03:00"
+  },
+  "/ar/privacy/": {
+    "hash": "8bd90eba769e08be",
+    "modified": "2026-10-07T06:47:56+03:00",
+    "published": "2026-10-06T15:10:10+03:00"
+  },
+  "/ar/projects/": {
+    "hash": "fa1891e893e03bf4",
+    "modified": "2026-10-07T06:47:56+03:00",
+    "published": "2026-10-06T15:10:10+03:00"
+  },
+  "/ar/projects/anaerobic-waste-treatment-commissioning/": {
+    "hash": "565b9a0779731337",
+    "modified": "2026-10-07T04:45:03+03:00",
+    "published": "2026-10-06T15:10:10+03:00"
+  },
+  "/ar/projects/beverage-syrup-jet-mixing/": {
+    "hash": "ea3830bce633410a",
+    "modified": "2026-10-07T06:47:56+03:00",
+    "published": "2026-10-06T15:57:46+03:00"
+  },
+  "/ar/projects/bottle-printing-motion-retrofit/": {
+    "hash": "598573c1a8f4b57e",
+    "modified": "2026-10-07T04:45:03+03:00",
+    "published": "2026-10-06T15:10:10+03:00"
+  },
+  "/ar/projects/cheese-cooker-recipes/": {
+    "hash": "40c07967ef4db443",
+    "modified": "2026-10-07T09:22:20+03:00",
+    "published": "2026-10-06T15:10:10+03:00"
+  },
+  "/ar/projects/commercial-laundry-washer-control/": {
+    "hash": "b24c352b676029cc",
+    "modified": "2026-10-07T04:45:03+03:00",
+    "published": "2026-10-06T15:10:10+03:00"
+  },
+  "/ar/projects/concrete-batching-plant-scada/": {
+    "hash": "1b3f7f356dd5e416",
+    "modified": "2026-10-07T04:45:03+03:00",
+    "published": "2026-10-06T15:10:10+03:00"
+  },
+  "/ar/projects/hotel-washer-extractor-control/": {
+    "hash": "13fafa12f8e3dbc9",
+    "modified": "2026-10-07T06:47:56+03:00",
+    "published": "2026-10-06T15:10:10+03:00"
+  },
+  "/ar/projects/labeling-machine-delta-wecon/": {
+    "hash": "a942a1151815ea3e",
+    "modified": "2026-10-07T06:47:56+03:00",
+    "published": "2026-10-06T15:10:10+03:00"
+  },
+  "/ar/projects/milk-pasteurizer/": {
+    "hash": "dd6740d0b0450f55",
+    "modified": "2026-10-07T04:45:03+03:00",
+    "published": "2026-10-06T15:10:10+03:00"
+  },
+  "/ar/projects/olive-autoclave-sterilization/": {
+    "hash": "942966a200e87f93",
+    "modified": "2026-10-07T04:45:03+03:00",
+    "published": "2026-10-06T15:10:10+03:00"
+  },
+  "/ar/projects/pasteurizer-cip-recipes/": {
+    "hash": "7849a85969b19223",
+    "modified": "2026-10-07T06:47:56+03:00",
+    "published": "2026-10-06T15:10:10+03:00"
+  },
+  "/ar/projects/pipe-make-break-test-rig/": {
+    "hash": "f7e9f549e5006267",
+    "modified": "2026-10-07T04:45:03+03:00",
+    "published": "2026-10-06T15:10:10+03:00"
+  },
+  "/ar/projects/shampoo-filling-delta-wecon/": {
+    "hash": "e768478ebf23cf6d",
+    "modified": "2026-10-07T06:47:56+03:00",
+    "published": "2026-10-06T15:10:10+03:00"
+  },
+  "/ar/projects/shampoo-filling-ls-wecon/": {
+    "hash": "32907d1ee4363431",
+    "modified": "2026-10-07T06:47:56+03:00",
+    "published": "2026-10-06T15:10:10+03:00"
+  },
+  "/ar/projects/tablet-coating-scada/": {
+    "hash": "ef3a4762eefef283",
+    "modified": "2026-10-07T04:45:03+03:00",
+    "published": "2026-10-06T15:10:10+03:00"
+  },
+  "/ar/services/": {
+    "hash": "ba43ad638b79c2fa",
+    "modified": "2026-10-07T06:47:56+03:00",
+    "published": "2026-10-06T15:10:10+03:00"
+  },
+  "/ar/services/control-panels/": {
+    "hash": "c0b0252b56bbe34c",
+    "modified": "2026-10-07T06:47:56+03:00",
+    "published": "2026-10-06T15:10:10+03:00"
+  },
+  "/ar/services/machine-automation/": {
+    "hash": "458a59ba4fcda30f",
+    "modified": "2026-10-07T06:47:56+03:00",
+    "published": "2026-10-06T15:10:10+03:00"
+  },
+  "/ar/services/machine-retrofits/": {
+    "hash": "0e3d32ea3fe503c3",
+    "modified": "2026-10-07T06:47:56+03:00",
+    "published": "2026-10-06T15:10:10+03:00"
+  },
+  "/ar/services/maintenance-support/": {
+    "hash": "f9e224368350310e",
+    "modified": "2026-10-07T06:47:56+03:00",
+    "published": "2026-10-06T15:10:10+03:00"
+  },
+  "/ar/services/plc-hmi-programming/": {
+    "hash": "729c0d34498889ef",
+    "modified": "2026-10-07T06:47:56+03:00",
+    "published": "2026-10-06T15:10:10+03:00"
+  },
+  "/ar/services/process-control/": {
+    "hash": "eb7b6295c482ffdd",
+    "modified": "2026-10-07T06:47:56+03:00",
+    "published": "2026-10-06T15:10:10+03:00"
+  },
+  "/ar/services/scada-data-logging/": {
+    "hash": "124b6f5619672884",
+    "modified": "2026-10-07T06:47:56+03:00",
+    "published": "2026-10-06T15:10:10+03:00"
+  },
+  "/ar/services/testing-commissioning/": {
+    "hash": "493de88b831f18c9",
+    "modified": "2026-10-07T06:47:56+03:00",
+    "published": "2026-10-06T15:10:10+03:00"
+  },
+  "/ar/technologies/": {
+    "hash": "da203f1e80bef517",
+    "modified": "2026-10-07T06:47:56+03:00",
+    "published": "2026-10-06T15:10:10+03:00"
+  },
+  "/en/": {
+    "hash": "704deeea1413cd2c",
+    "modified": "2026-10-07T09:22:20+03:00",
+    "published": "2026-10-06T15:10:10+03:00"
+  },
+  "/en/about/": {
+    "hash": "642e8970c4d7a0ea",
+    "modified": "2026-10-07T06:47:56+03:00",
+    "published": "2026-10-06T15:10:10+03:00"
+  },
+  "/en/contact/": {
+    "hash": "5f344e03e857da08",
+    "modified": "2026-10-07T09:22:20+03:00",
+    "published": "2026-10-06T15:10:10+03:00"
+  },
+  "/en/foreign-manufacturers/": {
+    "hash": "5bc3271c00f8963f",
+    "modified": "2026-10-07T06:47:56+03:00",
+    "published": "2026-10-06T15:10:10+03:00"
+  },
+  "/en/industries/": {
+    "hash": "efecc9174780b9c6",
+    "modified": "2026-10-07T06:47:56+03:00",
+    "published": "2026-10-06T15:10:10+03:00"
+  },
+  "/en/industries/building-materials/": {
+    "hash": "24cc5e043284d260",
+    "modified": "2026-10-07T06:47:56+03:00",
+    "published": "2026-10-06T15:10:10+03:00"
+  },
+  "/en/industries/commercial-laundry/": {
+    "hash": "2e764e42909e9577",
+    "modified": "2026-10-07T06:47:56+03:00",
+    "published": "2026-10-06T15:10:10+03:00"
+  },
+  "/en/industries/cosmetics-personal-care/": {
+    "hash": "834ed9fed1966aeb",
+    "modified": "2026-10-07T06:47:56+03:00",
+    "published": "2026-10-06T15:10:10+03:00"
+  },
+  "/en/industries/food-beverage/": {
+    "hash": "6d8ab464e0928f9a",
+    "modified": "2026-10-07T06:47:56+03:00",
+    "published": "2026-10-06T15:10:10+03:00"
+  },
+  "/en/industries/packaging-labeling/": {
+    "hash": "d59ddc52e352fe22",
+    "modified": "2026-10-07T06:47:56+03:00",
+    "published": "2026-10-06T15:10:10+03:00"
+  },
+  "/en/industries/pharmaceutical/": {
+    "hash": "f628b6aacd7b6bab",
+    "modified": "2026-10-07T06:47:56+03:00",
+    "published": "2026-10-06T15:10:10+03:00"
+  },
+  "/en/industries/test-equipment/": {
+    "hash": "62ea8479ab96be62",
+    "modified": "2026-10-07T06:47:56+03:00",
+    "published": "2026-10-06T15:10:10+03:00"
+  },
+  "/en/privacy/": {
+    "hash": "d621815af3615cf0",
+    "modified": "2026-10-07T06:47:56+03:00",
+    "published": "2026-10-06T15:10:10+03:00"
+  },
+  "/en/projects/": {
+    "hash": "c54706fc46092d25",
+    "modified": "2026-10-07T06:47:56+03:00",
+    "published": "2026-10-06T15:10:10+03:00"
+  },
+  "/en/projects/anaerobic-waste-treatment-commissioning/": {
+    "hash": "887db5ece7ec6fb5",
+    "modified": "2026-10-07T04:45:03+03:00",
+    "published": "2026-10-06T15:10:10+03:00"
+  },
+  "/en/projects/beverage-syrup-jet-mixing/": {
+    "hash": "ac901345f613927e",
+    "modified": "2026-10-07T06:47:56+03:00",
+    "published": "2026-10-06T15:57:46+03:00"
+  },
+  "/en/projects/bottle-printing-motion-retrofit/": {
+    "hash": "0587554441f5be91",
+    "modified": "2026-10-07T04:45:03+03:00",
+    "published": "2026-10-06T15:10:10+03:00"
+  },
+  "/en/projects/cheese-cooker-recipes/": {
+    "hash": "bdf82213773b2e26",
+    "modified": "2026-10-07T09:22:20+03:00",
+    "published": "2026-10-06T15:10:10+03:00"
+  },
+  "/en/projects/commercial-laundry-washer-control/": {
+    "hash": "02dc824715cc8962",
+    "modified": "2026-10-07T04:45:03+03:00",
+    "published": "2026-10-06T15:10:10+03:00"
+  },
+  "/en/projects/concrete-batching-plant-scada/": {
+    "hash": "b3fd70239df20904",
+    "modified": "2026-10-07T04:45:03+03:00",
+    "published": "2026-10-06T15:10:10+03:00"
+  },
+  "/en/projects/hotel-washer-extractor-control/": {
+    "hash": "3087f4a1b6930869",
+    "modified": "2026-10-07T06:47:56+03:00",
+    "published": "2026-10-06T15:10:10+03:00"
+  },
+  "/en/projects/labeling-machine-delta-wecon/": {
+    "hash": "316244546c4eb17a",
+    "modified": "2026-10-07T06:47:56+03:00",
+    "published": "2026-10-06T15:10:10+03:00"
+  },
+  "/en/projects/milk-pasteurizer/": {
+    "hash": "7942636d5dfaff1f",
+    "modified": "2026-10-07T04:45:03+03:00",
+    "published": "2026-10-06T15:10:10+03:00"
+  },
+  "/en/projects/olive-autoclave-sterilization/": {
+    "hash": "1f98e29de9cc7505",
+    "modified": "2026-10-07T04:45:03+03:00",
+    "published": "2026-10-06T15:10:10+03:00"
+  },
+  "/en/projects/pasteurizer-cip-recipes/": {
+    "hash": "1c87cf8c0381b09e",
+    "modified": "2026-10-07T06:47:56+03:00",
+    "published": "2026-10-06T15:10:10+03:00"
+  },
+  "/en/projects/pipe-make-break-test-rig/": {
+    "hash": "5e1f76a45bd9be0c",
+    "modified": "2026-10-07T04:45:03+03:00",
+    "published": "2026-10-06T15:10:10+03:00"
+  },
+  "/en/projects/shampoo-filling-delta-wecon/": {
+    "hash": "629d5bbf014e333d",
+    "modified": "2026-10-07T06:47:56+03:00",
+    "published": "2026-10-06T15:10:10+03:00"
+  },
+  "/en/projects/shampoo-filling-ls-wecon/": {
+    "hash": "62a80ca826cd7d4c",
+    "modified": "2026-10-07T06:47:56+03:00",
+    "published": "2026-10-06T15:10:10+03:00"
+  },
+  "/en/projects/tablet-coating-scada/": {
+    "hash": "10bce080b94e1add",
+    "modified": "2026-10-07T04:45:03+03:00",
+    "published": "2026-10-06T15:10:10+03:00"
+  },
+  "/en/services/": {
+    "hash": "2bb0557c5314493a",
+    "modified": "2026-10-07T06:47:56+03:00",
+    "published": "2026-10-06T15:10:10+03:00"
+  },
+  "/en/services/control-panels/": {
+    "hash": "f718268369b94800",
+    "modified": "2026-10-07T06:47:56+03:00",
+    "published": "2026-10-06T15:10:10+03:00"
+  },
+  "/en/services/machine-automation/": {
+    "hash": "d51ed74802d77c5f",
+    "modified": "2026-10-07T06:47:56+03:00",
+    "published": "2026-10-06T15:10:10+03:00"
+  },
+  "/en/services/machine-retrofits/": {
+    "hash": "197e50aecfe3589f",
+    "modified": "2026-10-07T06:47:56+03:00",
+    "published": "2026-10-06T15:10:10+03:00"
+  },
+  "/en/services/maintenance-support/": {
+    "hash": "817e69c702bf3e33",
+    "modified": "2026-10-07T06:47:56+03:00",
+    "published": "2026-10-06T15:10:10+03:00"
+  },
+  "/en/services/plc-hmi-programming/": {
+    "hash": "2c3b4a51d7c86b01",
+    "modified": "2026-10-07T06:47:56+03:00",
+    "published": "2026-10-06T15:10:10+03:00"
+  },
+  "/en/services/process-control/": {
+    "hash": "7d508e35911cec5b",
+    "modified": "2026-10-07T06:47:56+03:00",
+    "published": "2026-10-06T15:10:10+03:00"
+  },
+  "/en/services/scada-data-logging/": {
+    "hash": "28e3ae8f88808b6a",
+    "modified": "2026-10-07T06:47:56+03:00",
+    "published": "2026-10-06T15:10:10+03:00"
+  },
+  "/en/services/testing-commissioning/": {
+    "hash": "0e833d9dd23b21af",
+    "modified": "2026-10-07T06:47:56+03:00",
+    "published": "2026-10-06T15:10:10+03:00"
+  },
+  "/en/technologies/": {
+    "hash": "efd1c2a3f37b95ec",
+    "modified": "2026-10-07T06:47:56+03:00",
+    "published": "2026-10-06T15:10:10+03:00"
+  },
+  "/tr/": {
+    "hash": "d042b5e8502b758c",
+    "modified": "2026-10-07T09:22:20+03:00",
+    "published": "2026-10-06T15:10:10+03:00"
+  },
+  "/tr/about/": {
+    "hash": "cf988be4c7445a52",
+    "modified": "2026-10-07T06:47:56+03:00",
+    "published": "2026-10-06T15:10:10+03:00"
+  },
+  "/tr/contact/": {
+    "hash": "9e15e09b514a55c1",
+    "modified": "2026-10-07T09:22:20+03:00",
+    "published": "2026-10-06T15:10:10+03:00"
+  },
+  "/tr/foreign-manufacturers/": {
+    "hash": "97edadc8620711da",
+    "modified": "2026-10-07T06:47:56+03:00",
+    "published": "2026-10-06T15:10:10+03:00"
+  },
+  "/tr/industries/": {
+    "hash": "56f2a8d8bdc46237",
+    "modified": "2026-10-07T06:47:56+03:00",
+    "published": "2026-10-06T15:10:10+03:00"
+  },
+  "/tr/industries/building-materials/": {
+    "hash": "9c17d0dd924c4974",
+    "modified": "2026-10-07T06:47:56+03:00",
+    "published": "2026-10-06T15:10:10+03:00"
+  },
+  "/tr/industries/commercial-laundry/": {
+    "hash": "f8446ee3214c1e0b",
+    "modified": "2026-10-07T06:47:56+03:00",
+    "published": "2026-10-06T15:10:10+03:00"
+  },
+  "/tr/industries/cosmetics-personal-care/": {
+    "hash": "9585ab1246e6e39f",
+    "modified": "2026-10-07T06:47:56+03:00",
+    "published": "2026-10-06T15:10:10+03:00"
+  },
+  "/tr/industries/food-beverage/": {
+    "hash": "f7727d96e88e7cf4",
+    "modified": "2026-10-07T06:47:56+03:00",
+    "published": "2026-10-06T15:10:10+03:00"
+  },
+  "/tr/industries/packaging-labeling/": {
+    "hash": "41ec0f0ef558332b",
+    "modified": "2026-10-07T06:47:56+03:00",
+    "published": "2026-10-06T15:10:10+03:00"
+  },
+  "/tr/industries/pharmaceutical/": {
+    "hash": "543a8d8f92d8d258",
+    "modified": "2026-10-07T06:47:56+03:00",
+    "published": "2026-10-06T15:10:10+03:00"
+  },
+  "/tr/industries/test-equipment/": {
+    "hash": "12fbebe616452a60",
+    "modified": "2026-10-07T06:47:56+03:00",
+    "published": "2026-10-06T15:10:10+03:00"
+  },
+  "/tr/privacy/": {
+    "hash": "45b2c18f2f68a206",
+    "modified": "2026-10-07T06:47:56+03:00",
+    "published": "2026-10-06T15:10:10+03:00"
+  },
+  "/tr/projects/": {
+    "hash": "1103266d0d91c137",
+    "modified": "2026-10-07T06:47:56+03:00",
+    "published": "2026-10-06T15:10:10+03:00"
+  },
+  "/tr/projects/anaerobic-waste-treatment-commissioning/": {
+    "hash": "749088deb995d8a0",
+    "modified": "2026-10-07T04:45:03+03:00",
+    "published": "2026-10-06T15:10:10+03:00"
+  },
+  "/tr/projects/beverage-syrup-jet-mixing/": {
+    "hash": "9a32fb4791943cd6",
+    "modified": "2026-10-07T06:47:56+03:00",
+    "published": "2026-10-06T15:57:46+03:00"
+  },
+  "/tr/projects/bottle-printing-motion-retrofit/": {
+    "hash": "a0c34d2de16a7511",
+    "modified": "2026-10-07T04:45:03+03:00",
+    "published": "2026-10-06T15:10:10+03:00"
+  },
+  "/tr/projects/cheese-cooker-recipes/": {
+    "hash": "6a451cd5f526a5b1",
+    "modified": "2026-10-07T09:22:20+03:00",
+    "published": "2026-10-06T15:10:10+03:00"
+  },
+  "/tr/projects/commercial-laundry-washer-control/": {
+    "hash": "c3289bfee8ee7e45",
+    "modified": "2026-10-07T04:45:03+03:00",
+    "published": "2026-10-06T15:10:10+03:00"
+  },
+  "/tr/projects/concrete-batching-plant-scada/": {
+    "hash": "37d79d0c480dd08f",
+    "modified": "2026-10-07T06:47:56+03:00",
+    "published": "2026-10-06T15:10:10+03:00"
+  },
+  "/tr/projects/hotel-washer-extractor-control/": {
+    "hash": "672e95ca17783976",
+    "modified": "2026-10-07T06:47:56+03:00",
+    "published": "2026-10-06T15:10:10+03:00"
+  },
+  "/tr/projects/labeling-machine-delta-wecon/": {
+    "hash": "1594e78b32e202a8",
+    "modified": "2026-10-07T06:47:56+03:00",
+    "published": "2026-10-06T15:10:10+03:00"
+  },
+  "/tr/projects/milk-pasteurizer/": {
+    "hash": "4b20a8667d5ad1c4",
+    "modified": "2026-10-07T04:45:03+03:00",
+    "published": "2026-10-06T15:10:10+03:00"
+  },
+  "/tr/projects/olive-autoclave-sterilization/": {
+    "hash": "11858d6259d2e138",
+    "modified": "2026-10-07T04:45:03+03:00",
+    "published": "2026-10-06T15:10:10+03:00"
+  },
+  "/tr/projects/pasteurizer-cip-recipes/": {
+    "hash": "a55132d1b003ea5c",
+    "modified": "2026-10-07T06:47:56+03:00",
+    "published": "2026-10-06T15:10:10+03:00"
+  },
+  "/tr/projects/pipe-make-break-test-rig/": {
+    "hash": "85610146b8e226d3",
+    "modified": "2026-10-07T04:45:03+03:00",
+    "published": "2026-10-06T15:10:10+03:00"
+  },
+  "/tr/projects/shampoo-filling-delta-wecon/": {
+    "hash": "0ddc4bfa4ade2ab1",
+    "modified": "2026-10-07T06:47:56+03:00",
+    "published": "2026-10-06T15:10:10+03:00"
+  },
+  "/tr/projects/shampoo-filling-ls-wecon/": {
+    "hash": "7a30adc2602310e6",
+    "modified": "2026-10-07T06:47:56+03:00",
+    "published": "2026-10-06T15:10:10+03:00"
+  },
+  "/tr/projects/tablet-coating-scada/": {
+    "hash": "7bd47f89b0cbeb3b",
+    "modified": "2026-10-07T04:45:03+03:00",
+    "published": "2026-10-06T15:10:10+03:00"
+  },
+  "/tr/services/": {
+    "hash": "da6cd598aa150fd4",
+    "modified": "2026-10-07T06:47:56+03:00",
+    "published": "2026-10-06T15:10:10+03:00"
+  },
+  "/tr/services/control-panels/": {
+    "hash": "cdeedf3107c9cad4",
+    "modified": "2026-10-07T06:47:56+03:00",
+    "published": "2026-10-06T15:10:10+03:00"
+  },
+  "/tr/services/machine-automation/": {
+    "hash": "541f7d68a34c46ea",
+    "modified": "2026-10-07T06:47:56+03:00",
+    "published": "2026-10-06T15:10:10+03:00"
+  },
+  "/tr/services/machine-retrofits/": {
+    "hash": "5720e7b371f1921f",
+    "modified": "2026-10-07T06:47:56+03:00",
+    "published": "2026-10-06T15:10:10+03:00"
+  },
+  "/tr/services/maintenance-support/": {
+    "hash": "5e752854d59b3265",
+    "modified": "2026-10-07T06:47:56+03:00",
+    "published": "2026-10-06T15:10:10+03:00"
+  },
+  "/tr/services/plc-hmi-programming/": {
+    "hash": "393be8bab54bfaea",
+    "modified": "2026-10-07T06:47:56+03:00",
+    "published": "2026-10-06T15:10:10+03:00"
+  },
+  "/tr/services/process-control/": {
+    "hash": "fbae7992ff9d85f5",
+    "modified": "2026-10-07T06:47:56+03:00",
+    "published": "2026-10-06T15:10:10+03:00"
+  },
+  "/tr/services/scada-data-logging/": {
+    "hash": "8de6efba6d5919ee",
+    "modified": "2026-10-07T06:47:56+03:00",
+    "published": "2026-10-06T15:10:10+03:00"
+  },
+  "/tr/services/testing-commissioning/": {
+    "hash": "df955de839c90255",
+    "modified": "2026-10-07T06:47:56+03:00",
+    "published": "2026-10-06T15:10:10+03:00"
+  },
+  "/tr/technologies/": {
+    "hash": "658200bcfabb111f",
+    "modified": "2026-10-07T06:47:56+03:00",
+    "published": "2026-10-06T15:10:10+03:00"
+  },
+  "/zh/": {
+    "hash": "21cb9ed8a74dbe86",
+    "modified": "2026-10-07T09:22:20+03:00",
+    "published": "2026-10-06T15:10:10+03:00"
+  },
+  "/zh/about/": {
+    "hash": "c08dcfe585a6dc81",
+    "modified": "2026-10-07T06:47:56+03:00",
+    "published": "2026-10-06T15:10:10+03:00"
+  },
+  "/zh/contact/": {
+    "hash": "9e3919e6d40daf72",
+    "modified": "2026-10-07T09:22:20+03:00",
+    "published": "2026-10-06T15:10:10+03:00"
+  },
+  "/zh/foreign-manufacturers/": {
+    "hash": "fb5c1d513f8b32d5",
+    "modified": "2026-10-07T06:47:56+03:00",
+    "published": "2026-10-06T15:10:10+03:00"
+  },
+  "/zh/industries/": {
+    "hash": "59786ec832eedf2b",
+    "modified": "2026-10-07T06:47:56+03:00",
+    "published": "2026-10-06T15:10:10+03:00"
+  },
+  "/zh/industries/building-materials/": {
+    "hash": "032d0782c8087d40",
+    "modified": "2026-10-07T06:47:56+03:00",
+    "published": "2026-10-06T15:10:10+03:00"
+  },
+  "/zh/industries/commercial-laundry/": {
+    "hash": "ec39d951bd145cd0",
+    "modified": "2026-10-07T06:47:56+03:00",
+    "published": "2026-10-06T15:10:10+03:00"
+  },
+  "/zh/industries/cosmetics-personal-care/": {
+    "hash": "b400927101fd5de6",
+    "modified": "2026-10-07T06:47:56+03:00",
+    "published": "2026-10-06T15:10:10+03:00"
+  },
+  "/zh/industries/food-beverage/": {
+    "hash": "b4471f71287a7681",
+    "modified": "2026-10-07T06:47:56+03:00",
+    "published": "2026-10-06T15:10:10+03:00"
+  },
+  "/zh/industries/packaging-labeling/": {
+    "hash": "b60d59e2aeddaf75",
+    "modified": "2026-10-07T06:47:56+03:00",
+    "published": "2026-10-06T15:10:10+03:00"
+  },
+  "/zh/industries/pharmaceutical/": {
+    "hash": "cee917cc8102c581",
+    "modified": "2026-10-07T06:47:56+03:00",
+    "published": "2026-10-06T15:10:10+03:00"
+  },
+  "/zh/industries/test-equipment/": {
+    "hash": "b5326c72e6888bec",
+    "modified": "2026-10-07T06:47:56+03:00",
+    "published": "2026-10-06T15:10:10+03:00"
+  },
+  "/zh/privacy/": {
+    "hash": "d081a6428d8f2925",
+    "modified": "2026-10-07T06:47:56+03:00",
+    "published": "2026-10-06T15:10:10+03:00"
+  },
+  "/zh/projects/": {
+    "hash": "1c90da5125313d46",
+    "modified": "2026-10-07T06:47:56+03:00",
+    "published": "2026-10-06T15:10:10+03:00"
+  },
+  "/zh/projects/anaerobic-waste-treatment-commissioning/": {
+    "hash": "70338a35b494497c",
+    "modified": "2026-10-07T04:45:03+03:00",
+    "published": "2026-10-06T15:10:10+03:00"
+  },
+  "/zh/projects/beverage-syrup-jet-mixing/": {
+    "hash": "348726f368aed0de",
+    "modified": "2026-10-07T06:47:56+03:00",
+    "published": "2026-10-06T15:57:46+03:00"
+  },
+  "/zh/projects/bottle-printing-motion-retrofit/": {
+    "hash": "6a9f6be839f0f048",
+    "modified": "2026-10-07T04:45:03+03:00",
+    "published": "2026-10-06T15:10:10+03:00"
+  },
+  "/zh/projects/cheese-cooker-recipes/": {
+    "hash": "43dc92c22b736956",
+    "modified": "2026-10-07T09:22:20+03:00",
+    "published": "2026-10-06T15:10:10+03:00"
+  },
+  "/zh/projects/commercial-laundry-washer-control/": {
+    "hash": "3511b0f32bf1c108",
+    "modified": "2026-10-07T04:45:03+03:00",
+    "published": "2026-10-06T15:10:10+03:00"
+  },
+  "/zh/projects/concrete-batching-plant-scada/": {
+    "hash": "b1cab509902132d6",
+    "modified": "2026-10-07T06:47:56+03:00",
+    "published": "2026-10-06T15:10:10+03:00"
+  },
+  "/zh/projects/hotel-washer-extractor-control/": {
+    "hash": "0bf801940c1ba212",
+    "modified": "2026-10-07T06:47:56+03:00",
+    "published": "2026-10-06T15:10:10+03:00"
+  },
+  "/zh/projects/labeling-machine-delta-wecon/": {
+    "hash": "1d4f0d20ea65cc1b",
+    "modified": "2026-10-07T06:47:56+03:00",
+    "published": "2026-10-06T15:10:10+03:00"
+  },
+  "/zh/projects/milk-pasteurizer/": {
+    "hash": "2600882770b4a39e",
+    "modified": "2026-10-07T04:45:03+03:00",
+    "published": "2026-10-06T15:10:10+03:00"
+  },
+  "/zh/projects/olive-autoclave-sterilization/": {
+    "hash": "90e05307133fc61b",
+    "modified": "2026-10-07T04:45:03+03:00",
+    "published": "2026-10-06T15:10:10+03:00"
+  },
+  "/zh/projects/pasteurizer-cip-recipes/": {
+    "hash": "862756864a798df9",
+    "modified": "2026-10-07T06:47:56+03:00",
+    "published": "2026-10-06T15:10:10+03:00"
+  },
+  "/zh/projects/pipe-make-break-test-rig/": {
+    "hash": "c4758cb431c75bc2",
+    "modified": "2026-10-07T04:45:03+03:00",
+    "published": "2026-10-06T15:10:10+03:00"
+  },
+  "/zh/projects/shampoo-filling-delta-wecon/": {
+    "hash": "e100a4f6abca1465",
+    "modified": "2026-10-07T06:47:56+03:00",
+    "published": "2026-10-06T15:10:10+03:00"
+  },
+  "/zh/projects/shampoo-filling-ls-wecon/": {
+    "hash": "9a489a5f964aafad",
+    "modified": "2026-10-07T06:47:56+03:00",
+    "published": "2026-10-06T15:10:10+03:00"
+  },
+  "/zh/projects/tablet-coating-scada/": {
+    "hash": "d3422e55b6008d96",
+    "modified": "2026-10-07T04:45:03+03:00",
+    "published": "2026-10-06T15:10:10+03:00"
+  },
+  "/zh/services/": {
+    "hash": "33e15806b207a8b1",
+    "modified": "2026-10-07T06:47:56+03:00",
+    "published": "2026-10-06T15:10:10+03:00"
+  },
+  "/zh/services/control-panels/": {
+    "hash": "381e4def52a6c98c",
+    "modified": "2026-10-07T06:47:56+03:00",
+    "published": "2026-10-06T15:10:10+03:00"
+  },
+  "/zh/services/machine-automation/": {
+    "hash": "d318b73dd056e386",
+    "modified": "2026-10-07T06:47:56+03:00",
+    "published": "2026-10-06T15:10:10+03:00"
+  },
+  "/zh/services/machine-retrofits/": {
+    "hash": "b39b9a73db2c8746",
+    "modified": "2026-10-07T06:47:56+03:00",
+    "published": "2026-10-06T15:10:10+03:00"
+  },
+  "/zh/services/maintenance-support/": {
+    "hash": "c691adc7828e9d55",
+    "modified": "2026-10-07T06:47:56+03:00",
+    "published": "2026-10-06T15:10:10+03:00"
+  },
+  "/zh/services/plc-hmi-programming/": {
+    "hash": "2f8efdd51bcf1f8d",
+    "modified": "2026-10-07T06:47:56+03:00",
+    "published": "2026-10-06T15:10:10+03:00"
+  },
+  "/zh/services/process-control/": {
+    "hash": "467cfec5e399d767",
+    "modified": "2026-10-07T06:47:56+03:00",
+    "published": "2026-10-06T15:10:10+03:00"
+  },
+  "/zh/services/scada-data-logging/": {
+    "hash": "c15542c527a86606",
+    "modified": "2026-10-07T06:47:56+03:00",
+    "published": "2026-10-06T15:10:10+03:00"
+  },
+  "/zh/services/testing-commissioning/": {
+    "hash": "38832c52360435df",
+    "modified": "2026-10-07T06:47:56+03:00",
+    "published": "2026-10-06T15:10:10+03:00"
+  },
+  "/zh/technologies/": {
+    "hash": "b65869f4aa200e4c",
+    "modified": "2026-10-07T06:47:56+03:00",
+    "published": "2026-10-06T15:10:10+03:00"
+  }
+}

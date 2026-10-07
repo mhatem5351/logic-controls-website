@@ -32,7 +32,11 @@ export default defineConfig({
   workers: CI ? 2 : undefined,
   timeout: 30_000,
   expect: { timeout: 7_000, toHaveScreenshot: { maxDiffPixelRatio: 0.01, animations: "disabled", caret: "hide" } },
-  reporter: CI ? [["github"], ["list"], ["html", { open: "never" }]] : [["list"], ["html", { open: "never" }]],
+  // CI also writes a JSON report: the workflow lists tests that passed only on retry ("flaky") in the run summary, so a
+  // retry never hides a problem silently (CODE2-14).
+  reporter: CI
+    ? [["github"], ["list"], ["html", { open: "never" }], ["json", { outputFile: "playwright-report-json/results.json" }]]
+    : [["list"], ["html", { open: "never" }]],
   use: {
     baseURL: `https://127.0.0.1:${PORT}`,
     ignoreHTTPSErrors: true,

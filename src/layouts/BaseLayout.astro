@@ -11,6 +11,7 @@ import { LOCALE_META, getMessages, type Locale } from "~/i18n";
 import { SITE } from "~/data/site";
 import Seo from "~/components/Seo.astro";
 import Header from "~/components/Header.astro";
+import HeaderDrawer from "~/components/HeaderDrawer.astro";
 import Footer from "~/components/Footer.astro";
 import WhatsAppButton from "~/components/WhatsAppButton.astro";
 import montserratTrNormal from "~/assets/fonts/montserrat-tr-normal.woff2?url&no-inline";
@@ -110,6 +111,33 @@ const fontFaceCss =
   (locale === "ar"
     ? ""
     : `@font-face{font-family:"LC Arabic Label";src:url("${alexandriaLabel}") format("woff2");font-display:swap;font-weight:400 700;unicode-range:U+0627-0629,U+0631,U+0639,U+0644,U+064A}`);
+/* Speculation rules (PERF2-06): prefetch a same-site page's HTML when the visitor is about to open it (eagerness
+   "moderate": ~200 ms hover or pointer-down on desktop, viewport heuristics on Android Chrome), so the click no longer
+   waits for the round trip (140–450 ms from Egypt). Prefetch only, no prerender: nothing runs (analytics, forms) for a
+   page that is not opened. Never the Worker routes (/ and /api/*), the RFQ thank-you page, media / OG files, or links
+   marked download / nofollow / new tab. Cloudflare Speed Brain does not cover sites that run a Worker. Browsers
+   without speculation rules ignore the block; the inline script is hashed into the CSP like the others. */
+const speculation = JSON.stringify({
+  prefetch: [
+    {
+      where: {
+        and: [
+          { href_matches: "/*" },
+          { not: { href_matches: "/" } },
+          { not: { href_matches: "/api/*" } },
+          { not: { href_matches: "/*/contact/thanks/*" } },
+          { not: { href_matches: "/media/*" } },
+          // gallery thumbnails link to the full-size photo (no-JS fallback): never prefetch a file as a page
+          { not: { href_matches: "/_astro/*" } },
+          { not: { href_matches: "/og/*" } },
+          { not: { href_matches: "/cdn-cgi/*" } },
+          { not: { selector_matches: "[download], [rel~=nofollow], [target=_blank]" } },
+        ],
+      },
+      eagerness: "moderate",
+    },
+  ],
+});
 const beacon = JSON.stringify({ token: SITE.webAnalyticsToken });
 /** /^(www\.)?logic-controls\.com$/ as source text for the inline loader below. */
 const beaconHost = `/^(www\\.)?${new URL(SITE.url).hostname.replace(/\./g, "\\.")}$/`;
@@ -132,9 +160,16 @@ const beaconHost = `/^(www\\.)?${new URL(SITE.url).hostname.replace(/\./g, "\\."
           alone ("lc-media") with its scrims as separate layers above it ("lc-hs0…"), and its copy ("lc-copy-out")
         pagereveal (new page): the hero art, phone photo band or desktop photo (+ scrims) and copy → "lc-media" /
           "lc-hs*" / "lc-hero-copy", the card we came back to → "lc-media", or the own hero when coming "up"
-      Transition types: lc-next / lc-prev (case-study pager), lc-back (history back), lc-lang (language switch),
-      lc-dark (a dark hero is the first screen: navy backdrop), lc-photo / lc-photo-out (a hero photo is the new / old
-      side of the morph: clipped to the hero's slant), lc-orphan (old hero with no counterpart: leaves quickly).
+      Transition types: lc-page (every page-to-page transition: the page fade-through is scoped to it, so a
+      same-document transition such as the project filter never fades the page), lc-next / lc-prev (case-study pager),
+      lc-back (history back), lc-lang (language switch), lc-dark (a dark hero is the first screen: navy backdrop down
+      to the hero's bottom edge, --vt-hero-b), lc-photo / lc-photo-out (a hero photo is the new / old side of the morph:
+      clipped to the hero's slant), lc-orphan (old hero with no counterpart: leaves quickly), lc-hold (the new hero
+      photo is still loading: the old picture stays until the new one can cover it).
+      html[data-vting] while the transition runs (both pages): the header bar is opaque instead of frosted (a named
+      element has no backdrop to blur). html[data-fab-keep]: the floating button was showing on the old page, so the
+      new page shows it from the first frame (WhatsAppButton adopts that state).
+      clear() also drops any of these names left on a node by name, so a stale one can never reach the next transition.
       html[data-vt]: this page arrived through a view transition (hero entrances don't replay). With motion off the
       transition is skipped. Also pauses looping decoration ([data-pause-offscreen]) while it is offscreen.
       See src/styles/motion.css.
@@ -160,17 +195,30 @@ const beaconHost = `/^(www\\.)?${new URL(SITE.url).hostname.replace(/\./g, "\\."
         const vis = (el) => { const r = el.getBoundingClientRect(); return r.width > 0 && r.bottom > 0 && r.top < innerHeight; };
         const art = (el) => el.querySelector(".lca") || el;
         const name = (el, n) => { if (el) { el.style.viewTransitionName = n; N.push(el); } };
-        const clear = () => { N.forEach((el) => (el.style.viewTransitionName = "")); N.length = 0; };
+        const OURS = /^lc-(media|hs\d|header|fab|nav-ind|hero-copy|copy-out|success)$/;
+        const clear = () => {
+          N.forEach((el) => (el.style.viewTransitionName = ""));
+          N.length = 0;
+          document.querySelectorAll('[style*="view-transition-name"]').forEach((el) => OURS.test(el.style.viewTransitionName) && (el.style.viewTransitionName = ""));
+          if (d.dataset.vting != null) {
+            delete d.dataset.vting;
+            document.dispatchEvent(new Event("lc:vt-end")); /* play-when-visible starts waiting illustrations now */
+          }
+          delete d.dataset.fabKeep;
+          d.style.removeProperty("--vt-hero-b");
+        };
         const card = (p) => [...document.querySelectorAll("[data-vt-href]")].find((el) => path(el.dataset.vtHref) === p && vis(art(el)));
         const chrome = () => {
+          d.dataset.vting = "";
           name(document.querySelector(".lc-header"), "lc-header");
           name(document.querySelector(".lc-fab"), "lc-fab");
           const i = [...document.querySelectorAll(".lc-nav-ind")].find(vis);
           name(i, "lc-nav-ind");
         };
         /* The hero's visible picture — its illustration, the phone photo band, else the desktop panel's photo alone
-           (its scrims named above it) — plus its copy (`copy`: kept above the lifted picture).
-           Returns "art" | "band" | "photo" | "". */
+           (its scrims named above it) or a framed screen / print (FramedHero: above the scrims, so they stay in the
+           page snapshot) — plus its copy (`copy`: kept above the lifted picture).
+           Returns "art" | "band" | "photo" | "framed" | "". */
         const hero = (copy) => {
           const h = document.querySelector(".lc-hero"), m = h?.querySelector(".lc-hero-media");
           const a = h && [...h.querySelectorAll(".lca, .lc-hero-band")].find(vis);
@@ -179,7 +227,8 @@ const beaconHost = `/^(www\\.)?${new URL(SITE.url).hostname.replace(/\./g, "\\."
           name(h.querySelector(".lc-hero-copy"), copy);
           if (a) return name(a, "lc-media"), a.classList.contains("lca") ? "art" : "band";
           name(img, "lc-media");
-          [...m.children].filter((x) => x.tagName === "DIV").slice(0, 4).forEach((x, i) => name(x, "lc-hs" + i));
+          if (img.closest("[data-framed]")) return "framed";
+          [...m.children].filter((x) => x.tagName === "DIV" && !x.hasAttribute("data-framed")).slice(0, 4).forEach((x, i) => name(x, "lc-hs" + i));
           return "photo";
         };
         const done = (t) => { t.ready.catch(() => {}); t.finished.then(clear, clear); };
@@ -213,10 +262,16 @@ const beaconHost = `/^(www\\.)?${new URL(SITE.url).hostname.replace(/\./g, "\\."
             try {
               const ty = t.types, add = (x) => ty?.add(x);
               const [dir, to] = (S.lcDir || "").split(" "), [upKind, up] = (S.lcUp || "").split(" ");
+              add("lc-page");
+              if (S.lcFab && matchMedia("(min-width: 64rem)").matches) d.dataset.fabKeep = "";
               if (to === here) add("lc-" + dir);
               if (a?.navigationType === "traverse" && a.entry.index < a.from?.index) add("lc-back");
               if (from && path(from).split("/")[1] !== here.split("/")[1]) add("lc-lang");
-              if (document.querySelector(".lc-header[data-hero]") && scrollY < 24) add("lc-dark");
+              if (document.querySelector(".lc-header[data-hero]") && scrollY < 24) {
+                add("lc-dark");
+                const b = document.querySelector(".lc-hero")?.getBoundingClientRect().bottom;
+                if (b > 0 && b < innerHeight) d.style.setProperty("--vt-hero-b", Math.round(b) + "px");
+              }
               if (up === here && upKind === "photo") add("lc-photo-out");
               chrome();
               if (S.lcMorph === here) {
@@ -233,11 +288,15 @@ const beaconHost = `/^(www\\.)?${new URL(SITE.url).hostname.replace(/\./g, "\\."
                 }
               }
               if (S.lcSuccess) name(document.querySelector("[data-vt-success]"), "lc-success");
+              /* The new picture has no pixels yet (photo still loading): the old one flies all the way and stays, the
+                 new one fades in over it once loaded — never a morph onto an empty box. */
+              const md = N.find((el) => el.style.viewTransitionName === "lc-media");
+              if (md?.tagName === "IMG" && !(md.complete && md.naturalWidth)) add("lc-hold");
             } catch {}
             done(t);
           }
           try {
-            ["lcMorph", "lcDir", "lcUp", "lcSuccess"].forEach((k) => delete S[k]);
+            ["lcMorph", "lcDir", "lcUp", "lcSuccess", "lcFab"].forEach((k) => delete S[k]);
           } catch {}
         });
         addEventListener("DOMContentLoaded", () => {
@@ -284,6 +343,12 @@ const beaconHost = `/^(www\\.)?${new URL(SITE.url).hostname.replace(/\./g, "\\."
     {preloadFonts && locale === "tr" && latinExtFaces.map(({ url }) => <link rel="preload" href={url} as="font" type="font/woff2" crossorigin />)}
     <style is:inline set:html={fontFaceCss} />
     {locale === "ar" && <Font cssVariable="--font-arabic" preload={preloadFonts} />}
+    {/* The site's client JavaScript: ONE module for the whole page (src/scripts/site.ts, which takes over the component
+        scripts; integrations/site-scripts.mjs). Add site-wide code there, not as another script tag here. */}
+    <script>
+      import "~/scripts/site";
+    </script>
+    <script is:inline type="speculationrules" set:html={speculation} />
     <noscript><style>.lc-header[data-hero] .lc-header-bg{background:rgb(4 14 39/.94)!important}</style></noscript>
     <slot name="head" />
   </head>
@@ -294,12 +359,15 @@ const beaconHost = `/^(www\\.)?${new URL(SITE.url).hostname.replace(/\./g, "\\."
     >
       {t.a11y.skip}
     </a>
-    {chrome && <Header locale={locale} path={path} heroDark={heroDark} />}
+    {/* The phone drawer (a top-layer modal: its DOM position does not show) is rendered after the footer, so <main> and
+        the hero come ~25–30 KB earlier in the HTML (PERF2-02). */}
+    {chrome && <Header locale={locale} path={path} heroDark={heroDark} drawer={false} whatsappMessage={whatsappMessage} />}
     <main id="main" tabindex="-1" class="outline-none">
       <slot />
     </main>
     {chrome && <Footer locale={locale} path={path} />}
     {chrome && <WhatsAppButton locale={locale} message={whatsappMessage} />}
+    {chrome && <HeaderDrawer locale={locale} path={path} whatsappMessage={whatsappMessage} />}
     {/* Analytics only on the live hostname (and www): local `wrangler dev` previews and *.workers.dev builds serve the
         same production bundle, and the beacon's reports would fail CORS there (console errors, no data anyway). */}
     {

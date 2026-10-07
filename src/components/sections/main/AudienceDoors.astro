@@ -1,11 +1,14 @@
 ---
 /**
  * Home "two doors": local factories & machine builders → services, foreign manufacturers → foreign-manufacturers.
- * Whole panel is one link (stretched title link, one tab stop). `foreignFirst` for /zh/ and /tr/ visitors.
+ * Whole panel is one link (stretched title link). The foreign door adds one small second link (its own tab stop,
+ * above the stretched overlay) for machine builders exporting to Egypt → the OEM block of the foreign page.
+ * `foreignFirst` for /zh/ and /tr/ visitors.
  */
 import { getMessages, type Locale } from "~/i18n";
 import Icon from "~/components/Icon.astro";
-import { href, FOREIGN_PATH } from "~/components/nav";
+import { href, FOREIGN_PATH, OEM_PATH } from "~/components/nav";
+import { html } from "~/lib/text";
 
 interface Props {
   locale: Locale;
@@ -15,6 +18,7 @@ interface Props {
 const { locale, foreignFirst = false, class: className } = Astro.props;
 const t = getMessages(locale);
 const a = t.home.audiences;
+const oem = t.foreign.oem;
 const doors = [
   { key: "local", ...a.local, href: href(locale, "services"), dark: false, icon: "factory" as const, chips: ["PLC", "HMI", "SCADA", "VFD"] },
   { key: "foreign", ...a.foreign, href: href(locale, FOREIGN_PATH), dark: true, icon: "globe" as const, chips: ["FAT", "SAT", "I/O"] },
@@ -22,13 +26,13 @@ const doors = [
 if (foreignFirst) doors.reverse();
 ---
 
-<div class:list={["grid gap-5 md:grid-cols-2 lg:gap-6", className]}>
+<div class:list={["grid grid-cols-1 gap-5 md:grid-cols-2 lg:gap-6", className]}>
   {
     doors.map((d) => (
       <article
         class:list={[
           "lc-reveal group relative isolate flex flex-col overflow-hidden p-6 transition-[translate,border-color,box-shadow] duration-(--dur-ui) ease-mech sm:p-9",
-          "has-[a:focus-visible]:outline-2 has-[a:focus-visible]:outline-offset-4 has-[a:focus-visible]:outline-(--focus)",
+          "has-[.lc-door-link:focus-visible]:outline-2 has-[.lc-door-link:focus-visible]:outline-offset-4 has-[.lc-door-link:focus-visible]:outline-(--focus)",
           d.dark
             ? "on-dark bg-navy-950 text-navy-100 hover:shadow-glow"
             : "border border-charcoal-200 bg-white hover:-translate-y-(--move-lift) hover:border-royal-300 hover:shadow-lift",
@@ -49,11 +53,9 @@ if (foreignFirst) doors.reverse();
           </span>
         </div>
         <h3 class:list={["mt-5 type-h2 max-w-md sm:mt-7", d.dark ? "text-white" : "text-navy-950"]} style="font-size: clamp(1.5rem, 1.2rem + 1.1vw, 2.125rem)">
-          <a href={d.href} class="after:absolute after:inset-0 after:z-10 after:content-[''] focus-visible:outline-none">
-            {d.title}
-          </a>
+          <a href={d.href} class="lc-door-link after:absolute after:inset-0 after:z-10 after:content-[''] focus-visible:outline-none" set:html={html(locale, d.title)} />
         </h3>
-        <p class:list={["mt-3 max-w-lg sm:mt-4", d.dark ? "text-navy-200" : "text-charcoal-600"]}>{d.text}</p>
+        <p class:list={["mt-3 max-w-lg sm:mt-4", d.dark ? "text-navy-200" : "text-charcoal-600"]} set:html={html(locale, d.text)} />
         <ul role="list" class="mt-6 flex flex-wrap gap-2 max-sm:hidden" aria-hidden="true">
           {d.chips.map((c) => (
             <li
@@ -67,17 +69,28 @@ if (foreignFirst) doors.reverse();
             </li>
           ))}
         </ul>
-        <span
-          aria-hidden="true"
-          class:list={[
-            "mt-auto inline-flex items-center gap-2 pt-6 font-bold sm:pt-8",
-            d.dark ? "text-signal-300 group-hover:text-white" : "text-royal-600 group-hover:text-royal-800",
-          ]}
-        >
-          {d.dark && <span class="lc-led" />}
-          {d.cta}
-          <Icon name="arrow" size={18} class="transition-[translate] duration-(--dur-ui) ease-mech group-hover:translate-x-1 rtl:group-hover:-translate-x-1" />
-        </span>
+        <div class="mt-auto flex flex-wrap items-center gap-x-6 gap-y-1 pt-6 sm:pt-8">
+          <span
+            aria-hidden="true"
+            class:list={[
+              "inline-flex min-h-11 items-center gap-2 font-bold",
+              d.dark ? "text-signal-300 group-hover:text-white" : "text-royal-600 group-hover:text-royal-800",
+            ]}
+          >
+            {d.dark && <span class="lc-led" />}
+            {d.cta}
+            <Icon name="arrow" size={18} class="transition-[translate] duration-(--dur-ui) ease-mech group-hover:translate-x-1 rtl:group-hover:-translate-x-1" />
+          </span>
+          {d.key === "foreign" && oem?.eyebrow && (
+            <a
+              href={href(locale, OEM_PATH)}
+              class="relative z-20 inline-flex min-h-11 items-center gap-2 text-sm font-semibold text-navy-200 underline decoration-white/30 underline-offset-4 transition-colors hover:text-white hover:decoration-white focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-(--focus)"
+            >
+              {oem.eyebrow}
+              <Icon name="arrow" size={14} />
+            </a>
+          )}
+        </div>
       </article>
     ))
   }

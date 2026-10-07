@@ -1,0 +1,32 @@
+---
+/**
+ * The one "view all" link of the site (VIS2-17): a ghost button, the label, and the count as a mono pill — read as
+ * "All projects (15)" by screen readers and crawlers, not "All projects15". Used by the home section headers and
+ * RelatedProjects.
+ *   <ViewAll href="/en/projects/" label="All projects" count={15} />
+ */
+import Button from "./Button.astro";
+
+interface Props {
+  href: string;
+  label: string;
+  count?: number;
+  class?: string;
+}
+const { href, label, count, class: className } = Astro.props;
+---
+
+<Button href={href} variant="ghost" class={["shrink-0", className].filter(Boolean).join(" ")}>
+  {label}
+  {
+    count != null && (
+      <>
+        <span class="sr-only"> (</span>
+        <span class="ms-1 inline-grid min-w-7 place-items-center bg-royal-50 px-1.5 py-0.5 font-mono text-xs text-royal-700 ltr" dir="ltr">
+          {count}
+        </span>
+        <span class="sr-only">)</span>
+      </>
+    )
+  }
+</Button>

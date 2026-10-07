@@ -4,6 +4,8 @@
  * has a film, meta line (primary industry / year), card title, first technologies as chips, "Read case study".
  * Title and chips are passed as plain text: Card renders them through src/lib/text.ts (codes stay whole, Chinese
  * breaks between words, Arabic isolates Latin runs) and localises the technology names (tech.json).
+ * A cover that is an HMI / SCADA screen capture (media.ts) is shown as a screen in a small device bezel on the
+ * blueprint ground, fitted (object-contain logic, never cropped or stretched edge to edge like a photo).
  */
 import { Picture } from "astro:assets";
 import Card from "~/components/Card.astro";
@@ -12,6 +14,7 @@ import type { ProjectData } from "~/data/projects";
 import { getMessages, localePath, type Locale } from "~/i18n";
 import { imageAlt, industryCopy, projectCopy } from "./catalog";
 import { CARD_SIZES_3, CARD_WIDTHS } from "./sizes";
+import { cardIsScreen } from "./media";
 
 interface Props {
   project: ProjectData;
@@ -22,14 +25,21 @@ interface Props {
   /** How many technology chips to show (two keep the chips on one line, so titles and CTAs line up). */
   maxTags?: number;
   sizes?: string;
+  /** Photo beside the text on tablets / from 640px (Card `feature`). */
+  feature?: "tablet" | "always";
   class?: string;
 }
 
-const { project: p, locale, headingLevel = "h3", eager = false, maxTags = 2, sizes, class: className } = Astro.props;
+const { project: p, locale, headingLevel = "h3", eager = false, maxTags = 2, sizes, feature, class: className } = Astro.props;
 const t = getMessages(locale).common;
 const c = projectCopy(locale, p.slug);
 const industry = industryCopy(locale, p.industries[0] ?? "");
 const meta = [industry?.navTitle, String(p.year)].filter((m): m is string => !!m);
+const screen = cardIsScreen(p, p.cover);
+/* Screen in a 16:10 card: as wide as fits 84% of the card and 74% of its height (the bezel adds ~18px). */
+const aspect = p.cover.image.width / p.cover.image.height;
+const screenWidth = Math.min(84, Math.round((74 * aspect) / 1.6));
+const zoom = "transition-[scale] duration-(--dur-section) ease-emph group-hover:scale-[1.04]";
 ---
 
 {
@@ -42,20 +52,45 @@ const meta = [industry?.navTitle, String(p.year)].filter((m): m is string => !!m
       tags={p.technologies.slice(0, maxTags)}
       cta={t.labels.readCaseStudy}
       headingLevel={headingLevel}
+      feature={feature}
       class={className}
       locale={locale}
     >
       <Fragment slot="media">
-        <Picture
-          src={p.cover.image}
-          alt={imageAlt(locale, p.slug, p.cover.key)}
-          formats={["avif", "webp"]}
-          widths={CARD_WIDTHS}
-          sizes={sizes ?? CARD_SIZES_3}
-          loading={eager ? "eager" : "lazy"}
-          layout="full-width"
-          class="size-full object-cover transition-[scale] duration-(--dur-section) ease-emph group-hover:scale-[1.04]"
-        />
+        {screen ? (
+          <div class="absolute inset-0 grid place-items-center bg-navy-950">
+            <span aria-hidden="true" class="absolute inset-0 bg-blueprint opacity-60" />
+            <div class:list={["lc-card-bezel relative", zoom]} style={`width:${screenWidth}%`}>
+              <Picture
+                src={p.cover.image}
+                alt={imageAlt(locale, p.slug, p.cover.key)}
+                formats={["avif", "webp"]}
+                widths={CARD_WIDTHS}
+                sizes={sizes ?? CARD_SIZES_3}
+                loading={eager ? "eager" : "lazy"}
+                layout="full-width"
+                class="block h-auto w-full rounded-[2px]"
+              />
+            </div>
+          </div>
+        ) : (
+          /* Cropped at build time to the card's 16:10 box (centre, like the CSS object-fit it replaces): the same
+             visible pixels, without encoding the 45–55 % of a portrait photo that the box never shows (PERF2-10). */
+          <Picture
+            src={p.cover.image}
+            alt={imageAlt(locale, p.slug, p.cover.key)}
+            formats={["avif", "webp"]}
+            widths={CARD_WIDTHS}
+            width={800}
+            height={500}
+            fit="cover"
+            position={p.cover.position}
+            sizes={sizes ?? CARD_SIZES_3}
+            loading={eager ? "eager" : "lazy"}
+            layout="full-width"
+            class:list={["size-full object-cover", zoom]}
+          />
+        )}
         {
           p.video && (
             <span class="absolute start-3 top-3 inline-flex items-center gap-1.5 bg-navy-950/85 px-2.5 py-1.5 type-label text-white backdrop-blur-sm">

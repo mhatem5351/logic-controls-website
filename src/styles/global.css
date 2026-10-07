@@ -125,7 +125,7 @@
   --text-h2--line-height: 1.1;
   --text-h1: clamp(2.125rem, 1.6rem + 2.3vw, 3.75rem);
   --text-h1--line-height: 1.05;
-  --text-display: clamp(2.25rem, 1.55rem + 2.9vw, 4.125rem);
+  --text-display: clamp(1.875rem, 1.2rem + 3.2vw, 4.125rem);
   --text-display--line-height: 1.02;
   --text-stat: clamp(2.25rem, 1.8rem + 2vw, 3.5rem);
   --text-stat--line-height: 1;
@@ -164,6 +164,11 @@
   --ease-emph: cubic-bezier(0.16, 1, 0.3, 1);
   --ease-inout: cubic-bezier(0.65, 0, 0.35, 1);
   --ease-exit: cubic-bezier(0.4, 0, 1, 1);
+
+  /* Bare `transition` / `transition-colors` utilities run on the motion system's clock and curve (and collapse with
+     the duration tokens under reduced motion / the pause toggle), not Tailwind's 150 ms default (MOT2-18). */
+  --default-transition-duration: var(--dur-micro);
+  --default-transition-timing-function: var(--ease-mech);
 
   --animate-trace-draw: trace-draw 2.2s var(--ease-emph) both;
 
@@ -273,12 +278,14 @@
   :lang(ar) {
     font-family: var(--font-ar-text);
   }
-  /* Latin-language islands inside Arabic pages (codes, tech names) use Montserrat. Matching the element that carries
-     the lang attribute (not every descendant) lets font utilities on it still win. Exceptions keep the page's
-     Alexandria (it has Latin, ü ç included): the <bdi lang="en"> runs src/lib/text.ts isolates in Arabic sentences
-     (lang only switches the screen-reader voice there, A11Y-38), and the language switcher (next rule). */
+  /* Latin-language islands inside Arabic pages (codes, tech names, platform chips, brand titles, "English" /
+     "Türkçe") keep the page's Alexandria: it is Montserrat's Arabic companion and has its own Latin (ü ç ğ ş included,
+     already loaded for "PLC" in the H1), so Arabic pages never download the 37 KB Montserrat file for a few Latin
+     words (PERF2-12, lead decision). Matching the element that carries the lang attribute (not every descendant) lets
+     font utilities on it still win. The <bdi lang="en"> runs src/lib/text.ts isolates in Arabic sentences and the
+     language switcher (next rule) inherit the same face. */
   :lang(ar) :is([lang="en"], [lang="tr"]):not(bdi, [data-set-lang], .lc-lang-btn [lang]) {
-    font-family: var(--font-latin), system-ui, sans-serif;
+    font-family: var(--font-ar-text);
   }
   :lang(zh-Hans) {
     font-family: var(--font-zh);
@@ -289,9 +296,23 @@
   :lang(ar) :is([data-set-lang], .lc-lang-btn [lang]) {
     font-family: var(--font-ar-text);
   }
+  /* …except that "中文" names its CJK faces (local system fonts only: nothing is downloaded), so Windows with an Arabic
+     UI locale does not pick a SimSun-style fallback next to Alexandria (I18N2-18). The same for any Chinese island on
+     an Arabic page (the foreign-manufacturers language list): the zh stack would put Montserrat first for Latin and
+     line metrics, i.e. download it for two Han characters (PERF2-12). */
+  :lang(ar) :is([data-set-lang], .lc-lang-btn [lang])[lang="zh-Hans"],
+  :lang(ar) [lang="zh-Hans"] {
+    font-family: "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei UI", "Microsoft YaHei", "Noto Sans CJK SC", "Source Han Sans SC", var(--font-ar-text);
+  }
   :lang(ar) body,
   body:lang(ar) {
     line-height: 1.75;
+  }
+  /* English / Turkish body text in Montserrat (variable) at 450: 400 read pale next to the 800-italic headings
+     (VIS2-18). The metric-matched fallback has its own 450–549 band, so the swap still moves nothing. Not Arabic or
+     Chinese: a 450 request picks an OS CJK face's Medium (500) where one exists. */
+  body:where(:lang(en), :lang(tr)) {
+    font-weight: 450;
   }
   body:lang(zh-Hans) {
     line-height: 1.75;
@@ -897,10 +918,12 @@
 /* ==== PK5 type ==== (text engine hooks: src/lib/text.ts)
    - Any heading: a word or atom wider than its line breaks instead of overflowing, and only then (`break-word` does
      not lower min-content, so grids and cards keep their widths). Covers zoom / WCAG 1.4.12 text spacing.
-   - Turkish: html() inserts soft hyphens (U+00AD) at syllable boundaries in words of 13+ letters
-     ("otomatik-leştiriyorsunuz" at a line end). They are active in headings only; body text keeps whole words.
-   - `.lc-nws` (names made only of words: "Logic Controls", "Wecon HMI"): in headings on very narrow screens they may
-     break at their space rather than push the page sideways. Codes ("S7-1200", "IEC 60204-1") stay whole. */
+   - Turkish: heading() inserts soft hyphens (U+00AD) at syllable boundaries in words of 13+ letters, never leaving
+     fewer than 3 letters on either side ("otomatik-leştiriyorsunuz" at a line end), in display text only (headings,
+     card titles, FAQ questions). Body text carries none: WebKit breaks at U+00AD even under `hyphens: none`.
+   - `.lc-nws` (names made only of words: "Logic Controls", "WinCC Professional", "SIMATIC HMI"; on Arabic pages the
+     <bdi> isolate): in a heading the name moves to the next line as one unit and wraps at its space only when it is
+     wider than the whole line (zoom, text spacing, 320px). Codes ("S7-1200", "IEC 60204-1") never wrap. */
 @layer base {
   h1,
   h2,
@@ -918,10 +941,15 @@
   }
 }
 @layer components {
-  @media (max-width: 26rem) {
-    :is(h1, h2, h3, .type-display, .type-h1, .type-h2) .lc-nws {
-      white-space: normal;
-    }
+  /* inline-block: moved down whole when it fits the next line, wrapped inside only when it doesn't (I18N2-10); the
+     RTL selector outranks `[dir="rtl"] bdi:not(.lc-wrap)` (A11Y2-23). A link's underline does not reach into an
+     inline-block, so it takes the parent's decoration itself. */
+  :is(h1, h2, h3, h4, .type-display, .type-h1, .type-h2, .type-h3, .type-h4) .lc-nws,
+  [dir="rtl"] :is(h1, h2, h3, h4, .type-display, .type-h1, .type-h2, .type-h3, .type-h4) bdi.lc-nws {
+    display: inline-block;
+    max-inline-size: 100%;
+    white-space: normal;
+    text-decoration: inherit;
   }
 }
 /* ==== /PK5 type ==== */
@@ -1074,19 +1102,31 @@
     }
   }
   @media (40rem <= width < 64rem) {
-    .lc-grid-projects > :nth-child(2n) {
+    /* the reveal stagger counts visible cards only (a filtered list hides some, CODE2-30) */
+    .lc-grid-projects > :nth-child(2n of :not([hidden])) {
       --col: 1;
     }
     .lc-grid-projects:not([data-managed]) > :last-child:nth-child(2n + 1),
     .lc-grid-projects[data-managed] > [data-c2] {
       grid-column: 2 / span 2;
     }
-  }
-  @media (min-width: 64rem) {
-    .lc-grid-projects > :nth-child(3n + 2) {
+    /* RelatedProjects: an odd count opens with a wide feature card (photo beside the text, Card `feature="tablet"`),
+       the others follow in pairs: no lone card in the last row. */
+    .lc-grid-projects > [data-feature] {
+      grid-column: 1 / -1;
+    }
+    .lc-grid-projects > [data-feature] ~ * {
+      --col: 0;
+    }
+    .lc-grid-projects > [data-feature] ~ :nth-child(2n + 1) {
       --col: 1;
     }
-    .lc-grid-projects > :nth-child(3n) {
+  }
+  @media (min-width: 64rem) {
+    .lc-grid-projects > :nth-child(3n + 2 of :not([hidden])) {
+      --col: 1;
+    }
+    .lc-grid-projects > :nth-child(3n of :not([hidden])) {
       --col: 2;
     }
     .lc-grid-projects:not([data-managed]) > :last-child:nth-child(3n + 1),
@@ -1117,11 +1157,35 @@
   .lc-card-title:where(:lang(ar), :lang(zh-Hans)) {
     line-height: 1.45;
   }
+  /* Cross-link tile titles (LinkTiles): English hyphenates long words; Turkish keeps the text engine's soft hyphens
+     (hyphens: manual, PK5); an Arabic word is never broken between joined letters (the tiles are wide enough). */
+  .lc-tile-title:where(:lang(en)) {
+    hyphens: auto;
+    -webkit-hyphens: auto;
+    hyphenate-limit-chars: 10 4 4;
+  }
+  .lc-tile-title:where(:lang(ar)) {
+    overflow-wrap: normal;
+  }
 
   /* Project photos are untreated site captures with mixed white balance: one light, shared grade + a soft
      bottom shade so neighbouring cards read as one set (no extra files, the originals stay untouched). */
   .lc-card-photo img {
     filter: saturate(0.9) contrast(1.04);
+  }
+  /* A screen-capture cover (ProjectCard, catalog/media.ts): the screen in a small HMI bezel (the live demo's build),
+     never full-bleed like a photo. */
+  .lc-card-bezel {
+    padding: 6px 6px 13px;
+    border-radius: 9px;
+    background: linear-gradient(170deg, #34353d 0%, #1d1e24 45%, #141519 100%);
+    box-shadow:
+      inset 0 1px 0 rgb(255 255 255 / 0.14),
+      inset 0 0 0 1px rgb(0 0 0 / 0.7),
+      0 18px 30px -14px rgb(0 0 0 / 0.7);
+  }
+  .lc-card-bezel img {
+    filter: none;
   }
 
   /* Stretched-link cards draw their focus ring on the card via :has(); browsers without :has() (Firefox ESR 115,
@@ -1142,6 +1206,28 @@ html:has(.lc-lightbox[open]) {
 .lc-lightbox {
   overscroll-behavior: contain;
 }
+
+/* Service card rows (VIS2-19): titles run 1–4 lines, so each card's art / title / text / chips / link sit on rows
+   shared across the whole grid row (subgrid): every description starts at the same height. Unlayered so it can turn
+   the card's `flex` utility into a grid; spacing between card rows moves from the row gap to a margin, because the 5
+   sub-rows of a card would otherwise each get the gap. Browsers without subgrid keep the flex card. */
+@supports (grid-template-rows: subgrid) {
+  .lc-grid-services {
+    row-gap: 0;
+  }
+  .lc-grid-services > * {
+    display: grid;
+    grid-row: span 5;
+    grid-template-rows: subgrid;
+    margin-bottom: 1.25rem;
+  }
+  .lc-grid-services > * > article {
+    display: grid;
+    grid-row: span 5;
+    grid-template-rows: subgrid;
+    row-gap: 0;
+  }
+}
 /* ==== /PK1 cards/grids ==== */
 
 /* ==== PK3 hero/cta/form ==== */
@@ -1151,9 +1237,11 @@ html.js .lc-nojs,
 html:not(.js) .lc-js {
   display: none;
 }
-/* Narrow phones (< 400px): the full-width hero / band CTAs keep long labels (Turkish, Arabic) on one line. */
+/* Narrow phones (< 400px): the full-width hero / band CTAs keep long labels (Turkish, Arabic) on one line — the lg
+   buttons and the compact heroes' md ones alike (VIS2-21; Turkish WhatsApp CTAs also switch to a shorter label there,
+   contact-cta.ts `narrow`). */
 @media (max-width: 24.99rem) {
-  :is(.lc-hero, .lc-band) .lc-btn[data-size="lg"] {
+  :is(.lc-hero, .lc-band) .lc-btn:is([data-size="lg"], [data-size="md"]) {
     font-size: 0.875rem;
     padding-inline: 1rem;
   }
@@ -1180,5 +1268,31 @@ html:not(.js) .lc-js {
 }
 .lc-stat-label:lang(zh-Hans) {
   max-width: none;
+}
+/* Q3 (round 2). Keyboard focus on a card's stretched link: the browser scrolls only the link into view, so keep it
+   clear of the sticky header with room for the card above it (A11Y2-24; the header script also brings the whole card
+   in when it fits). */
+.lc-stretch,
+:where(li, article) a[class*="after:inset-0"] {
+  scroll-margin-block: 5rem 1rem;
+}
+/* Large desktop monitors at 100% scaling (≥ 1920 / 2560 CSS px): step the root size up one notch, so the content
+   column, type and spacing (all rem-based) grow together instead of leaving half the screen empty (DEV2-10). Media
+   queries are in rem of the initial size, so no breakpoint moves. Arabic keeps its own +6.25% on top. */
+@media (min-width: 120rem) {
+  html {
+    font-size: 106.25%;
+  }
+  html:lang(ar) {
+    font-size: 112.875%;
+  }
+}
+@media (min-width: 160rem) {
+  html {
+    font-size: 112.5%;
+  }
+  html:lang(ar) {
+    font-size: 119.5%;
+  }
 }
 /* ==== /PK2 home/nav ==== */

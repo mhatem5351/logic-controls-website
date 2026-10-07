@@ -94,7 +94,7 @@
       },
       "message": {
         "label": "Describe the machine or project",
-        "help": "Machine type, what it should do, current problems, and PLC or HMI brands if you know them."
+        "help": "Machine type, what it should do, current problems, and PLC or HMI brands if you know them. Up to {max} characters."
       },
       "phoneOptional": {
         "label": "Phone number",
@@ -104,8 +104,17 @@
         "label": "Drawings, photos or documents",
         "help": "Up to {count} files, {size} in total: PDF, JPG, PNG, WebP, ZIP, DWG or DXF.",
         "choose": "Choose files",
+        "addMore": "Add more files",
+        "drop": "or drop them here",
         "remove": "Remove {name}",
-        "summary": "{count} of {max} files · {size} of {maxSize}"
+        "summary": "{count} of {max} files · {size} of {maxSize}",
+        "preparing": "Checking and preparing…",
+        "reduced": "Photo reduced for sending (was {size})",
+        "badType": "This type of file cannot be sent. Remove it, or email it after sending the request.",
+        "badContent": "This does not look like a real {ext} file, so it may not be attached. You can email it after sending the request.",
+        "uploading": "Uploading files… {percent}%",
+        "progress": "Upload progress",
+        "keepOpen": "Keep this page open until the request is sent."
       },
       "contactPreference": {
         "label": "How should we contact you?",
@@ -123,6 +132,13 @@
     "whatsappHint": {
       "text": "Prefer WhatsApp? Send photos of the machine, the nameplates, the panel or the drawings.",
       "cta": "Send drawings on WhatsApp"
+    },
+    "urgentStopped": "Yes, a machine is stopped now",
+    "context": {
+      "project": "About the case study: {title}",
+      "projectMessage": "I have a project similar to your case study “{title}”.",
+      "reference": "Reference call: tell us your industry and the kind of machine, and we will look for a past client with a similar project who agrees to talk with you.",
+      "referenceMessage": "I would like a reference call with one of your past clients."
     },
     "privacyNote": "We use your details only to reply to this request. We do not add you to any mailing list.",
     "sent": "Request sent. Opening the confirmation page…",
@@ -148,10 +164,13 @@
     "messageTooLong": "Please keep the description under {max} characters.",
     "summary": "Please check the highlighted fields.",
     "summaryCount": "Please check these fields ({count}):",
-    "filesType": "Some files have a type we cannot accept. Use PDF, JPG, PNG, WebP, ZIP, DWG or DXF.",
+    "filesType": "These files have a type we cannot accept: {files}. Use PDF, JPG, PNG, WebP, ZIP, DWG or DXF.",
     "filesCount": "Please choose up to {max} files. You can send the rest after submitting.",
     "filesSize": "The files are larger than {max} in total. Remove some here and send them after submitting: the confirmation page gives you a request number to mention by email or WhatsApp.",
-    "emailForReply": "Add your email address so we can reply by email."
+    "emailForReply": "Add your email address so we can reply by email.",
+    "phoneForReply": "Add your number so we can call you or message you on WhatsApp.",
+    "phoneCountry": "Please add your country code, for example +966 or +90, so we call or message the right number.",
+    "messageNear": "{count} of {max} characters used."
   },
   "errors": {
     "title": "Your request was not sent",
@@ -160,9 +179,10 @@
     "send": "We could not send your request because of a technical problem. Please try again in a few minutes, or contact us on WhatsApp or by email.",
     "unknown": "Something went wrong. Please try again, or contact us on WhatsApp or by email.",
     "fallback": "You can also reach us directly:",
-    "attachments": "The files could not be attached. You can attach up to 3 files, 4 MB in total (PDF, JPG, PNG, WebP, ZIP, DWG or DXF). Remove them and send the request, then send the files by email or WhatsApp.",
-    "verificationBlocked": "The security check could not load. A browser extension, a firewall or your network may be blocking it.",
-    "handover": "Your details are copied into the message, so you do not need to type them again."
+    "attachments": "We could not accept the files: they may be over the limit (3 files, 4 MB in total) or not a PDF, JPG, PNG, WebP, ZIP, DWG or DXF file. Remove them and send the request, then send the files by email or WhatsApp.",
+    "verificationBlocked": "The security check could not load. A browser extension, a firewall or your network may be blocking it. Reload the page or try another network, or contact us directly below.",
+    "handover": "Your details are copied into the message, so you do not need to type them again.",
+    "timeout": "Sending took too long and was stopped. Your connection may be slow or interrupted. Please try again, or contact us another way."
   },
   "channels": {
     "title": "Other ways to reach us",
@@ -215,14 +235,25 @@
     },
     "more": {
       "title": "Have photos or drawings?",
+      "titleMore": "More files to send?",
       "text": "Send them on WhatsApp or by email. They help us prepare the quote faster.",
       "cta": "Send drawings on WhatsApp"
     },
+    "urgentNow": {
+      "title": "Is a machine stopped? Call an engineer now.",
+      "text": "Mention your request number {ref} when we answer."
+    },
+    "received": "Files received: {files}",
+    "skipped": "We could not attach: {files}. Their content did not match the file type. Please send them on WhatsApp or by email with your request number.",
+    "skippedSome": "Some files could not be attached because their content did not match the file type. Please send them on WhatsApp or by email with your request number.",
+    "replyBy": "Preferred channel: {channel}",
     "backHome": "Back to home",
     "seeProjects": "See our projects",
     "ref": {
       "label": "Your request number",
       "hint": "Mention it when you call us or send more files.",
+      "copy": "Copy number",
+      "copied": "Number copied",
       "whatsapp": "Hello Logic Controls, this is about my website request {ref}. I am sending more files.",
       "emailSubject": "Website request {ref}: more files"
     },

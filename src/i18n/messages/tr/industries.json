@@ -4,9 +4,9 @@
       "title": "Mısır'da Hizmet Verdiğimiz Sektörler | Logic Controls",
       "description": "Mısır'da gıda ve süt ürünleri, ilaç, kozmetik, ambalaj, yapı malzemeleri, çamaşırhaneler ve test ekipmanları için otomasyon. Projelerimizi inceleyin."
     },
-    "h1": "Hizmet verdiğimiz sektörler",
+    "h1": "Mısır'da gıda, ilaç, kozmetik, ambalaj ve diğer tesisler için otomasyon",
     "intro": [
-      "Her sektör sayfasında o sektörde neyin önemli olduğunu, otomasyonunu yaptığımız makine ve prosesleri ve tamamladığımız projeleri bulabilirsiniz.",
+      "Projelerimiz, pastörizatörlerden ve tablet kaplama makinelerinden beton santrallerine ve test düzeneklerine kadar yedi sektörü kapsıyor. Sektörünüzü seçin; tipik gereksinimleri, otomasyonunu yaptığımız makineleri ve ilgili projeleri görün.",
       "Sektörünüz listede yok mu? Aynı kontrol prensipleri çoğu makine ve proses için geçerlidir. Ne işlettiğinizi bize anlatın."
     ]
   },
@@ -18,9 +18,11 @@
       "seoTitle": "Mısır'da Gıda ve İçecek Otomasyonu | Logic Controls",
       "seoDescription": "Mısır'da pastörizatör, CIP, peynir pişirme, otoklav, şurup karıştırma ve yardımcı sistemler için PLC kontrolü. Sıcaklık kontrolü, kilitlemeler, reçeteler.",
       "h1": "Gıda, içecek ve süt ürünleri tesisleri için otomasyon",
+      "needsTitle": "Gıda ve süt ürünleri hatlarının kontrol sisteminden beklentileri",
+      "applicationsTitle": "Otomasyonunu yaptığımız gıda ve içecek makineleri",
       "intro": [
         "Gıda güvenliği kontrole dayanır: her partide, doğru sürede doğru sıcaklık. Gıda ve süt ürünleri tesislerine kurduğumuz sistemler proses set değerlerini korur, güvenli olmayan ürünün ilerlemesini engeller ve kalite ekibinizin kullanabileceği kayıtlar oluşturur.",
-        "İki pastörizatör, bir peynir pişirme makinesi, bir zeytin sterilizasyon otoklavı ve bir içecek şurubu karıştırma sistemi için kontrol sistemleri teslim ettik; bir gıda ve içecek tesisinde de atık arıtma sistemini devreye aldık. Mühendislerimizin deneyimi çikolata pişirme kazanlarını, unlu mamul hatlarını, sıvı yağ ve sıvı yumurta dolum makinelerini ve ultrafiltrasyon sistemlerini de kapsıyor."
+        "İki pastörizatör, bir peynir pişirme makinesi, bir zeytin sterilizasyon otoklavı ve bir içecek şurubu karıştırma sistemi için kontrol sistemleri teslim ettik. Ayrıca bir gıda ve içecek tesisinde atık arıtma sistemini devreye aldık. Mühendislerimizin deneyimi çikolata pişirme kazanlarını, unlu mamul hatlarını, sıvı yağ ve sıvı yumurta dolum makinelerini ve ultrafiltrasyon sistemlerini de kapsıyor."
       ],
       "needs": [
         {
@@ -74,6 +76,8 @@
       "seoTitle": "Mısır'da İlaç Makineleri Otomasyonu | Logic Controls",
       "seoDescription": "Mısır'daki ilaç tesislerinde tablet kaplama, şişe baskı ve ambalaj makineleri için SCADA ve PLC kontrolü: reçeteler, alarmlar, kullanıcı girişi.",
       "h1": "İlaç üretimi için otomasyon",
+      "needsTitle": "İlaç üretiminin kontrol sisteminden beklentileri",
+      "applicationsTitle": "Otomasyonunu yaptığımız ilaç makineleri",
       "intro": [
         "İlaç üretimi tekrarlanabilir prosesler ve dokümantasyon gerektirir. Formülasyon reçeteleri, kullanıcı erişimi ve alarm geçmişi olan kontrol sistemleri kuruyoruz; böylece her parti aynı şekilde çalışır ve arkasında kayıt bırakır.",
         "İlaç projelerimiz arasında Siemens S7-1200 PLC ve WinCC Professional SCADA ile çalışan bir tablet kaplama makinesi ve ilaç ve kozmetik şişelerine baskı yapan bir makinenin hareket kontrolü modernizasyonu var. Mühendislerimizin deneyimi, GMP ortamında ampul dolumu, steril alanlar için çevresel izleme ve saf su sistemlerini de kapsıyor."
@@ -128,9 +132,11 @@
       "seoTitle": "Mısır'da Kozmetik Dolum Otomasyonu | Logic Controls",
       "seoDescription": "Mısır'da şampuan ve sıvı dolum, şişe baskı ve etiketleme makineleri için PLC ve HMI kontrolü. Dolum hassasiyeti, reçeteler ve hızlı ürün değişimi.",
       "h1": "Kozmetik ve kişisel bakım hatları için otomasyon",
+      "needsTitle": "Dolum ve paketleme hatlarının ihtiyaçları",
+      "applicationsTitle": "Otomasyonunu yaptığımız kozmetik makineleri",
       "intro": [
         "Kozmetik tesisleri aynı makinelerde çok sayıda ürün ve şişe boyutu çalıştırır. Üretim miktarını ve fireyi dolum hacmi, hız ve ürün değişim süresi belirler. Dolumları hassas tutan ve ürün değişimini HMI'da birkaç ayara indiren kontrol sistemleri kuruyoruz.",
-        "Biri LS Electric, diğeri Delta PLC ile çalışan ve her ikisi de Wecon HMI kullanan iki şampuan dolum makinesini otomatikleştirdik; bir şişe baskı makinesini de hareket kontrolüyle modernize ettik. Mühendislerimiz ağda (wax) dolum ve kapak kapatma makinelerinde de çalıştı."
+        "Biri LS Electric, diğeri Delta PLC ile çalışan ve her ikisi de Wecon HMI kullanan iki şampuan dolum makinesini otomatikleştirdik. Ayrıca bir şişe baskı makinesini hareket kontrolüyle modernize ettik. Mühendislerimiz ağda (wax) dolum ve kapak kapatma makinelerinde de çalıştı."
       ],
       "needs": [
         {
@@ -179,6 +185,8 @@
       "seoTitle": "Mısır'da Ambalaj ve Etiketleme Otomasyonu | Logic Controls",
       "seoDescription": "Mısır'da etiketleme, dolum ve şişe baskı makineleri için kontrol sistemleri: step motor ve hareket kontrolü, eksik etiket algılama, reçeteler ve sayaçlar.",
       "h1": "Ambalaj, etiketleme ve baskı makineleri için otomasyon",
+      "needsTitle": "Ambalaj makinelerinin kontrol sisteminden beklentileri",
+      "applicationsTitle": "Otomasyonunu yaptığımız ambalaj makineleri",
       "intro": [
         "Ambalaj makineleri zamanlamaya bağlıdır: etiket şişeyle, baskı yüzeyle buluşmalı ve her ürün sayılmalıdır. Bu makineleri hatla senkronize çalıştıran hareket, algılama ve lojiği tasarlıyoruz.",
         "Ambalaj projelerimiz arasında Delta PLC, Wecon HMI ve Schneider Electric step motor sürücüleriyle çalışan bir etiketleme makinesi, bir şişe baskı makinesinin hareket kontrolü modernizasyonu ve iki dolum makinesi var."
@@ -229,6 +237,8 @@
       "seoTitle": "Mısır'da Beton Santrali Otomasyonu | Logic Controls",
       "seoDescription": "Mısır'da beton santralleri için PLC ve SCADA kontrolü: çimento, agrega, su ve katkı maddesi dozajlama, karışım reçeteleri, izleme ve alarmlar.",
       "h1": "Beton santralleri için otomasyon",
+      "needsTitle": "Bir beton santralinin kontrol sisteminden beklentileri",
+      "applicationsTitle": "Otomasyonunu yaptığımız dozaj ve karıştırma ekipmanları",
       "intro": [
         "Bir beton santrali her partide aynı karışımı üretmelidir. Tartım hassasiyeti, boşaltma zamanlaması ve karıştırma süresi beton kalitesini ve malzeme maliyetini belirler.",
         "Siemens S7-1200 PLC ve WinCC Professional SCADA ile bir beton santrali kontrol sistemi teslim ettik. Sistem; çimento, agrega, su ve katkı maddesi dozajlamayı, otomatik dozaj ve karıştırma sekanslarını ve farklı karışımlar için reçete yönetimini kapsıyor."
@@ -283,6 +293,8 @@
       "seoTitle": "Mısır'da Çamaşırhane Makineleri Kontrolü | Logic Controls",
       "seoDescription": "Mısır'da otel ve endüstriyel çamaşır makineleri için PLC ve HMI kontrolü: yıkama programları, su seviyesi, sıcaklık, kimyasal dozajlama ve alarmlar.",
       "h1": "Otel ve endüstriyel çamaşırhane makineleri için kontrol sistemleri",
+      "needsTitle": "Otel çamaşırhanelerinin yıkama makinelerinden beklentileri",
+      "applicationsTitle": "Otomasyonunu yaptığımız çamaşırhane makineleri",
       "intro": [
         "Otel çamaşırhanelerinde havlular, çarşaflar ve üniformalar farklı şekillerde yıkanır. İyi bir kontrolör, çamaşırhane yöneticisinin her programı bir kez ayarlamasını ve her seferinde aynı şekilde çalıştırmasını sağlar.",
         "Çamaşır makineleri için düzenlenebilir çok adımlı programlar, su seviyesi ve sıcaklık kontrolü, kimyasal dozajlama ve güvenlik kilitlemeleri içeren Wecon PLC ve HMI kontrol sistemleri teslim ettik."
@@ -333,6 +345,8 @@
       "seoTitle": "Mısır'da Test Düzeneği Otomasyonu | Logic Controls",
       "seoDescription": "Mısır'da test düzenekleri için PLC/HMI kontrolü: tekrarlanabilir test sekansları, canlı ölçümler, kalite kontrol ve izlenebilirlik için otomatik raporlar.",
       "h1": "Test düzenekleri ve kalite kontrol ekipmanları için kontrol sistemleri",
+      "needsTitle": "Bir test düzeneğinin kontrol sisteminden beklentileri",
+      "applicationsTitle": "Otomasyonunu yaptığımız test makineleri",
       "intro": [
         "Bir test ancak tekrarlanabilir ve kayıt altındaysa işe yarar. Test düzeneklerini, her test aynı sekansı izleyecek ve elle yazmaya gerek kalmadan rapor üretecek şekilde otomatikleştiriyoruz.",
         "Bir boru test makinesi için Wecon PLC ve HMI kontrol sistemi teslim ettik; sistem sıkma (make) ve sökme (break) değerlerini ft·lb ve psi cinsinden kaydediyor ve test raporlarını otomatik olarak oluşturuyor."

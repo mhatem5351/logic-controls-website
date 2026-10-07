@@ -25,7 +25,7 @@
       "title": "İçecek şurubu hazırlama sistemi: jet karıştırma tanklarının eksiksiz kontrolü",
       "cardTitle": "Siemens S7-1200 ve SIMATIC HMI ile şurup jet karıştırma sistemi",
       "client": "İçecek üreticisi",
-      "summary": "Bir içecek tesisinin şurup hazırlama bölümü için eksiksiz kontrol sistemi: Siemens S7-1200 PLC, tank başında SIMATIC HMI, pompa hızı için iki Yaskawa frekans invertörü ve jet karıştırma tanklarının otomatik dolumu ve sirkülasyonu.",
+      "summary": "Bir içecek tesisinin şurup hazırlama bölümü için eksiksiz kontrol sistemi. Sistemde Siemens S7-1200 PLC, tank başında bir SIMATIC HMI ve pompa hızı için iki Yaskawa frekans invertörü kullanılır. Jet karıştırma tanklarının dolumu ve şurup sirkülasyonu otomatik olarak yapılır.",
       "seoTitle": "Şurup Jet Karıştırma | Siemens S7-1200",
       "seoDescription": "Mısır'da bir içecek tesisi için şurup jet karıştırma kontrolü: Siemens S7-1200 PLC, SIMATIC HMI, iki Yaskawa pompa sürücüsü, CIP hazır kilitlemesi.",
       "challenge": "Bir içecek tesisinin şurup hazırlama prosesi için eksiksiz bir kontrol sistemine ihtiyacı vardı. Radyal jet karıştırma sisteminin (Radial Jet Mixing System) karıştırma tanklarını doldurması ve şurubu kontrollü pompa hızında belirlenen süre boyunca sirküle etmesi gerekiyordu. Sistemin ayrıca tesisin CIP (yerinde temizlik) sistemiyle birlikte çalışması ve tümünün tank başındaki bir ekrandan yönetilmesi gerekiyordu.",
@@ -85,7 +85,7 @@
     },
     "shampoo-filling-ls-wecon": {
       "title": "Şampuan dolum hattı: tasarımdan üretimde ilk çalıştırmaya LS PLC kontrolü",
-      "cardTitle": "LS PLC ve Wecon HMI ile şampuan dolum makinesi",
+      "cardTitle": "LS PLC ile şampuan dolum hattı: tasarımdan ilk çalıştırmaya",
       "client": "Kişisel bakım ürünleri üreticisi",
       "summary": "Bir şampuan dolum makinesi için komple kontrol sistemi: elektrik ve otomasyon tasarımı, LS PLC programı, Wecon HMI ve gerçek üretim koşullarında devreye alma.",
       "seoTitle": "LS PLC ile Şampuan Dolum Hattı",
@@ -376,6 +376,10 @@
         "panel": "Wecon PLC, Schneider Electric devre kesiciler, röleler, kontaktörler ve termik röleler bulunan pastörizatör kumanda panosu",
         "settingsTimers": "Emniyet sıcaklığı, akış yönlendirme vanası ayarları, pompa gecikmeleri ve CIP zamanlayıcılarını içeren HMI ayar ekranı",
         "settingsControl": "Oransal sıcaklık kontrol parametrelerini ve bypass ayarlarını içeren HMI ayar ekranı"
+      },
+      "imageCaptions": {
+        "settingsTimers": "Ayarlar: akış yönlendirme, güvenlik sıcaklığı, CIP zamanlayıcıları",
+        "settingsControl": "Ayarlar: sıcaklık kontrol parametreleri ve bypass"
       }
     },
     "labeling-machine-delta-wecon": {
@@ -436,6 +440,9 @@
         "hmi": "Etiketleme makinesinin Wecon HMI ana ekranı: etiket boyu, bırakma uzunluğu, hız, sensör durumu ile Başlat, Durdur ve Sıfırla butonları",
         "recipes": "Hızlar, step motor ve stoper gecikmeleri ile Oku ve Yaz butonlu bir ürün tablosunu içeren HMI ayar ekranı",
         "panel": "Schneider Electric step motor sürücüleri, bir Altivar sürücü, Delta PLC ve MEAN WELL güç kaynağı bulunan etiketleme makinesi panosu"
+      },
+      "imageCaptions": {
+        "recipes": "Ürün reçeteleri: ürüne göre hız ve gecikmeler"
       }
     },
     "olive-autoclave-sterilization": {
@@ -503,7 +510,7 @@
       "cardTitle": "Siemens S7-1200 ve WinCC ile beton santrali",
       "client": "Beton üreticisi",
       "summary": "Siemens S7-1200 PLC ve WinCC Professional SCADA ile otomatik dozaj ve karıştırma: çimento, agrega, su ve katkı maddesi dozajlama ve farklı karışımlar için reçeteler.",
-      "seoTitle": "Beton Santrali Otomasyonu | S7-1200, WinCC",
+      "seoTitle": "Beton Santrali için S7-1200 ve WinCC SCADA",
       "seoDescription": "Mısır'da Siemens S7-1200 ve WinCC SCADA ile beton santrali kontrolü: her malzeme tartılarak dozajlanır, karışım reçeteleri, otomatik karıştırma.",
       "challenge": "Beton santralinin her malzemeyi hassas şekilde dozajlaması, her partide aynı karışım kalitesini sağlaması ve operatöre tüm santrali gösteren bir ekran sunması gerekiyordu.",
       "solution": [
@@ -614,7 +621,7 @@
     },
     "shampoo-filling-delta-wecon": {
       "title": "Dört nozullu şampuan dolum makinesi: yeni otomasyon panosu, Delta PLC ve Arapça HMI",
-      "cardTitle": "Delta PLC ve Wecon HMI ile şampuan dolum makinesi",
+      "cardTitle": "Delta PLC ve Arapça HMI ile dört nozullu şampuan dolum makinesi",
       "client": "Kişisel bakım ürünleri üreticisi",
       "summary": "Dört nozullu bir şampuan dolum makinesi için yeni otomasyon panosu ve kontrol sistemi: Delta PLC, Arapça ekranlı Wecon HMI ve LS Electric VFD; dolum hacmi, hız ve sekans kontrolüyle.",
       "seoTitle": "Şampuan Dolum Makinesi Panosu ve Arapça HMI",
@@ -902,6 +909,9 @@
         "machine": "Otel çamaşırhanesinde önden yüklemeli paslanmaz çelik yıkama-sıkma makinesi",
         "hmi": "Kimyasal girişleri, buhar, boşaltma, sıcak ve soğuk su, kapı kilidi, tambur yönü ve adım zamanlayıcıları bulunan çamaşır makinesi HMI ekranı",
         "programEditor": "Her biri süre, seviye, su, sıcaklık ve kimyasal seçimi içeren 15 yıkama adımlı HMI program editörü"
+      },
+      "imageCaptions": {
+        "programEditor": "Program editörü: yıkama programı başına 15 adıma kadar"
       }
     }
   }

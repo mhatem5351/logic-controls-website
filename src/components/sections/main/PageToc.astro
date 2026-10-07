@@ -1,15 +1,21 @@
 ---
 /**
- * "On this page" bar for long decision pages (foreign manufacturers, technologies): numbered anchor chips to the
- * page's sections, placed right under the hero.
- *  - One row at every width (swipeable / scrollable when the chips do not fit; the focused or current chip is
- *    scrolled into view), so the bar never grows taller than ~3.5rem.
+ * "On this page" bar for long decision pages (foreign manufacturers, technologies): anchor links to the page's
+ * sections, placed right under the hero.
+ *  - One row at every width, so the bar never grows taller than ~3.5rem. Phones / tablets: numbered, bordered chips
+ *    in a swipeable row (the focused or current chip is scrolled into view). ≥1024px: plain text tabs (no numbers,
+ *    no boxes) that fit the row; if a language ever overflows it, start / end scroll buttons appear (mouse only — the
+ *    links themselves stay the keyboard path).
  *  - ≥1024px: sticks under the header while the page scrolls; the section being read is marked (aria-current,
  *    bold + underline, not colour alone). Phones: the floating "back to top" button returns to it.
+ * Labels should be short (the pages pass their own short "toc" labels); they go through the text engine (zh word
+ * breaking never applies on one line, but Arabic Latin runs are isolated).
  * Anchor jumps land below the header and the bar (scroll-padding on <html> while the bar exists).
  */
 import { getMessages, type Locale } from "~/i18n";
 import { pad2 } from "~/lib/format";
+import { html } from "~/lib/text";
+import Icon from "~/components/Icon.astro";
 
 interface Item {
   /** Target element id (a section). */
@@ -26,25 +32,36 @@ const title = getMessages(locale).common.labels.onThisPage as string;
 ---
 
 <nav aria-label={title} class:list={["lc-toc-bar border-b border-charcoal-200 bg-white/95", className]} data-page-toc>
-  <div class="wrap flex items-center gap-4">
-    <ol role="list" class="lc-toc-row -mx-(--spacing-gutter) flex min-w-0 flex-1 gap-1.5 overflow-x-auto px-(--spacing-gutter) py-2.5">
+  <div class="wrap relative flex items-center gap-4">
+    {/* visible caption on wide screens only (the nav's name already says it) */}
+    <p class="hidden shrink-0 items-center gap-2.5 border-e border-charcoal-200 pe-4 type-label text-charcoal-600 xl:flex" aria-hidden="true">
+      <span class="slant-bar text-royal-600"></span>
+      {title}
+    </p>
+    <button type="button" class="lc-toc-scroll" data-dir="start" tabindex="-1" aria-hidden="true">
+      <Icon name="chevron-left" size={18} />
+    </button>
+    <ol role="list" class="lc-toc-row -mx-(--spacing-gutter) flex min-w-0 flex-1 gap-1.5 overflow-x-auto px-(--spacing-gutter) py-2.5 lg:mx-0 lg:gap-0.5 lg:px-0 lg:py-1">
       {
         items.map((item, i) => (
           <li class="shrink-0">
             <a
               href={`#${item.id}`}
               data-toc-target={item.id}
-              class="lc-toc-chip inline-flex min-h-10 items-center gap-2 border border-charcoal-200 bg-white px-3 text-sm font-semibold whitespace-nowrap text-navy-900 transition-colors hover:border-royal-600 hover:text-royal-700 lg:min-h-9 lg:px-2.5 lg:text-[0.8125rem]"
+              class="lc-toc-chip inline-flex min-h-10 items-center gap-2 border border-charcoal-200 bg-white px-3 text-sm font-semibold whitespace-nowrap text-navy-900 transition-colors duration-(--dur-micro) ease-mech hover:border-royal-600 hover:text-royal-700 lg:min-h-11 lg:border-transparent lg:bg-transparent lg:px-2.5 lg:text-[0.875rem] lg:font-medium lg:text-charcoal-700 lg:hover:border-transparent"
             >
-              <span class="font-mono text-xs font-medium text-royal-700 ltr" dir="ltr" aria-hidden="true">
+              <span class="font-mono text-xs font-medium text-royal-700 ltr lg:hidden" dir="ltr" aria-hidden="true">
                 {pad2(i + 1)}
               </span>
-              {item.label}
+              <span set:html={html(locale, item.label)} />
             </a>
           </li>
         ))
       }
     </ol>
+    <button type="button" class="lc-toc-scroll" data-dir="end" tabindex="-1" aria-hidden="true">
+      <Icon name="chevron-right" size={18} />
+    </button>
   </div>
 </nav>
 
@@ -71,6 +88,10 @@ const title = getMessages(locale).common.labels.onThisPage as string;
       min-height: 2.75rem;
     }
   }
+  /* Scroll buttons: only when the row overflows (script sets data-more-start / data-more-end) on wide screens. */
+  .lc-toc-scroll {
+    display: none;
+  }
   @media (min-width: 64rem) {
     .lc-toc-bar {
       position: sticky;
@@ -81,16 +102,96 @@ const title = getMessages(locale).common.labels.onThisPage as string;
     :global(html:has(.lc-toc-bar)) {
       scroll-padding-top: calc(var(--header-h) + 4.5rem);
     }
+    /* Desktop: tabs, not chips. The row only fades at an edge that actually hides something. */
+    .lc-toc-row {
+      mask-image: none;
+    }
+    .lc-toc-bar[data-more-start] .lc-toc-row {
+      mask-image: linear-gradient(to right, transparent, #000 2.5rem);
+    }
+    .lc-toc-bar[data-more-end] .lc-toc-row {
+      mask-image: linear-gradient(to left, transparent, #000 2.5rem);
+    }
+    .lc-toc-bar[data-more-start][data-more-end] .lc-toc-row {
+      mask-image: linear-gradient(to right, transparent, #000 2.5rem, #000 calc(100% - 2.5rem), transparent);
+    }
+    .lc-toc-chip:hover {
+      color: var(--color-royal-700);
+      text-decoration: underline;
+      text-decoration-color: var(--color-charcoal-300);
+      text-decoration-thickness: 2px;
+      text-underline-offset: 0.45em;
+    }
+    .lc-toc-chip[aria-current] {
+      border-color: transparent;
+      background: transparent;
+      color: var(--color-navy-950);
+      font-weight: 700;
+      text-decoration-color: var(--color-royal-600);
+      text-decoration-thickness: 3px;
+      text-underline-offset: 0.45em;
+    }
+    .lc-toc-bar[data-more-start] .lc-toc-scroll[data-dir="start"],
+    .lc-toc-bar[data-more-end] .lc-toc-scroll[data-dir="end"] {
+      display: grid;
+    }
+    .lc-toc-scroll {
+      place-items: center;
+      width: 2rem;
+      height: 2rem;
+      flex: none;
+      border: 1px solid var(--color-charcoal-200);
+      background: var(--color-white);
+      color: var(--color-navy-900);
+      cursor: pointer;
+    }
+    .lc-toc-scroll:hover {
+      border-color: var(--color-royal-600);
+      color: var(--color-royal-700);
+    }
+  }
+  /* (The scroll buttons are in logical order and Icon mirrors the chevrons in RTL, so they point outwards there too.) */
+  @media (forced-colors: active) {
+    .lc-toc-chip[aria-current] {
+      text-decoration-color: Highlight;
+    }
   }
 </style>
 
 <script>
+  import { scrollBehavior } from "~/scripts/motion/motion-pref";
+
   document.querySelectorAll<HTMLElement>("[data-page-toc]").forEach((bar) => {
+    if (bar.dataset.tocInit) return;
+    bar.dataset.tocInit = "";
     const links = [...bar.querySelectorAll<HTMLAnchorElement>("[data-toc-target]")];
     const targets = links.map((a) => document.getElementById(a.dataset.tocTarget ?? ""));
     const row = bar.querySelector<HTMLElement>(".lc-toc-row");
     // Keyboard: keep the focused chip in view inside the swipeable row.
     row?.addEventListener("focusin", (e) => (e.target as HTMLElement).scrollIntoView({ block: "nearest", inline: "nearest" }));
+
+    /* Overflow cues: which ends of the row hide items (data-more-start / data-more-end on the bar). scrollLeft is
+       negative in RTL rows, so work with its absolute value. */
+    const edges = () => {
+      if (!row) return;
+      const max = row.scrollWidth - row.clientWidth;
+      const pos = Math.abs(row.scrollLeft);
+      bar.toggleAttribute("data-more-start", max > 1 && pos > 1);
+      bar.toggleAttribute("data-more-end", max > 1 && pos < max - 1);
+    };
+    row?.addEventListener("scroll", edges, { passive: true });
+    if ("ResizeObserver" in window && row) new ResizeObserver(edges).observe(row);
+    edges();
+    bar.querySelectorAll<HTMLButtonElement>(".lc-toc-scroll").forEach((btn) =>
+      btn.addEventListener("click", () => {
+        if (!row) return;
+        const rtl = getComputedStyle(row).direction === "rtl";
+        const towardsEnd = btn.dataset.dir === "end";
+        const step = row.clientWidth * 0.6 * (towardsEnd ? 1 : -1) * (rtl ? -1 : 1);
+        row.scrollBy({ left: step, behavior: scrollBehavior() });
+      }),
+    );
+
     // Scroll-spy (desktop, where the bar is sticky): the last section whose top has passed 35% of the viewport.
     const desktop = matchMedia("(min-width: 64rem)");
     let ticking = false;
@@ -112,7 +213,7 @@ const title = getMessages(locale).common.labels.onThisPage as string;
       if (cur && row && row.scrollWidth > row.clientWidth) {
         const r = cur.getBoundingClientRect();
         const box = row.getBoundingClientRect();
-        if (r.left < box.left || r.right > box.right) row.scrollBy({ left: r.left - box.left - box.width / 3, behavior: matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth" });
+        if (r.left < box.left || r.right > box.right) row.scrollBy({ left: r.left - box.left - box.width / 3, behavior: scrollBehavior() });
       }
     };
     addEventListener(
@@ -125,7 +226,7 @@ const title = getMessages(locale).common.labels.onThisPage as string;
       },
       { passive: true },
     );
-    desktop.addEventListener("change", update);
+    desktop.addEventListener("change", () => (update(), edges()));
     update();
   });
 </script>

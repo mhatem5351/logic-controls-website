@@ -1,9 +1,12 @@
 ---
 /**
- * Phone teaser for a long interactive block (the live HMI demo): below 768px the slot is shown as a ~1-screen
- * preview — clipped, faded out at the bottom and inert (its controls are not reachable while you cannot see them) —
- * with a "Try the live demo" button that expands it in place and moves focus into it. From 768px, and without
- * JavaScript, the slot renders in full and the button is not shown.
+ * Phone / tablet teaser for a long interactive block (the live HMI demo): below 1024px the slot is shown as a
+ * ~1-screen preview — clipped and faded out at the bottom — with a "Try the live demo" button that expands it in
+ * place and moves focus into it. From 1024px, and without JavaScript, the slot renders in full and the button is not
+ * shown.
+ * While collapsed, only the interactive part (`interactive`, a selector inside the slot; default: the whole slot) is
+ * inert, so its controls are not reachable while you cannot use them — the block's heading and lead stay in the
+ * accessibility tree (screen-reader users navigating by headings still find the section).
  * The demo component itself is untouched; this only wraps it from the page side.
  */
 import { getMessages, type Locale } from "~/i18n";
@@ -13,13 +16,15 @@ interface Props {
   locale: Locale;
   /** Accessible label for the button, if it should say more than ui.demo.open. */
   label?: string;
+  /** CSS selector (inside the slot) of the part to make inert while collapsed, e.g. ".lc-hmi". Default: everything. */
+  interactive?: string;
   class?: string;
 }
-const { locale, label, class: className } = Astro.props;
+const { locale, label, interactive, class: className } = Astro.props;
 const t = getMessages(locale).ui;
 ---
 
-<div class:list={["lc-teaser", className]} data-teaser data-collapsed>
+<div class:list={["lc-teaser", className]} data-teaser data-collapsed data-interactive={interactive}>
   <div class="lc-teaser-body">
     <slot />
   </div>
@@ -35,7 +40,7 @@ const t = getMessages(locale).ui;
   .lc-teaser-cta {
     display: none;
   }
-  @media (max-width: 47.99rem) {
+  @media (max-width: 63.99rem) {
     :global(html.js) .lc-teaser[data-collapsed] .lc-teaser-body {
       max-height: var(--teaser-h, 30rem);
       overflow: hidden;
@@ -47,31 +52,44 @@ const t = getMessages(locale).ui;
       margin-top: -3.5rem;
     }
   }
+  @media (min-width: 40rem) and (max-width: 63.99rem) {
+    /* tablets: a centred button, not a full-width bar */
+    :global(html.js) .lc-teaser[data-collapsed] .lc-teaser-cta {
+      max-width: 24rem;
+      margin-inline: auto;
+    }
+  }
 </style>
 
 <script>
-  const phone = matchMedia("(max-width: 47.99rem)");
+  import { scrollBehavior } from "~/scripts/motion/motion-pref";
+
+  const collapsible = matchMedia("(max-width: 63.99rem)");
   document.querySelectorAll<HTMLElement>("[data-teaser]").forEach((teaser) => {
+    if (teaser.dataset.teaserInit) return;
+    teaser.dataset.teaserInit = "";
     const body = teaser.querySelector<HTMLElement>(".lc-teaser-body");
     const btn = teaser.querySelector<HTMLButtonElement>(".lc-teaser-cta button");
     if (!body || !btn) return;
-    // Clipped content must not be reachable by keyboard or assistive tech until it is expanded.
-    const sync = () => body.toggleAttribute("inert", phone.matches && teaser.hasAttribute("data-collapsed"));
+    // Only the clipped controls are taken out of reach; the heading / lead around them stay exposed.
+    const sel = teaser.dataset.interactive;
+    const target = (sel && body.querySelector<HTMLElement>(sel)) || body;
+    const sync = () => target.toggleAttribute("inert", collapsible.matches && teaser.hasAttribute("data-collapsed"));
     sync();
-    phone.addEventListener("change", sync);
+    collapsible.addEventListener("change", sync);
     btn.addEventListener("click", () => {
       teaser.removeAttribute("data-collapsed");
       sync();
       // Focus the first visible control of the demo (the button that was pressed disappears), else the block itself.
-      const first = [...body.querySelectorAll<HTMLElement>("button:not([disabled]), [href], [tabindex]:not([tabindex='-1'])")].find(
+      const first = [...target.querySelectorAll<HTMLElement>("button:not([disabled]), [href], [tabindex]:not([tabindex='-1'])")].find(
         (el) => el.getClientRects().length > 0 && getComputedStyle(el).visibility !== "hidden",
       );
       if (first) first.focus({ preventScroll: true });
       else {
-        body.tabIndex = -1;
-        body.focus({ preventScroll: true });
+        target.tabIndex = -1;
+        target.focus({ preventScroll: true });
       }
-      body.scrollIntoView({ block: "start", behavior: matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth" });
+      target.scrollIntoView({ block: "start", behavior: scrollBehavior() });
     });
   });
 </script>

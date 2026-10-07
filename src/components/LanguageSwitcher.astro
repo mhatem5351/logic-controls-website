@@ -1,7 +1,7 @@
 ---
 /**
  * Language switcher — native names (العربية / English / 中文 / Türkçe), keeps the current page (and, once the page
- * has loaded, its ?service= / ?industry= / ?location= / utm_* query and #hash), remembers the choice in the `lang`
+ * has loaded, its context query — ?service=, ?ref=, utm_*… (src/lib/context-params.ts) — and #hash), remembers the choice in the `lang`
  * cookie (read by the Worker on "/").
  *
  * variant: "inline" (row of links: utility bar, footer) · "menu" (globe button + popover list, < 1024px) ·
@@ -18,7 +18,7 @@ import { getMessages, type Locale } from "~/i18n";
 import Icon from "./Icon.astro";
 import { languageLinks } from "./nav";
 import { uid } from "./uid";
-import { colon } from "./sections/main/rich";
+import { colon } from "~/lib/text";
 
 interface Props {
   locale: Locale;
@@ -169,8 +169,10 @@ const target = links.find((l) => l.locale === (locale === "en" ? "ar" : "en"));
       top: anchor(bottom);
       inset-inline-end: anchor(end);
       margin-top: 0.5rem;
-      /* Anchored to the button's end edge it can leave the screen (RTL phones, 320px). Try the mirrored side, then
-         pin to the viewport gutter. */
+      /* The side away from the button keeps the page gutter clear. The box is placed by its end edge, so this margin
+         only counts in the "does it fit?" test: an option that would run into the gutter (or off screen: RTL phones,
+         320px) is skipped. Then the mirrored side, then pinned to the gutter. */
+      margin-inline-start: var(--spacing-gutter);
       position-try-fallbacks: flip-inline, --lc-lang-edge;
     }
   }
@@ -178,6 +180,7 @@ const target = links.find((l) => l.locale === (locale === "en" ? "ar" : "en"));
     top: anchor(bottom);
     inset-inline-start: auto;
     inset-inline-end: var(--spacing-gutter);
+    margin: 0.5rem 0 0;
   }
   /* No Popover API (Safari ≤ 16, Firefox ≤ 124, Chrome ≤ 113): the [popover] attribute means nothing there, so the
      panel would be displayed permanently. Keep it hidden until the fallback script opens it. */
@@ -191,10 +194,16 @@ const target = links.find((l) => l.locale === (locale === "en" ? "ar" : "en"));
       height: 2.75rem;
       min-width: 2.75rem;
     }
+    /* Touch: 44px rows for the inline lists too (footer, DEV2-07). */
+    .lc-lang-link {
+      min-height: 2.75rem;
+    }
   }
 </style>
 
 <script>
+  import { contextQuery } from "~/lib/context-params";
+
   /* Remember the chosen language for the "/" redirect (Worker reads the `lang` cookie). `secure` on https only
      (the site is HTTPS-only with HSTS; plain-http local previews would otherwise drop the cookie). */
   document.addEventListener("click", (event) => {
@@ -205,15 +214,11 @@ const target = links.find((l) => l.locale === (locale === "en" ? "ar" : "en"));
     }
   });
 
-  /* Carry the page context across a language switch: preselection (?service=, ?industry=, ?location=, ?platform=),
-     project filters and campaign tags, plus the #hash (#quote, #gallery…). Rewritten on the links themselves, so a
-     long-press / middle-click / copied link gets it too. */
-  const KEEP = /^(service|industry|location|platform|filter|utm_[a-z]+)$/;
+  /* Carry the page context across a language switch: the parameters in src/lib/context-params.ts (form preselection
+     and context, project filters, the thanks page's request number, campaign tags), plus the #hash (#quote,
+     #gallery…). Rewritten on the links themselves, so a long-press / middle-click / copied link gets it too. */
   const syncLangLinks = () => {
-    const params = new URLSearchParams();
-    new URLSearchParams(location.search).forEach((v, k) => KEEP.test(k) && params.append(k, v));
-    const qs = params.toString();
-    const suffix = (qs ? `?${qs}` : "") + location.hash;
+    const suffix = contextQuery(location.search) + location.hash;
     document.querySelectorAll<HTMLAnchorElement>("a[data-set-lang]").forEach((a) => {
       const base = a.dataset.base ?? a.getAttribute("href") ?? "";
       a.dataset.base = base;

@@ -11,11 +11,19 @@
  *   ticking clock; flowing pipes become static flow indicators (CSS). The simulation still runs when asked to.
  * - Story: a "Try it" checklist ticks as the visitor plays (Start → Forward → Simulate fault → Acknowledge), the
  *   next step's key carries an amber lamp, and the message line says what happens next, with live values.
+ *   "Simulate a fault" stays the current step until the fault has played out (the FDV diverted and the temperature
+ *   recovered); meanwhile TT-102 carries the cue. Only then is Acknowledge the next step (MOT2-11). The finished story
+ *   ends on a message with a link to the quote form, and the CTA's amber trace draws when the CTA is on screen.
+ * - Screen reader: user actions (refusals, Ack, setpoint) are announced at once; automatic events are coalesced
+ *   (~0.8 s, deduplicated, at most three) so a fault is one account, not a burst (A11Y2-09).
+ * - The message line reserves the height of the longest story message at its current width, so the command keys
+ *   never move under the pointer at a story beat (MOT2-12).
  */
 import { CHECK_S, CIP, DT, Pasteurizer, RECIPES, SPEED, type Alarm, type RecipeId } from "./hmi-sim";
 import { iso } from "./hmi-bidi";
 import { fmt1, keyStops, plainColor, productColor, KEY_T0, KEY_T1 } from "./hmi-fmt";
 import { motionOff, onMotionChange } from "./motion-pref";
+import { fmt, pad2 } from "~/lib/format";
 
 type Dict = { [k: string]: string };
 interface I18n {
@@ -33,11 +41,13 @@ interface I18n {
   cip: Dict;
   controls: Dict;
   tour: Dict;
+  /** Quote form URL (the CTA's), linked from the closing message of the story. */
+  quote: string;
 }
 
-const fill = (s: string, o: Record<string, string | number>) => s.replace(/\{(\w+)\}/g, (_, k) => String(o[k] ?? ""));
-const pad = (n: number) => String(n).padStart(2, "0");
-const hms = (d: Date) => `${pad(d.getHours())}:${pad(d.getMinutes())}:${pad(d.getSeconds())}`;
+/** The site's placeholder engine (CODE2-08); a value the message does not get is left out, never shown as "{x}". */
+const fill = (s: string, o: Record<string, string | number>) => fmt(s, o, { missing: "empty" });
+const hms = (d: Date) => `${pad2(d.getHours())}:${pad2(d.getMinutes())}:${pad2(d.getSeconds())}`;
 const esc = (s: string) => s.replace(/[&<>"]/g, (c) => `&#${c.charCodeAt(0)};`);
 const FLUID: Record<string, string> = { water: "#7fa6d3", caustic: "#9284c6", acid: "#a9a64e" };
 const STEPS = ["start", "forward", "fault", "ack"] as const;
@@ -94,6 +104,12 @@ export function initHmi(fig: HTMLElement): void {
   const keyLim = scr.querySelector<SVGGElement>(".m-key-lim");
   const keyW = +(scr.querySelector(".m-key rect")?.getAttribute("width") || 104);
   const tourLis = [...fig.querySelectorAll<HTMLElement>("[data-step]")];
+  const stepHint = fig.querySelector<HTMLElement>("[data-step-hint]");
+  const tourN = scr.querySelector<HTMLElement>("[data-tour-n]");
+  const bigEl = scr.querySelector<HTMLElement>(".hs-big");
+  const whyFault = fig.querySelector<HTMLElement>('[data-why="fault"]');
+  const whyAck = fig.querySelector<HTMLElement>('[data-why="ack"]');
+  const ctaEl = fig.querySelector<HTMLElement>(".lc-hmi-cta");
 
   // ---------------------------------------------------------------- trend buffers
   const tr = { pv: new Float32Array(N_TREND), th: new Float32Array(N_TREND), sp: new Float32Array(N_TREND), lim: new Float32Array(N_TREND) };
@@ -111,35 +127,85 @@ export function initHmi(fig: HTMLElement): void {
   // ---------------------------------------------------------------- messages / announcements
   /** Transient operator note (refusals, hints). A function, so a refusal keeps showing live values. */
   let note: (() => string) | null = null;
+  let noteHtml = false; // note() returns markup (the closing message carries a link)
   let noteTone = "";
   let noteUntil = 0;
+  let noteTimer = 0;
   let flashN = 0;
   let stickyKey = "idle"; // message once the plant is idle
   let allClearUntil = 0;
   let liveTimer = 0;
+  /** Announced texts → when (dedupe window), and automatic announcements waiting to be coalesced. */
+  const lastSaid = new Map<string, number>();
+  const pending: string[] = [];
+  let flushTimer = 0;
+  let sayBuf: string[] = [];
+  let sayFrame = 0;
+  /** Puts `s` in the polite region now. Automatic items still waiting are appended, and everything said in the same
+   *  frame is joined ("Alarms acknowledged. Done: …"), so nothing is cut off. */
   const say = (s: string) => {
-    live.textContent = "";
+    const now = performance.now();
+    const parts = [s, ...pending.filter((x) => x !== s && !((lastSaid.get(x) ?? -1e9) > now - 10000))];
+    pending.length = 0;
+    clearTimeout(flushTimer);
+    for (const x of parts) lastSaid.set(x, now);
+    sayBuf.push(...parts);
     clearTimeout(liveTimer);
-    // re-set on the next frame so repeated messages are announced again; cleared later so browse mode never
-    // meets a stale announcement after the panel
-    requestAnimationFrame(() => (live.textContent = s));
+    // emptied now and re-set on the next frame so repeated messages are announced again; cleared later so browse
+    // mode never meets a stale announcement after the panel
+    if (!sayFrame) {
+      live.textContent = "";
+      sayFrame = requestAnimationFrame(() => {
+        live.textContent = sayBuf.join(" ");
+        sayBuf = [];
+        sayFrame = 0;
+      });
+    }
     liveTimer = window.setTimeout(() => (live.textContent = ""), 6000);
+  };
+  /** Automatic events (alarms, FDV, CIP phases): collected for ~0.8 s after the last one, then announced once —
+   *  unique, at most three ("and N more"), skipping anything said in the last 10 s. */
+  function flushSay(): void {
+    clearTimeout(flushTimer);
+    const now = performance.now();
+    const items = [...new Set(pending)].filter((x) => !((lastSaid.get(x) ?? -1e9) > now - 10000));
+    pending.length = 0;
+    if (!items.length) return;
+    const shown = items.slice(0, 3);
+    if (items.length > 3) shown.push(fill(T.msg.more, { n: items.length - 3 }));
+    say(shown.join(" "));
+    for (const x of items) lastSaid.set(x, now);
+  }
+  const queueSay = (items: string[]) => {
+    pending.push(...items);
+    clearTimeout(flushTimer);
+    flushTimer = window.setTimeout(flushSay, 800);
   };
   const alarmText = (a: Alarm) => {
     const arg = a.key === "evRecipe" ? T.recipe[a.arg || ""] || a.arg : a.arg;
     const lim = a.arg && a.key === "almDivert" ? f1(+a.arg) : a.arg || "";
     return iso(fill(T.alarms[a.key] || a.key, { limit: lim, arg: arg || "" }));
   };
-  const flash = (fn: () => string, tone = "warn", ms = 5000) => {
+  const flash = (fn: () => string, tone = "warn", ms = 5000, html = false) => {
     note = fn;
+    noteHtml = html;
     noteTone = tone;
     noteUntil = performance.now() + ms;
     msgEl.dataset.flash = String(++flashN % 2); // restarts the 160 ms highlight (CSS)
+    // idle panel (no 10 Hz tick): repaint once when the note expires, so the "Press Start" prompt comes back
+    clearTimeout(noteTimer);
+    noteTimer = window.setTimeout(() => !timer && render(), ms + 20);
   };
 
   // ---------------------------------------------------------------- "Try it" checklist
   const tour: Record<Step, boolean> = { start: false, forward: false, fault: false, ack: false };
   let tourDone = false;
+  let faultClicked = false; // "Simulate fault" pressed (the step ticks once the fault has played out)
+  let sawDivert = false; // … the FDV has diverted since
+  let ackedEarly = false; // Acknowledge pressed while the fault was still developing
+  /** Closing message: what the visitor just did, plus a real link to the quote form. */
+  const doneHtml = () =>
+    `${esc(iso(T.msg.tourDone))} <a class="hs-link" href="${esc(T.quote)}">${esc(T.msg.tourCta)}</a>`;
   function renderTour(): void {
     const cur = STEPS.find((k) => !tour[k]);
     for (const li of tourLis) {
@@ -150,28 +216,59 @@ export function initHmi(fig: HTMLElement): void {
       const tx = tour[k] ? `${T.comma}${T.tour.done}` : "";
       if (st && st.textContent !== tx) st.textContent = tx;
     }
+    if (stepHint) stepHint.hidden = !(cur === "fault" && faultClicked);
+    if (tourN) {
+      const n = cur ? STEPS.indexOf(cur) + 1 : STEPS.length;
+      const tx = `${n}/${STEPS.length}`;
+      if (tourN.textContent !== tx) tourN.textContent = tx;
+      attr(tourN, "data-done", cur ? null : "");
+    }
     if (!cur && !tourDone) {
       tourDone = true;
-      fig.setAttribute("data-tour-done", "");
+      flash(doneHtml, "ok", 9000, true);
+      say(iso(T.msg.tourDone));
+      // the CTA's amber trace draws when the visitor can see it, not off screen (MOT2-11 / W-04)
+      if (ctaEl && "IntersectionObserver" in window) {
+        const io = new IntersectionObserver(
+          (es) => {
+            if (!es.some((e) => e.isIntersecting)) return;
+            io.disconnect();
+            fig.setAttribute("data-tour-done", "");
+          },
+          { threshold: 1 },
+        );
+        io.observe(ctaEl);
+      } else fig.setAttribute("data-tour-done", "");
     }
   }
 
-  function handleEvents(): void {
+  let lastFwdAt = -1e9;
+  /** `now`: the events answer a click (mode, recipe, Start…): announce them at once instead of coalescing. */
+  function handleEvents(now = false): void {
     const ann: string[] = [];
+    const t = performance.now();
+    // the divert alarm already says "product diverted": no separate "FDV divert" in the same batch
+    const divAlarm = sim.events.some((e) => e.type === "alarm" && e.alarm.key === "almDivert");
+    const unackP1 = sim.alarms.some((a) => a.prio === 1 && !a.acked);
     for (const e of sim.events) {
       if (e.type === "alarm") {
         const a = e.alarm;
         ann.push(a.prio ? fill(T.msg.alarm, { prio: T.alarms[`p${a.prio}`], text: alarmText(a) }) : alarmText(a));
         if (a.key === "evCipDone") stickyKey = "cipDone";
-      } else if (e.type === "fdv" && sim.producing) ann.push(e.fwd ? T.msg.fdvFwd : T.msg.fdvDiv);
-      else if (e.type === "cip" && e.phase >= 0) ann.push(`${T.cip.title}${T.colon}${T.cip[CIP[e.phase][0]]}`);
+      } else if (e.type === "fdv" && sim.producing) {
+        if (e.fwd) {
+          lastFwdAt = t;
+          ann.push(T.msg.fdvFwd);
+        } else if (!divAlarm && !(unackP1 && t - lastFwdAt < 5000)) ann.push(T.msg.fdvDiv); // no quick flip-back
+      } else if (e.type === "cip" && e.phase >= 0) ann.push(`${T.cip.title}${T.colon}${T.cip[CIP[e.phase][0]]}`);
     }
-    if (sim.events.length && motionOff()) clockNow(); // no ticking clock: keep it in step with the time stamps
-    sim.events.length = 0;
-    if (ann.length) {
-      say(ann.join(" "));
+    if (sim.events.length) {
+      if (motionOff()) clockNow(); // no ticking clock: keep it in step with the time stamps
       alarmsDirty = true;
     }
+    sim.events.length = 0;
+    if (ann.length) queueSay(ann);
+    if (now && pending.length) flushSay();
   }
 
   // ---------------------------------------------------------------- rendering
@@ -192,6 +289,7 @@ export function initHmi(fig: HTMLElement): void {
     `<span class="hs-key"><svg viewBox="0 0 16 16" aria-hidden="true"><path d="M4.5 3l8 5-8 5z"/></svg>${esc(T.controls.start)}</span>`,
   );
 
+  let etaShown = 0; // the fault ETA last shown (s): the countdown never goes back up
   function render(): void {
     const s = sim;
     const R = s.R;
@@ -238,8 +336,9 @@ export function initHmi(fig: HTMLElement): void {
     set("fdvTxt", s.fwd ? T.mimic.forward : T.mimic.divert);
     set("outLbl", cip ? T.mimic.drain : T.mimic.storage);
     set("mode", cip ? "CIP" : s.manual ? T.mode.manual : T.mode.auto);
-    const idleReady = stickyKey === "idle" || stickyKey === "cipDone";
-    set("state", cip ? T.status.cip : !s.running ? (s.q === 0 && idleReady ? T.status.ready : T.status.stopped) : s.fwd ? T.status.forward : s.produced ? T.status.divert : T.status.heating);
+    // after CIP the line is "ready" at once (the message says so) while the pump winds down (MOT2-23)
+    const idleReady = stickyKey === "cipDone" || (stickyKey === "idle" && s.q === 0);
+    set("state", cip ? T.status.cip : !s.running ? (idleReady ? T.status.ready : T.status.stopped) : s.fwd ? T.status.forward : s.produced ? T.status.divert : T.status.heating);
     set("almCount", String(unack.length));
 
     // colour key follows the recipe's legal limit
@@ -382,11 +481,28 @@ export function initHmi(fig: HTMLElement): void {
     btns.filter((b) => b.dataset.c === "recipe").forEach((b) => attr(b, "aria-pressed", String(b.dataset.r === s.recipe)));
     btn("fault").forEach((b) => attr(b, "aria-disabled", producing ? null : "true"));
     btn("ack").forEach((b) => attr(b, "aria-disabled", unack.length ? null : "true"));
+    // why a key is dimmed, as its description (aria-describedby), not only as a transient visual note (A11Y2-09)
+    const whyF = producing ? "" : cip ? T.msg.faultInCip : T.msg.faultNeedsRun;
+    if (whyFault && whyFault.textContent !== whyF) whyFault.textContent = whyF;
+    const whyA = unack.length ? "" : T.msg.noAlarms;
+    if (whyAck && whyAck.textContent !== whyA) whyAck.textContent = whyA;
 
-    // "Try it": progress + the amber lamp on the next key
+    // "Try it": progress + the amber lamp on the next key. "Simulate a fault" stays current until the fault has played
+    // out (diverted, then forward again) — or the plant was stopped; only then is Acknowledge next (MOT2-11).
     if (tour.start && producing && s.fwd) tour.forward = true;
-    const next = !tour.start || (!s.running && !tour.forward) ? "start" : !tour.forward ? "" : !tour.fault ? (producing ? "fault" : "start") : !tour.ack && unack.length ? "ack" : "";
+    if (faultClicked && !tour.fault) {
+      if (producing && s.produced && !s.fwd) sawDivert = true;
+      if ((sawDivert && s.fwd) || !producing) tour.fault = true;
+    }
+    // acknowledged while it was still developing and nothing is left to acknowledge: that step is done too
+    if (tour.fault && !tour.ack && ackedEarly && !unack.length) tour.ack = true;
+    const developing = faultClicked && !tour.fault && producing && !sawDivert;
+    const next = !tour.start || (!s.running && !tour.forward) ? "start" : !tour.forward ? "" : !faultClicked ? (producing ? "fault" : "start") : !tour.fault ? "" : !tour.ack && unack.length ? "ack" : "";
     btns.forEach((b) => attr(b, "data-next", b.dataset.c === next ? "" : null));
+    // what to watch while the fault develops: the TT-102 headline (static amber outline, CSS)
+    if (bigEl) attr(bigEl, "data-next", developing ? "" : null);
+    // the Acknowledge key's attention ring: from the divert on (not while the visitor should be watching TT-102)
+    attr(scr, "data-ack-cue", unack.length && !developing ? "" : null);
     renderTour();
 
     // CIP stepper (current phase marked for AT, finished phases say so)
@@ -406,16 +522,25 @@ export function initHmi(fig: HTMLElement): void {
     // operator message line
     let m: string;
     let tone = "";
+    let mHtml = "";
+    if (!faulted || abn) etaShown = 0;
     if (note && now < noteUntil) {
-      m = note();
+      if (noteHtml) mHtml = note();
+      m = noteHtml ? "" : note();
       tone = noteTone;
     } else if (cip) m = `${T.cip.title}${T.colon}${T.cip[CIP[s.cip][0]]}`;
     else if (faulted) {
       tone = "warn";
-      const eta = s.produced ? s.coldEta() : -1;
       if (abn) m = fill(T.msg.recovering, { limit: f1(R.limit) });
-      else if (eta > 0) m = fill(T.msg.faultEta, { s: Math.max(1, Math.round(eta / SPEED)) });
-      else m = T.msg.fault;
+      else if (s.produced && s.fwd) {
+        // one sentence from the click to the divert (MOT2-23): "reaches TT-102 in about N s", counting down. Before the
+        // cold product is in the tube, estimate it from the transport delay; never count up, never below 1 s.
+        const eta = s.coldEta();
+        let sec = Math.max(1, Math.round((eta >= 0 ? eta : s.holdS + 2) / SPEED));
+        if (etaShown) sec = Math.min(sec, etaShown);
+        etaShown = sec;
+        m = fill(T.msg.faultEta, { s: sec });
+      } else m = T.msg.fault;
     } else if (s.running && s.manual && s.manualFwd && s.blocked) {
       m = fill(T.msg.blocked, { t: f1(tt), limit: f1(R.limit) });
       tone = "warn";
@@ -430,7 +555,8 @@ export function initHmi(fig: HTMLElement): void {
     else if (s.running) m = fill(T.msg.forward, { limit: f1(R.limit), hold: f1(s.holdS) });
     else if (stickyKey === "idle") m = "";
     else m = T.msg[stickyKey] || T.msg.idle;
-    if (m) setMsg(iso(m));
+    if (mHtml) setMsg("", mHtml);
+    else if (m) setMsg(iso(m));
     else setMsg("", PRESS);
     attr(msgEl, "data-tone", tone || null);
 
@@ -616,8 +742,12 @@ export function initHmi(fig: HTMLElement): void {
     fig.removeAttribute("data-fresh");
     note = null; // a new command replaces any earlier note (refusals never linger into the next state)
     if (b.getAttribute("aria-disabled") === "true") {
-      if (c === "fault") flash(() => (s.cip >= 0 ? T.msg.faultInCip : T.msg.faultNeedsRun), "", 4000);
-      else if (c === "ack") flash(() => T.msg.noAlarms, "", 3000);
+      // the refusal is the result of the visitor's own press: shown AND announced (A11Y2-09)
+      const why = c === "fault" ? (s.cip >= 0 ? T.msg.faultInCip : T.msg.faultNeedsRun) : c === "ack" ? T.msg.noAlarms : "";
+      if (why) {
+        flash(() => why, "", c === "fault" ? 4000 : 3000);
+        say(iso(why));
+      }
       render();
       return;
     }
@@ -651,22 +781,28 @@ export function initHmi(fig: HTMLElement): void {
       case "fault":
         if (s.fault > 0) break;
         s.injectFault();
-        tour.fault = true;
+        faultClicked = true;
         break;
       case "ack":
         s.ack();
         say(T.msg.acked);
         alarmsDirty = true;
-        tour.ack = true;
+        // the story's last step counts once the fault has played out; an earlier ack is fine (ISA) but not the end
+        if (tour.fault) tour.ack = true;
+        else if (faultClicked) ackedEarly = true;
         if (s.running && s.fwd) allClearUntil = performance.now() + 5000;
         break;
       case "recipe":
         s.setRecipe(b.dataset.r as RecipeId);
         break;
       case "spDown":
-      case "spUp":
-        s.nudgeSp(c === "spUp" ? 0.5 : -0.5);
+      case "spUp": {
+        // announced once the visitor pauses (held / repeated presses do not queue), with the limit when reached
+        if (!s.nudgeSp(c === "spUp" ? 0.5 : -0.5)) flash(() => iso(fill(T.msg.spLimit, { v: f1(s.sp) })), "", 2500);
+        clearTimeout(spTimer);
+        spTimer = window.setTimeout(() => say(iso(fill(s.spAtLimit ? T.msg.spLimit : T.msg.sp, { v: f1(s.sp) }))), 400);
         break;
+      }
       case "fdvFwd":
       case "fdvDiv":
         if (!s.commandFdv(c === "fdvFwd")) {
@@ -683,19 +819,57 @@ export function initHmi(fig: HTMLElement): void {
       }
     }
     if (motionOff()) clockNow();
-    handleEvents();
+    handleEvents(true);
     render();
     renderTrend();
     kick();
   });
+  let spTimer = 0;
 
   // Phones: start with the trend collapsed.
   if (fig.clientWidth <= 560) {
     trendBox.dataset.open = "false";
     trendBox.querySelector("button")?.setAttribute("aria-expanded", "false");
   }
+  // ---------------------------------------------------------------- stable command keys (MOT2-12)
+  /* The message line sits above the command keys. It reserves the height of the longest message the story and its
+     refusals can show at the current width, so "Press Acknowledge…" never moves the key it names under the finger.
+     Measured on a hidden copy (same width, fonts, step chip) — once, and again only when the width changes. Manual,
+     interlock and CIP texts are left out: switching mode is the visitor's own choice, and they would make the line
+     needlessly tall. */
+  const reserveHtml = (): string[] => {
+    const a = { limit: f1(72), hold: f1(15.6), s: 5, batch: "B-1042", t: f1(71.4), v: f1(78) };
+    const keys = ["heating", "forward", "fault", "faultEta", "recovering", "recoveredAck", "allClear", "acked", "stopped", "cipDone", "faultNeedsRun", "faultInCip", "noAlarms", "spLimit"];
+    return [PRESS, doneHtml(), ...keys.map((k) => esc(iso(fill(T.msg[k] || "", a))))];
+  };
+  let msgW = 0;
+  function reserveMsg(): void {
+    const w = msgEl.getBoundingClientRect().width;
+    if (w < 40 || Math.abs(w - msgW) < 0.5) return;
+    msgW = w;
+    const probe = msgEl.cloneNode(true) as HTMLElement;
+    probe.removeAttribute("data-flash");
+    probe.setAttribute("aria-hidden", "true");
+    probe.style.cssText = `position:absolute;top:0;left:0;width:${w}px;min-height:0;visibility:hidden;pointer-events:none`;
+    const ptx = probe.querySelector<HTMLElement>("[data-msg]")!;
+    msgEl.parentElement!.append(probe);
+    let max = 0;
+    for (const h of reserveHtml()) {
+      ptx.innerHTML = h;
+      max = Math.max(max, probe.getBoundingClientRect().height);
+    }
+    probe.remove();
+    msgEl.style.minHeight = `${Math.ceil(max)}px`;
+  }
+  if ("ResizeObserver" in window) new ResizeObserver(() => reserveMsg()).observe(msgEl);
+  document.fonts?.ready.then(() => {
+    msgW = 0;
+    reserveMsg();
+  });
+
   // Initial paint of the static snapshot (localised values, recipe data).
   set("limit", `≥ ${f1(RECIPES.milk.limit)} °C`);
   clockNow();
   render();
+  reserveMsg();
 }

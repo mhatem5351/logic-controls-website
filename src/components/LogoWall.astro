@@ -2,14 +2,17 @@
 /**
  * "Platforms we program & integrate" — monochrome brand marks at optically balanced heights.
  * Never labelled "partners". SVGs: Wikimedia Commons (public-domain text logos, trademarks of their owners).
- * Wecon has no public vector logo, so it is shown as a plain text wordmark.
+ * Wecon has no public vector logo: its wordmark is the site's own Montserrat ExtraBold text, outlined to an SVG
+ * (src/assets/brand/platforms/wecon.svg), so Arabic pages need no 38 KB Montserrat download for it (PERF2-12).
  */
 import { getMessages, type Locale } from "~/i18n";
 import { SITE } from "~/data/site";
+import { html } from "~/lib/text";
 import siemens from "~/assets/brand/platforms/siemens.svg?raw";
 import schneider from "~/assets/brand/platforms/schneider-electric.svg?raw";
 import delta from "~/assets/brand/platforms/delta.svg?raw";
 import ls from "~/assets/brand/platforms/ls-electric.svg?raw";
+import wecon from "~/assets/brand/platforms/wecon.svg?raw";
 
 interface Props {
   locale?: Locale;
@@ -24,16 +27,20 @@ const t = getMessages(locale).ui;
 const { title = t.platforms.title, note = t.platforms.note, brands = SITE.brands, class: className } = Astro.props;
 
 // Equal-area sizing: height = sqrt(area / aspect). Siemens (6.27:1) ends up 20px tall, Delta (3.24:1) 28px.
+// Optical corrections on top (VIS2-09): Schneider's thin two-line mark reads small at equal area (×1.18, ~32px),
+// Delta's triangle sits low against the others' baselines (up 1px). Every mark is capped at its cell's width
+// (max-width: 100%; the SVG scales down inside its box, never past the cell padding at 1024–1280).
 const AREA = 2508;
-const LOGOS: Record<string, { svg: string; aspect: number } | undefined> = {
+const LOGOS: Record<string, { svg: string; aspect: number; k?: number; dy?: number } | undefined> = {
   Siemens: { svg: siemens, aspect: 6.27 },
-  "Schneider Electric": { svg: schneider, aspect: 3.385 },
-  Delta: { svg: delta, aspect: 3.243 },
+  "Schneider Electric": { svg: schneider, aspect: 3.385, k: 1.18 },
+  Delta: { svg: delta, aspect: 3.243, dy: -1 },
   "LS Electric": { svg: ls, aspect: 6.271 },
 };
-const sized = (svg: string, aspect: number) => {
-  const h = Math.sqrt(AREA / aspect);
-  return svg.replace("<svg ", `<svg class="lc-reveal block w-auto" style="height:calc(${h.toFixed(1)}px * var(--logo-scale))" `);
+const sized = ({ svg, aspect, k = 1, dy = 0 }: { svg: string; aspect: number; k?: number; dy?: number }) => {
+  const h = Math.sqrt(AREA / aspect) * k;
+  const shift = dy ? `;translate:0 ${dy}px` : "";
+  return svg.replace("<svg ", `<svg class="lc-reveal block w-auto max-w-full" style="height:calc(${h.toFixed(1)}px * var(--logo-scale))${shift}" `);
 };
 ---
 
@@ -42,18 +49,29 @@ const sized = (svg: string, aspect: number) => {
     title && (
       <p class="mb-6 flex items-center gap-3 type-label text-charcoal-600 on-dark:text-navy-200">
         <span class="slant-bar text-royal-600 on-dark:text-signal-400" aria-hidden="true" />
-        <span>{title}</span>
+        <span set:html={html(locale, title)} />
       </p>
     )
   }
-  <ul role="list" class="grid grid-cols-2 border-s border-t border-charcoal-200 sm:grid-cols-3 lg:grid-cols-5 on-dark:border-white/10">
+  <ul
+    role="list"
+    style={`--n:${brands.length}`}
+    class="grid grid-cols-2 border-s border-t border-charcoal-200 sm:grid-cols-6 lg:grid-cols-[repeat(var(--n),minmax(0,1fr))] on-dark:border-white/10"
+  >
     {
-      brands.map((name) => {
+      brands.map((name, i) => {
         const logo = LOGOS[name];
+        // 640–1023px: 3 per row on a 6-column grid; a short last row is stretched to the full width (5 logos = 3 + 2
+        // wide cells), so no row ends in an empty bordered cell (DEV2-08). lg: one cell each.
+        const rest = brands.length % 3;
+        const span = rest === 2 && i >= brands.length - 2 ? "sm:col-span-3" : rest === 1 && i === brands.length - 1 ? "sm:col-span-6" : "sm:col-span-2";
         return (
-          <li class="group grid min-h-24 place-items-center max-sm:last:odd:col-span-2 border-e border-b border-charcoal-200 px-5 py-6 text-charcoal-600 transition-colors duration-(--dur-ui) ease-mech hover:bg-navy-50 hover:text-navy-900 on-dark:border-white/10 on-dark:text-navy-300 on-dark:hover:bg-white/[0.04] on-dark:hover:text-white">
+          <li class:list={[span, "lg:col-span-1", "group grid min-h-24 place-items-center max-sm:last:odd:col-span-2 border-e border-b border-charcoal-200 px-5 py-6 text-charcoal-600 transition-colors duration-(--dur-ui) ease-mech hover:bg-navy-50 hover:text-navy-900 on-dark:border-white/10 on-dark:text-navy-300 on-dark:hover:bg-white/[0.04] on-dark:hover:text-white"]}>
             {logo ? (
-              <Fragment set:html={sized(logo.svg, logo.aspect)} />
+              <Fragment set:html={sized(logo)} />
+            ) : name === "Wecon" ? (
+              /* the outlined ExtraBold wordmark is the heaviest mark of the row: a little smaller than its cap height */
+              <Fragment set:html={wecon.replace("<svg ", '<svg class="lc-reveal block w-auto max-w-full" style="height:calc(0.875rem * var(--logo-scale))" ')} />
             ) : (
               <span lang="en" role="img" aria-label={name} class="lc-reveal font-sans text-[calc(1.375rem*var(--logo-scale))] leading-none font-extrabold tracking-[0.14em] uppercase">
                 {name}
@@ -64,5 +82,6 @@ const sized = (svg: string, aspect: number) => {
       })
     }
   </ul>
-  {note && <p class="mt-4 text-xs text-charcoal-600 on-dark:text-navy-300">{note}</p>}
+  {/* the brand disclaimer, through the text engine (I18N2-12: zh word breaks, Arabic Latin runs isolated) */}
+  {note && <p class="mt-4 text-xs text-charcoal-600 on-dark:text-navy-300" set:html={html(locale, note)} />}
 </div>

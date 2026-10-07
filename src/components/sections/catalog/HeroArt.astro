@@ -5,7 +5,8 @@
  *  - default (slot="media"): the art itself, filling the hero's media panel on ≥1024px, above the panel's photo
  *    overlays (z-index inside the media stacking context) so it keeps its full contrast; the slanted edge and the
  *    header area stay clear. Rendered inline (not lazy): from 1024px it is part of the first screen.
- *  - inline: a 4:3 slot under the CTAs for < 1024px (default slot). A tiny inline script moves the same <svg> into it
+ *  - inline: a 4:3 slot under the CTAs for 640–1023px (default slot); phones skip it (~330px of decoration that
+ *    pushed the page's first content off the first screen, UX2-23). A tiny inline script moves the same <svg> into it
  *    while the parser is still on the hero (before first paint, so nothing shifts) and back when the viewport crosses
  *    1024px. Without JS the slot is hidden (the art stays in the hidden media panel).
  * Render the media one first (the Hero puts its media panel before the copy, so the order holds).
@@ -24,7 +25,7 @@ const props = Astro.props;
 {
   props.inline ? (
     <>
-      <div class="lc-hero-art-slot mt-10 aspect-4/3 w-full max-w-[24rem] lg:hidden" data-hero-art-slot />
+      <div class="lc-hero-art-slot mt-10 aspect-4/3 w-full max-w-[24rem] max-sm:hidden lg:hidden" data-hero-art-slot />
       <script is:inline>
         (() => {
           const slot = document.currentScript?.previousElementSibling;
@@ -32,7 +33,11 @@ const props = Astro.props;
           const art = home?.querySelector("svg");
           if (!slot || !art) return;
           const mq = matchMedia("(min-width: 64rem)");
-          const place = () => (mq.matches ? home : slot).append(art);
+          /* move only when the target differs: re-appending it where it already is still re-inserts the node */
+          const place = () => {
+            const to = mq.matches ? home : slot;
+            if (art.parentNode !== to) to.append(art);
+          };
           place();
           mq.addEventListener("change", place);
         })();

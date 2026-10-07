@@ -33,7 +33,8 @@
     "viewAll": "View all",
     "inEgyptWhatsapp": "In Egypt? Message us on WhatsApp",
     "quoteShort": "Quote",
-    "whatsappShort": "WhatsApp"
+    "whatsappShort": "WhatsApp",
+    "whatsappNarrow": "WhatsApp an engineer"
   },
   "a11y": {
     "skip": "Skip to content",
@@ -46,7 +47,8 @@
     "homeLink": "Logic Controls — homepage",
     "newTab": "opens in a new tab",
     "submenu": "{label} submenu",
-    "backToTop": "Back to top"
+    "backToTop": "Back to top",
+    "quickContact": "Quick contact"
   },
   "whatsapp": {
     "fabLabel": "Chat with an engineer on WhatsApp",
@@ -124,6 +126,7 @@
     "title": "Page not found",
     "body": "The page you are looking for does not exist or has moved.",
     "home": "Go to the homepage",
+    "didYouMean": "Did you mean {page}?",
     "links": {
       "title": "Popular pages",
       "services": "Services",

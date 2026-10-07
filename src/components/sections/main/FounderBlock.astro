@@ -9,7 +9,7 @@ import { Picture } from "astro:assets";
 import type { Locale } from "~/i18n";
 import BrandMark from "~/components/BrandMark.astro";
 import SectionHeading from "~/components/SectionHeading.astro";
-import { html } from "./rich";
+import { html, punct } from "~/lib/text";
 import founderPhoto from "~/assets/people/founder.jpg";
 
 export interface Founder {
@@ -32,7 +32,7 @@ interface Props {
 
 const { locale, founder, index, id = "founder", class: className } = Astro.props;
 const name = founder?.name?.trim() ?? "";
-const alt = [name, founder?.role].filter(Boolean).join(", ");
+const alt = [name, founder?.role].filter(Boolean).join(punct(locale).comma);
 const bio = (founder?.bio ?? []).filter(Boolean);
 const highlights = (founder?.highlights ?? []).filter((h) => h && h.value && h.label);
 const titleId = `${id}-title`;
@@ -41,7 +41,7 @@ const titleId = `${id}-title`;
 {
   founder && name && (
     <section id={id} class:list={["relative isolate bg-white py-section text-charcoal-800", className]} aria-labelledby={titleId}>
-      <div class="wrap grid items-start gap-12 lg:grid-cols-12 lg:gap-16">
+      <div class="wrap grid grid-cols-1 items-start gap-12 lg:grid-cols-12 lg:gap-16">
         {/* nameplate (after the text on small screens, at the start of the row on desktop) */}
         <div class="order-last lg:order-first lg:col-span-4">
           <div class="on-dark chamfer-lg relative isolate overflow-hidden bg-navy-950 p-7 text-navy-100 sm:p-8">
@@ -61,7 +61,7 @@ const titleId = `${id}-title`;
                     layout="full-width"
                     class="size-full object-cover object-[50%_22%] max-lg:origin-[50%_30%] max-lg:scale-[1.2]"
                   />
-                  <span aria-hidden="true" class="absolute inset-x-0 bottom-0 h-1/4 bg-gradient-to-t from-navy-950/35 to-transparent max-lg:hidden" />
+                  <span aria-hidden="true" class="absolute inset-x-0 bottom-0 h-1/4 bg-linear-to-t from-navy-950/35 to-transparent max-lg:hidden" />
                 </div>
               </div>
               <div class="min-w-0 lg:mt-8">
@@ -69,7 +69,7 @@ const titleId = `${id}-title`;
                 {founder.role && <p class="mt-1.5 text-sm text-navy-200">{founder.role}</p>}
               </div>
             </div>
-            <div aria-hidden="true" class="mt-6 h-px bg-gradient-to-r lg:mt-7 from-royal-400/60 to-transparent rtl:bg-gradient-to-l" />
+            <div aria-hidden="true" class="mt-6 h-px bg-linear-to-r lg:mt-7 from-royal-400/60 to-transparent rtl:bg-linear-to-l" />
             <p aria-hidden="true" class="mt-4 font-mono text-[0.6875rem] tracking-[0.18em] text-navy-300 ltr" dir="ltr">PLC · HMI · SCADA</p>
           </div>
         </div>
@@ -88,7 +88,7 @@ const titleId = `${id}-title`;
             </div>
           )}
           {highlights.length > 0 && (
-            <dl class:list={["mt-10 grid gap-px overflow-hidden border border-charcoal-200 bg-charcoal-200", highlights.length >= 3 ? "sm:grid-cols-3" : "sm:grid-cols-2"]}>
+            <dl class:list={["mt-10 grid grid-cols-1 gap-px overflow-hidden border border-charcoal-200 bg-charcoal-200", highlights.length >= 3 ? "sm:grid-cols-3" : "sm:grid-cols-2"]}>
               {highlights.map((h) => (
                 <div class="flex flex-col gap-1.5 bg-white p-5 sm:p-6">
                   <dt class="text-sm text-charcoal-600" set:html={html(locale, h.label)} />

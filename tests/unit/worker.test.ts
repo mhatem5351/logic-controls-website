@@ -7,6 +7,7 @@
  * uses web-standard APIs (Request, Response, FormData, fetch), which Node provides, so nothing is lost for these
  * cases; the real workerd runtime is exercised end to end by the Playwright suite (wrangler dev).
  */
+import { readFileSync } from "node:fs";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import worker from "../../worker/index";
 import { REF_RE, RFQ_FILES, RFQ_MAX_BODY } from "../../src/lib/rfq-rules";
@@ -63,6 +64,23 @@ function rfq(fields: Record<string, string>, { json = true, headers = {} as Reco
     method: "POST",
     body,
     headers: { ...(json ? { Accept: "application/json" } : { Accept: "text/html" }), ...headers },
+  });
+}
+
+/**
+ * What a browser sends: the serialized multipart body WITH its Content-Length. (Node's new Request({ body: FormData })
+ * streams without one, so rfq() always takes the Worker's capped-read path.)
+ */
+async function rfqWithLength(fields: Record<string, string>, files: File[] = [], length?: string) {
+  const form = new FormData();
+  for (const [k, v] of Object.entries(fields)) form.set(k, v);
+  for (const f of files) form.append(RFQ_FILES.field, f);
+  const serialized = new Response(form);
+  const body = new Uint8Array(await serialized.arrayBuffer());
+  return new Request(`${ORIGIN}/api/rfq`, {
+    method: "POST",
+    body,
+    headers: { "Content-Type": serialized.headers.get("Content-Type")!, "Content-Length": length ?? String(body.byteLength), Accept: "application/json" },
   });
 }
 
@@ -236,6 +254,31 @@ describe("/api/rfq", () => {
       expect(verify).not.toHaveBeenCalled();
     });
 
+    it("a browser's body with a Content-Length is parsed natively (req.formData), files included", async () => {
+      const { env, send } = makeEnv();
+      const native = vi.spyOn(Request.prototype, "formData");
+      const req = await rfqWithLength(VALID, [PDF("drawing.pdf"), PNG()]);
+      expect(Number(req.headers.get("Content-Length"))).toBeGreaterThan(4096);
+      const res = await call(req, env);
+      expect(res.status).toBe(200);
+      expect(await res.json()).toEqual({ ok: true, ref: expect.stringMatching(REF_RE) });
+      expect(native).toHaveBeenCalledTimes(1); // not the capped stream read
+      const mail = send.mock.calls[0]![0];
+      expect(mail.attachments!.map((a) => [a.filename, a.content.byteLength])).toEqual([
+        ["drawing.pdf", 2048],
+        ["panel.png", 2048],
+      ]);
+      expect(mail.replyTo).toEqual({ email: "ahmed@example.com", name: "Ahmed Ali" });
+    });
+
+    it("413 when the Content-Length is not a number (never parsed)", async () => {
+      const { env, send } = makeEnv();
+      const res = await call(await rfqWithLength(VALID, [], "12abc"), env);
+      expect(res.status).toBe(413);
+      expect(await res.json()).toEqual({ ok: false, error: "attachments" });
+      expect(send).not.toHaveBeenCalled();
+    });
+
     it("413 when a body without Content-Length streams past the cap", async () => {
       const res = await call(rfq(VALID, { files: [PDF("huge.pdf", RFQ_MAX_BODY + 10)] }), makeEnv().env);
       expect(res.status).toBe(413);
@@ -278,6 +321,11 @@ describe("/api/rfq", () => {
       ["phone with letters", { phone: "call me +20 100" }],
       ["email malformed", { email: "not-an-email" }],
       ["email without TLD", { email: "a@b" }],
+      // CODE2-20: an address that would change the Reply-To header is a field error, not a failed send
+      ["email with a second address", { email: "ahmed@example.com, other@example.com" }],
+      ["email with a header bracket", { email: "ahmed@example.com>" }],
+      ["email with ';bcc'", { email: "ahmed@example.com;bcc" }],
+      ["email with angle brackets in the local part", { email: "a<b>@example.com" }],
       ["consent missing", { consent: "" }],
       ["consent not 'yes'", { consent: "on" }],
     ])("%s", async (_, over) => {
@@ -553,23 +601,47 @@ describe("/api/rfq", () => {
     });
   });
 
-  describe("phone → WhatsApp / call links", () => {
+  describe("phone → WhatsApp / call links (UX2-02: never a link that dials a stranger)", () => {
     it.each([
-      ["01001234567", "201001234567"], // Egyptian mobile, local format
-      ["010 0123 4567", "201001234567"],
-      ["٠١٠٠١٢٣٤٥٦٧", "201001234567"], // Arabic-Indic digits
-      ["0020 100 123 4567", "201001234567"],
-      ["+20 (100) 123-4567", "201001234567"],
-      ["+90 532 123 45 67", "905321234567"], // international numbers are kept
-      ["+86 138 0013 8000", "8613800138000"],
-      ["0532 123 45 67", "05321234567"], // not an Egyptian mobile: left as typed
-    ])("%s → wa.me/%s", async (phone, wa) => {
+      ["01001234567", "ar", {}, "201001234567"], // Egyptian mobile, local format
+      ["010 0123 4567", "en", {}, "201001234567"],
+      ["1001234567", "ar", {}, "201001234567"], // the leading 0 dropped (was wa.me/1001234567 = +1)
+      ["٠١٠٠١٢٣٤٥٦٧", "ar", {}, "201001234567"], // Arabic-Indic digits
+      ["0020 100 123 4567", "zh", {}, "201001234567"],
+      ["+20 (100) 123-4567", "tr", {}, "201001234567"],
+      ["+90 532 123 45 67", "en", {}, "905321234567"], // international numbers are kept
+      ["+86 138 0013 8000", "en", {}, "8613800138000"],
+      ["0532 123 45 67", "tr", {}, "905321234567"], // Turkish mobile on the Turkish form
+      ["138 0013 8000", "zh", {}, "8613800138000"], // Chinese mobile on the Chinese form
+      ["0532 123 45 67", "en", { country: "Turkey" }, "905321234567"], // the country field decides
+      ["010 1234 5678", "zh", { location: "ain-sokhna" }, "201012345678"], // an Egyptian plant location decides
+    ])("%s (%s, %j) → wa.me/%s", async (phone, locale, extra, wa) => {
       const { env, send } = makeEnv();
-      await call(rfq({ ...VALID, phone }), env);
+      await call(rfq({ ...VALID, phone, locale, ...extra }), env);
       const { html, text } = send.mock.calls[0]![0];
       expect(html).toContain(`<a href="https://wa.me/${wa}">Reply on WhatsApp</a>`);
       expect(html).toContain(`<a href="tel:+${wa}">`);
       expect(text).toContain(`Reply on WhatsApp: https://wa.me/${wa}`);
+      expect(text).not.toContain("No recognisable country code");
+    });
+
+    it.each([
+      ["0532 123 45 67", "en", {}], // was wa.me/05321234567 (invalid) + "Call: +05321234567"
+      ["138 0013 8000", "en", {}], // was wa.me/13800138000 = a North American number
+      ["010 1234 5678", "zh", {}], // Egyptian mobile or Beijing landline
+      ["0501234567", "ar", {}], // a Gulf mobile in local format
+      ["01001234567", "en", { country: "Germany" }],
+      ["+05321234567", "en", {}],
+    ])("%s (%s, %j) → no link, the number as typed and a 'check the country code' note", async (phone, locale, extra) => {
+      const { env, send } = makeEnv();
+      const res = await call(rfq({ ...VALID, phone, locale, ...extra }), env);
+      expect(res.status).toBe(200);
+      const { html, text } = send.mock.calls[0]![0];
+      expect(html).not.toContain("wa.me");
+      expect(html).not.toContain('href="tel:');
+      expect(text).not.toContain("wa.me");
+      expect(text).toContain(`Phone ${phone}: No recognisable country code: check the number before calling or messaging (no WhatsApp / call link).`);
+      expect(html).toContain("No recognisable country code");
     });
   });
 
@@ -578,6 +650,7 @@ describe("/api/rfq", () => {
       const { env, send } = makeEnv();
       const res = await call(rfq(VALID, { files: [PDF("../../etc/I-O list.pdf"), PNG("panel.PNG"), file("layout.dwg", "AC1032", 4096)] }), env);
       expect(res.status).toBe(200);
+      expect(await res.json()).toEqual({ ok: true, ref: expect.stringMatching(REF_RE) }); // nothing skipped: no key
       const { attachments, text } = send.mock.calls[0]![0];
       expect(attachments!.map((a) => [a.filename, a.type, a.disposition, a.content.byteLength])).toEqual([
         ["I-O list.pdf", "application/pdf", "attachment", 2048],
@@ -586,6 +659,18 @@ describe("/api/rfq", () => {
       ]);
       expect(new Uint8Array(attachments![0]!.content).subarray(0, 4)).toEqual(new Uint8Array([0x25, 0x50, 0x44, 0x46]));
       expect(text).toContain("Attachments: I-O list.pdf (2 KB), panel.PNG (2 KB), layout.dwg (4 KB)");
+    });
+
+    it("accepts real CAD and PDF files the old check rejected (binary DXF, DXF with a BOM, PDF with leading bytes)", async () => {
+      const real = (fixtureName: string, name: string) => {
+        const head = new Uint8Array(readFileSync(new URL(`./fixtures/rfq/${fixtureName}.head`, import.meta.url)));
+        return file(name, [...head], 4096);
+      };
+      const { env, send } = makeEnv();
+      const res = await call(rfq(VALID, { files: [real("r2018-binary.dxf", "binary.dxf"), real("r2018-ascii-bom.dxf", "bom.dxf"), real("pdf-leading-crlf.pdf", "drawing.pdf")] }), env);
+      expect(res.status).toBe(200);
+      expect(await res.json()).toEqual({ ok: true, ref: expect.stringMatching(REF_RE) });
+      expect(send.mock.calls[0]![0].attachments!.map((a) => a.filename)).toEqual(["binary.dxf", "bom.dxf", "drawing.pdf"]);
     });
 
     it("an empty file input (nothing chosen) is not an attachment", async () => {
@@ -601,30 +686,66 @@ describe("/api/rfq", () => {
     });
 
     it.each([
-      ["more than 3 files", () => [PDF("1.pdf"), PDF("2.pdf"), PDF("3.pdf"), PDF("4.pdf")]],
-      ["over 4 MB in total (but under the body cap)", () => [PDF("1.pdf", 2 * 1024 * 1024), PDF("2.pdf", 2 * 1024 * 1024 + 10)]],
-      ["a type the form does not accept", () => [file("setup.exe", "MZ")]],
-      ["no extension", () => [file("drawing", "%PDF")]],
-    ])("422 attachments: %s (checked before Turnstile)", async (_, files) => {
+      ["more than 3 files", () => [PDF("1.pdf"), PDF("2.pdf"), PDF("3.pdf"), PDF("4.pdf")], { problem: "count" }],
+      ["over 4 MB in total (but under the body cap)", () => [PDF("1.pdf", 2 * 1024 * 1024), PDF("2.pdf", 2 * 1024 * 1024 + 10)], { problem: "size" }],
+      ["a type the form does not accept", () => [PDF("ok.pdf"), file("setup.exe", "MZ")], { problem: "type", files: ["setup.exe"] }],
+      // the type comes first (the answer names the files to remove), even when the count or the size is wrong too
+      [
+        "4 files, one of a type the form does not accept",
+        () => [PDF("1.pdf"), PDF("2.pdf"), PDF("3.pdf"), file("setup.exe", "MZ")],
+        { problem: "type", files: ["setup.exe"] },
+      ],
+      [
+        "over 4 MB and a type the form does not accept",
+        () => [PDF("1.pdf", 2 * 1024 * 1024), PDF("2.pdf", 2 * 1024 * 1024 + 10), file("notes.docx", "PK")],
+        { problem: "type", files: ["notes.docx"] },
+      ],
+      ["no extension", () => [file("drawing", "%PDF")], { problem: "type", files: ["drawing"] }],
+    ])("422 attachments: %s (checked before Turnstile; the answer says which problem and which files)", async (_, files, detail) => {
       const { env, send } = makeEnv();
       const res = await call(rfq(VALID, { files: files() }), env);
       expect(res.status).toBe(422);
-      expect(await res.json()).toEqual({ ok: false, error: "attachments" });
+      expect(await res.json()).toEqual({ ok: false, error: "attachments", ...detail });
       expect(verify).not.toHaveBeenCalled();
       expect(send).not.toHaveBeenCalled();
     });
 
-    it("422 attachments when the content does not match the extension (a renamed .exe is not a PDF)", async () => {
+    it("a file whose content does not match its extension is left out and named (the request is still sent; UX2-05)", async () => {
       const { env, send } = makeEnv();
       const res = await call(rfq(VALID, { files: [file("quote.pdf", "MZ"), PNG()] }), env);
-      expect(res.status).toBe(422);
-      expect(await res.json()).toEqual({ ok: false, error: "attachments" });
-      expect(send).not.toHaveBeenCalled();
+      expect(res.status).toBe(200);
+      expect(await res.json()).toEqual({ ok: true, ref: expect.stringMatching(REF_RE), skipped: ["quote.pdf"] });
+      const mail = send.mock.calls[0]![0];
+      expect(mail.attachments!.map((a) => a.filename)).toEqual(["panel.png"]);
+      expect(mail.text).toContain("Attachments: panel.png (2 KB)");
+      expect(mail.text).toContain("Not attached: quote.pdf (the content does not match the file type; ask the sender to email it)");
+    });
+
+    it("no-JS: a skipped file → 303 to the thanks page with &skipped=n", async () => {
+      const res = await call(rfq({ ...VALID, locale: "tr" }, { json: false, files: [file("a.dxf", [0, 1, 2, 3]), file("b.pdf", "nope")] }), makeEnv().env);
+      expect(res.status).toBe(303);
+      expect(res.headers.get("Location")).toMatch(/^\/tr\/contact\/thanks\/\?ref=LC-[0-9A-Z]{5}&skipped=2$/);
     });
 
     it("no-JS form post: 303 back with ?error=attachments", async () => {
       const res = await call(rfq({ ...VALID, locale: "zh" }, { json: false, files: [file("a.exe", "MZ")] }), makeEnv().env);
       expect(res.headers.get("Location")).toBe("/zh/contact/?error=attachments#rfq-error-attachments");
+    });
+  });
+
+  describe("urgency (UX2-06)", () => {
+    it("troubleshooting without a timeline ('Skip and send now') → [URGENT?] and a 'call first' banner", async () => {
+      const { env, send } = makeEnv();
+      await call(rfq({ ...VALID, service: "maintenance-support", timeline: "" }), env);
+      const mail = send.mock.calls[0]![0];
+      expect(mail.subject).toMatch(/^\[URGENT\?\] \[Website AR\] Troubleshooting or maintenance — Nile Foods · LC-/);
+      expect(mail.text.startsWith("POSSIBLY URGENT: troubleshooting request sent without a timeline. Call first.\n\n")).toBe(true);
+      expect(mail.html).toContain("POSSIBLY URGENT");
+    });
+    it("troubleshooting with a non-urgent timeline is not flagged", async () => {
+      const { env, send } = makeEnv();
+      await call(rfq({ ...VALID, service: "maintenance-support", timeline: "planning" }), env);
+      expect(send.mock.calls[0]![0].subject.startsWith("[Website AR]")).toBe(true);
     });
   });
 
@@ -663,10 +784,82 @@ describe("/api/rfq preferred reply channel", () => {
     expect(send).not.toHaveBeenCalled();
   });
 
+  it.each(["phone", "whatsapp"])("'%s' needs a phone number (422 invalid)", async (reply) => {
+    const { env, send } = makeEnv();
+    const res = await call(rfq({ ...VALID, phone: "", locale: "zh", reply }), env);
+    expect(res.status).toBe(422);
+    expect(await res.json()).toEqual({ ok: false, error: "invalid" });
+    expect(send).not.toHaveBeenCalled();
+  });
+
   it("an unknown value is ignored", async () => {
     const { env, send } = makeEnv();
     const res = await call(rfq({ ...VALID, reply: "fax" }), env);
     expect(res.status).toBe(200);
     expect(send.mock.calls[0]![0].text).not.toContain("Preferred reply");
+  });
+});
+
+/* ------------------------------------------------------------------ /api/evt (click counts, UX2-18) */
+
+describe("/api/evt → Workers Analytics Engine", () => {
+  const evt = (body: unknown, headers: Record<string, string> = {}, method = "POST") =>
+    new Request(`${ORIGIN}/api/evt`, {
+      method,
+      body: method === "POST" ? (typeof body === "string" ? body : JSON.stringify(body)) : undefined,
+      headers: { "Content-Type": "text/plain;charset=UTF-8", Origin: ORIGIN, ...headers },
+    });
+  const withClicks = () => {
+    const writeDataPoint = vi.fn();
+    const e = makeEnv({ CLICKS: { writeDataPoint } });
+    return { ...e, writeDataPoint };
+  };
+  const OK = { k: "whatsapp", p: "hero", l: "ar", u: "/ar/services/control-panels/" };
+
+  it("writes one data point (kind, place, locale, path; no IP, no identifier) and answers 204 no-store", async () => {
+    const { env, writeDataPoint } = withClicks();
+    const res = await call(evt(OK), env);
+    expect(res.status).toBe(204);
+    expect(res.headers.get("Cache-Control")).toBe("no-store");
+    expect(res.headers.get("Set-Cookie")).toBeNull();
+    expect(writeDataPoint).toHaveBeenCalledOnce();
+    expect(writeDataPoint).toHaveBeenCalledWith({ blobs: ["whatsapp", "hero", "ar", "/ar/services/control-panels/"], doubles: [1], indexes: ["whatsapp"] });
+  });
+
+  it.each([
+    ["malformed JSON", "{oops", {}],
+    ["an unknown kind", JSON.stringify({ ...OK, k: "purchase" }), {}],
+    ["a path with a query string", JSON.stringify({ ...OK, u: "/ar/contact/?email=a@b.c" }), {}],
+    ["an oversized body", JSON.stringify({ ...OK, pad: "x".repeat(600) }), {}],
+    ["another site's origin", JSON.stringify(OK), { Origin: "https://evil.example" }],
+    ["a cross-site fetch", JSON.stringify(OK), { "Sec-Fetch-Site": "cross-site" }],
+  ])("is not counted: %s (still 204, nothing echoed)", async (_, body, headers) => {
+    const { env, writeDataPoint } = withClicks();
+    const res = await call(evt(body, headers), env);
+    expect(res.status).toBe(204);
+    expect(await res.text()).toBe("");
+    expect(writeDataPoint).not.toHaveBeenCalled();
+  });
+
+  it("works without the binding (local dev / not configured) and never reaches the static assets", async () => {
+    const { env, assets } = makeEnv();
+    expect((await call(evt(OK), env)).status).toBe(204);
+    expect(assets).not.toHaveBeenCalled();
+  });
+
+  it("405 for anything but POST", async () => {
+    const res = await call(evt(null, {}, "GET"), withClicks().env);
+    expect(res.status).toBe(405);
+    expect(res.headers.get("Allow")).toBe("POST");
+  });
+
+  it("a failing write is logged, never surfaced", async () => {
+    const writeDataPoint = vi.fn(() => {
+      throw new Error("quota");
+    });
+    const spy = vi.spyOn(console, "error").mockImplementation(() => {});
+    const res = await call(evt(OK), makeEnv({ CLICKS: { writeDataPoint } }).env);
+    expect(res.status).toBe(204);
+    expect(spy).toHaveBeenCalled();
   });
 });

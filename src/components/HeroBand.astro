@@ -4,6 +4,8 @@
  * behind an 85% scrim, so the first screen shows the machine. Desktop never downloads it (real files are offered to
  * < 1024px only, then a 1×1 data-URI source); the desktop panel never downloads on phones the same way (Hero.astro).
  * Case-study and page heroes place it under the breadcrumbs; the home hero places it after the CTAs.
+ * It is the LCP element on phones: integrations/hero-preload.mjs preloads exactly this <source> (same srcset, sizes
+ * and media) from <head>, so the request starts with the CSS instead of after ~80 KB of header markup.
  */
 import type { ImageMetadata } from "astro";
 import { getImage } from "astro:assets";
@@ -16,13 +18,20 @@ interface Props {
   priority?: boolean;
   /** Stagger index for the .lc-rise entrance. */
   rise?: number;
+  /** In the home hero's copy column (max-w-2xl, 42rem) instead of a page hero's (max-w-3xl, 48rem). */
+  home?: boolean;
   class?: string;
 }
-const { image, video, alt = "", priority = false, rise = 1, class: className } = Astro.props;
+const { image, video, alt = "", priority = false, rise = 1, home = false, class: className } = Astro.props;
 
 const SMALL = "(max-width: 1023.98px)";
-/* Copy column: max-w-2xl (home) / max-w-3xl (page) inside the 1.25–2rem gutters. */
-const sizes = "(min-width: 768px) 42rem, calc(100vw - 2.5rem)";
+/* Rendered width: the viewport minus ~1rem gutters on phones (328–395px at 360–430), the copy column from 768px
+   (max-w-3xl 48rem on page heroes, 720–768px on tablets; max-w-2xl 672px on the home, asked as 40rem so a 2x tablet
+   takes the 1280w poster at 1.9x instead of the 1920w one).
+   Phones at 2.5x and more (most current phones: 2.625–3x) ask for ~60% of that width, i.e. about 2x pixels instead of
+   3x: 412px @ 2.625 → 598w, 390px @ 3 → 644w, 430px @ 3 → 716w, so they take the 640/720 file, not the 960 one
+   (PERF2-03). A 213px-tall band on a phone shows no difference; tablets and 1–2x phones get their full density. */
+const sizes = `(min-resolution: 2.5dppx) calc(60vw - 1.2rem), (min-width: 768px) ${home ? "40rem" : "48rem"}, calc(100vw - 2rem)`;
 
 let avif: string | undefined;
 let webp: string;
@@ -30,7 +39,8 @@ let src: string;
 let width: number;
 let height: number;
 if (image) {
-  const widths = [...new Set([480, 720, 960].map((w) => Math.min(w, image.width)))];
+  /* 720: the high-density phones' file; 1280 / 1600: tablets at 2x (a 768px band needs ~1536px). */
+  const widths = [...new Set([480, 720, 960, 1280, 1600].map((w) => Math.min(w, image.width)))];
   const set = async (format: "avif" | "webp") =>
     (await Promise.all(widths.map(async (w) => `${(await getImage({ src: image, width: w, format })).src} ${w}w`))).join(", ");
   [avif, webp] = await Promise.all([set("avif"), set("webp")]);
@@ -46,7 +56,10 @@ if (image) {
 }
 ---
 
-<div class:list={["lc-hero-band lc-rise chamfer-lg relative aspect-video overflow-hidden bg-navy-900 lg:hidden", className]} style={`--i:${rise}`}>
+<div
+  class:list={["lc-hero-band lc-rise chamfer-lg relative aspect-video overflow-hidden bg-navy-900 lg:hidden", className]}
+  style={`--i:${rise}`}
+>
   <picture>
     {avif && <source media={SMALL} type="image/avif" srcset={avif} sizes={sizes} />}
     <source media={SMALL} srcset={webp} sizes={sizes} />

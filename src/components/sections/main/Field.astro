@@ -3,8 +3,12 @@
  * Form field scaffold for the RFQ form: label (+ required "*" / "optional" marker), the control (slot),
  * help text (`{id}-help`) and an error slot (`{id}-error`, filled by the form script).
  * The control must reference them itself: aria-describedby={`${id}-help ${id}-error`}.
+ * The label text has the id `{id}-label`, for controls that build their name with aria-labelledby (the attachments
+ * input adds its visible "Choose files" text to it).
  *
  * `requiredNoJs`: required only in the no-JS single-page form (shows "*" without JS, "optional" with JS).
+ * `switchable`: the form script may make the field required at runtime (preferred reply channel): both markers are
+ *   rendered and it shows one of them ([data-req-mark] / [data-opt-mark]).
  * The "optional" marker gets the locale's brackets: full-width （选填） in Chinese, ASCII elsewhere (on Arabic pages
  * the label is RTL, so the bidi algorithm mirrors them correctly around the Arabic word).
  */
@@ -16,12 +20,13 @@ interface Props {
   label: string;
   required?: boolean;
   requiredNoJs?: boolean;
+  switchable?: boolean;
   /** "optional" label text (shown for optional fields). */
   optional?: string;
   help?: string;
   class?: string;
 }
-const { id, label, required = false, requiredNoJs = false, optional, help, class: className } = Astro.props;
+const { id, label, required = false, requiredNoJs = false, switchable = false, optional, help, class: className } = Astro.props;
 const locale = Astro.currentLocale as Locale | undefined;
 const BRACKETS: Partial<Record<Locale, [string, string]>> = { zh: ["（", "）"] };
 const [open, close] = BRACKETS[locale ?? "en"] ?? ["(", ")"];
@@ -32,10 +37,16 @@ const optionalMarker = optional && (/^[(（].*[)）]$/.test(optional.trim()) ? o
 
 <div class:list={["lc-field", className]} data-field={id}>
   <label for={id} class="lc-label">
-    <span>{label}</span>
-    {required && <span class="lc-req" aria-hidden="true">*</span>}
+    <span id={`${id}-label`}>{label}</span>
+    {(required || switchable) && <span class="lc-req" aria-hidden="true" data-req-mark={switchable ? "" : undefined} hidden={!required}>*</span>}
     {requiredNoJs && <span class="lc-req lc-nojs" aria-hidden="true">*</span>}
-    {optional && !required && <span class:list={["lc-opt", requiredNoJs && "lc-js", open === "（" && "-ms-1.5"]}>{optionalMarker}</span>}
+    {
+      optional && (!required || switchable) && (
+        <span class:list={["lc-opt", requiredNoJs && "lc-js", open === "（" && "-ms-1.5"]} data-opt-mark={switchable ? "" : undefined} hidden={required}>
+          {optionalMarker}
+        </span>
+      )
+    }
   </label>
   <slot />
   {help && <p id={`${id}-help`} class="lc-help" set:html={toHtml(locale, help)} />}

@@ -6,7 +6,7 @@
  * play, plus, minus, external, gauge, file, users, calendar, send, download, thermometer, layers.
  * Brand glyphs (whatsapp, facebook) from Simple Icons (CC0).
  *
- * Directional icons (arrow, chevron-*, external, send) are mirrored automatically on RTL pages.
+ * Directional icons (arrow, chevron-*, external, send, the ragged menu) are mirrored automatically on RTL pages.
  */
 interface Props {
   name: IconName;
@@ -62,7 +62,8 @@ const ICONS = {
 } as const;
 
 export type IconName = keyof typeof ICONS;
-const DIRECTIONAL = new Set<IconName>(["arrow", "chevron-right", "chevron-left", "external", "send"]);
+/* "menu" too: its short last bar is aligned with the reading start (left in LTR, right in RTL, I18N2-17). */
+const DIRECTIONAL = new Set<IconName>(["arrow", "chevron-right", "chevron-left", "external", "send", "menu"]);
 
 const { name, size = 24, title, class: className = "", strokeWidth = 1.75 } = Astro.props;
 const flip = DIRECTIONAL.has(name) ? "rtl:-scale-x-100" : "";

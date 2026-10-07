@@ -7,13 +7,16 @@
  * Pure CSS timeline (one 7.5 s cycle, played 3 times while the diagram is on screen, then it rests as the static
  * diagram). Everything that moves is composited: the amber signal dots ride full-length carriers moved with
  * `translate`, and each node's "strike" is a pre-rendered royal disc faded in with `opacity`. A tiny script flips
- * data-play when the diagram is on screen (and the site's motion switch allows it) and, in the vertical layout, measures
- * where the PLC → Actuator arc starts and ends. Horizontal ≥ 64rem, vertical below. Static under reduced motion /
- * html[data-motion="off"], with every arrowhead drawn.
+ * data-play when the diagram itself is on screen (the node row, not the intro: ≥ 50% of it on desktop; in the tall
+ * vertical layout once the Sensor is 20% above the bottom edge), so cycle 1 starts where the eye is. Until the three
+ * cycles have played, every new showing restarts from the Sensor; after the rest, hovering / tapping the diagram (or
+ * focus inside it) replays one cycle. In the vertical layout the script also measures where the PLC → Actuator arc
+ * starts and ends. Horizontal ≥ 64rem, vertical below. Static under reduced motion / html[data-motion="off"], with
+ * every arrowhead drawn. Plain (un-nested) CSS, so browsers without CSS nesting (Firefox ESR 115) animate it too.
  */
 import { getMessages, type Locale } from "~/i18n";
 import Icon from "~/components/Icon.astro";
-import { html } from "~/lib/text";
+import { heading, html } from "~/lib/text";
 
 interface Props {
   locale: Locale;
@@ -36,6 +39,7 @@ const nodes = (["sensor", "plc", "hmi", "actuator", "process"] as const).map((k)
 const icon = { sensor: "thermometer", plc: "plc", hmi: "hmi", process: "factory" } as const;
 /** Wire after each node: signal hop, supervisory link (PLC ⇄ HMI), none (HMI → Actuator is not a path), hop, last. */
 const WIRE = ["hop", "sup", "skip", "hop", "last"] as const;
+const ARABIC = /[\u0600-\u06FF]/;
 ---
 
 <div class:list={["lc-loop", tone === "dark" && "on-dark", className]} data-loop data-play="0" data-tone={tone}>
@@ -44,10 +48,10 @@ const WIRE = ["hop", "sup", "skip", "hop", "last"] as const;
       <header class="lc-loop-head">
         <p class="type-label lc-loop-eyebrow">
           <span class="slant-bar" aria-hidden="true" />
-          {t.eyebrow}
+          <span set:html={html(locale, t.eyebrow)} />
         </p>
-        <H class="type-h2 lc-loop-title" set:html={html(locale, t.title)} />
-        <p class="type-lead lc-loop-lead">{t.lead}</p>
+        <H class="type-h2 lc-loop-title" set:html={heading(locale, t.title)} />
+        <p class="type-lead lc-loop-lead" set:html={html(locale, t.lead)} />
       </header>
     )
   }
@@ -71,11 +75,14 @@ const WIRE = ["hop", "sup", "skip", "hop", "last"] as const;
             </span>
             <div class="lc-loop-txt">
               <N class="lc-loop-l">
-                <span class="lc-loop-n">{String(i + 1).padStart(2, "0")}</span>
-                {n.label}
+                {/* the index is decoration (the <ol> numbers the nodes for AT); its trailing space collapses at the end of
+                    the flex item, so it only separates the words in extracted text ("01 Sensor", CS2-06) */}
+                <span class="lc-loop-n" aria-hidden="true">{`${String(i + 1).padStart(2, "0")} `}</span>
+                <span set:html={heading(locale, n.label)} />
               </N>
-              <span class="lc-loop-t">{n.text}</span>
-              <span class="lc-loop-spec" dir="ltr">{n.spec}</span>
+              <span class="lc-loop-t" set:html={html(locale, n.text)} />
+              {/* codes and units read left to right; an Arabic spec ("PID · دورة المسح 10 ms") follows the page */}
+              <span class="lc-loop-spec" dir={ARABIC.test(n.spec) ? "rtl" : "ltr"} set:html={html(locale, n.spec)} />
             </div>
             <span class="lc-loop-wire" data-w={WIRE[i]} aria-hidden="true">
               {(WIRE[i] === "hop" || WIRE[i] === "sup") && <i />}
@@ -88,25 +95,60 @@ const WIRE = ["hop", "sup", "skip", "hop", "last"] as const;
     <span class="lc-loop-byp" aria-hidden="true"><i class="lg lg-a"></i><i class="lg lg-b"></i><i class="lg lg-c"></i></span>
     <span class="lc-loop-ret" aria-hidden="true"><i class="lg lg-a"></i><i class="lg lg-b"></i><i class="lg lg-c"></i></span>
   </div>
-  <p class="lc-loop-cap">{t.caption}</p>
+  <p class="lc-loop-cap" set:html={html(locale, t.caption)} />
 </div>
 
 <script>
   import { motionOff, onMotionChange } from "~/scripts/motion/motion-pref";
 
   const loops = [...document.querySelectorAll<HTMLElement>("[data-loop]")];
+  const wide = matchMedia("(min-width: 64rem)");
+  /* getAnimations() drops a CSS animation once it has finished (no fill), so the loop keeps its own set to seek them
+     again; a cancelled one (motion switched off: the rule is gone) is idle and leaves the set. */
+  const known = new WeakMap<HTMLElement, Set<Animation>>();
+  const anims = (el: HTMLElement) => {
+    let s = known.get(el);
+    if (!s) known.set(el, (s = new Set()));
+    for (const a of el.getAnimations({ subtree: true })) s.add(a);
+    for (const a of s) if (a.playState === "idle") s.delete(a);
+    return [...s];
+  };
+  const num = (el: HTMLElement, k: string, d: number) => parseFloat(getComputedStyle(el).getPropertyValue(k)) || d;
+  /** One cycle (ms) and cycles per showing, from the CSS (--lp-cycle / --lp-n). */
+  const cycle = (el: HTMLElement) => num(el, "--lp-cycle", 7.5) * 1000;
+  const cycles = (el: HTMLElement) => num(el, "--lp-n", 3);
+  /** All cycles played: past the last cycle's Sensor strike (+ its fade), nothing visible changes any more. */
+  const rested = (el: HTMLElement) => {
+    const a = anims(el);
+    const end = cycles(el) * cycle(el) + 400;
+    return a.length > 0 && a.every((x) => x.playState === "finished" || Number(x.currentTime) >= end);
+  };
+  const seek = (el: HTMLElement, t: number) => anims(el).forEach((a) => (a.currentTime = t));
   // plays only while on screen, in a visible tab, and when motion is allowed (else the CSS shows the static diagram)
   const play = (el: HTMLElement) => (el.dataset.play = el.dataset.vis === "1" && !document.hidden && !motionOff() ? "1" : "0");
+  /** When the diagram left the screen (a real new showing restarts from the Sensor; a jitter at the edge resumes). */
+  const away = new WeakMap<HTMLElement, number>();
+  /* The node row (not the intro above it) decides: on desktop ≥ 50% of it inside the top 80% of the viewport; in the
+     tall vertical layout as soon as its top (the Sensor) is 20% above the bottom edge. */
   const io = new IntersectionObserver(
     (es) =>
       es.forEach((e) => {
-        const el = e.target as HTMLElement;
-        el.dataset.vis = e.isIntersecting ? "1" : "0";
+        const el = (e.target as HTMLElement).closest<HTMLElement>("[data-loop]")!;
+        const vis = wide.matches ? e.intersectionRatio >= 0.5 : e.isIntersecting;
+        const was = el.dataset.vis === "1";
+        el.dataset.vis = vis ? "1" : "0";
+        if (vis && !was) {
+          if (performance.now() - (away.get(el) ?? -1e9) > 600 && !rested(el)) seek(el, 0);
+        } else if (!vis && was) away.set(el, performance.now());
         play(el);
       }),
-    { threshold: 0.2 },
+    { rootMargin: "0px 0px -20% 0px", threshold: [0, 0.5] },
   );
-  const wide = matchMedia("(min-width: 64rem)");
+  /** After the rest: one more cycle, from the Sensor (the timeline's last cycle), on hover / tap / focus. */
+  const replay = (el: HTMLElement) => {
+    if (motionOff() || el.dataset.play !== "1" || !rested(el)) return;
+    seek(el, (cycles(el) - 1) * cycle(el));
+  };
   // vertical layout: the PLC → Actuator arc runs from the PLC icon's centre to the Actuator icon's centre
   const measure = (el: HTMLElement) => {
     const body = el.querySelector<HTMLElement>(".lc-loop-body")!;
@@ -124,11 +166,18 @@ const WIRE = ["hop", "sup", "skip", "hop", "last"] as const;
   };
   const ro = new ResizeObserver((es) => es.forEach((e) => measure((e.target as HTMLElement).closest<HTMLElement>("[data-loop]")!)));
   for (const el of loops) {
-    io.observe(el);
-    ro.observe(el.querySelector(".lc-loop-body")!);
+    const body = el.querySelector<HTMLElement>(".lc-loop-body")!;
+    el.dataset.vis = "0";
+    anims(el); // all still pending (paused at 0) here: remember them
+    io.observe(body);
+    ro.observe(body);
+    // the body is a plain block (never a focus target itself); focusin only fires for content inside it
+    body.addEventListener("pointerenter", (e) => e.pointerType !== "touch" && replay(el));
+    body.addEventListener("click", () => replay(el));
+    body.addEventListener("focusin", () => replay(el));
   }
   document.addEventListener("visibilitychange", () => loops.forEach(play));
-  onMotionChange(() => loops.forEach(play));
+  onMotionChange(() => loops.forEach((el) => (play(el), anims(el))));
 </script>
 
 <style is:global>
@@ -140,6 +189,7 @@ const WIRE = ["hop", "sup", "skip", "hop", "last"] as const;
     --lp-line: var(--color-navy-200);
     --lp-pulse: var(--color-signal-400);
     --lp-ink: var(--color-navy-800);
+    --lp-title: var(--color-navy-950); /* like every other light-band H2 */
     --lp-txt: var(--color-charcoal-600);
     --lp-ic-bg: #fff;
     --dir: 1;
@@ -150,6 +200,7 @@ const WIRE = ["hop", "sup", "skip", "hop", "last"] as const;
   .lc-loop[data-tone="dark"] {
     --lp-line: rgb(150 182 232 / 0.35);
     --lp-ink: #fff;
+    --lp-title: #fff;
     --lp-txt: var(--color-navy-200);
     --lp-ic-bg: var(--color-navy-900);
   }
@@ -168,7 +219,7 @@ const WIRE = ["hop", "sup", "skip", "hop", "last"] as const;
   }
   .lc-loop-title {
     margin-top: 0.85rem;
-    color: var(--lp-ink);
+    color: var(--lp-title);
   }
   .lc-loop-lead {
     margin-top: 1rem;
@@ -463,48 +514,47 @@ const WIRE = ["hop", "sup", "skip", "hop", "last"] as const;
      4.20 s  Process → Sensor return (0.12 + 2.3 + 0.12 s: within 2× the forward speed)   6.78  Sensor strikes
      Hops ease in and out (a packet that accelerates and settles); bracket legs run at constant speed. */
   @media (prefers-reduced-motion: no-preference) {
-    :root:not([data-motion="off"]) .lc-loop {
-      & .lc-loop-on {
-        animation: lc-loop-glow var(--lp-cycle) linear var(--lp-n);
-        animation-delay: calc(var(--gd) - 0.1s);
-      }
-      & [data-k="hmi"] .lc-loop-on {
-        --gmax: 0.6;
-      }
-      & .lc-loop-wire[data-w="hop"] > i {
-        animation: lc-loop-hop var(--lp-cycle) linear var(--lp-n);
-      }
-      & [data-k="sensor"] .lc-loop-wire > i {
-        animation-delay: 0.2s;
-      }
-      & [data-k="actuator"] .lc-loop-wire > i {
-        animation-delay: 3s;
-      }
-      & .lc-loop-wire[data-w="sup"] > i {
-        animation: lc-loop-blip var(--lp-cycle) linear var(--lp-n) 1.5s;
-      }
-      & .lg-a,
-      & .lg-c {
-        animation: lc-loop-leg-s var(--lp-cycle) linear var(--lp-n);
-      }
-      & .lc-loop-byp .lg-a {
-        animation-delay: 1.5s;
-      }
-      & .lc-loop-byp .lg-b {
-        animation: lc-loop-leg-b var(--lp-cycle) linear var(--lp-n) 1.62s;
-      }
-      & .lc-loop-byp .lg-c {
-        animation-delay: 2.57s;
-      }
-      & .lc-loop-ret .lg-a {
-        animation-delay: 4.2s;
-      }
-      & .lc-loop-ret .lg-b {
-        animation: lc-loop-leg-r var(--lp-cycle) linear var(--lp-n) 4.32s;
-      }
-      & .lc-loop-ret .lg-c {
-        animation-delay: 6.62s;
-      }
+    /* written out (no CSS nesting): Firefox < 117 drops nested rules, so ESR 115 would show a static diagram */
+    :root:not([data-motion="off"]) .lc-loop .lc-loop-on {
+      animation: lc-loop-glow var(--lp-cycle) linear var(--lp-n);
+      animation-delay: calc(var(--gd) - 0.1s);
+    }
+    :root:not([data-motion="off"]) .lc-loop [data-k="hmi"] .lc-loop-on {
+      --gmax: 0.6;
+    }
+    :root:not([data-motion="off"]) .lc-loop .lc-loop-wire[data-w="hop"] > i {
+      animation: lc-loop-hop var(--lp-cycle) linear var(--lp-n);
+    }
+    :root:not([data-motion="off"]) .lc-loop [data-k="sensor"] .lc-loop-wire > i {
+      animation-delay: 0.2s;
+    }
+    :root:not([data-motion="off"]) .lc-loop [data-k="actuator"] .lc-loop-wire > i {
+      animation-delay: 3s;
+    }
+    :root:not([data-motion="off"]) .lc-loop .lc-loop-wire[data-w="sup"] > i {
+      animation: lc-loop-blip var(--lp-cycle) linear var(--lp-n) 1.5s;
+    }
+    :root:not([data-motion="off"]) .lc-loop .lg-a,
+    :root:not([data-motion="off"]) .lc-loop .lg-c {
+      animation: lc-loop-leg-s var(--lp-cycle) linear var(--lp-n);
+    }
+    :root:not([data-motion="off"]) .lc-loop .lc-loop-byp .lg-a {
+      animation-delay: 1.5s;
+    }
+    :root:not([data-motion="off"]) .lc-loop .lc-loop-byp .lg-b {
+      animation: lc-loop-leg-b var(--lp-cycle) linear var(--lp-n) 1.62s;
+    }
+    :root:not([data-motion="off"]) .lc-loop .lc-loop-byp .lg-c {
+      animation-delay: 2.57s;
+    }
+    :root:not([data-motion="off"]) .lc-loop .lc-loop-ret .lg-a {
+      animation-delay: 4.2s;
+    }
+    :root:not([data-motion="off"]) .lc-loop .lc-loop-ret .lg-b {
+      animation: lc-loop-leg-r var(--lp-cycle) linear var(--lp-n) 4.32s;
+    }
+    :root:not([data-motion="off"]) .lc-loop .lc-loop-ret .lg-c {
+      animation-delay: 6.62s;
     }
   }
   .lc-loop:not([data-play="1"]) * {

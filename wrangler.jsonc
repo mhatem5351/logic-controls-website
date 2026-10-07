@@ -18,6 +18,12 @@
     // Must be a verified Email Routing destination — free on all plans.
     { "name": "RFQ_MAIL", "destination_address": "mohammedsafa11@gmail.com" }
   ],
+  "analytics_engine_datasets": [
+    // Anonymous click counts from POST /api/evt (WhatsApp / call / email / quote; no cookies, no IP). Workers Free
+    // includes 100,000 data points written and 10,000 read queries a day; the dataset is created on the first write.
+    // Query it with the SQL API (README → "Click counts").
+    { "binding": "CLICKS", "dataset": "lc_clicks" }
+  ],
   "vars": {
     "OWNER_EMAIL": "mohammedsafa11@gmail.com",
     "MAIL_FROM": "website@logic-controls.com",

@@ -5,7 +5,7 @@
  */
 import type { Locale } from "~/i18n";
 import Icon, { type IconName } from "~/components/Icon.astro";
-import { html } from "~/lib/text";
+import { heading, html } from "~/lib/text";
 
 interface Item {
   title: string;
@@ -35,7 +35,7 @@ const pad = (i: number) => String(i + 1).padStart(2, "0");
           </span>
           {it.icon && <Icon name={it.icon} size={20} class="text-royal-600 on-dark:text-royal-300" />}
         </span>
-        <H class="type-h4 text-navy-950 on-dark:text-white" set:html={html(locale, it.title)} />
+        <H class="type-h4 text-navy-950 on-dark:text-white" set:html={heading(locale, it.title)} />
         <p class="mt-2 text-charcoal-600 on-dark:text-navy-200" set:html={html(locale, it.text)} />
       </li>
     ))

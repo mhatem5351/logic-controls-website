@@ -35,6 +35,7 @@ Use this to keep the four languages consistent. "Keep" = write the term in Latin
 | Load cell | Weighing sensor | Gloss | خلية وزن (Load cell) |
 | Contactor, overload relay, relay, circuit breaker | Panel components | Gloss | كونتاكتور · أوفرلود · ريلاي · قاطع (Circuit breaker) |
 | PID / proportional control | Closed-loop control methods | Keep "PID" | تحكم PID · تحكم تناسبي |
+| Scan cycle / scan time (PLC) | One pass of the PLC program: read inputs, run the logic, write outputs | — | دورة المسح · زمن دورة المسح (never the English "scan" in Arabic copy) |
 
 ## Project and service terms
 
@@ -178,6 +179,29 @@ Never "partner", "agent", "authorized service center" or "official representativ
 | Ain Sokhna / TEDA | 艾因苏赫纳 / 中埃·泰达合作区（full: 中埃·泰达苏伊士经贸合作区） | Ain Sokhna / TEDA bölgesi |
 | 10th of Ramadan | 斋月十日城 | 10. Ramazan Şehri |
 | Platforms we program and integrate | 我们编程和集成的平台 | Programladığımız ve entegre ettiğimiz platformlar |
+
+## Contact form (quote request) terms
+
+Used in `contact.json` (form, validation, errors, thanks) and `privacy.json`. Keep them identical across the form, its
+error messages, the thanks page and the privacy notice.
+
+| EN | Arabic | 中文 | Türkçe |
+|---|---|---|---|
+| Quote request / request | طلب عرض سعر / الطلب | 询价需求 / 需求 | Teklif talebi / talep |
+| Request number (LC-XXXXX) | رقم الطلب | 需求编号 | Talep numarası |
+| Attachments / files you attach | الملفات التي ترفقها | 您附加的文件 | Eklediğiniz dosyalar |
+| Choose files / Add more files | اختر الملفات / أضف ملفات أخرى | 选择文件 / 继续添加文件 | Dosya seçin / Başka dosya ekleyin |
+| Drag and drop (files) | اسحبها وأفلتها | 拖放 | Sürükleyip bırakın |
+| Photo reduced for sending | صُغِّر حجم الصورة للإرسال | 照片已压缩以便发送 | Fotoğraf gönderim için küçültüldü |
+| Not attached (content does not match the file type) | تعذّر إرفاق… لأن محتواها لا يطابق نوع الملف | 未能附加……文件内容与格式不符 | Eklenemedi… içeriği dosya türüyle uyuşmuyor |
+| Uploading files… / Upload progress | جارٍ رفع الملفات… / تقدّم رفع الملفات | 正在上传文件…… / 上传进度 | Dosyalar yükleniyor… / Yükleme durumu |
+| Preferred channel (reply) | وسيلة التواصل المفضلة | 首选联系方式 | Tercih ettiğiniz kanal |
+| Country code (phone) | رمز الدولة | 国家或地区代码 | Ülke kodu |
+| A machine is stopped (urgent) | ماكينة متوقفة | 设备已停机 | Makine durdu |
+| Reference call (with a past client) | التحدث مع عميل سابق | 联系参考客户 / 与过往客户交流 | Referans görüşmesi |
+| Case study | مشروع (من مشروعاتنا) | 案例 | Proje (referans proje) |
+| Session storage (form draft) | التخزين المؤقت لجلسة المتصفح (session storage) | 会话存储（session storage） | Oturum depolaması (session storage) |
+| Click counts | إحصاءات النقرات | 点击统计 | Tıklama sayıları / tıklama istatistikleri |
 
 ## Chinese (zh-Hans): conventions and decisions used in `messages/zh/`
 

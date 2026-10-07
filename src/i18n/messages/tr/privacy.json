@@ -4,7 +4,7 @@
     "description": "Bu site üzerinden gönderilen kişisel verileri, Mısır'ın 151 sayılı Kişisel Verilerin Korunması Kanunu (2020) uyarınca nasıl işlediğimiz ve koruduğumuz."
   },
   "h1": "Gizlilik bildirimi",
-  "lastUpdated": "Son güncelleme: 6 Ekim 2026",
+  "lastUpdated": "Son güncelleme: 7 Ekim 2026",
   "intro": [
     "Bu bildirim, Logic Controls'un bu web sitesi üzerinden hangi kişisel verileri topladığını, bunları neden topladığını, ne kadar süre sakladığını ve haklarınızı nasıl kullanabileceğinizi açıklar.",
     "Mısır'ın 2020 tarihli ve 151 sayılı Kişisel Verilerin Korunması Kanunu'na ve Uygulama Yönetmeliği'ne uygun hareket ederiz."
@@ -27,14 +27,17 @@
         "Verdiyseniz e-posta adresiniz",
         "Verdiyseniz sektörünüz, tesis konumunuz ve zaman planınız",
         "Makinenizin veya projenizin açıklaması",
-        "Ülkeniz ve kullandığınız sayfanın dili"
+        "Ülkeniz ve kullandığınız sayfanın dili",
+        "Eklediğiniz dosyalar (çizimler, fotoğraflar, dokümanlar): talebinizle birlikte şirketimizin e-posta kutusuna gönderilir; bu web sitesi onları saklamaz. Büyük fotoğraflar gönderilmeden önce tarayıcınızda küçültülür."
       ]
     },
     {
       "title": "Teknik veriler",
       "paragraphs": [
         "Formu spama karşı korumak için Cloudflare Turnstile, formu bir kişinin gönderdiğini doğrulamak amacıyla tarayıcınızdan IP adresiniz ve tarayıcı özellikleri gibi teknik bilgileri işler.",
-        "Ziyaretleri Cloudflare Web Analytics ile ölçüyoruz. Bu araç çerez kullanmaz ve ziyaretçilerin tek tek profilini oluşturmaz. Biz yalnızca sayfa görüntüleme sayısı gibi toplam rakamları görürüz."
+        "Ziyaretleri Cloudflare Web Analytics ile ölçüyoruz. Bu araç çerez kullanmaz ve ziyaretçilerin tek tek profilini oluşturmaz. Biz yalnızca sayfa görüntüleme sayısı gibi toplam rakamları görürüz.",
+        "WhatsApp, telefon, e-posta ve teklif düğmelerine yapılan tıklamaları sayıyoruz. Her tıklama için yalnızca düğmenin türünü, sayfadaki yerini, sayfayı ve sayfanın dilini kaydederiz. Bunun için Cloudflare Workers Analytics Engine kullanılır; çerez, IP adresi veya sizi tanımlayan herhangi bir bilgi kullanılmaz. Tarayıcınız sitelerden sizi takip etmemelerini istiyorsa (Do Not Track veya Global Privacy Control), hiçbir şey sayılmaz.",
+        "Teklif formunu doldururken yazdıklarınız, sayfa dilini değiştirdiğinizde kaybolmaması için yalnızca o sekmeye ait tarayıcı oturum depolamasında (session storage) tutulur. Gönder'e basana kadar cihazınızdan çıkmaz; talep gönderildiğinde veya sekmeyi kapattığınızda silinir. Dosyalar ve onayınız burada tutulmaz. Gönderimden sonra onay sayfası, bağlantılarını hazırlamak için talep numaranızı, adınızı ve dosya adlarını buradan bir kez okur ve ardından siler."
       ],
       "items": []
     },
@@ -44,7 +47,7 @@
       "items": [
         "Talebinize yanıt vermek, teklif hazırlamak ve projenizi takip etmek için",
         "Bu web sitesini ve formu spama ve kötüye kullanıma karşı korumak için",
-        "Ziyaretçilerin hangi sayfaları kullandığını toplam rakamlar üzerinden anlamak için"
+        "Ziyaretçilerin hangi sayfaları ve iletişim kanallarını kullandığını toplam rakamlar üzerinden anlamak için"
       ]
     },
     {
@@ -57,7 +60,7 @@
     {
       "title": "Verilerinizi kimler alır",
       "paragraphs": [
-        "Talebiniz, teklifleri ve projeleri yürüten Logic Controls çalışanları tarafından okunur. Bu web sitesini işletmek ve mesajlarınızı almak için hizmet sağlayıcılardan yararlanıyoruz: Cloudflare (barındırma, form işleme, spam koruması ve ziyaret istatistikleri) ve e-posta hizmet sağlayıcımız. Bize WhatsApp üzerinden ulaşırsanız WhatsApp'ın kendi koşulları da geçerlidir.",
+        "Talebiniz, teklifleri ve projeleri yürüten Logic Controls çalışanları tarafından okunur. Bu web sitesini işletmek ve mesajlarınızı almak için hizmet sağlayıcılardan yararlanıyoruz: Cloudflare (barındırma, form işleme, spam koruması, ziyaret ve tıklama istatistikleri) ve e-posta hizmet sağlayıcımız. Bize WhatsApp üzerinden ulaşırsanız WhatsApp'ın kendi koşulları da geçerlidir.",
         "Verilerinizi satmayız, reklam amacıyla paylaşmayız ve ayrı bir onayınız olmadan size pazarlama mesajı göndermeyiz."
       ],
       "items": []
@@ -74,7 +77,9 @@
       "paragraphs": [],
       "items": [
         "Projeye dönüşmeyen teklif talepleri: son iletişimimizden itibaren en fazla 24 ay saklanır, ardından silinir",
-        "Müşterimiz olursanız: proje, garanti ve yasal yükümlülüklerimiz için gerekli olduğu sürece"
+        "Müşterimiz olursanız: proje, garanti ve yasal yükümlülüklerimiz için gerekli olduğu sürece",
+        "Eklediğiniz dosyalar: talebinizle birlikte, aynı sürelerle saklanır",
+        "Tıklama sayıları (kişisel veri içermez): üç ay, ardından otomatik olarak silinir"
       ]
     },
     {

@@ -4,7 +4,8 @@
  * Hero (+ animated ServiceArt) → capabilities → [live HMI demo] → when to call us + deliverables → related projects
  * → related industries + platforms → FAQ → one closing band: the service's pitch + quote / WhatsApp buttons beside the
  * "what we need to quote" checklist (<QuoteCta>). Section headings carry a title only (no orphan "01 —" index).
- * Control panels also shows "Panels we have built" (real panel photos from the case studies) after "What we do".
+ * Control panels also shows "Panels we have built" (real panel photos from the case studies) after "What we do"; those
+ * projects are then left out of the "Related projects" cards (no project or photo shown twice on the page).
  * Maintenance / troubleshooting leads with "Call an engineer" + a "machine stopped" WhatsApp message (a stopped
  * line needs a call, not a form); the quote form stays as a text link.
  */
@@ -38,11 +39,11 @@ import {
   serviceCopy,
 } from "~/components/sections/catalog/catalog";
 import { absUrl, caseStudyId, graph, service, webPage } from "~/lib/jsonld";
-import { fmt } from "~/components/nav";
-import { techLabel, html } from "~/lib/text";
+import { pageContact } from "~/components/contact-cta";
+import { techLabel, html, heading } from "~/lib/text";
 import { LOCALES, getMessages, localePath, type Locale } from "~/i18n";
 import { SERVICES, SERVICE_SLUGS, type ServiceSlug } from "~/data/services";
-import { SITE } from "~/data/site";
+import { SITE, telLink } from "~/data/site";
 
 export function getStaticPaths() {
   return LOCALES.flatMap((lang) => SERVICE_SLUGS.map((slug) => ({ params: { lang, slug } })));
@@ -57,9 +58,13 @@ const data = SERVICES.find((s) => s.slug === slug)!;
 const path = `services/${slug}`;
 const url = absUrl(localePath(locale, path));
 
-/* Services that show the playable HMI (the demo is a pasteurizer: PLC logic, process loop, alarms/trends). */
-const HMI_DEMO: readonly string[] = ["plc-hmi-programming", "process-control", "scada-data-logging"];
+/* Services that show the playable HMI (the demo is a pasteurizer: PLC logic, process loop, alarms/trends). SCADA gets
+   a one-line link to the demo on /technologies/ instead of a fifth copy of it (CS2-12); the HMI-programming and
+   process-control pages keep the live demo, it is their most direct proof. */
+const HMI_DEMO: readonly string[] = ["plc-hmi-programming", "process-control"];
+const HMI_TEASER: readonly string[] = ["scada-data-logging"];
 const showHmi = HMI_DEMO.includes(slug);
+const hmiTeaser = HMI_TEASER.includes(slug);
 
 const related = projectsFor(locale, projectsForService(slug));
 const RELATED_LIMIT = 3;
@@ -76,8 +81,10 @@ const brands = relatedBrands.length >= 2 ? relatedBrands : [...SITE.brands];
 const quote = quoteHref(locale, { service: slug });
 /* A stopped machine needs a call now: phone first, WhatsApp with a "machine stopped" message, form as a text link. */
 const urgent = slug === "maintenance-support";
-const wa = urgent ? m.common.whatsapp.stopped : fmt(m.common.whatsapp.service, { service: item.title });
-const primary = urgent ? { label: L.callEngineer, href: `tel:${SITE.phone.tel}` } : { label: m.ui.cta.quote, href: quote };
+/* The same message the header, drawer and floating button carry (contact-cta.ts pageContact: tr / zh add an English
+   line naming the service in English, UX2-24). */
+const wa = pageContact(locale, `services/${slug}`).whatsapp;
+const primary = urgent ? { label: L.callEngineer, href: telLink() } : { label: m.ui.cta.quote, href: quote };
 
 /* Control panels: photos of panels WE built — only case studies whose recorded scope includes control-panel
    building (services include "control-panels"). Programming-only or commissioning-only jobs must never appear here. */
@@ -90,8 +97,12 @@ const panels =
         .slice(0, 6)
     : [];
 
+/* Related projects shown as cards: not the ones already in the panels strip just above (same projects, same photo). */
+const inStrip = new Set(panels.map((x) => x.pr.slug));
+const relatedCards = related.filter((pr) => !inStrip.has(pr.slug));
+
 /* Alternate light / muted backgrounds over the sections that actually render. */
-const order = ["capabilities", panels.length > 0 && "panels", showHmi && "hmi", "fit", related.length > 0 && "projects", "industries", "faq"].filter(Boolean) as string[];
+const order = ["capabilities", panels.length > 0 && "panels", showHmi && "hmi", "fit", relatedCards.length > 0 && "projects", "industries", "faq"].filter(Boolean) as string[];
 const bg = (key: string) => (order.indexOf(key) % 2 === 0 ? "light" : "muted") as "light" | "muted";
 
 /* Structured data (src/lib/jsonld.ts): the page + the Service, linked to the case studies that prove it. */
@@ -131,7 +142,7 @@ const jsonLd = graph(
     <div class="grid gap-12 lg:grid-cols-[minmax(0,5fr)_minmax(0,8fr)] lg:gap-20">
       <SectionHeading
         id="capabilities-title"
-        title={html(locale, L.capabilities)}
+        title={html(locale, item.capabilitiesTitle ?? L.capabilities)}
         lead={item.intro.length > 1 ? html(locale, item.intro.slice(1).join(" ")) : undefined}
         class="self-start lg:sticky lg:top-[calc(var(--header-h)+2rem)]"
       />
@@ -144,7 +155,8 @@ const jsonLd = graph(
     panels.length > 0 && (
       <Section variant={bg("panels")} id="panels" aria-labelledby="panels-title">
         <SectionHeading id="panels-title" eyebrow={m.common.breadcrumbs.projects} title={html(locale, L.panelsBuilt)} />
-        <ul role="list" class="mt-10 grid grid-cols-2 gap-x-4 gap-y-8 sm:gap-x-6 lg:grid-cols-3">
+        {/* One per row below 416px (the labels wrap between words, never into the next column); 3 up only for 3+. */}
+        <ul role="list" class:list={["mt-10 grid grid-cols-1 gap-x-4 gap-y-8 min-[26rem]:grid-cols-2 sm:gap-x-6", panels.length >= 3 ? "lg:grid-cols-3" : "lg:max-w-4xl"]}>
           {panels.map(({ pr, img }) => (
             <li class="lc-reveal group relative min-w-0 has-[a:focus-visible]:outline-2 has-[a:focus-visible]:outline-offset-4 has-[a:focus-visible]:outline-(--focus)">
               <div class="lc-card-photo chamfer relative aspect-[4/3] overflow-hidden bg-navy-950">
@@ -153,14 +165,18 @@ const jsonLd = graph(
                   alt={imageAlt(locale, pr.slug, img.key)}
                   formats={["avif", "webp"]}
                   widths={[320, 480, 640, 800]}
-                  sizes="(min-width: 1280px) 400px, (min-width: 1024px) calc((100vw - 7rem) / 3), calc((100vw - 3rem) / 2)"
+                  sizes={
+                    panels.length >= 3
+                      ? "(min-width: 1280px) 400px, (min-width: 1024px) calc((100vw - 7rem) / 3), (min-width: 416px) calc((100vw - 3rem) / 2), calc(100vw - 2rem)"
+                      : "(min-width: 1024px) 440px, (min-width: 416px) calc((100vw - 3rem) / 2), calc(100vw - 2rem)"
+                  }
                   loading="lazy"
                   layout="full-width"
                   class="size-full object-cover transition-[scale] duration-(--dur-section) ease-emph group-hover:scale-[1.04]"
                 />
               </div>
-              {pr.technologies[0] && <p class="mt-3 text-sm font-semibold text-royal-700" set:html={html(locale, techLabel(locale, pr.technologies[0]))} />}
-              <h3 class="mt-1 text-[0.9375rem] leading-snug font-bold text-navy-950 group-hover:text-royal-700 sm:text-base">
+              {pr.technologies[0] && <p class="mt-3 text-sm font-semibold text-royal-700 [&_.lc-nw]:whitespace-normal [&_bdi]:whitespace-normal" set:html={html(locale, techLabel(locale, pr.technologies[0]))} />}
+              <h3 class="mt-1 text-[0.9375rem] leading-snug font-bold text-navy-950 group-hover:text-royal-700 sm:text-base [&_.lc-nw]:whitespace-normal [&_bdi]:whitespace-normal">
                 <a href={localePath(locale, `projects/${pr.slug}`)} class="lc-stretch after:absolute after:inset-0 after:content-['']" set:html={html(locale, projectCopy(locale, pr.slug)!.cardTitle)} />
               </h3>
             </li>
@@ -185,11 +201,33 @@ const jsonLd = graph(
     )
   }
 
+  {/* SCADA: the live HMI demo is one click away on the technologies page */}
+  {
+    hmiTeaser && (
+      <Section compact variant={bg("fit") === "light" ? "muted" : "light"} id="hmi-demo" aria-label={m.hmi.intro.eyebrow}>
+        <a
+          href={`${localePath(locale, "technologies")}#hmi-demo`}
+          class="group on-dark relative isolate flex items-center gap-5 overflow-hidden bg-navy-950 px-6 py-5 text-white sm:px-8"
+        >
+          <span aria-hidden="true" class="pointer-events-none absolute inset-0 -z-10 bg-blueprint opacity-70" />
+          <span class="chamfer inline-grid size-12 shrink-0 place-items-center bg-royal-600 text-white [--chamfer:10px]">
+            <Icon name="hmi" size={24} />
+          </span>
+          <span class="min-w-0 flex-1">
+            <span class="block type-label text-signal-300">{m.hmi.intro.eyebrow}</span>
+            <span class="mt-1 block type-h4 text-white group-hover:text-royal-200" set:html={heading(locale, m.hmi.intro.title)} />
+          </span>
+          <Icon name="arrow" size={20} class="shrink-0 text-royal-300 transition-transform group-hover:translate-x-1 rtl:group-hover:-translate-x-1" />
+        </a>
+      </Section>
+    )
+  }
+
   {/* When to call us + what you receive */}
   <Section variant={bg("fit")} id="fit" aria-labelledby="situations-title">
     <div class="grid gap-12 lg:grid-cols-2 lg:gap-16">
       <div>
-        <SectionHeading id="situations-title" title={html(locale, L.situations)} />
+        <SectionHeading id="situations-title" title={html(locale, item.situationsTitle ?? L.situations)} />
         <SpecList items={item.situations} locale={locale} marker="bar" ruled class="mt-8 border-t border-charcoal-200" />
       </div>
       <div class="on-dark relative isolate self-start overflow-hidden bg-navy-950 p-7 text-navy-100 sm:p-10">
@@ -203,9 +241,9 @@ const jsonLd = graph(
   {/* Related projects (hidden when the service has none yet) */}
   <RelatedProjects
     locale={locale}
-    projects={related}
+    projects={relatedCards}
     title={L.relatedProjects}
-    variant={related.length ? bg("projects") : "light"}
+    variant={relatedCards.length ? bg("projects") : "light"}
     limit={RELATED_LIMIT}
     all={allLink}
   />
@@ -225,8 +263,9 @@ const jsonLd = graph(
       }))}
     />
     <div class="lc-logos mt-16 lg:max-w-[calc(var(--n)*20%)]" style={`--n:${brands.length}`}>
-      {/* 4 brands: one row of 4 on tablets too (not 3 + a lone one). */}
-      <LogoWall locale={locale} brands={brands} class={brands.length === 4 ? "sm:max-lg:[&_ul]:grid-cols-4" : undefined} />
+      {/* Fewer than 5 brands: as many columns as logos from 640px (no lone logo on tablets, no empty 5th cell under the
+          top rule on desktop). */}
+      <LogoWall locale={locale} brands={brands} class={({ 2: "sm:[&_ul]:grid-cols-2", 3: "sm:[&_ul]:grid-cols-3", 4: "sm:[&_ul]:grid-cols-4" } as Record<number, string>)[brands.length]} />
     </div>
   </Section>
 

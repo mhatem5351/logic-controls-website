@@ -7,7 +7,7 @@ import type { ProjectData } from "~/data/projects";
 import type { Locale } from "~/i18n";
 import Section from "~/components/Section.astro";
 import SectionHeading from "~/components/SectionHeading.astro";
-import Button from "~/components/Button.astro";
+import ViewAll from "~/components/ViewAll.astro";
 import ProjectCard from "./ProjectCard.astro";
 import { html } from "~/lib/text";
 
@@ -26,8 +26,14 @@ interface Props {
 }
 const { locale, projects, title, eyebrow, index, lead, all, limit = 3, variant = "light", id = "related-projects" } = Astro.props;
 const list = projects.slice(0, limit);
-/* 3+ cards: 1 → 2 → 3 columns with a centred last row (no lone card beside an empty half on tablets). */
-const cols = list.length >= 3 ? "lc-grid-projects" : "grid sm:grid-cols-2";
+const n = list.length;
+/* 3+ cards: 1 → 2 → 3 columns (lc-grid-projects). On tablets (640–1023px, 2 columns) an odd count opens with the first
+   card as a wide feature (photo beside the text), so no card is left alone in the last row (VIS2-08); from 1024px an
+   incomplete last row of 3 is centred. 2 cards: two up. 1 card: the feature layout from 640px. The list marks the
+   cards itself (data-managed, see global.css), like the filtered portfolio. */
+const cols = n >= 3 ? "lc-grid-projects" : n === 2 ? "grid sm:grid-cols-2 lg:max-w-5xl" : "grid lg:max-w-5xl";
+const featureFirst = n >= 3 && n % 2 === 1;
+const centre = (i: number) => (n % 3 === 1 && i === n - 1 && n > 1 ? "1" : n % 3 === 2 && i === n - 2 && n > 2 ? "2" : undefined);
 ---
 
 {
@@ -35,26 +41,12 @@ const cols = list.length >= 3 ? "lc-grid-projects" : "grid sm:grid-cols-2";
     <Section variant={variant} id={id} aria-labelledby={`${id}-title`}>
       <div class="flex flex-wrap items-end justify-between gap-x-10 gap-y-6">
         <SectionHeading id={`${id}-title`} index={index} eyebrow={eyebrow} title={html(locale, title)} lead={lead ? html(locale, lead) : undefined} />
-        {all && (
-          <Button href={all.href} variant="ghost" class="shrink-0">
-            {all.label}
-            {/* The count reads "All projects (15)" to screen readers and crawlers, not "All projects15". */}
-            {all.count != null && (
-              <>
-                <span class="sr-only"> (</span>
-                <span class="ms-1 inline-grid min-w-7 place-items-center bg-royal-50 px-1.5 py-0.5 font-mono text-xs text-royal-700 ltr" dir="ltr">
-                  {all.count}
-                </span>
-                <span class="sr-only">)</span>
-              </>
-            )}
-          </Button>
-        )}
+        {all && <ViewAll href={all.href} label={all.label} count={all.count} />}
       </div>
-      <ul role="list" class:list={["mt-12 gap-x-8 gap-y-14", cols, list.length < 3 && "lg:max-w-5xl"]}>
-        {list.map((p) => (
-          <li>
-            <ProjectCard project={p} locale={locale} />
+      <ul role="list" class:list={["mt-12 gap-x-8 gap-y-14", cols]} data-managed={n >= 3 ? "" : undefined}>
+        {list.map((p, i) => (
+          <li data-feature={featureFirst && i === 0 ? "" : undefined} data-c3={centre(i)}>
+            <ProjectCard project={p} locale={locale} feature={n === 1 ? "always" : featureFirst && i === 0 ? "tablet" : undefined} />
           </li>
         ))}
       </ul>

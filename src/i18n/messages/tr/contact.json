@@ -94,7 +94,7 @@
       },
       "message": {
         "label": "Makineyi veya projeyi anlatın",
-        "help": "Makine tipi, ne yapması gerektiği, mevcut sorunlar ve biliyorsanız PLC veya HMI markaları."
+        "help": "Makine tipi, ne yapması gerektiği, mevcut sorunlar ve biliyorsanız PLC veya HMI markaları. En fazla {max} karakter."
       },
       "phoneOptional": {
         "label": "Telefon numarası",
@@ -104,8 +104,17 @@
         "label": "Çizimler, fotoğraflar veya dokümanlar",
         "help": "En fazla {count} dosya, toplam {size}: PDF, JPG, PNG, WebP, ZIP, DWG veya DXF.",
         "choose": "Dosya seçin",
+        "addMore": "Başka dosya ekleyin",
+        "drop": "veya buraya sürükleyip bırakın",
         "remove": "{name} dosyasını kaldır",
-        "summary": "{count}/{max} dosya · {size}/{maxSize}"
+        "summary": "{count}/{max} dosya · {size}/{maxSize}",
+        "preparing": "Kontrol ediliyor ve hazırlanıyor…",
+        "reduced": "Fotoğraf gönderim için küçültüldü (önceki boyut {size})",
+        "badType": "Bu dosya türü gönderilemez. Kaldırın veya talebi gönderdikten sonra e-postayla iletin.",
+        "badContent": "Bu, gerçek bir {ext} dosyasına benzemiyor; bu yüzden eklenmeyebilir. Talebi gönderdikten sonra e-postayla iletebilirsiniz.",
+        "uploading": "Dosyalar yükleniyor… %{percent}",
+        "progress": "Yükleme durumu",
+        "keepOpen": "Talep gönderilene kadar bu sayfayı açık tutun."
       },
       "contactPreference": {
         "label": "Size nasıl ulaşalım?",
@@ -123,6 +132,13 @@
     "whatsappHint": {
       "text": "WhatsApp'ı mı tercih edersiniz? Makinenin, cihaz etiketlerinin, panonun veya çizimlerin fotoğraflarını gönderin.",
       "cta": "Çizimleri WhatsApp'tan gönderin"
+    },
+    "urgentStopped": "Evet, şu anda duran bir makine var",
+    "context": {
+      "project": "İlgili proje: {title}",
+      "projectMessage": "“{title}” projenize benzer bir projem var.",
+      "reference": "Referans görüşmesi: sektörünüzü ve makine türünü yazın; benzer bir projesini yaptığımız ve sizinle görüşmeyi kabul eden bir müşterimizi ararız.",
+      "referenceMessage": "Önceki müşterilerinizden biriyle referans görüşmesi yapmak istiyorum."
     },
     "privacyNote": "Bilgilerinizi yalnızca bu talebe yanıt vermek için kullanırız. Sizi herhangi bir e-posta listesine eklemeyiz.",
     "sent": "Talebiniz gönderildi. Onay sayfası açılıyor…",
@@ -148,10 +164,13 @@
     "messageTooLong": "Lütfen açıklamayı {max} karakterin altında tutun.",
     "summary": "Lütfen işaretlenen alanları kontrol edin.",
     "summaryCount": "Lütfen şu alanları kontrol edin ({count}):",
-    "filesType": "Bazı dosyaların türünü kabul edemiyoruz. PDF, JPG, PNG, WebP, ZIP, DWG veya DXF kullanın.",
+    "filesType": "Şu dosyaların türünü kabul edemiyoruz: {files}. PDF, JPG, PNG, WebP, ZIP, DWG veya DXF kullanın.",
     "filesCount": "En fazla {max} dosya seçin. Kalanları talebi gönderdikten sonra iletebilirsiniz.",
     "filesSize": "Dosyaların toplam boyutu {max} sınırını aşıyor. Bazılarını buradan kaldırın ve talebi gönderdikten sonra iletin: onay sayfasında, e-posta veya WhatsApp ile gönderirken belirteceğiniz bir talep numarası bulunur.",
-    "emailForReply": "Size e-postayla dönebilmemiz için e-posta adresinizi ekleyin."
+    "emailForReply": "Size e-postayla dönebilmemiz için e-posta adresinizi ekleyin.",
+    "phoneForReply": "Sizi arayabilmemiz veya WhatsApp'tan yazabilmemiz için numaranızı ekleyin.",
+    "phoneCountry": "Doğru numarayı arayıp yazabilmemiz için lütfen ülke kodunu ekleyin, örneğin +90 veya +20.",
+    "messageNear": "{max} karakterin {count} karakteri kullanıldı."
   },
   "errors": {
     "title": "Talebiniz gönderilemedi",
@@ -160,9 +179,10 @@
     "send": "Teknik bir sorun nedeniyle talebinizi gönderemedik. Lütfen birkaç dakika sonra tekrar deneyin veya bize WhatsApp ya da e-posta ile ulaşın.",
     "unknown": "Bir sorun oluştu. Lütfen tekrar deneyin veya bize WhatsApp ya da e-posta ile ulaşın.",
     "fallback": "Bize doğrudan da ulaşabilirsiniz:",
-    "attachments": "Dosyalar eklenemedi. Toplam 4 MB'ı aşmayan en fazla 3 dosya ekleyebilirsiniz (PDF, JPG, PNG, WebP, ZIP, DWG veya DXF). Dosyaları kaldırıp talebi gönderin, ardından dosyaları e-posta veya WhatsApp ile iletin.",
-    "verificationBlocked": "Güvenlik kontrolü yüklenemedi. Bir tarayıcı eklentisi, güvenlik duvarı veya ağınız engelliyor olabilir.",
-    "handover": "Bilgileriniz mesaja kopyalandı, yeniden yazmanız gerekmez."
+    "attachments": "Dosyalar kabul edilemedi: sınırı aşıyor olabilir (en fazla 3 dosya, toplam 4 MB) ya da PDF, JPG, PNG, WebP, ZIP, DWG veya DXF dosyası olmayabilir. Dosyaları kaldırıp talebi gönderin, ardından dosyaları e-posta veya WhatsApp ile iletin.",
+    "verificationBlocked": "Güvenlik kontrolü yüklenemedi. Bir tarayıcı eklentisi, güvenlik duvarı veya ağınız engelliyor olabilir. Sayfayı yenileyin ya da başka bir ağ deneyin veya aşağıdaki seçeneklerle bize doğrudan ulaşın.",
+    "handover": "Bilgileriniz mesaja kopyalandı, yeniden yazmanız gerekmez.",
+    "timeout": "Gönderim çok uzun sürdüğü için durduruldu. Bağlantınız yavaş olabilir ya da kesilmiş olabilir. Lütfen tekrar deneyin veya bize başka bir yoldan ulaşın."
   },
   "channels": {
     "title": "Bize ulaşmanın diğer yolları",
@@ -213,7 +233,16 @@
       "text": "Acil yardım için hemen bizi arayın veya WhatsApp'tan yazın ve talebinizden bahsedin.",
       "cta": "Bir mühendise WhatsApp'tan yazın"
     },
+    "urgentNow": {
+      "title": "Makineniz mi durdu? Hemen bir mühendisi arayın.",
+      "text": "Görüşmede {ref} numaralı talebinizi belirtin."
+    },
+    "received": "Alınan dosyalar: {files}",
+    "skipped": "Şu dosyalar eklenemedi: {files}. İçerikleri dosya türüyle uyuşmuyor. Lütfen talep numaranızı belirterek WhatsApp'tan veya e-postayla gönderin.",
+    "skippedSome": "Bazı dosyaların içeriği dosya türüyle uyuşmadığı için eklenemedi. Lütfen talep numaranızı belirterek WhatsApp'tan veya e-postayla gönderin.",
+    "replyBy": "Tercih ettiğiniz kanal: {channel}",
     "more": {
+      "titleMore": "Göndereceğiniz başka dosya var mı?",
       "title": "Fotoğraf veya çiziminiz mi var?",
       "text": "WhatsApp'tan veya e-postayla gönderin. Teklifi daha hızlı hazırlamamıza yardımcı olur.",
       "cta": "Çizimleri WhatsApp'tan gönderin"
@@ -223,6 +252,8 @@
     "ref": {
       "label": "Talep numaranız",
       "hint": "Bizi ararken veya ek dosya gönderirken bu numarayı belirtin.",
+      "copy": "Numarayı kopyala",
+      "copied": "Numara kopyalandı",
       "whatsapp": "Merhaba Logic Controls, web sitesindeki {ref} numaralı talebimle ilgili ek dosya gönderiyorum.",
       "emailSubject": "Web sitesi talebi {ref}: ek dosyalar"
     },

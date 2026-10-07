@@ -10,9 +10,9 @@ import Section from "~/components/Section.astro";
 import Breadcrumbs from "~/components/Breadcrumbs.astro";
 import CtaBand from "~/components/CtaBand.astro";
 import Icon from "~/components/Icon.astro";
-import { html, rich, ltr, colon } from "~/components/sections/main/rich";
+import { markup, html, heading, rich, ltr, colon } from "~/lib/text";
 import { getMessages, localeStaticPaths, type Locale } from "~/i18n";
-import { SITE } from "~/data/site";
+import { SITE, telLink } from "~/data/site";
 
 export const getStaticPaths = localeStaticPaths;
 const locale = Astro.params.lang as Locale;
@@ -22,8 +22,8 @@ const c = t.common;
 
 const linkCls = "font-semibold text-royal-600 underline underline-offset-4 hover:text-royal-800";
 const vars = {
-  email: `<a href="mailto:${SITE.email}" class="${linkCls}">${ltr(SITE.email)}</a>`,
-  phone: `<a href="tel:${SITE.phone.tel}" class="${linkCls}">${ltr(SITE.phone.display)}</a>`,
+  email: markup`<a href="mailto:${SITE.email}" class="${linkCls}">${ltr(SITE.email)}</a>`,
+  phone: markup`<a href="${telLink()}" class="${linkCls}">${ltr(SITE.phone.display)}</a>`,
 };
 const pad = (n: number) => String(n).padStart(2, "0");
 const sections = p.sections.map((s, i) => ({
@@ -43,7 +43,7 @@ const tocTitle = c.labels.onThisPage;
   </Hero>
 
   <Section class="lc-legal" aria-label={p.h1}>
-    <div class="grid gap-10 lg:grid-cols-12 lg:gap-14">
+    <div class="grid grid-cols-1 gap-10 lg:grid-cols-12 lg:gap-14">
       {/* ---------- table of contents: one list for every viewport — collapsible on phones (with JS; open without),
            sticky with scroll-spy from 1024px ---------- */}
       <div class="lg:col-span-4 xl:col-span-3">
@@ -88,7 +88,7 @@ const tocTitle = c.labels.onThisPage;
               <span class="sr-only">{c.labels.email}{colon(locale)}</span>
               <Fragment set:html={ltr(SITE.email)} />
             </a>
-            <a href={`tel:${SITE.phone.tel}`} class="flex min-h-10 items-center gap-3 text-charcoal-700 hover:text-royal-700">
+            <a href={telLink()} class="flex min-h-10 items-center gap-3 text-charcoal-700 hover:text-royal-700">
               <Icon name="phone" size={18} class="text-royal-600" />
               <span class="sr-only">{c.labels.phone}{colon(locale)}</span>
               <span class="ltr" dir="ltr">{SITE.phone.display}</span>
@@ -111,7 +111,7 @@ const tocTitle = c.labels.onThisPage;
                   >
                     {s.n}
                   </span>
-                  <span set:html={html(locale, s.title)} />
+                  <span set:html={heading(locale, s.title)} />
                 </h2>
                 <div class="prose-lc mt-5 text-charcoal-700">
                   {s.paragraphs.map((para) => <p set:html={para} />)}
@@ -145,10 +145,11 @@ const tocTitle = c.labels.onThisPage;
       display: none;
     }
   }
-  .lc-ptoc-chev {
+  /* The chevron is Icon.astro's <svg> (outside this component's style scope): :global() reaches it. */
+  .lc-ptoc-btn :global(.lc-ptoc-chev) {
     transition: rotate var(--dur-ui) var(--ease-mech);
   }
-  .lc-ptoc-btn[aria-expanded="true"] .lc-ptoc-chev {
+  .lc-ptoc-btn[aria-expanded="true"] :global(.lc-ptoc-chev) {
     rotate: 180deg;
   }
   .lc-toc-link[aria-current] {

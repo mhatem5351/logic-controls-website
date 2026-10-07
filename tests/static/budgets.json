@@ -1,100 +1,158 @@
 {
-  "$comment": "Byte limits = measured values + 10% headroom, rounded up to 1 KB. Re-baseline on purpose with `npm run test:budget -- --update` and review the diff.",
+  "$comment": "Limits = measured values + headroom: bytes +5 % (rounded up to 0.5 KB), element counts +3 %, request counts (modules, stylesheets) exact. Re-baseline on purpose with `npm run test:budget -- --update` and review the diff.",
   "notes": [
     "2026-10-07 (round-1 integration, PK7). Fixed before re-baselining: card images capped at 800w (2x; phones no longer take 1200w: /ar/projects/ on a Pixel 7 772 -> 509 KB, about the pre-round 514 KB); hero photo panel `sizes` from the image's aspect ratio and the hero height instead of a flat 80vw (/ar/technologies/ desktop back to the pre-round 54 KB at 1x / 124 KB at 2x); gallery widths gained a 960 step; print CSS moved to its own media=print sheet; dev-only pages no longer feed the production CSS. The measuring script now counts a <picture> split by `media` (desktop panel vs phone band) once instead of twice and follows JS static imports.",
-    "Intended growth accepted: HTML +3-9 KB gzip per page (header dropdowns + drawer accordions with icons, full footer lists, back-to-top, motion toggle, 'On this page' bars, CSP <meta> with per-page script hashes ~0.4 KB); external JS on every page 3-9 KB gzip (motion preference + toggle, FAB/back-to-top, hero video pause; previously 0 because the old scripts were inlined); global CSS 22.3 -> 26.2 KB gzip (nav, grids, FAB, view transitions, motion system, lang links, copy button, TOC chips); ControlLoop/HMI CSS + hmi-demo.js (lazy) from the compositor-only animation rewrite; images: new 'Panels we have built' grid on /services/control-panels/, panel-photo covers on case-study cards, the 820px lead photo in 3-photo galleries."
+    "Intended growth accepted: HTML +3-9 KB gzip per page (header dropdowns + drawer accordions with icons, full footer lists, back-to-top, motion toggle, 'On this page' bars, CSP <meta> with per-page script hashes ~0.4 KB); external JS on every page 3-9 KB gzip (motion preference + toggle, FAB/back-to-top, hero video pause; previously 0 because the old scripts were inlined); global CSS 22.3 -> 26.2 KB gzip (nav, grids, FAB, view transitions, motion system, lang links, copy button, TOC chips); ControlLoop/HMI CSS + hmi-demo.js (lazy) from the compositor-only animation rewrite; images: new 'Panels we have built' grid on /services/control-panels/, panel-photo covers on case-study cards, the 820px lead photo in 3-photo galleries.",
+    "2026-10-07 (round-2 perf, Q1). One site module per page (src/scripts/site.ts + integrations/site-scripts.mjs): every page now has exactly 1 external module script (was 4-9) and none with a chained static import, so `js` is the same ~8.5 KB gzip site module everywhere (more on text pages that had ~4 KB, less on the home that had ~11 KB); page features load on demand (not counted). Hero photos preloaded from <head> (integrations/hero-preload.mjs) and phones at >=2.5x capped at ~2x (HeroBand/card `sizes`). The phone drawer now renders after the footer (beforeMain ~15 -> ~12 KB gzip). New keys: beforeMain (gzip HTML before <main>), elements, stylesheets (render-blocking <link>s, head + body), modules. `images` now picks srcset candidates like a browser (sizes x DPR for a 412px@2.625 phone and a 1440px@1x desktop) instead of the largest candidate, so its values dropped without any image getting smaller. Headroom tightened: bytes +5 %, elements +3 %, request counts exact. Re-run --update once the other round-2 fixes land; the hard checks (hero preloads, chained modules, speculation rules, versioned /media files) are not budgets and must stay green.",
+    "2026-10-07 (round-2 integration, Q7). Re-baselined after all round-2 fixes landed. Intended growth: 404 HTML 8.4 -> 10.7 KB gzip (UX2-26 'Did you mean': the real section / service / industry / case-study paths and their localized names embedded for the inline suggestion script, ~2.8 KB raw); the largest CSS file +~0.5 KB gzip (compact /projects/ filter bar, ViewAll pill, coarse-pointer targets, hover gating). Locked-in savings: card photos cropped to the card's box at build time (PERF2-10): images on /projects/ 391 -> 304 KB and industry pages 194 -> 142 KB per worst page; the Arabic pages no longer download Montserrat (37 KB font, PERF2-12: Latin islands in Alexandria's Latin, WECON wordmark outlined) — fonts are not a per-page budget, checked by hand: /ar/, /ar/services/, /ar/technologies/, /ar/foreign-manufacturers/ fetch only the two Alexandria files."
   ],
   "pageTypes": {
     "404": {
-      "html": 9216,
-      "css": 29696,
-      "js": 1024,
-      "images": 26624
+      "html": 11776,
+      "beforeMain": 5120,
+      "elements": 210,
+      "css": 31232,
+      "stylesheets": 1,
+      "modules": 1,
+      "js": 9216,
+      "images": 22016
     },
     "about": {
-      "html": 45056,
-      "css": 32768,
+      "html": 43008,
+      "beforeMain": 14848,
+      "elements": 1920,
+      "css": 33792,
+      "stylesheets": 2,
+      "modules": 1,
       "js": 9216,
-      "images": 304128
+      "images": 129024
     },
     "contact": {
-      "html": 34816,
-      "css": 32768,
-      "js": 10240,
-      "images": 60416
+      "html": 34304,
+      "beforeMain": 13312,
+      "elements": 1370,
+      "css": 34304,
+      "stylesheets": 2,
+      "modules": 1,
+      "js": 9216,
+      "images": 52224
     },
     "thanks": {
-      "html": 23552,
-      "css": 29696,
-      "js": 5120,
-      "images": 60416
+      "html": 22016,
+      "beforeMain": 11776,
+      "elements": 970,
+      "css": 31232,
+      "stylesheets": 1,
+      "modules": 1,
+      "js": 9216,
+      "images": 52224
     },
     "foreign-manufacturers": {
-      "html": 51200,
-      "css": 32768,
-      "js": 7168,
-      "images": 223232
+      "html": 49664,
+      "beforeMain": 13824,
+      "elements": 2350,
+      "css": 33792,
+      "stylesheets": 2,
+      "modules": 1,
+      "js": 9216,
+      "images": 143872
     },
     "home": {
-      "html": 70656,
-      "css": 40960,
-      "js": 11264,
-      "images": 366592
+      "html": 65536,
+      "beforeMain": 14848,
+      "elements": 3240,
+      "css": 42496,
+      "stylesheets": 3,
+      "modules": 1,
+      "js": 9216,
+      "images": 252928
     },
     "industry": {
-      "html": 36864,
-      "css": 29696,
-      "js": 6144,
-      "images": 281600
+      "html": 33792,
+      "beforeMain": 13824,
+      "elements": 1450,
+      "css": 31232,
+      "stylesheets": 1,
+      "modules": 1,
+      "js": 9216,
+      "images": 153088
     },
     "industries-index": {
-      "html": 26624,
-      "css": 29696,
-      "js": 6144,
-      "images": 60416
+      "html": 24576,
+      "beforeMain": 13312,
+      "elements": 1110,
+      "css": 31232,
+      "stylesheets": 1,
+      "modules": 1,
+      "js": 9216,
+      "images": 52224
     },
     "privacy": {
-      "html": 28672,
-      "css": 29696,
-      "js": 4096,
-      "images": 60416
+      "html": 26112,
+      "beforeMain": 11776,
+      "elements": 1210,
+      "css": 31232,
+      "stylesheets": 1,
+      "modules": 1,
+      "js": 9216,
+      "images": 52224
     },
     "project": {
-      "html": 35840,
-      "css": 29696,
-      "js": 4096,
-      "images": 687104
+      "html": 33280,
+      "beforeMain": 13824,
+      "elements": 1380,
+      "css": 31232,
+      "stylesheets": 1,
+      "modules": 1,
+      "js": 9216,
+      "images": 467456
     },
     "projects-index": {
-      "html": 36864,
-      "css": 29696,
-      "js": 4096,
-      "images": 669696
+      "html": 36352,
+      "beforeMain": 12800,
+      "elements": 1650,
+      "css": 31232,
+      "stylesheets": 1,
+      "modules": 1,
+      "js": 9216,
+      "images": 327168
     },
     "service": {
-      "html": 52224,
-      "css": 38912,
-      "js": 7168,
-      "images": 445440
+      "html": 49152,
+      "beforeMain": 13824,
+      "elements": 1990,
+      "css": 39936,
+      "stylesheets": 2,
+      "modules": 1,
+      "js": 9216,
+      "images": 176128
     },
     "services-index": {
-      "html": 34816,
-      "css": 32768,
-      "js": 7168,
-      "images": 157696
+      "html": 31232,
+      "beforeMain": 13312,
+      "elements": 1460,
+      "css": 33792,
+      "stylesheets": 2,
+      "modules": 1,
+      "js": 9216,
+      "images": 113152
     },
     "technologies": {
-      "html": 48128,
-      "css": 41984,
-      "js": 6144,
-      "images": 247808
+      "html": 46592,
+      "beforeMain": 13312,
+      "elements": 2120,
+      "css": 42496,
+      "stylesheets": 3,
+      "modules": 1,
+      "js": 9216,
+      "images": 84480
     }
   },
   "files": {
-    "cssGz": 29696,
-    "jsGz": 9216,
-    "font": 41984,
-    "image": 570368,
-    "video": 6901760
+    "cssGz": 31232,
+    "jsGz": 10240,
+    "font": 39936,
+    "image": 543744,
+    "video": 6587904
   }
 }

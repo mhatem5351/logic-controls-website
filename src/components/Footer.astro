@@ -8,14 +8,15 @@
  * © year: computed at build time (static site). The yearly rebuild is on the release checklist — no runtime JS.
  */
 import { getMessages, type Locale } from "~/i18n";
-import { SITE } from "~/data/site";
+import { SITE, telLink } from "~/data/site";
 import Logo from "./Logo.astro";
 import Icon from "./Icon.astro";
+import ChromeIcon from "./ChromeIcon.astro";
 import LanguageSwitcher from "./LanguageSwitcher.astro";
 import CopyEmail from "./CopyEmail.astro";
 import { FOREIGN_PATH, href, whatsappLink, mailtoLink, prefersEmail, serviceNav, industryNav } from "./nav";
-import { colon, ltr } from "./sections/main/rich";
-import { html } from "~/lib/text";
+import { pageContact } from "./contact-cta";
+import { colon, html, ltr } from "~/lib/text";
 import MotionToggle from "./MotionToggle.astro";
 
 interface Props {
@@ -47,7 +48,8 @@ const curCls = "text-white underline decoration-signal-400 decoration-2 underlin
 /* "© 2026 Logic Controls. All rights reserved." — Chinese runs on without the Latin full stop: "Logic Controls 版权所有". */
 const rights = locale === "zh" ? `${SITE.name} ${t.footer.rights}` : `${SITE.name}. ${t.footer.rights}`;
 const headCls = "mb-3 type-label text-navy-300 lg:mb-4";
-const mail = mailtoLink(undefined, { locale, path });
+const ctx = pageContact(locale, path);
+const mail = mailtoLink(undefined, { locale, path, topic: ctx.topic });
 ---
 
 <footer class="lc-footer on-dark relative isolate bg-navy-900 text-sm text-navy-200">
@@ -55,18 +57,20 @@ const mail = mailtoLink(undefined, { locale, path });
 
   <div class="wrap pt-10 sm:pt-14 lg:pt-16">
     <div class="grid gap-9 sm:gap-12 lg:grid-cols-12 lg:gap-8">
-      <div class="lg:col-span-3">
+      {/* 1024–1279: the brand block is one row across the top (logo · pitch · Facebook), so the link columns below get
+          the width their longer names need; from 1280 it is the first column again. */}
+      <div class="lc-foot-brand lg:col-span-12 xl:col-span-3">
         <a href={href(locale)} aria-label={t.a11y.homeLink} class="inline-block">
           <Logo variant="dark" width={150} alt="" class="h-auto w-[132px] sm:w-[150px]" />
         </a>
-        <p class="mt-5 max-w-sm text-[0.9375rem] leading-relaxed text-navy-200" set:html={html(locale, t.footer.pitch)} />
+        <p class="mt-5 max-w-sm text-[0.9375rem] leading-relaxed text-navy-200 lg:max-xl:mt-0 lg:max-xl:max-w-xl" set:html={html(locale, t.footer.pitch)} />
         {
           !email && (
             <a
               href={SITE.facebook}
               target="_blank"
               rel="noopener"
-              class="mt-5 inline-flex min-h-10 items-center gap-2.5 border border-white/15 px-3 text-navy-100 transition-colors hover:border-white/40 hover:text-white"
+              class="mt-5 inline-flex min-h-10 items-center gap-2.5 border border-white/15 px-3 text-navy-100 transition-colors hover:border-white/40 hover:text-white lg:max-xl:mt-0"
             >
               <Icon name="facebook" size={18} />
               <span>{t.footer.facebook}</span>
@@ -76,18 +80,20 @@ const mail = mailtoLink(undefined, { locale, path });
         }
       </div>
 
-      <nav aria-label={t.a11y.footerNav} class="grid grid-cols-2 gap-x-6 gap-y-9 sm:grid-cols-3 sm:gap-8 lg:col-span-6 lg:ps-6 xl:ps-10">
+      <nav aria-label={t.a11y.footerNav} class="lc-foot-nav grid grid-cols-2 gap-x-6 gap-y-9 sm:grid-cols-3 sm:gap-8 lg:col-span-8 lg:gap-6 xl:col-span-6 xl:gap-8 xl:ps-10">
         {
           columns.map((col) => (
             <div>
-              <h2 class={headCls}><span aria-hidden="true">{col.title}</span><span class="sr-only normal-case">{col.title}</span></h2>
+              <h2 class={headCls}>{col.title}</h2>
               <ul role="list">
                 {col.items.map((l) => {
                   const cur = l.path === path;
                   return (
                     <li>
                       <a href={href(locale, l.path)} class:list={[linkCls, cur && [curCls, "font-semibold"]]} aria-current={cur ? "page" : undefined}>
-                        {l.label}
+                        {/* one child: in the inline-flex link, bare text runs and <bdi> would be separate flex items and
+                            lose the spaces between them */}
+                        <span set:html={html(locale, l.label)} />
                       </a>
                     </li>
                   );
@@ -103,13 +109,13 @@ const mail = mailtoLink(undefined, { locale, path });
           ))
         }
         <div class="max-sm:col-span-2">
-          <h2 class={headCls}><span aria-hidden="true">{t.footer.companyTitle}</span><span class="sr-only normal-case">{t.footer.companyTitle}</span></h2>
+          <h2 class={headCls}>{t.footer.companyTitle}</h2>
           <ul role="list" class="grid grid-cols-2 gap-x-6 sm:grid-cols-1">
             {
               company.map((l) => (
                 <li>
                   <a href={href(locale, l.path)} class:list={[linkCls, l.path === path && [curCls, "font-semibold"]]} aria-current={l.path === path ? "page" : undefined}>
-                    {l.label}
+                    <span set:html={html(locale, l.label)} />
                   </a>
                 </li>
               ))
@@ -118,8 +124,8 @@ const mail = mailtoLink(undefined, { locale, path });
         </div>
       </nav>
 
-      <div class="lg:col-span-3">
-        <h2 class={headCls}><span aria-hidden="true">{t.footer.contactTitle}</span><span class="sr-only normal-case">{t.footer.contactTitle}</span></h2>
+      <div class="lg:col-span-4 xl:col-span-3">
+        <h2 class={headCls}>{t.footer.contactTitle}</h2>
         <address class="not-italic">
           <ul role="list" class="space-y-1.5">
             <li class="flex gap-3 pb-1.5">
@@ -130,23 +136,23 @@ const mail = mailtoLink(undefined, { locale, path });
               </span>
             </li>
             <li>
-              <a href={`tel:${SITE.phone.tel}`} class="lc-foot-link flex min-h-8 items-center gap-3 transition-colors hover:text-white">
-                <Icon name="phone" size={18} class="text-royal-300" />
+              <a href={telLink()} class="lc-foot-link flex min-h-8 items-center gap-3 transition-colors hover:text-white">
+                <ChromeIcon name="phone" size={18} class="text-royal-300" />
                 <span class="sr-only">{t.contact.phone}{colon(locale)}</span>
                 <span class="ltr" dir="ltr">{SITE.phone.display}</span>
               </a>
             </li>
             <li class="flex flex-wrap items-center gap-x-3 gap-y-1">
               <a href={mail} class="lc-foot-link flex min-h-8 items-center gap-3 transition-colors hover:text-white">
-                <Icon name="mail" size={18} class="text-royal-300" />
+                <ChromeIcon name="mail" size={18} class="text-royal-300" />
                 <span class="sr-only">{t.contact.email}{colon(locale)}</span>
                 <Fragment set:html={ltr(SITE.email)} />
               </a>
               <CopyEmail locale={locale} iconOnly={!email} />
             </li>
             <li>
-              <a href={whatsappLink(t.whatsapp.message)} target="_blank" rel="noopener" class="lc-foot-link flex min-h-8 items-center gap-3 transition-colors hover:text-white">
-                <Icon name="whatsapp" size={18} class="text-whatsapp-500" />
+              <a href={whatsappLink(ctx.whatsapp)} target="_blank" rel="noopener" class="lc-foot-link flex min-h-8 items-center gap-3 transition-colors hover:text-white">
+                <ChromeIcon name="whatsapp" size={18} class="text-whatsapp-500" />
                 {/* zh: WhatsApp is blocked in mainland China, so it is offered only to visitors already in Egypt */}
                 <span>{email ? t.cta.inEgyptWhatsapp : t.contact.whatsapp}</span>
                 <span class="sr-only">({t.a11y.newTab})</span>
@@ -189,6 +195,21 @@ const mail = mailtoLink(undefined, { locale, path });
   @media (min-width: 64rem) {
     .lc-foot-bottom {
       padding-bottom: max(2.5rem, env(safe-area-inset-bottom, 0px));
+    }
+  }
+  /* Desktop: the Services column gets the room its longer names need ("PLC and HMI programming", "Testing and
+     commissioning"), so every column keeps one line per item (VIS2-20). */
+  @media (min-width: 64rem) and (max-width: 79.99rem) {
+    .lc-foot-brand {
+      display: grid;
+      grid-template-columns: auto minmax(0, 1fr) auto;
+      align-items: center;
+      column-gap: 2.5rem;
+    }
+  }
+  @media (min-width: 64rem) {
+    .lc-foot-nav {
+      grid-template-columns: minmax(0, 1.45fr) minmax(0, 1fr) minmax(0, 0.85fr);
     }
   }
   /* Touch screens: 44px rows for the dense link lists (desktop density unchanged). */

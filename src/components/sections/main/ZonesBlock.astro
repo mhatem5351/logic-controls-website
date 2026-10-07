@@ -25,7 +25,8 @@ import Button from "~/components/Button.astro";
 import { uid } from "~/components/uid";
 import ZoneMap from "./ZoneMap.astro";
 import { PIN, HIT, HIT_ANCHOR, HIT_ANCHOR_NARROW, MAP_W, MAP_H, PIN_R, BASE, kmFromBase } from "./zone-geo";
-import { colon, html, plain } from "./rich";
+import { colon, html, plain, punct } from "~/lib/text";
+import { fmt } from "~/lib/format";
 
 interface Props {
   locale: Locale;
@@ -42,7 +43,7 @@ const t = getMessages(locale).common.zones;
 const m = t.map;
 const u = uid("zones");
 const cardId = `${u}-card`;
-const comma = locale === "ar" ? "، " : locale === "zh" ? "，" : ", ";
+const comma = punct(locale).comma;
 /** Between the pin number and the zone name in accessible names ("2. Obour City"; "2 مدينة العبور"). */
 const numSep = locale === "ar" || locale === "zh" ? " " : ". ";
 const contact = localePath(locale, "contact");
@@ -55,7 +56,7 @@ const numbered = ZONES.map((z, i) => {
   const [axn, ayn] = HIT_ANCHOR_NARROW[z.slug] ?? [ax, ay];
   const km = kmFromBase(z.slug);
   // "About 80 km …": the number and its unit never split (no-break space); the number is the highlighted readout.
-  const distText = m.distance.replace("{km} ", `${km} `).replace("{km}", String(km));
+  const distText = fmt(m.distance.replace("{km} ", "{km}\u00A0"), { km });
   const dist = z.home ? "" : html(locale, distText).replace(new RegExp(`(?<!\\d)${km}(?!\\d)`), `<b>${km}</b>`);
   // "Alexandria" alone when the region is named after the governorate (never "Alexandria · Alexandria")
   const region = it.governorate.includes(t.regions[z.region]) ? "" : t.regions[z.region];
@@ -76,9 +77,9 @@ const numbered = ZONES.map((z, i) => {
     // pin description for assistive tech (name + governorate are its label): region, straight-line distance
     desc: plain(locale, [region, !z.home && distText].filter(Boolean).join(locale === "ar" || locale === "zh" ? comma : ". ")),
     dist,
-    cta: z.home ? m.homeCta : m.cta.replace("{zone}", (m.short as Record<string, string>)[z.slug] ?? it.name),
+    cta: z.home ? m.homeCta : fmt(m.cta, { zone: (m.short as Record<string, string>)[z.slug] ?? it.name }),
     href: z.home ? contact : `${contact}?location=${z.slug}#quote`,
-    said: plain(locale, m.selectedPin.replace("{zone}", it.name)),
+    said: plain(locale, fmt(m.selectedPin, { zone: it.name })),
   };
 });
 const pct = (v: number, of: number) => `${((v / of) * 100).toFixed(3)}%`;
@@ -123,19 +124,30 @@ const distIcon = `<svg viewBox="0 0 24 8" width="24" height="8" aria-hidden="tru
         }
       </div>
       <div hidden>
-        <span id={`${u}-kbd`}>{m.keys}</span>
         {numbered.map((z) => z.desc && <span id={`${u}-x${z.n}`}>{z.desc}</span>)}
       </div>
       <div class="lc-zm-tip" data-zm-tip hidden aria-hidden="true"></div>
       <p class="lc-zm-hint" data-zm-hint hidden aria-hidden="true"><span class="lc-led"></span><span set:html={html(locale, m.hint)} /></p>
     </div>
 
-    {/* readout strip: the legend, or the selected zone's card */}
+    {/* readout strip: the legend (or, while the pins have keyboard focus, the arrow-key hint in its place), or the
+        selected zone's card. The legend's label and value are one inline run through the text engine, so a CJK label
+        never splits into two flex columns ("公司所在 / 地："). */}
     <div class="lc-zm-legend">
       <div>
-        <p class="flex items-center gap-2 px-2 pt-2 text-xs text-navy-200 sm:px-1">
-          <span class="lc-led" aria-hidden="true"></span>{t.homeBase}{colon(locale)}<Fragment set:html={html(locale, t.items["6th-of-october"].name)} />
-        </p>
+        <div class="lc-zm-lg">
+          <p class="lc-zm-lg-base flex items-center gap-2 px-2 pt-2 text-xs text-navy-200 sm:px-1">
+            <span class="lc-led" aria-hidden="true"></span><span class="min-w-0" set:html={html(locale, `${t.homeBase}${colon(locale)}${t.items["6th-of-october"].name}`)} />
+          </p>
+          {/* visible twin of the toolbar's description (aria-describedby reads it; hidden from browse mode) */}
+          <p id={`${u}-kbd`} class="lc-zm-kbd flex items-center gap-2 px-2 pt-2 text-xs text-navy-100 sm:px-1" aria-hidden="true">
+            <svg viewBox="0 0 26 12" width="26" height="12" fill="none" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round" class="shrink-0 text-signal-300">
+              <rect x=".6" y=".6" width="11" height="10.8" rx="2" /><path d="M8.2 6H4M5.8 4.2 4 6l1.8 1.8" />
+              <rect x="14.4" y=".6" width="11" height="10.8" rx="2" /><path d="M17.8 6H22M20.2 4.2 22 6l-1.8 1.8" />
+            </svg>
+            <span class="min-w-0" set:html={html(locale, m.keys)} />
+          </p>
+        </div>
       </div>
     </div>
     <div class="lc-zm-card" id={cardId} data-zm-card>
@@ -292,10 +304,16 @@ const distIcon = `<svg viewBox="0 0 24 8" width="24" height="8" aria-hidden="tru
     --ax: var(--ax0);
     --ay: var(--ay0);
     position: absolute;
-    /* HIT map units (≈ 24px on a phone, never below 24px), at most 44px; the pin sits at (--ax, --ay) inside */
-    width: clamp(1.5rem, calc(var(--hit) * var(--u)), 2.75rem);
+    /* HIT map units (≈ 24px on a phone, never below 24px), at most 44px; the pin sits at (--ax, --ay) inside. Pixel
+       bounds, not rem: zone-geo.ts's anchors tile the cluster for exactly a 24px floor, and the larger Arabic root
+       size (106.25%) made 1.5rem = 25.5px squares overlap again on a 320px phone (A11Y2-22). */
+    --pin-w: clamp(24px, calc(var(--hit) * var(--u)), 44px);
+    width: var(--pin-w);
     aspect-ratio: 1;
-    translate: calc(var(--ax) * -100%) calc(var(--ay) * -100%);
+    /* margins, not translate: a transform would make each pin a stacking context, and the touch halos below must
+       share one layer under all the squares */
+    margin-left: calc(var(--ax) * var(--pin-w) * -1);
+    margin-top: calc(var(--ay) * var(--pin-w) * -1);
     cursor: pointer;
     -webkit-tap-highlight-color: transparent;
   }
@@ -323,6 +341,25 @@ const distIcon = `<svg viewBox="0 0 24 8" width="24" height="8" aria-hidden="tru
   }
   .lc-zm-pin:focus-visible::after {
     opacity: 1;
+  }
+  /* Touch screens: a 44px round target around the drawn pin (DEV2-07). The halos sit under every pin's own square
+     (z-index -1 inside the isolated toolbar, still above the map), so a square always wins where it is; where halos
+     overlap (cluster), the script gives a tap to the pin nearest to the finger (zones-map.ts). */
+  @media (pointer: coarse) {
+    .lc-zm-pins {
+      isolation: isolate;
+    }
+    .lc-zm-pin::before {
+      content: "";
+      position: absolute;
+      z-index: -1;
+      left: calc(var(--ax) * 100%);
+      top: calc(var(--ay) * 100%);
+      width: 44px;
+      aspect-ratio: 1;
+      translate: -50% -50%;
+      border-radius: 50%;
+    }
   }
 
   /* ------------------------------------------------------------------ map states (SVG from ZoneMap) */
@@ -357,6 +394,22 @@ const distIcon = `<svg viewBox="0 0 24 8" width="24" height="8" aria-hidden="tru
   }
   .lc-zm .lc-map-home[data-sel] .lc-map-ring {
     stroke: var(--color-signal-300);
+  }
+  /* Forced colours (A11Y2-11): the navy panel becomes Canvas (white in light themes), where the white selection ring
+     vanished; the selected pin also needs more than the shared hover fill. SVG paint keeps its author colours, so
+     map them to system colours here. */
+  @media (forced-colors: active) {
+    .lc-zm .lc-map-ring,
+    .lc-zm .lc-map-home[data-sel] .lc-map-ring {
+      stroke: CanvasText;
+    }
+    .lc-zm .lc-map-pin[data-sel] :is(.lc-map-dot, .lc-map-home-dot) {
+      fill: Highlight;
+      stroke: CanvasText;
+    }
+    .lc-zm .lc-map-pin[data-sel] .lc-map-num {
+      fill: HighlightText;
+    }
   }
   /* the trace from our base lights up (colour / dash via ZoneMap's custom properties, no specificity contest) */
   .lc-zm .lc-map-links path {
@@ -441,14 +494,16 @@ const distIcon = `<svg viewBox="0 0 24 8" width="24" height="8" aria-hidden="tru
   }
 
   /* ------------------------------------------------------------------ tooltip */
-  /* placed by the script on the side that covers the fewest other pins and the lit trace (data-place) */
+  /* placed by the script on the side that covers the fewest other pins and the lit trace (data-place). Small on
+     purpose (MOT2-19): name + straight-line distance only; governorate · region and the SCZONE chip stay in the card
+     and the list, so in the eastern cluster the tooltip no longer hides the neighbouring pins. */
   .lc-zm-tip {
     position: absolute;
     left: 0;
     top: 0;
     z-index: 2;
     width: max-content;
-    max-width: min(15rem, calc(100% - 0.5rem));
+    max-width: min(208px, calc(100% - 0.5rem)); /* px: the same footprint in every locale (ar has a larger root) */
     padding: 0.625rem 0.75rem 0.6875rem;
     color: var(--color-navy-100);
     background: var(--color-navy-900);
@@ -490,11 +545,12 @@ const distIcon = `<svg viewBox="0 0 24 8" width="24" height="8" aria-hidden="tru
   .lc-zm-tip .lc-zm-name {
     font-size: 0.875rem;
   }
-  .lc-zm-tip .lc-zm-num {
+  .lc-zm-tip :is(.lc-zm-num, .lc-zm-meta) {
     display: none;
   }
   .lc-zm-tip .lc-zm-dist {
-    margin-top: 0.375rem;
+    margin-top: 0.25rem;
+    font-size: 0.75rem;
   }
 
   /* ------------------------------------------------------------------ readout strip: legend ⇄ card */
@@ -525,6 +581,22 @@ const distIcon = `<svg viewBox="0 0 24 8" width="24" height="8" aria-hidden="tru
     opacity: 0;
     visibility: hidden;
     transition-delay: 0s, 0s, var(--dur-ui);
+  }
+  /* legend ⇄ arrow-key hint (A11Y2-22): one grid cell, so swapping them never changes the strip's height. The hint
+     shows while a pin has keyboard focus ([data-kbd] on the panel, zones-map.ts). */
+  .lc-zm-lg {
+    display: grid;
+  }
+  .lc-zm-lg > * {
+    grid-area: 1 / 1;
+    transition: opacity var(--dur-micro) var(--ease-mech);
+  }
+  .lc-zm-kbd,
+  [data-zm-panel][data-kbd] .lc-zm-lg-base {
+    opacity: 0;
+  }
+  [data-zm-panel][data-kbd] .lc-zm-kbd {
+    opacity: 1;
   }
   .lc-zm-card-in {
     position: relative;

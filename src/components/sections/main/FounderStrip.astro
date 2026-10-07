@@ -10,7 +10,7 @@ import { Picture } from "astro:assets";
 import { getMessages, type Locale } from "~/i18n";
 import Button from "~/components/Button.astro";
 import { href } from "~/components/nav";
-import { html } from "./rich";
+import { heading, html, punct } from "~/lib/text";
 /* Head-and-shoulders crop of founder.jpg (640 px square, cut with sharp: left 80, top 51) — the strip shows it at
    72–104 px, so the face is cropped in the file instead of being CSS-scaled (which upscaled the decoded image). */
 import founderPhoto from "~/assets/people/founder-face.jpg";
@@ -24,7 +24,7 @@ const { locale, headingLevel: H = "h3", class: className } = Astro.props;
 const t = getMessages(locale);
 const strip = t.common.founderStrip;
 const founder = t.about.founder;
-const alt = [founder.name, founder.role].filter(Boolean).join(", ");
+const alt = [founder.name, founder.role].filter(Boolean).join(punct(locale).comma);
 ---
 
 {
@@ -58,7 +58,7 @@ const alt = [founder.name, founder.role].filter(Boolean).join(", ");
             {strip.eyebrow}
           </p>
         )}
-        <H class="type-h3 text-navy-950" set:html={html(locale, strip.title)} />
+        <H class="type-h3 text-navy-950" set:html={heading(locale, strip.title)} />
       </div>
       {strip.text && (
         <p class="col-span-2 max-w-3xl text-[0.9375rem] text-charcoal-700 sm:col-span-1 sm:col-start-2 sm:row-start-2 sm:self-start" set:html={html(locale, strip.text)} />

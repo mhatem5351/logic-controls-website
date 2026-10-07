@@ -1,56 +1,101 @@
 /**
  * Plain-text message → safe HTML / display text, with the line-breaking and bidi rules of every locale.
- * The ONE text engine: import from "~/lib/text". (src/components/sections/main/rich.ts and
- * src/components/sections/catalog/catalog.ts only re-export these helpers for older imports.)
+ * The ONE text engine: import from "~/lib/text" (the old re-export shims in sections/main/rich.ts and catalog.ts are
+ * gone, CODE2-22).
  *
  * Message strings are plain text (CONTENT.md; scripts/check-i18n.mjs rejects markup). What this adds on top of escaping:
  * - Atoms never wrap inside, in every locale: model codes ("S7-1200", "DVP-12SC", "4-20"), standards
  *   ("IEC 60204-1", "ISA-88"), numbers with units ("72.0 °C", "24 VDC"), multi-word names ("Schneider Electric",
  *   "WinCC Professional", "Logic Controls"), a brand with its model ("Siemens S7-1200", "Wecon HMI"), phone numbers
- *   ("+20 110 319 7233") and e-mail addresses (which may break only right after "@").
+ *   ("+20 110 319 7233", "010 1234 5678") and e-mail addresses (which may break only right after "@").
  *   Only atoms are glued (never a phrase across "and" / "و" / commas), and none is longer than 20 characters (e-mail
  *   addresses: 40), so a no-wrap piece always fits a narrow card. A brand + model run longer than that keeps only its
  *   inner atoms ("Siemens | WinCC Professional").
  * - Arabic: Latin runs are isolated in <bdi dir="ltr"> so the bidi algorithm never reorders their parts; runs with
  *   ordinary (lower-case) words also get lang="en" so screen readers switch voice ("Siemens", "(Recipe)"), pure codes
  *   and acronyms ("PLC", "S7-1200") don't. A run that is one atom never wraps (global.css: `[dir=rtl] bdi`); a run of
- *   several tokens (`.lc-wrap`) wraps between tokens, keeping its atoms. A parenthesised Latin gloss
- *   "(Pressure switch)" is isolated together with its brackets, so a wrap can never invert them.
+ *   several tokens (`.lc-wrap`) wraps between tokens, keeping its atoms; a name made only of words ("Logic Controls")
+ *   is `.lc-nws` like in Latin text (see atomHtml). A parenthesised Latin gloss "(Pressure switch)" is isolated
+ *   together with its brackets, so a wrap can never invert them. Space-separated digit groups ("010 1234 5678") are
+ *   isolated too: in an RTL paragraph the groups would otherwise be laid out right to left ("5678 1234 010").
+ *   Isolate controls (LRI…PDI) already in the copy are dropped and replaced by these rules.
  *   A conjunction / preposition only glues FORWARD: "S7-1200⍽و⍽WinCC" is normalised to "S7-1200 و⍽WinCC", so two
  *   atoms are never fused into one unbreakable run (check-i18n also rejects the backward glue in the copy).
  * - Chinese: breaks only between words (Intl.Segmenter + merge rules, U+200B + `word-break: keep-all`), a number
  *   stays with the measure word after it ("50 多个项目" never breaks after "50"), a closing-punctuation cluster
  *   ("）、", "）；") never splits (WebKit's keep-all breaker would start a line with "、"), nor does "（" from the Latin
- *   word after it (WebKit would end a line with "（"), "——" stays with the word
- *   before it. U+200B instead of <wbr>: no DOM node per break, and accessible names get no spurious spaces.
- * - Turkish: words of 13+ letters get soft hyphens (U+00AD) at Turkish syllable boundaries; global.css activates
- *   them in headings only (`hyphens: manual`), body text keeps `hyphens: none`.
+ *   word after it (WebKit would end a line with "（"), and "——" / "……" never start a line (they are kept on one line
+ *   with the character before them: U+2014 is line-break class B2, which `keep-all` does not protect in Chromium).
+ *   U+200B instead of <wbr>: no DOM node per break, and accessible names get no spurious spaces.
+ * - Turkish: display text (heading(): headings, card titles, FAQ questions) gets soft hyphens (U+00AD) at Turkish
+ *   syllable boundaries in words of 13+ letters, never less than 3 letters on either side of the break; global.css
+ *   activates them in headings (`hyphens: manual`). Body text (html(), toHtml()) never carries soft hyphens: WebKit
+ *   breaks at U+00AD even under `hyphens: none`, and they would pollute copied text.
  * - " — " / " · " separators stick to the word before them, so a line never starts with a dash or a dot.
  * - Links in copy: `{link:services/machine-retrofits|machine retrofit service}` (internal: locale prefix + trailing
- *   slash added) or `{link:ext:https://www.gafi.gov.eg/|GAFI}` (new tab + hidden "opens in a new tab"). html(),
- *   toHtml() and rich() render them; plain() / cleanText() keep the label. See LINK_TOKEN_SOURCE.
+ *   slash added) or `{link:ext:https://www.gafi.gov.eg/|GAFI}` (allow-listed official hosts only, src/lib/link-policy.mjs;
+ *   new tab + hidden "opens in a new tab"). html(), toHtml(), heading() and rich() render them; plain() / cleanText()
+ *   keep the label. See LINK_TOKEN_SOURCE.
  *
- * ── set:html contract (CODE-02) ─────────────────────────────────────────────────────────────────────────────────
- * html(), rich(), emphasize(), ltr() and toHtml() return `SafeHtml` (a branded string: escaped, ready for set:html).
- * A component that renders a text prop with set:html must call `toHtml(locale, prop)`: plain strings are run through
- * html() (escaped + typography), already-rendered strings (html()/rich()/emphasize() output) pass through unchanged,
- * so callers may pass either and nothing is double-escaped or injected. A prop that only accepts pre-rendered HTML is
- * typed `SafeHtml` (a plain `string` then fails `astro check`). plain() is for text-only contexts (attributes,
- * <title>, aria-label); cleanText() for machine contexts (JSON-LD, og:image:alt) — no typography controls at all.
+ * ── set:html contract (CODE-02, CODE2-03) ───────────────────────────────────────────────────────────────────────
+ * html(), heading(), rich(), emphasize(), ltr(), markup`` and toHtml() return `SafeHtml`: escaped HTML, ready for
+ * set:html. The brand is real at run time: the engine records every value it returns, and only a recorded value is
+ * ever passed through as HTML. Everything else is plain text and is escaped — even a string that looks like HTML
+ * ("<2 bar>", "R&amp;D"). Nothing guesses from the content.
+ * - A component that renders a text prop with set:html calls `toHtml(locale, prop)` (body text) or
+ *   `heading(locale, prop)` (headings, titles, short labels): plain text → rendered; SafeHtml → passed through
+ *   (never double-escaped).
+ * - Markup built in code goes through the `markup` tag: markup`<a href="${href}">${label}</a>` (literal parts are code;
+ *   each value is escaped unless it is SafeHtml). rich() placeholders take SafeHtml values the same way.
+ * - A prop that only accepts pre-rendered HTML is typed `SafeHtml` (a plain `string` then fails `astro check`).
+ * plain() is for text-only contexts (attributes, <title>, aria-label); cleanText() for machine contexts (JSON-LD,
+ * og:image:alt) — no typography controls at all.
  *
- * html()  → HTML for set:html (headings, card titles/summaries, chips, FAQ…).
- * plain() → text-only contexts (attributes, <title>, breadcrumb labels): NBSP / WORD JOINER / LRI…PDI instead of tags.
- *           (U+2011 is avoided on purpose: neither Montserrat nor Alexandria has the glyph, so it would fall back.)
+ * html()    → body HTML for set:html (paragraphs, leads, FAQ answers, summaries, chips…).
+ * heading() → display HTML (headings, card titles, FAQ questions, TOC / tile labels): html() + Turkish soft hyphens.
+ * plain()   → text-only contexts (attributes, <title>, breadcrumb labels): NBSP / WORD JOINER / LRI…PDI instead of tags.
+ *             (U+2011 is avoided on purpose: neither Montserrat nor Alexandria has the glyph, so it would fall back.)
  */
 import { getMessages, localePath, type Locale } from "~/i18n";
 import { SITE } from "~/data/site";
+import { EXTERNAL_HOSTS } from "./link-policy.mjs";
+
+/* ------------------------------------------------------------------ SafeHtml (the set:html contract) */
 
 /** Escaped HTML produced by this module (assignable to string; a plain string is not assignable to it). */
 export type SafeHtml = string & { readonly __safeHtml: true };
-const safe = (s: string) => s as SafeHtml;
+
+/**
+ * Every string this module has returned as HTML. toHtml() / heading() / rich() / markup`` / emphasize() treat a value
+ * as HTML only when it is in this set; any other string is plain text and gets escaped. Strings are deduplicated and
+ * the set only ever holds rendered site copy, so it stays small (a few thousand entries per locale).
+ */
+const ISSUED = new Set<string>();
+const safe = (s: string): SafeHtml => {
+  ISSUED.add(s);
+  return s as SafeHtml;
+};
+/** Was this value produced by the engine (html(), heading(), rich(), emphasize(), ltr(), markup``, toHtml())? */
+export const isSafeHtml = (value: unknown): value is SafeHtml => typeof value === "string" && ISSUED.has(value);
 
 const ESC: Record<string, string> = { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" };
 export const esc = (s: string) => s.replace(/[&<>"']/g, (c) => ESC[c]!);
+
+/** A value interpolated into markup: SafeHtml as is, arrays joined, nothing for null / undefined / false, else escaped. */
+const piece = (v: unknown): string =>
+  v == null || v === false ? "" : Array.isArray(v) ? v.map(piece).join("") : isSafeHtml(v) ? v : esc(String(v));
+
+/**
+ * Markup written in code, with values: markup`<a href="${href}" class="link">${label}</a>`. The literal parts are
+ * trusted (they are source code, never content); every value is escaped unless it is SafeHtml from this module
+ * (arrays are joined; null / undefined / false render nothing). Use it wherever code assembles HTML around engine
+ * output (rich() placeholders, a link around ltr(), a <b> around a number), so the result stays SafeHtml.
+ */
+export function markup(strings: TemplateStringsArray, ...values: unknown[]): SafeHtml {
+  let out = strings[0] ?? "";
+  values.forEach((v, i) => (out += piece(v) + (strings[i + 1] ?? "")));
+  return safe(out);
+}
 
 const NBSP = "\u00A0";
 const WJ = "\u2060";
@@ -86,7 +131,8 @@ const LAT = "A-Za-z\\u00C0-\\u024F";
 const reEsc = (s: string) => s.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
 const sp = (n: string) => n.split(" ").map(reEsc).join(SP);
 
-/** Units after a number ("72.0 °C", "24 VDC"…). Shared with the HMI demo's bidi isolation (hmi-bidi.ts). */
+/** Units after a number ("72.0 °C", "24 VDC"…). (The HMI's runtime strings use their own, shorter list in
+ *  src/scripts/motion/hmi-bidi.ts: the client bundle never imports this module.) */
 export const UNITS = ["°C", "°F", "VDC", "VAC", "kVA", "kW", "mA", "Hz", "ms", "bar", "L/h", "mm", "V", "A", "s", "%"] as const;
 
 /** A platform brand followed by its model ("Siemens S7-1200", "Wecon HMI", "LS Electric M100 VFD"). */
@@ -97,12 +143,14 @@ const BRAND_MODEL_SRC = `\\b(?:${BRANDS.map(sp).join("|")})${SP}(?:${MODEL.join(
 const ATOM_SRC = [
   // e-mail addresses: one piece (they may exceed MAX_ATOM, see atomHtml)
   `(?<email>[\\w.+-]+@[\\w-]+(?:\\.[\\w-]+)+)`,
-  // phone numbers: "+20 110 319 7233", "+20 10 1234 5678", "011 0319 7233"
+  // phone numbers: "+20 110 319 7233", "+20 10 1234 5678", "011 0319 7233", "010 1234 5678"
   `(?<phone>(?<![\\p{L}\\p{N}])(?:\\+\\d{1,3}(?:${SP}\\d{1,4}){2,4}|0\\d{2,3}(?:${SP}\\d{3,4}){2})(?![\\p{L}\\p{N}]))`,
   // brand + model (only kept whole when it is short enough, see atomsOf)
   `(?<bm>${BRAND_MODEL_SRC})`,
   // numbers with units: "72.0 °C", "4-20 mA", "0-50 Hz", "24 VDC", "15 s", "3000 L/h"
   `(?<![\\p{L}\\p{N}.])\\d+(?:[.,]\\d+)?(?:[-–]\\d+(?:[.,]\\d+)?)?${SP}?(?:${UNITS.map(reEsc).join("|")})(?![\\p{L}\\p{N}])`,
+  // a number with an inch / foot (double / single prime) mark, written without a space: "10.1″", "7″", "3′"
+  `(?<![\\p{L}\\p{N}.])\\d+(?:[.,]\\d+)?[″′](?![\\p{L}\\p{N}])`,
   // multi-word names
   `(?<name>${NAMES.map(sp).join("|")})`,
   // "LS PLC", "LS XGB" (a two-letter brand never ends a line on its own)
@@ -139,17 +187,19 @@ function atomsOf(text: string): Atom[] {
   }
   return out;
 }
-/** Is the whole string exactly one atom? */
-const isOneAtom = (s: string) => {
+/** The string as one atom, or undefined when it is not exactly one atom. */
+const soleAtom = (s: string): Atom | undefined => {
   const a = atomsOf(s);
-  return a.length === 1 && a[0]!.text === s;
+  return a.length === 1 && a[0]!.text === s ? a[0] : undefined;
 };
+/** A multi-word name made only of words ("Logic Controls", "Schneider Electric", "WinCC Professional"). */
+const isWordName = (a: Atom) => a.kind === "name" && /^[\p{L} \u00A0]+$/u.test(a.text);
 
 /**
  * An atom as HTML: a no-wrap span when it has a break opportunity to protect (space, hyphen, slash). A multi-word
  * name made only of words ("Logic Controls", "Schneider Electric", "WinCC Professional") is also `.lc-nws`: in
- * headings on very narrow screens (zoom / user text spacing) it may break at its space rather than overflow
- * (global.css, PK5 type block). Codes, brand + model ("Siemens S7-1200", "LS XGB") and numbers never do.
+ * headings it moves to the next line as one unit and wraps inside only when it is wider than the whole line (zoom /
+ * user text spacing at 320px; global.css). Codes, brand + model ("Siemens S7-1200", "LS XGB") and numbers never do.
  */
 function atomHtml(a: Atom): string {
   const max = a.kind === "email" ? MAX_EMAIL : MAX_ATOM;
@@ -160,19 +210,20 @@ function atomHtml(a: Atom): string {
     const at = a.text.indexOf("@") + 1;
     return `<span class="lc-nw">${esc(a.text.slice(0, at))}</span><wbr><span class="lc-nw">${esc(a.text.slice(at))}</span>`;
   }
-  const words = a.kind === "name" && /^[\p{L} \u00A0]+$/u.test(a.text);
-  return `<span class="${words ? "lc-nw lc-nws" : "lc-nw"}">${esc(a.text)}</span>`;
+  return `<span class="${isWordName(a) ? "lc-nw lc-nws" : "lc-nw"}">${esc(a.text)}</span>`;
 }
 
-/* ------------------------------------------------------------------ Turkish soft hyphens */
+/* ------------------------------------------------------------------ Turkish soft hyphens (display text only) */
 
 const TR_VOWEL = /[aeıioöuüâîûAEIİOÖUÜÂÎÛ]/;
 /** Words this long get soft hyphens (shorter ones always fit a heading line at phone width). */
 const TR_MIN_WORD = 13;
+/** Fewest letters left on either side of a break: a 2-letter stub ("ta-", "iş-") reads as a stutter in a heading. */
+const TR_MIN_PART = 3;
 /**
  * Turkish syllable rule (TDK): between two vowels, a single consonant starts the next syllable ("o-to-ma-tik"),
  * of two or more consonants only the last one does ("kont-rol", "Türk-çe"); two vowels in a row split ("sa-at").
- * No break leaves fewer than 2 letters before or 3 after it.
+ * No break leaves fewer than 3 letters before or after it ("tara-yıcınızdan", never "ta-rayıcınızdan").
  */
 export function trHyphenate(word: string): string {
   if (word.length < TR_MIN_WORD || word.includes(SHY) || /[A-ZÇĞİÖŞÜ]/.test(word.slice(1))) return word;
@@ -186,7 +237,7 @@ export function trHyphenate(word: string): string {
   let out = "";
   let last = 0;
   for (const c of cuts) {
-    if (c < 2 || word.length - c < 3) continue;
+    if (c < TR_MIN_PART || word.length - c < TR_MIN_PART) continue;
     out += word.slice(last, c) + SHY;
     last = c;
   }
@@ -194,6 +245,23 @@ export function trHyphenate(word: string): string {
 }
 const TR_WORD = new RegExp(`[A-Za-zÇĞİÖŞÜçğıöşüâîû]{${TR_MIN_WORD},}`, "g");
 const trWords = (s: string) => s.replace(TR_WORD, trHyphenate);
+
+/**
+ * Soft hyphens added to rendered Turkish HTML (heading() on an html() result): text between tags only, never inside
+ * an atom (`.lc-nw`: codes and names) or the hidden new-tab hint. Entities are never 13+ letters, so they are safe.
+ */
+function hyphenateHtml(h: string): string {
+  const skip: boolean[] = [];
+  return h
+    .split(/(<[^>]*>)/)
+    .map((part) => {
+      if (part.startsWith("</span")) skip.pop();
+      else if (part.startsWith("<span")) skip.push(/class="(?:lc-nw|sr-only)/.test(part));
+      else if (!part.startsWith("<") && !skip.includes(true)) return trWords(part);
+      return part;
+    })
+    .join("");
+}
 
 /** Escape + keep atoms on one line (Latin-script text: en, tr, and Latin runs elsewhere). */
 function latinHtml(text: string, hyphenate = false): string {
@@ -228,9 +296,16 @@ function latinPlain(text: string): string {
 const LATIN_RUN_SRC = `\\+?[A-Za-z0-9][A-Za-z0-9 ${NBSP}.\\-\u2011–/+·°&'″%×@${WJ}]*[A-Za-z0-9+°%″]|[A-Za-z]`;
 /** A parenthesised gloss without Arabic letters: "(Pressure switch)", "(CIP)", "(I/O)". */
 const PAREN_SRC = `\\([^()\\u0600-\\u06FF\\n]*\\)`;
-const NEEDS_ISOLATION = /[A-Za-z]|\d[-–/\u2011]\d|^\+\d/;
+/**
+ * Runs that need an LTR isolate: anything with a Latin letter, a digit range / code ("4-20", "1/2"), a "+" number, or
+ * space-separated digit groups ("010 1234 5678", "+20 10 1234 5678"): after Arabic letters such digits are Arabic
+ * numbers (UBA W2) and the spaces between them take the RTL direction, so the groups would read right to left.
+ * A number with an inch / prime mark ("10.1″") too: in RTL the mark would otherwise be drawn before the number.
+ * A single number ("50", "2026") reads correctly in RTL and stays in the Arabic flow.
+ */
+const NEEDS_ISOLATION = /[A-Za-z]|\d[-–/\u2011]\d|^\+\d|^\d+(?:[ \u00A0]\d+)+$|\d[″′]/;
 /** Is the whole run one atom or one word ("S7-1200", "Schneider Electric", "IEC 60204-1", "PLC")? */
-const isAtomic = (run: string) => run.length <= MAX_ATOM && (!/\s/.test(run) || isOneAtom(run));
+const isAtomic = (run: string) => run.length <= MAX_ATOM && (!/\s/.test(run) || !!soleAtom(run));
 /** Runs with an ordinary word (a lower-case letter) are English for screen readers; codes and acronyms are not. */
 const langOf = (run: string) => (/[a-z]/.test(run) ? ` lang="en"` : "");
 
@@ -245,13 +320,16 @@ function arGlue(t: string): string {
 /**
  * One Latin run → <bdi dir="ltr">. Only atomic runs stay on one line (global.css: `[dir=rtl] bdi`); a run of
  * several tokens ("Siemens S7-1200 PLC", "Testing & Commissioning", "Siemens · Delta") is `.lc-wrap`: it may wrap
- * between its tokens, never inside an atom. Brackets of a gloss go inside the isolate, so a wrap cannot invert them.
+ * between its tokens, never inside an atom. A name made only of words ("Logic Controls") is `.lc-nws`, so a narrow
+ * heading can still wrap it at its space (A11Y2-23; same rule as atomHtml). Brackets of a gloss go inside the
+ * isolate, so a wrap cannot invert them.
  */
 function arIsolate(run: string, open = "", close = ""): string {
   const lang = langOf(run);
-  return isAtomic(run)
-    ? `<bdi dir="ltr"${lang}>${esc(open + run + close)}</bdi>`
-    : `<bdi dir="ltr"${lang} class="lc-wrap">${esc(open)}${latinHtml(run)}${esc(close)}</bdi>`;
+  if (!isAtomic(run)) return `<bdi dir="ltr"${lang} class="lc-wrap">${esc(open)}${latinHtml(run)}${esc(close)}</bdi>`;
+  const atom = soleAtom(run);
+  const nws = atom && isWordName(atom) ? ` class="lc-nws"` : "";
+  return `<bdi dir="ltr"${lang}${nws}>${esc(open + run + close)}</bdi>`;
 }
 
 function arHtml(text: string): string {
@@ -276,7 +354,7 @@ function arHtml(text: string): string {
 
 function arPlain(text: string): string {
   return text.replace(new RegExp(`${PAREN_SRC}|${LATIN_RUN_SRC}`, "g"), (run) => {
-    if (!/[A-Za-z]/.test(run) && !NEEDS_ISOLATION.test(run)) return run;
+    if (!NEEDS_ISOLATION.test(run)) return run;
     return LRI + latinPlain(run) + PDI;
   });
 }
@@ -289,12 +367,24 @@ const CLOSING = /^[、，。：；！？）」』】》”’%,.:;!?)—…]+$/;
 const OPENING = /^[（「『【《“‘(]+$/;
 /** A full-width closing mark followed by more closing punctuation: kept on one line (WebKit would split "）、"). */
 const CLOSING_CLUSTER = /([^\s<>;&\u200B\u00A0])?([）」』】》”][、，。：；！？）」』】》”’%,.:;!?]+)/g;
+/**
+ * A dash / ellipsis run ("——", "……"): kept on one line with the character before it. "—" is line-break class B2, and
+ * Chromium's `keep-all` still allows a break before it (I18N2-06: the footer pitch started a line with "——" at
+ * 360/390px). After markup or an entity (no plain character to hold on to), a WORD JOINER prohibits the break.
+ */
+const DASH_RUN = /([^\s<>;&\u200B\u00A0\u2060—…])?([—…]+)/g;
 /** A token ending in full-width punctuation: a break after it is always allowed. */
 const FULLWIDTH_END = /[、，。：；！？）」』】》”…—]$/;
 const FUNCTION_ZH = new Set("的了和与及或在为并等对从向把被由将以于而但也就都是有让给中您我你其每各".split(""));
 /** A quantity that must stay with the measure word / noun after it: "50", "50+", "4.5", "15%". */
 const QUANTITY = /(?:^|[^\p{L}\p{N}\-.\u2011])\d+(?:[.,]\d+)?\+?%?$/u;
 let segmenter: Intl.Segmenter | undefined;
+/**
+ * Chinese words kept whole although Intl.Segmenter splits them (WebKit then breaks "新 | 十月城"): the place names of
+ * the zone map and addresses (common.json zones.items, I18N2-08). Longest first.
+ */
+const ZH_WORDS = ["十月六日城", "新十月城"];
+const ZH_WORDS_RE = new RegExp(ZH_WORDS.sort((a, b) => b.length - a.length).join("|"), "g");
 
 interface Tok {
   raw: string;
@@ -311,11 +401,22 @@ function zhTokens(text: string): Tok[] {
   segmenter ??= new Intl.Segmenter("zh", { granularity: "word" });
   const pieces: Tok[] = [];
   let last = 0;
-  const pushText = (s: string) => {
+  const segment = (s: string) => {
     for (const { segment } of segmenter!.segment(s)) {
       const kind = /^\s+$/.test(segment) ? "space" : HAN.test(segment) ? "han" : "latin";
       pieces.push({ raw: segment, html: esc(segment), kind });
     }
+  };
+  /* Fixed Chinese words (place names the segmenter splits) are one token each. */
+  const pushText = (s: string) => {
+    let from = 0;
+    for (const m of s.matchAll(ZH_WORDS_RE)) {
+      const at = m.index ?? 0;
+      if (at > from) segment(s.slice(from, at));
+      pieces.push({ raw: m[0], html: esc(m[0]), kind: "han" });
+      from = at + m[0].length;
+    }
+    if (from < s.length) segment(s.slice(from));
   };
   for (const a of atomsOf(text)) {
     if (a.at < last) continue;
@@ -385,7 +486,11 @@ function zhInner(text: string): string {
     html += t.html
       .replace(OPENING_LATIN, `<span class="lc-nw">$1$2</span>`)
       .replace(OPENING_ATOM, `<span class="$2">$1`)
-      .replace(CLOSING_CLUSTER, (_, c = "", p) => `<span class="lc-nw">${c}${p}</span>`);
+      .replace(CLOSING_CLUSTER, (_, c = "", p) => `<span class="lc-nw">${c}${p}</span>`)
+      .replace(DASH_RUN, (m, c: string | undefined, d: string, at: number) =>
+        // nothing before the run (start of the text): leave it; after markup / an entity: a WORD JOINER holds it
+        c ? `<span class="lc-nw">${c}${d}</span>` : at === 0 ? m : `${WJ}${d}`,
+      );
   });
   return html;
 }
@@ -418,16 +523,18 @@ const normalize = (text: string) => glueSeparators(text.replace(CONTROLS, "").re
  * A link inside a plain-text message: `{link:<target>|<label>}`.
  * - Internal target: a site path made of a-z, 0-9, "-" and "/" ("services/machine-retrofits", "about"); rendered as
  *   <a href="/<locale>/services/machine-retrofits/"> (the locale prefix and trailing slash are added here).
- * - External target: `ext:https://…` (official sources only; check-i18n keeps the allow-list of hosts); rendered with
- *   target="_blank" rel="noopener noreferrer" and a visually hidden "(opens in a new tab)" (ui.a11y.newTab).
+ * - External target: `ext:https://…` on an allow-listed official host (src/lib/link-policy.mjs, also enforced by
+ *   check-i18n); rendered with target="_blank" rel="noopener noreferrer" and a visually hidden "(opens in a new tab)"
+ *   (ui.a11y.newTab).
  * The label is plain text and gets the locale's rules like any other text. plain() and cleanText() keep only the
- * label (titles, meta, JSON-LD, attributes). A token that does not match exactly (another scheme, http:, upper case,
- * quotes, an empty label…) is not a link: it stays visible as escaped text.
+ * label (titles, meta, JSON-LD, attributes). A token that does not match exactly (another scheme, http:, another host,
+ * upper case, quotes, an empty label…) is not a link: it stays visible as escaped text.
  * scripts/check-i18n.mjs uses the same pattern (a unit test keeps the two identical) and checks that every internal
  * target is a real route and that every locale of a key has the same targets.
  */
 export const LINK_TOKEN_SOURCE = String.raw`\{link:(ext:https:\/\/[^\s|{}"'<>]+|[a-z0-9]+(?:[\/-][a-z0-9]+)*)\|([^{}|]+)\}`;
 const linkRe = () => new RegExp(LINK_TOKEN_SOURCE, "g");
+const ALLOWED_HOSTS = new Set<string>(EXTERNAL_HOSTS);
 
 interface LinkSeg {
   text: string;
@@ -438,7 +545,7 @@ function linkHref(locale: Locale | undefined, target: string): LinkSeg["link"] {
   if (!target.startsWith("ext:")) return { href: localePath(locale ?? "en", target), external: false };
   try {
     const url = new URL(target.slice(4));
-    return url.protocol === "https:" ? { href: url.href, external: true } : undefined;
+    return url.protocol === "https:" && ALLOWED_HOSTS.has(url.hostname) ? { href: url.href, external: true } : undefined;
   } catch {
     return undefined;
   }
@@ -472,22 +579,28 @@ function wrapLink(locale: Locale | undefined, seg: LinkSeg, inner: string): stri
 }
 
 /** One run of text (no link tokens) → HTML with the locale's rules. */
-function render(locale: Locale | undefined, text: string): string {
+function render(locale: Locale | undefined, text: string, hyphenate: boolean): string {
   const t = normalize(text);
   if (locale === "ar") return arHtml(arGlue(t));
   if (locale === "zh") return zhHtml(t);
-  return latinHtml(t, locale === "tr");
+  return latinHtml(t, hyphenate && locale === "tr");
 }
 
 /** Chinese: a line may break at a link edge between two words, never before closing / after opening punctuation. */
 const ZH_NO_BREAK_BEFORE = /^[、，。：；！？）」』】》”’%,.:;!?)—…]/;
 const ZH_NO_BREAK_AFTER = /[（「『【《“‘(]$/;
 
+export interface HtmlOptions {
+  /** Display text (headings, titles): Turkish words of 13+ letters get soft hyphens. Prefer heading(). */
+  hyphenate?: boolean;
+}
+
 /** Plain text → escaped HTML with the locale's line-breaking / bidi rules (for set:html). Renders link tokens. */
-export function html(locale: Locale | undefined, text: string): SafeHtml {
+export function html(locale: Locale | undefined, text: string, options: HtmlOptions = {}): SafeHtml {
+  const hyphenate = options.hyphenate === true;
   const segs = text.includes("{link:") ? linkSegments(locale, text) : [];
-  if (!segs.some((s) => s.link)) return safe(render(locale, text));
-  if (locale !== "zh") return safe(segs.map((s) => wrapLink(locale, s, render(locale, s.text))).join(""));
+  if (!segs.some((s) => s.link)) return safe(render(locale, text, hyphenate));
+  if (locale !== "zh") return safe(segs.map((s) => wrapLink(locale, s, render(locale, s.text, hyphenate))).join(""));
   // Chinese: one keep-all wrapper around the whole sentence; word breaks (U+200B) at the link edges
   let out = "";
   let prev = "";
@@ -512,16 +625,41 @@ export function plain(locale: Locale | undefined, text: string): string {
   return latinPlain(t);
 }
 
-/** Markup or an entity: the string was already rendered by html()/rich()/emphasize() (messages never contain these). */
-const RENDERED = /<\/?[a-z][^>]*>|&(?:[a-z]+|#\d+|#x[0-9a-f]+);/i;
+/** Markup or an entity (only used to flag a likely migration miss in toHtml(); never to decide escaping). */
+const LOOKS_LIKE_HTML = /<\/?[a-z][^>]*>|&(?:[a-z]+|#\d+|#x[0-9a-f]+);/i;
+const flagged = new Set<string>();
+/** Unit tests feed hostile strings on purpose: no warnings there. */
+const IN_TESTS = !!(globalThis as { process?: { env?: Record<string, string | undefined> } }).process?.env?.VITEST;
+function flagUnrendered(value: string): void {
+  if (!LOOKS_LIKE_HTML.test(value) || flagged.has(value) || IN_TESTS) return;
+  flagged.add(value);
+  console.warn(`[text] toHtml(): escaping a string that looks like HTML but was not produced by src/lib/text.ts (build it with markup\`\` or html()): ${JSON.stringify(value.slice(0, 80))}`);
+}
 
 /**
- * The set:html contract for components: plain text → html(locale, text); output of html()/rich()/emphasize()/ltr()
- * passes through unchanged (never double-escaped). Empty / missing → "".
+ * The set:html contract for body text (paragraphs, leads, answers, summaries, help text): plain text →
+ * html(locale, text); SafeHtml from this module passes through unchanged (never double-escaped); any other string is
+ * escaped as plain text, however much it looks like HTML. Empty / missing → "".
  */
 export function toHtml(locale: Locale | undefined, value: string | SafeHtml | null | undefined): SafeHtml {
   if (!value) return safe("");
-  return RENDERED.test(value) ? (value as SafeHtml) : html(locale, value);
+  if (isSafeHtml(value)) return value;
+  flagUnrendered(value);
+  return html(locale, value);
+}
+
+/**
+ * The set:html contract for display text (headings, card titles, FAQ questions, TOC / tile labels): like toHtml(),
+ * and on Turkish pages long words get soft hyphens (U+00AD) at syllable boundaries — added to plain text as it is
+ * rendered, or to the text of an html() / emphasize() result. global.css activates them in headings only.
+ */
+export function heading(locale: Locale | undefined, value: string | SafeHtml | null | undefined): SafeHtml {
+  if (!value) return safe("");
+  if (!isSafeHtml(value)) {
+    flagUnrendered(value);
+    return html(locale, value, { hyphenate: true });
+  }
+  return locale === "tr" ? safe(hyphenateHtml(value)) : value;
 }
 
 /**
@@ -544,15 +682,15 @@ export const ltr = (s: string): SafeHtml => safe(`<bdi dir="ltr">${latinHtml(s)}
 
 /**
  * Replace {placeholders} in a plain-text template with HTML snippets; the text around them goes through html().
- * Unknown placeholders are left visible.
+ * Values must be SafeHtml (html(), ltr(), markup``…); any other string is escaped. Unknown placeholders stay visible.
  */
-export function rich(locale: Locale, template: string, vars: Record<string, string>): SafeHtml {
+export function rich(locale: Locale, template: string, vars: Record<string, SafeHtml>): SafeHtml {
   return safe(
     template
       .split(/(\{\w+\})/)
       .map((part) => {
         const key = /^\{(\w+)\}$/.exec(part)?.[1];
-        if (key) return vars[key] ?? esc(part);
+        if (key) return Object.hasOwn(vars, key) ? piece(vars[key]) : esc(part);
         return html(locale, part);
       })
       .join(""),
@@ -563,14 +701,16 @@ export function rich(locale: Locale, template: string, vars: Record<string, stri
  * Wrap the first occurrence of `phrase` (plain text) in <em> inside an HTML string produced by html().
  * Tolerates the markup html() inserts (U+200B / <wbr>, nowrap spans, <bdi>, no-break spaces, soft hyphens); when the
  * match crosses element boundaries each text piece gets its own <em>, so the result always nests correctly.
+ * A string that is not SafeHtml is treated as plain text (escaped first).
  */
-export function emphasize(htmlString: string, phrase: string | undefined): SafeHtml {
-  if (!phrase) return safe(htmlString);
+export function emphasize(htmlString: SafeHtml | string, phrase: string | undefined): SafeHtml {
+  const base = isSafeHtml(htmlString) ? htmlString : esc(htmlString);
+  if (!phrase) return safe(base);
   const pattern = [...phrase]
     .map((ch) => (/\s/.test(ch) ? "(?: |\u00A0|&nbsp;)" : reEsc(esc(ch))))
-    .join("(?:<[^>]+>|\u200B|\u00AD)*");
+    .join("(?:<[^>]+>|\u200B|\u00AD|\u2060)*");
   return safe(
-    htmlString.replace(new RegExp(pattern), (m) => {
+    base.replace(new RegExp(pattern), (m) => {
       if (!/<(?!wbr>)[^>]+>/.test(m)) return `<em>${m}</em>`;
       return m
         .split(/(<[^>]+>)/)
@@ -606,7 +746,7 @@ const CODE_WORD = /^(?:[A-Z][A-Z0-9\-/+.&]*[A-Z0-9]s?|[A-Z]|[\p{L}]*\d[\p{L}\p{N
 
 /**
  * Is this a technical code / brand name ("PLC", "24 VDC", "LS XGB", "Siemens S7-1200 PLC", "Yaskawa VFDs")?
- * Codes keep the Latin HMI look and LTR order on every page; ordinary words ("Motor control", "Dolum makinesi")
+ * Codes keep the Latin HMI look and LTR order on every page; ordinary words ("Motion control", "Dolum makinesi")
  * are not codes, so they keep the page language (Turkish casing, Arabic font).
  */
 export function isCode(s: string): boolean {

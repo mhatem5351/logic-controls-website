@@ -280,14 +280,42 @@ html:not(.js) .lc-rfq .lc-file-input {
   background: var(--color-navy-50);
   color: var(--color-royal-700);
   font-weight: 700;
+  text-align: center;
   cursor: pointer;
   transition:
     border-color var(--dur-micro) var(--ease-mech),
     background-color var(--dur-micro) var(--ease-mech);
 }
-.lc-rfq .lc-file-btn:hover {
+/* hover only where hover is real (no sticky hover after a tap or a return from the file picker) */
+@media (hover: hover) {
+  .lc-rfq .lc-file-btn:hover {
+    border-color: var(--color-royal-600);
+    background: var(--color-white);
+  }
+  .lc-rfq .lc-file-remove:hover {
+    color: var(--color-danger-700);
+  }
+}
+/* "or drop them here": only where dragging files is a thing (a mouse) */
+.lc-rfq .lc-file-drop {
+  display: none;
+  font-weight: 500;
+  color: var(--color-charcoal-700);
+}
+@media (hover: hover) and (pointer: fine) {
+  .lc-rfq .lc-file-drop {
+    display: inline;
+  }
+  .lc-rfq .lc-file-drop::before {
+    content: " ";
+  }
+}
+/* files dragged over the box */
+.lc-rfq .lc-file[data-drag] .lc-file-btn {
+  border-style: solid;
   border-color: var(--color-royal-600);
   background: var(--color-white);
+  box-shadow: 0 0 0 4px rgb(37 122 224 / 0.15);
 }
 .lc-rfq .lc-file-input:focus-visible + .lc-file-btn {
   outline: 2px solid var(--color-royal-600);
@@ -298,7 +326,8 @@ html:not(.js) .lc-rfq .lc-file-input {
   border-color: var(--color-danger-700);
 }
 /* Grid/flex children default to min-width:auto, so one long file name stretched the field (and the page) sideways
-   on phones. Let fields shrink and long names wrap. */
+   on phones. Let fields shrink; long names wrap in full (A11Y2-04: "…Rev06.pdf" and "…Rev07.pdf" must stay
+   distinguishable at 320px and 400% zoom); the size and any note sit under the name, Remove stays on the first line. */
 .lc-rfq .lc-field,
 .lc-rfq .lc-file,
 .lc-rfq .lc-file-list,
@@ -314,30 +343,63 @@ html:not(.js) .lc-rfq .lc-file-input {
 }
 .lc-rfq .lc-file-item {
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   gap: 0.75rem;
-  padding: 0.25rem 0.25rem 0.25rem 0.875rem;
+  padding-block: 0.25rem;
+  padding-inline: 0.875rem 0.25rem;
   font-size: 0.875rem;
-}
-[dir="rtl"] .lc-rfq .lc-file-item {
-  padding: 0.25rem 0.875rem 0.25rem 0.25rem;
 }
 .lc-rfq .lc-file-item + .lc-file-item {
   border-block-start: 1px solid var(--color-charcoal-200);
 }
-.lc-rfq .lc-file-name {
+.lc-rfq .lc-file-main {
+  display: flex;
   flex: 1;
+  flex-direction: column;
   min-inline-size: 0;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
+  padding-block: 0.6875rem;
+}
+.lc-rfq .lc-file-name {
+  min-inline-size: 0;
+  overflow-wrap: anywhere;
   color: var(--color-navy-950);
   font-weight: 600;
+  line-height: 1.35;
+}
+.lc-rfq .lc-file-note {
+  margin-block-start: 0.125rem;
+  font-size: 0.8125rem;
+  color: var(--color-charcoal-600);
+}
+.lc-rfq .lc-file-item[data-issue="type"] .lc-file-note {
+  color: var(--color-danger-700);
+  font-weight: 600;
+}
+.lc-rfq .lc-file-item[data-issue="content"] .lc-file-note {
+  color: var(--color-signal-800);
+  font-weight: 600;
+}
+.lc-rfq .lc-file-item[data-issue="type"] {
+  box-shadow: inset 3px 0 0 var(--color-danger-700);
+}
+.lc-rfq .lc-file-item[data-issue="content"] {
+  box-shadow: inset 3px 0 0 var(--color-signal-500);
+}
+[dir="rtl"] .lc-rfq .lc-file-item[data-issue="type"] {
+  box-shadow: inset -3px 0 0 var(--color-danger-700);
+}
+[dir="rtl"] .lc-rfq .lc-file-item[data-issue="content"] {
+  box-shadow: inset -3px 0 0 var(--color-signal-500);
 }
 .lc-rfq .lc-file-size {
-  flex: none;
+  align-self: flex-start; /* LTR isolate inside an RTL column: keep it at the column's start edge */
+  font-size: 0.8125rem;
   color: var(--color-charcoal-600);
   font-variant-numeric: tabular-nums;
+  line-height: 1.35;
+}
+.lc-rfq .lc-file-size:empty {
+  display: none;
 }
 .lc-rfq .lc-file-remove {
   display: grid;
@@ -348,13 +410,63 @@ html:not(.js) .lc-rfq .lc-file-input {
   color: var(--color-charcoal-700);
   cursor: pointer;
 }
-.lc-rfq .lc-file-remove:hover {
-  color: var(--color-danger-700);
-}
 .lc-rfq .lc-file-summary {
   margin-block-start: 0.375rem;
   font-size: 0.8125rem;
   color: var(--color-charcoal-600);
+}
+
+/* ---------- small notes: phone country code hint, what the visitor came for ---------- */
+.lc-rfq .lc-hint {
+  margin-block-start: 0.375rem;
+  padding: 0.375rem 0.625rem;
+  border-inline-start: 3px solid var(--color-signal-500);
+  background: var(--color-signal-50);
+  font-size: 0.8125rem;
+  color: var(--color-charcoal-800);
+}
+.lc-rfq .lc-hint[hidden],
+.lc-rfq .lc-context[hidden] {
+  display: none;
+}
+.lc-rfq .lc-context {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.5rem;
+  padding: 0.625rem 0.875rem;
+  border: 1px solid var(--color-charcoal-200);
+  border-inline-start: 3px solid var(--color-royal-600);
+  background: var(--color-navy-50);
+  font-size: 0.875rem;
+  color: var(--color-navy-950);
+}
+
+/* ---------- upload progress ---------- */
+.lc-rfq .lc-progress[hidden] {
+  display: none;
+}
+.lc-rfq .lc-progress-bar {
+  position: relative;
+  overflow: hidden;
+  block-size: 6px;
+  background: var(--color-charcoal-200);
+}
+.lc-rfq .lc-progress-bar > span {
+  position: absolute;
+  inset-block: 0;
+  inset-inline-start: 0;
+  inline-size: var(--p, 0%);
+  background: var(--color-royal-600);
+  transition: inline-size var(--dur-ui) var(--ease-mech);
+}
+@media (forced-colors: active) {
+  .lc-rfq .lc-progress-bar {
+    border: 1px solid CanvasText;
+  }
+  .lc-rfq .lc-progress-bar > span {
+    background: Highlight;
+    forced-color-adjust: none;
+  }
 }
 
 /* ---------- "machine stopped?" panel ---------- */
@@ -371,6 +483,25 @@ html:not(.js) .lc-rfq .lc-file-input {
 }
 .lc-rfq .lc-urgent[hidden] {
   display: none;
+}
+/* "Yes, a machine is stopped now": sets the timeline to urgent (the owner's email is flagged [URGENT]) */
+.lc-rfq .lc-stopped {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.625rem;
+  min-block-size: 2.75rem;
+  margin-block-start: 0.5rem;
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: var(--color-white);
+  cursor: pointer;
+}
+.lc-rfq .lc-stopped .lc-check {
+  margin-block-start: 0;
+  accent-color: var(--color-signal-500);
+}
+.lc-rfq .lc-urgent .lc-check:focus-visible {
+  outline-color: var(--color-white);
 }
 
 /* ---------- alerts ---------- */
@@ -408,6 +539,10 @@ html:not(.js) .lc-rfq .lc-file-input {
 }
 .lc-rfq .lc-nojs-alert:target {
   display: flex;
+}
+/* focused by the fragment navigation (tabindex -1) so it is read; the red frame already marks it */
+.lc-rfq .lc-nojs-alert:focus {
+  outline: none;
 }
 
 /* ---------- stepper ---------- */
@@ -500,6 +635,10 @@ html:not(.js) .lc-rfq .lc-file-input {
   .lc-rfq[data-step-dir="prev"] .lc-step-panel[data-active] {
     --step-x-from: calc(-1 * var(--step-x));
   }
+  /* MOT2-24: while a short smooth scroll brings the form up, the new step waits (one motion at a time) */
+  .lc-rfq[data-scrolling] .lc-step-panel[data-active] {
+    animation-play-state: paused;
+  }
   @keyframes lc-step-in {
     from {
       opacity: 0;
@@ -514,7 +653,8 @@ html:not(.js) .lc-rfq .lc-file-input {
   }
   .lc-rfq .lc-success:not([hidden]) .lc-success-badge path {
     stroke-dasharray: 24;
-    animation: lc-check-draw 0.42s var(--ease-inout) 0.22s both;
+    /* 420 ms draw starting 220 ms in (MOT2-18: on the motion tokens, so "Pause animations" collapses it too) */
+    animation: lc-check-draw calc(var(--dur-ui) * 1.5) var(--ease-inout) calc(var(--dur-micro) * 1.375) both;
   }
   @keyframes lc-success-in {
     from {

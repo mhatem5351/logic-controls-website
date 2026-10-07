@@ -33,7 +33,8 @@
     "viewAll": "Tümünü görüntüle",
     "inEgyptWhatsapp": "Mısır'da mısınız? Bize WhatsApp'tan yazın",
     "quoteShort": "Teklif",
-    "whatsappShort": "WhatsApp"
+    "whatsappShort": "WhatsApp",
+    "whatsappNarrow": "WhatsApp'tan yazın"
   },
   "a11y": {
     "skip": "İçeriğe geç",
@@ -46,7 +47,8 @@
     "homeLink": "Logic Controls — ana sayfa",
     "newTab": "yeni sekmede açılır",
     "submenu": "{label} alt menüsü",
-    "backToTop": "Başa dön"
+    "backToTop": "Başa dön",
+    "quickContact": "Hızlı iletişim"
   },
   "whatsapp": {
     "fabLabel": "WhatsApp'ta bir mühendisle görüşün",
@@ -95,7 +97,7 @@
     "prev": "Önceki görsel",
     "next": "Sonraki görsel",
     "counter": "{n} / {total}",
-    "counterLong": "{total} görselden {n}.",
+    "counterLong": "Görsel {n} / {total}",
     "openSuffix": "({total} görselden {n}., tam boyutta açılır)"
   },
   "video": {
@@ -124,6 +126,7 @@
     "title": "Sayfa bulunamadı",
     "body": "Aradığınız sayfa mevcut değil veya taşınmış.",
     "home": "Ana sayfaya git",
+    "didYouMean": "Bunu mu demek istediniz: {page}",
     "links": {
       "title": "Sık ziyaret edilen sayfalar",
       "services": "Hizmetler",

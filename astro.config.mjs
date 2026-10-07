@@ -2,6 +2,8 @@
 import { defineConfig, fontProviders } from "astro/config";
 import sitemap from "@astrojs/sitemap";
 import cspInlineHashes from "./integrations/csp-inline-hashes.mjs";
+import heroPreload from "./integrations/hero-preload.mjs";
+import siteScripts from "./integrations/site-scripts.mjs";
 import tailwindcss from "@tailwindcss/vite";
 import { lastModFor } from "./scripts/content-dates.mjs";
 // One locale list for the whole site (src/i18n/config.ts has no imports, so the config can load it directly).
@@ -25,16 +27,23 @@ export default defineConfig({
   integrations: [
     // Completes the CSP <meta> below with the hashes of each page's inline scripts (incl. is:inline) after the build.
     cspInlineHashes(),
+    // <head> preloads for each page's hero photo (phone band + desktop panel), copied from the built <picture> (PERF2-03).
+    heroPreload(),
     sitemap({
       i18n: { defaultLocale: DEFAULT_LOCALE, locales: Object.fromEntries(LOCALES.map((l) => [l, LOCALE_META[l].hreflang])) },
       // /en/art/<kind>/: illustration fragments for lazy art slots (src/pages/[lang]/art/[kind].astro), not pages for people.
       filter: (page) =>
         !page.includes("/thanks/") && !page.includes("/styleguide/") && !page.includes("/lab/") && !page.includes("/art/") && page !== "https://logic-controls.com/",
-      // <lastmod>: newest git commit of the page's own content (template + its messages + its data), scripts/content-dates.mjs.
-      // Omitted when git history is unavailable (shallow clone). No changefreq / priority (search engines ignore them).
+      // <lastmod>: when the page's OWN content last changed (its copy subtree + data record + photos), from the committed
+      // src/data/content-dates.json (scripts/content-dates.mjs; no git history needed, so shallow CI clones are fine).
+      // x-default: the same target every page declares in its <head> (Seo.astro): the English page, the root for home.
+      // No changefreq / priority (search engines ignore them).
       serialize(item) {
         const lastmod = lastModFor(item.url);
-        return lastmod ? { ...item, lastmod } : item;
+        const [locale, ...rest] = new URL(item.url).pathname.split("/").filter(Boolean);
+        const xDefault = rest.length ? item.url.replace(`/${locale}/`, `/${DEFAULT_LOCALE}/`) : new URL("/", item.url).href;
+        const links = item.links?.length ? [...item.links, { url: xDefault, lang: "x-default" }] : item.links;
+        return { ...item, ...(links ? { links } : {}), ...(lastmod ? { lastmod } : {}) };
       },
     }),
   ],
@@ -87,6 +96,8 @@ export default defineConfig({
     },
   ],
   image: { layout: "constrained", responsiveStyles: true },
+  // No Markdown pages: Shiki's code highlighting (inline styles) is never used, and off it stops the CSP warning.
+  markdown: { syntaxHighlight: false },
   // Content-Security-Policy <meta> on every page: script-src without 'unsafe-inline' (hashes of the page's inline
   // scripts, see integrations/csp-inline-hashes.mjs); styles keep 'unsafe-inline' (style="" attributes and the art
   // fragments' <style>). The rest of the policy (frame-ancestors, connect-src, …) stays in public/_headers; browsers
@@ -98,7 +109,12 @@ export default defineConfig({
     },
   },
   vite: {
+    // CSS stays split per page (Astro's default: the global sheet + a small chunk on the pages that need one). Folding
+    // everything into one site-wide sheet (build.cssCodeSplit: false) was measured at +90–210 ms first paint on slow
+    // 4G for every page (a bigger render-blocking file), and inlining the page chunks was no better (PERF2-04).
     plugins: [
+      // One client module per page: src/scripts/site.ts takes over the component <script>s it lists (PERF2-01).
+      siteScripts(),
       // Production CSS: Tailwind does not scan the dev-only pages (styleguide, lab: never built for production), so
       // utilities only they use stay out of the shipped stylesheet (~2.7 KB raw). `astro dev` still scans them.
       {
@@ -107,7 +123,10 @@ export default defineConfig({
         enforce: "pre",
         transform(code, id) {
           if (!id.endsWith("/src/styles/global.css")) return;
-          return code.replace('@source not "../../worker";', '@source not "../../worker";\n@source not "../pages/[lang]/lab";\n@source not "../pages/[lang]/styleguide.astro";');
+          const anchor = '@source not "../../worker";';
+          // Fail closed (CODE2-01): a renamed anchor would silently ship the dev-only utilities.
+          if (!code.includes(anchor)) throw new Error(`lc-prod-css-sources: anchor ${anchor} not found in src/styles/global.css`);
+          return code.replace(anchor, `${anchor}\n@source not "../pages/[lang]/lab";\n@source not "../pages/[lang]/styleguide.astro";`);
         },
       },
       tailwindcss(),

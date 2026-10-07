@@ -21,7 +21,7 @@ import Icon, { type IconName } from "~/components/Icon.astro";
 import FactoryLine from "~/components/illustrations/FactoryLine.astro";
 import ZonesBlock from "~/components/sections/main/ZonesBlock.astro";
 import FounderBlock, { type Founder } from "~/components/sections/main/FounderBlock.astro";
-import { html, emphasize } from "~/components/sections/main/rich";
+import { html, heading, emphasize } from "~/lib/text";
 import { getMessages, localeStaticPaths, type Locale } from "~/i18n";
 import { SITE } from "~/data/site";
 import { FOUNDER_ID, ORG_ID, founder as founderNode, graph, organization, webPage } from "~/lib/jsonld";
@@ -89,7 +89,7 @@ const jsonLd = graph(
 
   {/* ---------- story + mission ---------- */}
   <Section aria-labelledby="story-title">
-    <div class="grid items-start gap-12 lg:grid-cols-12 lg:gap-16">
+    <div class="grid grid-cols-1 items-start gap-12 lg:grid-cols-12 lg:gap-16">
       <div class="lg:col-span-7">
         <SectionHeading id="story-title" index={I.story} eyebrow={a.eyebrows.story} title={html(locale, a.story.title)} swoosh />
         <div class="prose-lc mt-8 text-[1.0625rem] text-charcoal-700">
@@ -104,7 +104,7 @@ const jsonLd = graph(
             {a.mission.title}
           </figcaption>
           <blockquote class="mt-6">
-            <p class="lc-mission type-h3 text-white" set:html={html(locale, a.mission.text)} />
+            <p class="lc-mission type-h3 text-white" set:html={heading(locale, a.mission.text)} />
           </blockquote>
           <Swoosh tone="light" class="mt-8 w-36" />
           <div aria-hidden="true" class="pointer-events-none absolute inset-0 -z-10 bg-blueprint mask-fade-edges"></div>
@@ -134,7 +134,7 @@ const jsonLd = graph(
 
   {/* ---------- values + why (one section) ---------- */}
   <Section variant="muted" aria-labelledby="values-title">
-    <div class="grid gap-10 lg:grid-cols-12 lg:gap-14">
+    <div class="grid grid-cols-1 gap-10 lg:grid-cols-12 lg:gap-14">
       <div class="lg:col-span-5">
         <SectionHeading id="values-title" index={I.values} eyebrow={a.eyebrows.values} title={html(locale, a.values.title)} swoosh />
         <h3 class="mt-8 type-label text-charcoal-600">{a.why.title}</h3>
@@ -152,11 +152,11 @@ const jsonLd = graph(
         </ul>
         <Button href={href(locale, "contact/#quote")} class="mt-8" iconEnd="arrow">{t.ui.cta.quote}</Button>
       </div>
-      <ul role="list" class="grid content-start gap-4 sm:grid-cols-2 sm:gap-5 lg:col-span-7">
+      <ul role="list" class="grid grid-cols-1 content-start gap-4 sm:grid-cols-2 sm:gap-5 lg:col-span-7">
         {
           a.values.items.map((v, i) => (
-            <li class="lc-reveal group relative flex flex-col border border-charcoal-200 bg-white p-6 transition duration-300 hover:-translate-y-0.5 hover:border-royal-300 hover:shadow-lift sm:p-7">
-              <span aria-hidden="true" class="absolute -top-px start-6 h-1 w-10 skew-x-[-10deg] bg-royal-600 transition-[width] duration-300 group-hover:w-20 sm:start-7 rtl:skew-x-[10deg]" />
+            <li class="lc-reveal group relative flex flex-col border border-charcoal-200 bg-white p-6 transition duration-(--dur-ui) ease-mech hover:-translate-y-0.5 hover:border-royal-300 hover:shadow-lift sm:p-7">
+              <span aria-hidden="true" class="absolute -top-px start-6 h-1 w-10 skew-x-[-10deg] bg-royal-600 transition-[width] duration-(--dur-ui) ease-mech group-hover:w-20 sm:start-7 rtl:skew-x-[10deg]" />
               <div class="flex items-center justify-between">
                 <span class="chamfer inline-grid size-11 place-items-center bg-navy-950 text-royal-300 [--chamfer:9px]">
                   <Icon name={valueIcons[i] ?? "check"} size={22} />

@@ -17,6 +17,7 @@ import type { Locale } from "~/i18n";
 import { LOCALE_META } from "~/i18n";
 import { SITE } from "~/data/site";
 import { ogSlug, type OgSpec } from "./og";
+import { plain } from "./text";
 
 const W = 1200;
 const H = 630;
@@ -152,16 +153,19 @@ const LRI = "\u2066";
 const PDI = "\u2069";
 
 /**
- * Card text (same line-breaking intent as src/lib/text.ts html(), in plain text for Pango): display controls from
- * the copy are dropped except NBSP; Arabic: "X و Y" may break before "و" (never after), every Latin run is a
- * left-to-right isolate and a parenthesised Latin gloss stays on one line, so a wrap can never invert its brackets;
- * Chinese: words stay whole (Pango would break between any two Han characters).
+ * Card text (same line-breaking intent as src/lib/text.ts html(), in plain text for Pango). It starts from the
+ * engine's plain() (I18N2-16): atoms ("Siemens S7-1200", "4-20 mA", "WinCC Professional") come back glued with NBSP
+ * and WORD JOINERs, which Pango honours, so a brand never parts from its model on a shared card. Other display
+ * controls are dropped (soft hyphens, U+200B, the engine's bidi isolates: this function adds its own). Arabic: "X و Y"
+ * may break before "و" (never after), every Latin run is a left-to-right isolate and a parenthesised Latin gloss stays
+ * on one line, so a wrap can never invert its brackets; Chinese: words stay whole (Pango would break between any two
+ * Han characters).
  */
 function cardText(locale: Locale, s: string): string {
-  let t = s.replace(/[\u00AD\u200B\u2066-\u2069]/g, "").replace(/\u2060/g, "");
+  let t = plain(locale, s).replace(/[\u00AD\u200B\u2066-\u2069]/g, "");
   if (locale === "ar") {
     t = t.replace(/\u00A0(و|مع|في|من|ثم|أو)\u00A0/g, " $1\u00A0");
-    t = t.replace(/\([^()\u0600-\u06FF\n]*[A-Za-z][^()\u0600-\u06FF\n]*\)|[A-Za-z0-9][A-Za-z0-9 \u00A0.\-–/+·°&'%×]*[A-Za-z0-9+°%]|[A-Za-z]/g, (run) =>
+    t = t.replace(/\([^()\u0600-\u06FF\n]*[A-Za-z][^()\u0600-\u06FF\n]*\)|[A-Za-z0-9][A-Za-z0-9 \u00A0\u2060.\-–/+·°&'%×]*[A-Za-z0-9+°%]|[A-Za-z]/g, (run) =>
       run.startsWith("(") && run.length <= 32 ? LRI + run.replace(/ /g, "\u00A0") + PDI : /[A-Za-z]/.test(run) ? LRI + run + PDI : run,
     );
   }

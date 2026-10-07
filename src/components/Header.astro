@@ -1,63 +1,71 @@
 ---
 /**
  * Site header.
- *  - Utility bar (≥1024px): "Setting up in Egypt?" link, phone, email, full language list. Scrolls away.
+ *  - Utility bar (≥1024px): "Setting up in Egypt?" link (not on the zh / tr home page, whose hero leads with it), phone,
+ *    email, full language list. Scrolls away.
  *  - Main bar (sticky; static on short landscape phones): logo, 5 nav items, language menu (< 1024px), the primary
- *    action, menu button. Services and Industries are disclosure menus (APG "navigation menu with top-level links"):
- *    the label stays a link to the index page, the chevron button next to it opens the full list (all 8 services /
- *    7 industries). Opens on click / Enter / Space / ArrowDown, and on hover with a short intent delay (mouse only);
- *    Escape, an outside click or moving focus away closes it.
- *  - Primary action: "Request a quote" (en/tr/zh; "Quote" on phones) — WhatsApp on Arabic pages (WhatsApp-first).
- *  - Mobile drawer: native <dialog> (focus trap, Esc, inert page). Services / Industries expand in place (the
- *    section of the current page starts open), so any service is two taps from any page.
+ *    action, menu button.
+ *  - Services and Industries are disclosure menus (APG "disclosure navigation menu" with top-level links): the label
+ *    stays a link to the index page, the chevron button next to it shows / hides the full list (all 8 services /
+ *    7 industries). Click, Enter, Space toggle; ArrowDown opens and moves into the list; Escape (from anywhere on the
+ *    page) closes it and returns focus to the chevron if focus was inside; moving focus away or clicking outside closes
+ *    it. Mouse only: resting on an item opens it after a short intent delay (instantly when another menu is already
+ *    open — the panels swap without stacking), and leaving closes it after a grace period. A click on a chevron whose
+ *    menu hover opened (or was about to open) keeps it open and pins it, instead of toggling it shut. After Escape,
+ *    hover does not re-open that menu until the pointer has left it (WCAG 1.4.13).
+ *  - Primary action: "Request a quote" (en/tr/zh; "Quote" on phones) — WhatsApp on Arabic pages (WhatsApp-first), with
+ *    a compact outline "Quote" next to it from 1024px. Both carry the page's context (pageContact: ?service= /
+ *    ?industry= preselection, the page's WhatsApp message — "machine stopped" on maintenance and support).
+ *  - Mobile drawer: <HeaderDrawer> (rendered here unless `drawer={false}`, when the layout renders it after the footer).
  * `heroDark`: starts transparent over a dark hero, turns solid once the page scrolls.
  */
 import { getMessages, type Locale } from "~/i18n";
-import { SITE } from "~/data/site";
+import { SITE, telLink } from "~/data/site";
 import Logo from "./Logo.astro";
 import Icon from "./Icon.astro";
-import { contactCta } from "./contact-cta";
+import ChromeIcon from "./ChromeIcon.astro";
+import ChromeSprite from "./ChromeSprite.astro";
+import HeaderDrawer from "./HeaderDrawer.astro";
+import { pageContact } from "./contact-cta";
 import Button from "./Button.astro";
 import LanguageSwitcher from "./LanguageSwitcher.astro";
-import CopyEmail from "./CopyEmail.astro";
+import MotionToggle from "./MotionToggle.astro";
 import { serviceIcon, industryIcon } from "./sections/catalog/catalog";
-import { colon, ltr } from "./sections/main/rich";
+import { colon, ltr } from "~/lib/text";
 import {
   MAIN_NAV,
   FOREIGN_PATH,
-  QUOTE_PATH,
+  OEM_PATH,
   href,
   currentState,
   whatsappLink,
   mailtoLink,
-  prefersEmail,
   prefersWhatsapp,
+  investorFirst,
   serviceNav,
   industryNav,
   fmt,
 } from "./nav";
-import MotionToggle from "./MotionToggle.astro";
 
 interface Props {
   locale: Locale;
   path: string;
   heroDark?: boolean;
+  /** Render the mobile drawer inside the header (default). false: the layout renders <HeaderDrawer> itself. */
+  drawer?: boolean;
+  /** The page's WhatsApp message (BaseLayout's whatsappMessage); default: derived from the path (pageContact). */
+  whatsappMessage?: string;
 }
-const { locale, path, heroDark = false } = Astro.props;
+const { locale, path, heroDark = false, drawer = true, whatsappMessage } = Astro.props;
 const m = getMessages(locale);
 const t = m.ui;
-const email = prefersEmail(locale);
 const waFirst = prefersWhatsapp(locale);
 const foreignState = currentState(FOREIGN_PATH, path);
-const mail = mailtoLink(undefined, { locale, path });
-const wa = whatsappLink(t.whatsapp.message);
-/* The drawer's "talk to an engineer" button: WhatsApp, or email with this page's context on zh (contact-cta.ts). */
-const contact = contactCta(locale, { mail: { path } });
-/* "Is a machine stopped?" — the emergency path, one tap from every page (phone first; WhatsApp except on zh). */
-const urgent = {
-  title: m.contact.thanks.urgent.title as string,
-  wa: whatsappLink(m.common.whatsapp.stopped),
-};
+/* zh / tr home: the hero's secondary action is the foreign-manufacturers page, so the utility bar does not repeat it. */
+const showForeign = !(path === "" && investorFirst(locale));
+const ctx = pageContact(locale, path);
+const mail = mailtoLink(undefined, { locale, path, topic: ctx.topic });
+const wa = whatsappLink(whatsappMessage ?? ctx.whatsapp);
 
 /* Submenus of the two catalogue sections (desktop dropdown + drawer accordion share the data). */
 const menus = {
@@ -71,7 +79,7 @@ const menus = {
   },
 };
 const ddId = (key: string) => `lc-dd-${key}`;
-const accId = (key: string) => `lc-acc-${key}`;
+const oemLabel = m.foreign.oem?.eyebrow as string | undefined;
 ---
 
 <header
@@ -79,36 +87,46 @@ const accId = (key: string) => `lc-acc-${key}`;
   style="top: calc(-1 * var(--utility-h))"
   data-hero={heroDark ? "" : undefined}
 >
+  <ChromeSprite />
   <div class="lc-header-bg pointer-events-none absolute inset-0 -z-10" aria-hidden="true"></div>
 
   {/* ---------- utility bar ---------- */}
   <div class="hidden h-(--utility-h) border-b border-white/8 text-[0.8125rem] lg:block">
-    <div class="wrap flex h-full items-center justify-between gap-6">
-      <a
-        href={href(locale, FOREIGN_PATH)}
-        aria-current={foreignState}
-        class:list={[
-          "group inline-flex min-h-6 items-center gap-2.5 font-semibold text-signal-300 transition-colors hover:text-white",
-          foreignState && "underline decoration-2 underline-offset-[6px]",
-        ]}
-      >
-        <span class="lc-led" aria-hidden="true"></span>
-        <span>{t.nav.foreign}</span>
-        <Icon name="arrow" size={14} class="transition-transform group-hover:translate-x-0.5 rtl:group-hover:-translate-x-0.5" />
-      </a>
-      <div class="flex items-center gap-6 text-navy-200">
-        <a href={`tel:${SITE.phone.tel}`} class="inline-flex min-h-6 items-center gap-2 transition-colors hover:text-white">
-          <Icon name="phone" size={14} class="text-royal-300" />
+    <div class="lc-util wrap flex h-full items-center justify-between gap-4 whitespace-nowrap xl:gap-6">
+      {
+        showForeign && (
+          <a
+            href={href(locale, FOREIGN_PATH)}
+            aria-current={foreignState}
+            class:list={[
+              "group inline-flex min-h-6 items-center gap-2.5 font-semibold text-signal-300 transition-colors hover:text-white pointer-coarse:-my-1 pointer-coarse:min-h-11",
+              foreignState && "underline decoration-2 underline-offset-[6px]",
+            ]}
+          >
+            <span class="lc-led" aria-hidden="true" />
+            <span>{t.nav.foreign}</span>
+            <Icon name="arrow" size={14} class="transition-transform group-hover:translate-x-0.5 rtl:group-hover:-translate-x-0.5" />
+          </a>
+        )
+      }
+      <div class="ms-auto flex shrink-0 items-center gap-4 text-navy-200 xl:gap-6">
+        <a href={telLink()} class="inline-flex min-h-6 items-center gap-2 transition-colors hover:text-white pointer-coarse:-my-1 pointer-coarse:min-h-11">
+          <ChromeIcon name="phone" size={14} class="text-royal-300" />
           <span class="sr-only">{t.contact.phone}{colon(locale)}</span>
           <span class="ltr" dir="ltr">{SITE.phone.display}</span>
         </a>
-        <a href={mail} class="inline-flex min-h-6 items-center gap-2 transition-colors hover:text-white">
-          <Icon name="mail" size={14} class="text-royal-300" />
+        {/* 1024–1279: the envelope alone (the address stays its accessible name), so the bar keeps one line. */}
+        <a href={mail} class="inline-flex min-h-6 items-center gap-2 transition-colors hover:text-white pointer-coarse:-my-1 pointer-coarse:min-h-11">
+          <ChromeIcon name="mail" size={14} class="text-royal-300" />
           <span class="sr-only">{t.contact.email}{colon(locale)}</span>
-          <Fragment set:html={ltr(SITE.email)} />
+          <span class="max-xl:sr-only" set:html={ltr(SITE.email)} />
         </a>
         <span class="h-4 w-px bg-white/15" aria-hidden="true"></span>
-        <LanguageSwitcher locale={locale} path={path} variant="inline" class="-me-2" />
+        <LanguageSwitcher locale={locale} path={path} variant="inline" class="-mx-2" />
+        {/* "Pause animations" among the first tab stops (A11Y2-18); the label shows from 1280px (below, the pause
+            glyph + switch, the label stays its accessible name). */}
+        <span class="h-4 w-px bg-white/15" aria-hidden="true"></span>
+        <MotionToggle variant="bar" locale={locale} class="lc-util-mt -me-1.5" />
       </div>
     </div>
   </div>
@@ -188,7 +206,7 @@ const accId = (key: string) => `lc-acc-${key}`;
                                 class="chamfer inline-grid size-8 shrink-0 place-items-center bg-white/[0.06] text-royal-300 transition-colors [--chamfer:6px] group-hover/dd:bg-royal-600 group-hover/dd:text-white"
                                 aria-hidden="true"
                               >
-                                <Icon name={l.icon} size={16} />
+                                <ChromeIcon name={l.icon} size={16} />
                               </span>
                               <span class:list={["leading-snug", cur && "underline decoration-signal-400 decoration-2 underline-offset-4"]}>{l.label}</span>
                             </a>
@@ -206,13 +224,20 @@ const accId = (key: string) => `lc-acc-${key}`;
                         <Icon name="arrow" size={14} class="transition-transform group-hover/all:translate-x-0.5 rtl:group-hover/all:-translate-x-0.5" />
                       </a>
                       {menu === menus.services && (
-                        <a
-                          href={href(locale, FOREIGN_PATH)}
-                          class="inline-flex min-h-10 items-center gap-2.5 text-sm font-semibold text-signal-300 transition-colors hover:text-white"
-                        >
-                          <span class="lc-led" aria-hidden="true" />
-                          {t.nav.foreign}
-                        </a>
+                        <span class="flex flex-wrap items-center gap-x-5 gap-y-1">
+                          <a
+                            href={href(locale, FOREIGN_PATH)}
+                            class="inline-flex min-h-10 items-center gap-2.5 text-sm font-semibold text-signal-300 transition-colors hover:text-white"
+                          >
+                            <span class="lc-led" aria-hidden="true" />
+                            {t.nav.foreign}
+                          </a>
+                          {oemLabel && (
+                            <a href={href(locale, OEM_PATH)} class="inline-flex min-h-10 items-center text-sm font-semibold text-navy-100 transition-colors hover:text-white">
+                              {oemLabel}
+                            </a>
+                          )}
+                        </span>
                       )}
                     </div>
                   </div>
@@ -227,12 +252,18 @@ const accId = (key: string) => `lc-acc-${key}`;
         <LanguageSwitcher locale={locale} path={path} variant="menu" tight={waFirst} class="lg:hidden" />
         {
           waFirst ? (
-            <Button href={wa} size="sm" icon="whatsapp" external class="lc-head-cta lg:min-h-10" aria-label={`${t.cta.whatsapp} (${t.a11y.newTab})`}>
-              <span class="max-[22.5rem]:sr-only sm:hidden lg:inline xl:hidden" aria-hidden="true">{t.cta.whatsappShort}</span>
-              <span class="max-sm:hidden lg:max-xl:hidden" aria-hidden="true">{t.cta.whatsapp}</span>
-            </Button>
+            <>
+              <Button href={wa} size="sm" icon="whatsapp" external class="lc-head-cta lg:min-h-10" aria-label={`${t.cta.whatsapp} (${t.a11y.newTab})`}>
+                <span class="max-[22.5rem]:sr-only sm:hidden lg:inline xl:hidden" aria-hidden="true">{t.cta.whatsappShort}</span>
+                <span class="max-sm:hidden lg:max-xl:hidden" aria-hidden="true">{t.cta.whatsapp}</span>
+              </Button>
+              {/* Desktop: WhatsApp stays first and filled; the quote form one click away (UX2-25). */}
+              <Button href={ctx.quote} size="sm" variant="on-dark" class="lc-head-cta max-lg:hidden lg:min-h-10">
+                {t.cta.quoteShort}
+              </Button>
+            </>
           ) : (
-            <Button href={href(locale, QUOTE_PATH)} size="sm" class="lc-head-cta lg:min-h-10">
+            <Button href={ctx.quote} size="sm" class="lc-head-cta lg:min-h-10">
               <span class="sm:hidden">{t.cta.quoteShort}</span>
               <span class="max-sm:hidden">{t.cta.quote}</span>
             </Button>
@@ -252,182 +283,7 @@ const accId = (key: string) => `lc-acc-${key}`;
     </div>
   </div>
 
-  {/* ---------- mobile drawer ---------- */}
-  <dialog id="lc-drawer" class="lc-drawer on-dark bg-navy-950 text-navy-100" aria-label={t.a11y.menu}>
-    <div class="flex min-h-full flex-col">
-      <div class="flex h-16 shrink-0 items-center justify-between border-b border-white/10 px-5">
-        <Logo variant="dark" width={104} alt="Logic Controls" loading="lazy" />
-        <button
-          type="button"
-          class="lc-menu-close inline-flex size-11 items-center justify-center border border-white/20 text-white hover:border-white/50"
-          autofocus
-        >
-          <Icon name="close" size={22} />
-          <span class="sr-only">{t.a11y.closeMenu}</span>
-        </button>
-      </div>
-      <nav aria-label={t.a11y.mainNav} class="px-5 pt-2">
-        <ul role="list" class="divide-y divide-white/8">
-          {
-            MAIN_NAV.map((item, i) => {
-              const state = currentState(item.path, path);
-              const label = t.nav[item.key];
-              const menu = "menu" in item ? menus[item.menu] : undefined;
-              const open = !!(menu && state);
-              const id = accId(item.key);
-              return (
-                <li>
-                  <div class="flex items-stretch">
-                    <a
-                      href={href(locale, item.path)}
-                      aria-current={state}
-                      class:list={["flex min-h-14 flex-1 items-center gap-4 text-lg font-bold", state ? "text-white" : "text-navy-100 hover:text-white"]}
-                    >
-                      <span class="w-5 shrink-0 font-mono text-xs font-medium text-navy-400 ltr" dir="ltr" aria-hidden="true">
-                        {String(i + 1).padStart(2, "0")}
-                      </span>
-                      <span class:list={[state && "underline decoration-signal-400 decoration-2 underline-offset-8"]}>{label}</span>
-                    </a>
-                    {menu ? (
-                      <button
-                        type="button"
-                        class="lc-acc-btn -me-3 grid w-14 shrink-0 place-items-center text-navy-300 transition-colors hover:text-white"
-                        aria-expanded={open ? "true" : "false"}
-                        aria-controls={id}
-                      >
-                        <Icon name="chevron-down" size={22} class="lc-acc-chev" />
-                        <span class="sr-only">{fmt(t.a11y.submenu, { label })}</span>
-                      </button>
-                    ) : (
-                      <span class="-me-3 grid w-14 shrink-0 place-items-center" aria-hidden="true">
-                        <Icon name="chevron-right" size={20} class={state ? "text-signal-400" : "text-navy-400"} />
-                      </span>
-                    )}
-                  </div>
-                  {menu && (
-                    <ul id={id} role="list" class="lc-acc-list grid pb-3 ps-9" hidden={!open}>
-                      {menu.items.map((l) => {
-                        const cur = currentState(l.path, path) === "page";
-                        return (
-                          <li>
-                            <a
-                              href={href(locale, l.path)}
-                              aria-current={cur ? "page" : undefined}
-                              class:list={[
-                                "flex min-h-11 items-center gap-3 text-[0.9375rem] transition-colors",
-                                cur ? "font-bold text-white" : "text-navy-200 hover:text-white",
-                              ]}
-                            >
-                              <Icon name={l.icon} size={18} class="shrink-0 text-royal-300" />
-                              <span class:list={["leading-snug", cur && "underline decoration-signal-400 decoration-2 underline-offset-4"]}>{l.label}</span>
-                            </a>
-                          </li>
-                        );
-                      })}
-                      <li>
-                        <a href={href(locale, menu.all.path)} class="inline-flex min-h-11 items-center gap-2 text-[0.9375rem] font-bold text-royal-300 hover:text-white">
-                          {menu.all.label}
-                          <Icon name="arrow" size={16} />
-                        </a>
-                      </li>
-                    </ul>
-                  )}
-                </li>
-              );
-            })
-          }
-        </ul>
-      </nav>
-      <div class="px-5 pt-4">
-        <a
-          href={href(locale, FOREIGN_PATH)}
-          aria-current={foreignState}
-          class:list={[
-            "flex min-h-14 items-center gap-3 border bg-signal-400/[0.07] px-4 font-semibold text-signal-200 hover:border-signal-400",
-            foreignState ? "border-2 border-signal-400" : "border-signal-400/40",
-          ]}
-        >
-          <span class="lc-led" aria-hidden="true"></span>
-          <span class="flex-1">{t.nav.foreign}</span>
-          {foreignState ? <Icon name="check" size={18} /> : <Icon name="arrow" size={18} />}
-        </a>
-      </div>
-      <div class="grid gap-3 px-5 pt-6">
-        {
-          waFirst ? (
-            <>
-              <Button href={wa} size="lg" block icon="whatsapp" external>
-                {t.cta.whatsapp}
-              </Button>
-              <Button href={href(locale, QUOTE_PATH)} size="lg" variant="on-dark" block iconEnd="arrow">
-                {t.cta.quote}
-              </Button>
-            </>
-          ) : (
-            <>
-              <Button href={href(locale, QUOTE_PATH)} size="lg" block iconEnd="arrow">
-                {t.cta.quote}
-              </Button>
-              <Button
-                href={contact.href}
-                size="lg"
-                variant="on-dark"
-                block
-                icon={contact.kind === "email" ? "mail" : "whatsapp"}
-                iconClass={contact.kind === "email" ? "text-royal-300" : "text-whatsapp-500"}
-                external={contact.kind === "whatsapp"}
-              >
-                {contact.label}
-              </Button>
-            </>
-          )
-        }
-      </div>
-      <div class="px-5 pt-4">
-        <div class="flex flex-wrap items-center justify-between gap-x-3 gap-y-2 border border-white/10 bg-white/[0.03] px-4 py-3">
-          <p class="flex items-center gap-2.5 text-sm font-semibold text-white">
-            <span class="lc-led" style="--led: var(--color-danger-500)" aria-hidden="true"></span>
-            {urgent.title}
-          </p>
-          <div class="flex gap-2">
-            <a href={`tel:${SITE.phone.tel}`} class="lc-tel-label inline-flex min-h-10 items-center gap-1.5 border border-white/20 px-3 text-sm font-semibold text-white hover:border-white/50">
-              <Icon name="phone" size={16} class="text-royal-300" />
-              {t.cta.call}
-            </a>
-            {
-              !email && (
-                <a href={urgent.wa} target="_blank" rel="noopener" class="inline-flex min-h-10 items-center gap-1.5 border border-white/20 px-3 text-sm font-semibold text-white hover:border-white/50">
-                  <Icon name="whatsapp" size={16} class="text-whatsapp-500" />
-                  {t.cta.whatsappShort}
-                  <span class="sr-only">({t.a11y.newTab})</span>
-                </a>
-              )
-            }
-          </div>
-        </div>
-      </div>
-      <div class="px-5 pt-8">
-        <p class="mb-3 type-label text-navy-300">{t.a11y.language}</p>
-        <LanguageSwitcher locale={locale} path={path} variant="grid" />
-      </div>
-      <div class="lc-drawer-foot mt-auto space-y-1 border-t border-white/10 px-5 pt-5 text-sm text-navy-200">
-        <a href={`tel:${SITE.phone.tel}`} class="flex min-h-11 items-center gap-3 hover:text-white">
-          <Icon name="phone" size={18} class="text-royal-300" />
-          <span class="sr-only">{t.contact.phone}{colon(locale)}</span>
-          <span class="ltr" dir="ltr">{SITE.phone.display}</span>
-        </a>
-        <div class="flex items-center justify-between gap-3">
-          <a href={mail} class="flex min-h-11 min-w-0 items-center gap-3 hover:text-white">
-            <Icon name="mail" size={18} class="text-royal-300" />
-            <span class="sr-only">{t.contact.email}{colon(locale)}</span>
-            <Fragment set:html={ltr(SITE.email)} />
-          </a>
-          <CopyEmail locale={locale} />
-        </div>
-        <MotionToggle variant="drawer" locale={locale} class="mt-4" />
-      </div>
-    </div>
-  </dialog>
+  {drawer && <HeaderDrawer locale={locale} path={path} whatsappMessage={whatsappMessage} />}
 </header>
 
 <style>
@@ -451,11 +307,26 @@ const accId = (key: string) => `lc-acc-${key}`;
     box-shadow: none;
     backdrop-filter: none;
   }
-  /* Landscape phones (≈340px of usable height): a pinned 64px bar would take a fifth of the screen. */
+  /* Landscape phones (≈340px of usable height): a pinned 64px bar would take a fifth of the screen, so it scrolls
+     away — and anchor jumps then need no room for it (DEV2-13). */
   @media (max-height: 30rem) and (max-width: 63.99rem) {
     .lc-header {
       position: relative;
       top: 0 !important;
+    }
+    :global(html) {
+      scroll-padding-top: 1rem;
+    }
+  }
+
+  @media (max-width: 79.99rem) {
+    .lc-header :global(.lc-util-mt .lc-mt-label) {
+      position: absolute;
+      width: 1px;
+      height: 1px;
+      overflow: hidden;
+      clip-path: inset(50%);
+      white-space: nowrap;
     }
   }
 
@@ -539,20 +410,33 @@ const accId = (key: string) => `lc-acc-${key}`;
       translate: 0 calc(-1 * var(--move-ui));
     }
   }
+  /* Moving from one open menu to the next: the old panel goes at once (two panels never stack), the new one only
+     fades in quickly — the header is already solid, nothing needs to drop into place. */
+  .lc-dd-panel[data-instant] {
+    transition: none;
+  }
+  .lc-dd-panel[data-switch]:not([hidden]) {
+    transition-duration: var(--dur-micro);
+  }
+  @starting-style {
+    .lc-dd-panel[data-switch]:not([hidden]) {
+      translate: 0 0;
+    }
+  }
   .lc-dd-panel .lc-dd-link {
     min-width: 13rem;
   }
-  .lc-dd-chev,
-  .lc-acc-chev {
+  /* The chevron svg comes from <Icon>: scoped selectors must reach it through :global (MOT2-13). */
+  .lc-dd-btn :global(.lc-dd-chev) {
     transition: rotate var(--dur-ui) var(--ease-mech);
   }
-  .lc-dd-btn[aria-expanded="true"] .lc-dd-chev,
-  .lc-acc-btn[aria-expanded="true"] .lc-acc-chev {
+  .lc-dd-btn[aria-expanded="true"] :global(.lc-dd-chev) {
     rotate: 180deg;
   }
   .lc-dd-btn[aria-expanded="true"] {
     color: var(--color-white);
   }
+  /* Touch screens: 44px targets for the bar's controls (desktop density unchanged). */
   @media (pointer: coarse) {
     .lc-dd-btn {
       width: 2.5rem;
@@ -561,76 +445,19 @@ const accId = (key: string) => `lc-acc-${key}`;
       width: 2.75rem;
       height: 2.75rem;
     }
-  }
-
-  /* Drawer: full-height sheet from the inline-end edge, clear of the notch / home indicator (viewport-fit=cover). */
-  .lc-drawer {
-    position: fixed;
-    inset: 0;
-    inset-inline-start: auto;
-    width: min(26rem, 100vw);
-    max-width: 100vw;
-    height: 100dvh;
-    max-height: 100dvh;
-    margin: 0;
-    padding: env(safe-area-inset-top, 0px) env(safe-area-inset-right, 0px) 0 0;
-    border: 0;
-    overflow-y: auto;
-    overscroll-behavior: contain;
-  }
-  :global([dir="rtl"]) .lc-drawer {
-    padding-right: 0;
-    padding-left: env(safe-area-inset-left, 0px);
-  }
-  .lc-drawer-foot {
-    padding-bottom: max(2rem, calc(env(safe-area-inset-bottom, 0px) + 1rem));
-  }
-  .lc-drawer::backdrop {
-    background: rgb(4 14 39 / 0.6);
-    backdrop-filter: blur(4px);
-  }
-  /* Sheet slides in from the inline-end edge (emphasized ease) and leaves faster (exit ease); the backdrop
-     fades with it. allow-discrete keeps the dialog in the top layer until the exit has played. */
-  .lc-drawer,
-  .lc-drawer::backdrop {
-    opacity: 0;
-    transition:
-      opacity var(--dur-micro) var(--ease-exit),
-      translate var(--dur-micro) var(--ease-exit),
-      overlay var(--dur-micro) allow-discrete,
-      display var(--dur-micro) allow-discrete;
-  }
-  .lc-drawer {
-    translate: var(--drawer-from, var(--move-slide)) 0;
-    contain: layout style;
-  }
-  .lc-drawer[open],
-  .lc-drawer[open]::backdrop {
-    opacity: 1;
-    translate: 0 0;
-    transition-duration: var(--dur-page);
-    transition-timing-function: var(--ease-emph);
-  }
-  @starting-style {
-    .lc-drawer[open],
-    .lc-drawer[open]::backdrop {
-      opacity: 0;
+    .lc-header :global(.lc-head-cta) {
+      min-height: 2.75rem;
     }
-    .lc-drawer[open] {
-      translate: var(--drawer-from, var(--move-slide)) 0;
-    }
-  }
-  :global([dir="rtl"]) .lc-drawer {
-    --drawer-from: calc(-1 * var(--move-slide));
-  }
-  :global(html:has(.lc-drawer[open])) {
-    overflow: hidden;
   }
 </style>
 
 <script>
+  /* Site chrome controller (header menus + a few page-wide behaviours). Idempotent: binds once per page even if the
+     module is bundled or imported more than once; it does not depend on any other script having run. */
   const header = document.querySelector<HTMLElement>(".lc-header");
-  if (header) {
+  if (header && !header.hasAttribute("data-ready")) {
+    header.setAttribute("data-ready", "");
+
     // Transparent → solid once the page scrolls (only matters over a dark hero).
     if (header.hasAttribute("data-hero")) {
       let ticking = false;
@@ -652,41 +479,80 @@ const accId = (key: string) => `lc-acc-${key}`;
     }
 
     /* ---- Desktop disclosure menus (Services, Industries) ---- */
-    const items = [...header.querySelectorAll<HTMLElement>("[data-dd]")];
-    const parts = (li: HTMLElement) => ({
-      btn: li.querySelector<HTMLButtonElement>(".lc-dd-btn")!,
-      panel: li.querySelector<HTMLElement>(".lc-dd-panel")!,
+    type Opener = "" | "hover" | "click";
+    interface Item {
+      li: HTMLElement;
+      btn: HTMLButtonElement;
+      panel: HTMLElement;
+      /** How the open panel was opened: by hover intent, or by a click / key (pinned). */
+      by: Opener;
+      openTimer: number;
+      closeTimer: number;
+      /** Escape closed it while the pointer rested on it: hover must not re-open it until the pointer leaves. */
+      noHover: boolean;
+      /** pointerType of the press that led to the current click ("" for keyboard). */
+      press: string;
+    }
+    const items: Item[] = [...header.querySelectorAll<HTMLElement>("[data-dd]")].flatMap((li) => {
+      const btn = li.querySelector<HTMLButtonElement>(".lc-dd-btn");
+      const panel = li.querySelector<HTMLElement>(".lc-dd-panel");
+      return btn && panel ? [{ li, btn, panel, by: "" as Opener, openTimer: 0, closeTimer: 0, noHover: false, press: "" }] : [];
     });
-    const isOpen = (li: HTMLElement) => parts(li).btn.getAttribute("aria-expanded") === "true";
-    const setOpen = (li: HTMLElement, open: boolean) => {
-      const { btn, panel } = parts(li);
-      if (open) items.forEach((other) => other !== li && setOpen(other, false));
-      btn.setAttribute("aria-expanded", String(open));
-      panel.hidden = !open;
+    const isOpen = (it: Item) => it.btn.getAttribute("aria-expanded") === "true";
+    const clearTimers = (it: Item) => {
+      clearTimeout(it.openTimer);
+      clearTimeout(it.closeTimer);
+      it.openTimer = it.closeTimer = 0;
     };
-    const links = (li: HTMLElement) => [...parts(li).panel.querySelectorAll<HTMLAnchorElement>("a")];
+    /** Skip the panel's transition for this one change (switching menus, back/forward cache). */
+    const instant = (panel: HTMLElement) => {
+      panel.setAttribute("data-instant", "");
+      requestAnimationFrame(() => requestAnimationFrame(() => panel.removeAttribute("data-instant")));
+    };
+    const setOpen = (it: Item, open: boolean, by: Opener = "click") => {
+      clearTimers(it);
+      if (open) {
+        let switching = false;
+        for (const other of items) {
+          if (other === it || !isOpen(other)) continue;
+          switching = true;
+          instant(other.panel);
+          setOpen(other, false);
+        }
+        if (!isOpen(it)) it.panel.toggleAttribute("data-switch", switching);
+        it.by = by;
+      } else {
+        it.by = "";
+        it.panel.removeAttribute("data-switch");
+      }
+      it.btn.setAttribute("aria-expanded", String(open));
+      it.panel.hidden = !open;
+    };
+    const links = (it: Item) => [...it.panel.querySelectorAll<HTMLAnchorElement>("a")];
     const hoverable = matchMedia("(hover: hover) and (pointer: fine)");
-    items.forEach((li) => {
-      const { btn, panel } = parts(li);
-      let timer = 0;
-      btn.addEventListener("click", () => setOpen(li, !isOpen(li)));
+    const OPEN_MS = 140;
+    const CLOSE_MS = 260;
+
+    for (const it of items) {
+      const { li, btn, panel } = it;
+      btn.addEventListener("pointerdown", (e) => (it.press = e.pointerType));
+      btn.addEventListener("click", (e) => {
+        const mouse = e.detail > 0 && it.press === "mouse";
+        it.press = "";
+        // Hover intent opened it (or was about to): the click the visitor aimed at the chevron keeps it open — pinned.
+        if (mouse && (it.openTimer || (isOpen(it) && it.by === "hover"))) return setOpen(it, true, "click");
+        setOpen(it, !isOpen(it), "click");
+      });
       btn.addEventListener("keydown", (e) => {
         if (e.key === "ArrowDown") {
           e.preventDefault();
-          setOpen(li, true);
-          links(li)[0]?.focus();
+          setOpen(it, true, "click");
+          links(it)[0]?.focus();
         }
       });
-      li.addEventListener("keydown", (e) => {
-        if (e.key === "Escape" && isOpen(li)) {
-          e.preventDefault();
-          setOpen(li, false);
-          btn.focus();
-        }
-      });
-      // Arrow keys move between the panel's links (Home / End jump to the ends).
+      // Arrow keys move between the panel's links (Home / End jump to the ends; ArrowUp from the first → the chevron).
       panel.addEventListener("keydown", (e) => {
-        const list = links(li);
+        const list = links(it);
         const i = list.indexOf(document.activeElement as HTMLAnchorElement);
         if (i < 0) return;
         const next = { ArrowDown: i + 1, ArrowUp: i - 1, Home: 0, End: list.length - 1 }[e.key];
@@ -695,54 +561,94 @@ const accId = (key: string) => `lc-acc-${key}`;
         if (next < 0) btn.focus();
         else list[Math.min(next, list.length - 1)]?.focus();
       });
+      // Focus moved on to something outside the item: close. (A click on nothing focusable gives no relatedTarget; the
+      // document click handler below decides that case.)
       li.addEventListener("focusout", (e) => {
         const to = e.relatedTarget as Node | null;
-        if (!to || !li.contains(to)) setOpen(li, false);
+        if (to && !li.contains(to)) setOpen(it, false);
       });
-      // Hover intent (mouse only): open after a short rest, close after a short grace period.
+      // Hover intent (mouse only).
       li.addEventListener("pointerenter", (e) => {
         if (e.pointerType !== "mouse" || !hoverable.matches) return;
-        clearTimeout(timer);
-        timer = window.setTimeout(() => setOpen(li, true), 140);
+        clearTimeout(it.closeTimer);
+        it.closeTimer = 0;
+        if (it.noHover || isOpen(it)) return;
+        // Already browsing the menus: swap at once; otherwise wait for the pointer to rest.
+        if (items.some((o) => o !== it && isOpen(o))) setOpen(it, true, "hover");
+        else it.openTimer = window.setTimeout(() => setOpen(it, true, "hover"), OPEN_MS);
       });
       li.addEventListener("pointerleave", (e) => {
         if (e.pointerType !== "mouse") return;
-        clearTimeout(timer);
-        timer = window.setTimeout(() => {
-          if (!li.contains(document.activeElement)) setOpen(li, false);
-        }, 260);
+        clearTimeout(it.openTimer);
+        it.openTimer = 0;
+        it.noHover = false;
+        // Only a menu that hover opened closes on leave; a pinned one waits for Escape, an outside click or focus-out.
+        if (isOpen(it) && it.by === "hover")
+          it.closeTimer = window.setTimeout(() => {
+            if (!li.contains(document.activeElement)) setOpen(it, false);
+          }, CLOSE_MS);
       });
-    });
+    }
     document.addEventListener("click", (e) => {
-      items.forEach((li) => !li.contains(e.target as Node) && isOpen(li) && setOpen(li, false));
+      for (const it of items) if (isOpen(it) && !it.li.contains(e.target as Node)) setOpen(it, false);
+    });
+    // Escape from anywhere closes an open menu (WCAG 1.4.13: dismissible without moving pointer or focus). Focus returns
+    // to the chevron only if it was inside the menu.
+    document.addEventListener("keydown", (e) => {
+      if (e.key !== "Escape") return;
+      for (const it of items) {
+        const pointerOn = it.li.matches(":hover");
+        if (it.openTimer || isOpen(it)) it.noHover = pointerOn;
+        if (!isOpen(it)) {
+          clearTimers(it);
+          continue;
+        }
+        const inside = it.li.contains(document.activeElement);
+        setOpen(it, false);
+        if (inside) it.btn.focus();
+      }
+    });
+    // Back / forward cache: the page comes back as it was left — close what was open, without replaying the exit.
+    addEventListener("pageshow", (e) => {
+      if (!e.persisted) return;
+      for (const it of items) {
+        if (!isOpen(it)) continue;
+        instant(it.panel);
+        setOpen(it, false);
+      }
+      document.querySelectorAll<HTMLElement>(".lc-lang-pop").forEach((p) => {
+        try {
+          if (p.matches(":popover-open")) p.hidePopover();
+        } catch {}
+      });
     });
 
-    /* ---- Mobile drawer ---- */
-    const drawer = header.querySelector<HTMLDialogElement>("#lc-drawer");
-    const opener = header.querySelector<HTMLButtonElement>(".lc-menu-open");
-    if (drawer && opener) {
-      opener.addEventListener("click", () => {
-        drawer.showModal();
-        opener.setAttribute("aria-expanded", "true");
-      });
-      drawer.querySelector(".lc-menu-close")?.addEventListener("click", () => drawer.close());
-      drawer.addEventListener("close", () => opener.setAttribute("aria-expanded", "false"));
-      // Click on the backdrop closes the sheet.
-      drawer.addEventListener("click", (e) => {
-        if (e.target === drawer) drawer.close();
-      });
-      // Services / Industries accordions.
-      drawer.querySelectorAll<HTMLButtonElement>(".lc-acc-btn").forEach((btn) => {
-        btn.addEventListener("click", () => {
-          const list = document.getElementById(btn.getAttribute("aria-controls") ?? "");
-          if (!list) return;
-          const open = btn.getAttribute("aria-expanded") !== "true";
-          btn.setAttribute("aria-expanded", String(open));
-          list.hidden = !open;
-        });
-      });
-      // Close if the viewport grows to desktop while open.
-      matchMedia("(min-width: 64rem)").addEventListener("change", (e) => e.matches && drawer.close());
-    }
+    /* ---- Keyboard focus on a card with a stretched link (A11Y2-24): the browser scrolls only the link into view,
+       so half of the card's focus ring can stay under the sticky header. Bring the whole card in. ---- */
+    document.addEventListener("focusin", (e) => {
+      const el = e.target as Element | null;
+      if (!el?.matches?.(".lc-stretch, a[class*='after:inset-0']") || !el.matches(":focus-visible")) return;
+      const card = el.closest<HTMLElement>("li, article");
+      if (!card || card.closest("[data-snap], .lc-toc-row")) return;
+      const r = card.getBoundingClientRect();
+      const top = (parseFloat(getComputedStyle(document.documentElement).scrollPaddingTop) || 0) + 8;
+      if (r.height + top > innerHeight) return;
+      if (r.top < top) scrollBy({ top: r.top - top, behavior: "instant" });
+      else if (r.bottom > innerHeight - 8) scrollBy({ top: r.bottom - innerHeight + 8, behavior: "instant" });
+    });
+
+    /* ---- Print (DEV2-16): Firefox (≤ 142) and Safari (< 18.4) do not print the content of closed <details>. Open
+       them for printing and restore afterwards; exclusive groups (name="…") are lifted for the print only. ---- */
+    let printed: { el: HTMLDetailsElement; name: string | null }[] = [];
+    addEventListener("beforeprint", () => {
+      printed = [...document.querySelectorAll<HTMLDetailsElement>("details:not([open])")].map((el) => ({ el, name: el.getAttribute("name") }));
+      for (const { el } of printed) el.removeAttribute("name");
+      for (const { el } of printed) el.open = true;
+    });
+    addEventListener("afterprint", () => {
+      for (const { el } of printed) el.open = false;
+      for (const { el, name } of printed) if (name !== null) el.setAttribute("name", name);
+      printed = [];
+    });
   }
 </script>

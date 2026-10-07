@@ -25,7 +25,7 @@
       "title": "Beverage syrup preparation: complete control of a jet mixing system",
       "cardTitle": "Syrup jet mixing system on Siemens S7-1200 and SIMATIC HMI",
       "client": "Beverage manufacturer",
-      "summary": "A complete control system for the syrup preparation of a beverage plant: Siemens S7-1200 PLC, a SIMATIC HMI at the tank, two Yaskawa VFDs for pump speed, and automatic filling and circulation of the jet mixer tanks.",
+      "summary": "A complete control system for the syrup preparation of a beverage plant. It uses a Siemens S7-1200 PLC, a SIMATIC HMI at the tank and two Yaskawa VFDs for pump speed. The system fills the jet mixer tanks and circulates the syrup automatically.",
       "seoTitle": "Syrup Jet Mixing Control | Siemens S7-1200",
       "seoDescription": "Syrup jet mixing control for a beverage plant in Egypt: Siemens S7-1200 PLC, SIMATIC HMI, two Yaskawa pump drives and a CIP-ready interlock.",
       "challenge": "A beverage plant needed a complete control system for its syrup preparation. The radial jet mixing system had to fill its mixer tanks and circulate the syrup at a controlled pump speed for a set time. It also had to work with the plant's CIP system, all operated from a screen at the tank.",
@@ -85,7 +85,7 @@
     },
     "shampoo-filling-ls-wecon": {
       "title": "Shampoo filling line: LS PLC control from design to production start-up",
-      "cardTitle": "Shampoo filling machine on LS PLC and Wecon HMI",
+      "cardTitle": "Shampoo filling line on LS PLC, from design to start-up",
       "client": "Personal-care manufacturer",
       "summary": "A complete control system for a shampoo filling machine: electrical and automation design, LS PLC program, Wecon HMI and commissioning under real production conditions.",
       "seoTitle": "Shampoo Filling Line: Design to Start-Up",
@@ -376,6 +376,10 @@
         "panel": "Pasteurizer control panel with Wecon PLC, Schneider Electric circuit breakers, relays, contactors and overload relays",
         "settingsTimers": "HMI settings screen with safety temperature, flow-diversion valve settings, pump delays and CIP timers",
         "settingsControl": "HMI settings screen with proportional temperature-control parameters and bypass settings"
+      },
+      "imageCaptions": {
+        "settingsTimers": "Settings: flow diversion, safety temperature, CIP timers",
+        "settingsControl": "Settings: temperature-control parameters and bypass"
       }
     },
     "labeling-machine-delta-wecon": {
@@ -436,6 +440,9 @@
         "hmi": "Wecon HMI main screen of the labeling machine with label length, dispense length, speed, sensor status and Start, Stop and Reset buttons",
         "recipes": "HMI settings screen with speeds, stepper and gate delays, and a product table with Read and Write buttons",
         "panel": "Labeling machine panel with Schneider Electric stepper drives, an Altivar drive, a Delta PLC and a MEAN WELL power supply"
+      },
+      "imageCaptions": {
+        "recipes": "Product recipes: speeds and delays per product"
       }
     },
     "olive-autoclave-sterilization": {
@@ -614,7 +621,7 @@
     },
     "shampoo-filling-delta-wecon": {
       "title": "Four-nozzle shampoo filler: new control panel, Delta PLC and Arabic HMI",
-      "cardTitle": "Shampoo filling machine on Delta PLC and Wecon HMI",
+      "cardTitle": "Four-nozzle shampoo filler with Delta PLC and Arabic HMI",
       "client": "Personal-care manufacturer",
       "summary": "A new control panel and automation for a four-nozzle shampoo filler: Delta PLC, Wecon HMI with Arabic screens and an LS Electric VFD, with control of fill volume, speed and sequence.",
       "seoTitle": "Shampoo Filler Control Panel & Arabic HMI",
@@ -902,6 +909,9 @@
         "machine": "Stainless-steel front-loading washer-extractor in a hotel laundry room",
         "hmi": "HMI washer screen with chemical inputs, steam, drain, hot and cold water, door lock, drum direction and step timers",
         "programEditor": "HMI program editor with 15 wash steps, each with time, level, water, temperature and chemical selection"
+      },
+      "imageCaptions": {
+        "programEditor": "Program editor: up to 15 steps per wash program"
       }
     }
   }

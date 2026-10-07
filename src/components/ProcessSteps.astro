@@ -7,7 +7,7 @@
  * "(Loop check)" glosses isolated, Chinese breaks between words).
  */
 import { getMessages, type Locale } from "~/i18n";
-import { colon, html } from "~/lib/text";
+import { colon, heading, html } from "~/lib/text";
 import Icon, { type IconName } from "./Icon.astro";
 
 interface Step {
@@ -36,7 +36,7 @@ const cols = { 3: "lg:grid-cols-3", 4: "lg:grid-cols-4", 5: "lg:grid-cols-5", 6:
         {i < n - 1 && (
           <span
             aria-hidden="true"
-            class="lc-step-rail absolute start-[1.375rem] top-12 -bottom-10 w-0.5 bg-gradient-to-b from-royal-500 to-royal-500/20 lg:start-12 lg:-end-8 lg:top-[1.375rem] lg:bottom-auto lg:h-0.5 lg:w-auto lg:bg-gradient-to-r rtl:lg:bg-gradient-to-l on-dark:from-royal-400 on-dark:to-royal-400/15"
+            class="lc-step-rail absolute start-[1.375rem] top-12 -bottom-10 w-0.5 bg-linear-to-b from-royal-500 to-royal-500/20 lg:start-12 lg:-end-8 lg:top-[1.375rem] lg:bottom-auto lg:h-0.5 lg:w-auto lg:bg-linear-to-r rtl:lg:bg-linear-to-l on-dark:from-royal-400 on-dark:to-royal-400/15"
           />
         )}
         <span
@@ -49,7 +49,7 @@ const cols = { 3: "lg:grid-cols-3", 4: "lg:grid-cols-4", 5: "lg:grid-cols-5", 6:
           {s.icon && <Icon name={s.icon} size={22} class="mb-3 text-royal-600 on-dark:text-signal-300" />}
           <h3 class="type-h4 text-navy-950 on-dark:text-white">
             <span class="sr-only">{t.process.step} {i + 1}{colon(locale)}</span>
-            <Fragment set:html={html(locale, s.title)} />
+            <Fragment set:html={heading(locale, s.title)} />
           </h3>
           {s.text && <p class="mt-2 text-sm text-charcoal-600 on-dark:text-navy-200" set:html={html(locale, s.text)} />}
         </div>

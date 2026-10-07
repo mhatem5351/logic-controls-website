@@ -11,6 +11,8 @@
   "brands": {
     "title": "我们编程与集成的 PLC 和 HMI 平台",
     "productsLabel": "项目中用过",
+    "projectsTitle": "该平台上的项目案例",
+    "allOnPlatform": "全部 {brand} 项目",
     "productNames": {
       "S7-1200": "S7-1200",
       "WinCC Professional": "WinCC Professional",
@@ -91,6 +93,7 @@
   "categories": {
     "eyebrow": "按类别",
     "title": "驱动、SCADA、通讯与信号",
+    "tocLabel": "驱动、SCADA 与通讯",
     "intro": "控制器只是系统的一部分。以下是我们围绕它设计、编程和调试的其他环节。"
   },
   "otherBrands": {
@@ -100,6 +103,7 @@
   "choosing": {
     "eyebrow": "我们的做法",
     "title": "我们如何选择平台",
+    "tocLabel": "如何选择平台",
     "items": [
       {
         "title": "埃及的备件供应",

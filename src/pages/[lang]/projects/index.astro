@@ -11,7 +11,7 @@ import CtaBand from "~/components/CtaBand.astro";
 import Icon from "~/components/Icon.astro";
 import ProjectBrowser from "~/components/sections/catalog/ProjectBrowser.astro";
 import { imageAlt, projectCopy, projectsFor, quoteHref, secondaryCta } from "~/components/sections/catalog/catalog";
-import { html } from "~/lib/text";
+import { heading, html } from "~/lib/text";
 import { absUrl, graph, itemList, webPage } from "~/lib/jsonld";
 import { getMessages, localePath, localeStaticPaths, type Locale } from "~/i18n";
 import { featuredProjects } from "~/data/projects";
@@ -62,15 +62,15 @@ const jsonLd = graph(
         <span aria-hidden="true" class="absolute -top-px start-6 h-1 w-14 skew-x-[-10deg] bg-royal-600 rtl:skew-x-[10deg] sm:start-7" />
         <h2 class="flex items-center gap-2.5 type-h4 text-navy-950">
           <Icon name="users" size={20} class="shrink-0 text-royal-600" />
-          {L.referenceTitle}
+          <span set:html={heading(locale, L.referenceTitle)} />
         </h2>
-        <p class="mt-2 text-[0.9375rem] leading-relaxed text-charcoal-700">{L.referenceText}</p>
-        <a href={quoteHref(locale, { service: "other" })} class="group mt-4 inline-flex min-h-6 items-center gap-2 text-sm font-bold text-royal-600 hover:text-royal-800">
+        <p class="mt-2 text-[0.9375rem] leading-relaxed text-charcoal-700" set:html={html(locale, L.referenceText)} />
+        <a href={quoteHref(locale, { service: "other", intent: "reference" })} class="group mt-4 inline-flex min-h-6 items-center gap-2 text-sm font-bold text-royal-600 hover:text-royal-800">
           {L.referenceCta}
           <Icon name="arrow" size={16} class="transition-transform group-hover:translate-x-1 rtl:group-hover:-translate-x-1" />
         </a>
       </div>
-      <p class="flex gap-2.5 text-sm text-charcoal-600 md:pt-2"><Icon name="shield" size={18} class="mt-0.5 shrink-0 text-royal-600" />{notes.anonymised}</p>
+      <p class="flex gap-2.5 text-sm text-charcoal-600 md:pt-2"><Icon name="shield" size={18} class="mt-0.5 shrink-0 text-royal-600" /><span set:html={html(locale, notes.anonymised)} /></p>
     </div>
   </Section>
 

@@ -37,18 +37,21 @@ const ld = breadcrumbList(locale, trail);
       trail.map((c, i) => {
         const last = i === trail.length - 1;
         return (
-          <li class="flex items-center gap-1.5">
-            {i > 0 && <Icon name="chevron-right" size={14} class="opacity-60" />}
+          /* The chevron and its crumb never part (flex-nowrap). On phones the current crumb (the H1 right below repeats
+             it) is clamped to one line instead of wrapping under a dangling chevron (VIS2-23). Touch: 44 px targets
+             whose extra height is taken back by negative margins, so the row keeps its height (DEV2-07). */
+          <li class:list={["flex min-w-0 flex-nowrap items-center gap-1.5", last && "max-sm:max-w-full"]}>
+            {i > 0 && <Icon name="chevron-right" size={14} class="shrink-0 opacity-60" />}
             {last || c.path === undefined ? (
               <span
                 aria-current={last ? "page" : undefined}
-                class:list={[last && "font-semibold text-navy-900 on-dark:text-white"]}
+                class:list={[last && "min-w-0 font-semibold text-navy-900 max-sm:truncate on-dark:text-white"]}
                 set:html={toHtml(locale, c.label)}
               />
             ) : (
               <a
                 href={localePath(locale, c.path)}
-                class="inline-flex min-h-6 items-center underline-offset-4 hover:text-royal-700 hover:underline on-dark:hover:text-white"
+                class="inline-flex min-h-6 items-center whitespace-nowrap underline-offset-4 hover:text-royal-700 hover:underline pointer-coarse:-my-2.5 pointer-coarse:min-h-11 on-dark:hover:text-white"
                 set:html={toHtml(locale, c.label)}
               />
             )}

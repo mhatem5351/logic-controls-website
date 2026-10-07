@@ -6,6 +6,9 @@
  * Instrument flourish (motion.css): a tick scale under each figure with an amber needle that sweeps to its mark as
  * the strip scrolls in (decoration only — pseudo-elements, the text never changes).
  */
+import type { Locale } from "~/i18n";
+import { html } from "~/lib/text";
+
 interface Item {
   value: string;
   label: string;
@@ -20,6 +23,7 @@ interface Props {
   class?: string;
 }
 const { items, band = false, label, class: className } = Astro.props;
+const locale = Astro.currentLocale as Locale | undefined;
 const split = (v: string) => {
   const m = /^(.*\d)(\D*)$/.exec(v);
   return m ? [m[1], m[2]] : [v, ""];
@@ -43,8 +47,9 @@ const cols = items.length >= 4 ? "lg:grid-cols-4" : items.length === 3 ? "sm:gri
             ]}
           >
             <dt class="lc-stat-label max-w-[15ch] text-sm font-medium text-balance text-charcoal-600 on-dark:text-navy-200">
-              {item.label}
-              {item.note && <span class="mt-1 block text-xs text-charcoal-600 on-dark:text-navy-300">{item.note}</span>}
+              {/* through the text engine (I18N2-12): zh breaks between words, Arabic isolates Latin runs */}
+              <Fragment set:html={html(locale, item.label)} />
+              {item.note && <span class="mt-1 block text-xs text-charcoal-600 on-dark:text-navy-300" set:html={html(locale, item.note)} />}
             </dt>
             <dd class="order-first type-stat text-navy-950 on-dark:text-white">
               <span class="ltr" dir="ltr">

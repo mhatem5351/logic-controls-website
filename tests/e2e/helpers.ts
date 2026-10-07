@@ -65,6 +65,8 @@ export async function findEmail(stamp: string, timeoutMs = 10_000): Promise<{ te
       const text = readFileSync(f, "utf8");
       if (!text.includes(stamp)) continue;
       const html = f.replace(/email-text([/\\])/, "email-html$1").replace(/\.txt$/, ".html");
+      // the binding writes the text part first: wait for the HTML part too (unless time is up)
+      if (!existsSync(html) && Date.now() - start < timeoutMs - 500) continue;
       return { text, html: existsSync(html) ? readFileSync(html, "utf8") : "" };
     }
     await new Promise((r) => setTimeout(r, 250));

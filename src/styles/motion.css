@@ -11,15 +11,22 @@
  *  - Only transform / translate / scale / opacity / clip-path / stroke-dashoffset (+ a little filter) animate.
  *    The single exception is the FAQ accordion height (user-initiated, interpolate-size).
  *  - Motion is opt-in: `prefers-reduced-motion: no-preference`. Under `reduce` there are no page transitions,
- *    no reveals, no intros; tokens collapse to 0 (global.css).
+ *    no reveals, no intros; tokens collapse to 0 (global.css). The opt-in media query alone does not see the site's
+ *    "Pause animations" switch: html[data-motion="off"] (set for the OS setting too) stills those blocks through the
+ *    catch-all and the still poses of section 0, so a new looping block needs its still pose there (CODE2-07).
  *  - Nothing is hidden-by-default: scroll reveals live inside `@supports (animation-timeline: view())`, so
  *    without support content is simply there; above-the-fold elements are past their reveal range at load.
  *  - Directional motion uses logical sides and mirrors on [dir="rtl"].
  *  - "Pause animations" (html[data-motion="off"], MotionToggle.astro, WCAG 2.2.2) stills everything decorative, like
  *    reduced motion does (section 0). The OS reduced-motion setting also sets it.
- *  - Decorative loops play, then rest (section 6): a few cycles, then an informative still pose; they replay on
- *    hover / focus. Illustrations: at most two animate at once (src/scripts/motion/play-when-visible.ts).
- *    Offscreen (`data-pause-offscreen`, BaseLayout) and in hidden tabs they are paused.
+ *  - Decorative loops play, then rest (section 6): a few cycles, then they stop. Illustrations stop on a lit frame of
+ *    their own loop (never a swap to another drawing), at most two animate at once, and they replay on hover / focus
+ *    (src/scripts/motion/play-when-visible.ts, illustrations/STYLE.md).
+ *  - Page-to-page transitions are scoped to the type lc-page (BaseLayout), so a same-document transition (the project
+ *    filter) never fades or moves the page.
+ *    Offscreen they are paused: BaseLayout marks [data-pause-offscreen] / blinking LEDs present at DOMContentLoaded
+ *    with data-offscreen (IntersectionObserver; elements added later are not observed). Nothing is done for hidden
+ *    tabs: a background tab renders no frames, so its CSS animations cost nothing.
  */
 
 /* ================================================================== 0. "Pause animations" (WCAG 2.2.2) */
@@ -44,14 +51,25 @@
   --move-reveal: 0px;
   --move-slide: 0px;
 }
-/* Catch-all, as for reduced motion (global.css): anything left finishes at once instead of looping. */
+/* Catch-all, as for reduced motion (global.css): anything left finishes at once instead of looping, and nothing waits
+   for a delay first (an element that fades in after a delay is simply there). The OS setting also sets
+   data-motion="off" (BaseLayout), so this one rule serves both. */
 :root[data-motion="off"] *,
 :root[data-motion="off"] *::before,
 :root[data-motion="off"] *::after {
   animation-duration: 0.01ms !important;
+  animation-delay: 0s !important;
   animation-iteration-count: 1 !important;
   transition-duration: 0.01ms !important;
   scroll-behavior: auto !important;
+}
+/* Circuit traces at rest — the one still pose for "Pause animations" and reduced motion alike, and the pose the loop
+   itself rests in (§6): drawn, dim ring nodes, no pulse. (global.css hides the rings under reduced motion only.) */
+:root[data-motion="off"] .lc-traces .node {
+  opacity: 1;
+}
+:root[data-motion="off"] .lc-traces .pulse {
+  opacity: 0;
 }
 /* Not played at all: content is simply there, drawn and lit. */
 :root[data-motion="off"]
@@ -80,6 +98,13 @@
 }
 :root[data-motion="off"] .lc-logo-intro {
   display: none;
+}
+
+/* Switching motion back on does not replay first-load entrances (MOT2-20): motion-pref.ts sets html[data-vt] (the
+   entrance rules below already stand down for it) and drops data-intro / data-fab-ping. The floating button keeps its
+   data-dock attribute after docking, so its dock-in would restart when its rule matches again. */
+:root[data-vt]:not([data-motion="off"]) .lc-fab.lc-fab[data-dock] {
+  animation: none;
 }
 
 /* Registered so the button chamfer can transition (see .lc-btn in global.css). */
@@ -143,26 +168,31 @@
   animation-duration: var(--dur-page);
   animation-timing-function: var(--ease-emph);
 }
-/* Fade-through instead of a crossfade: the old page leaves fast (decelerating, so it is ≤ 15% after ~60 ms), then
-   the new page fades in and settles. Between the two the backdrop shows: the colour of the new page's first screen
-   (navy under a dark hero, white otherwise), so the dip never flashes the wrong colour. Normal alpha, no plus-lighter. */
-::view-transition {
-  background: var(--color-white, #fff);
-}
-:root:active-view-transition-type(lc-dark)::view-transition {
-  background: var(--color-navy-950, #040e27);
-}
+/* Same-document transitions (the project filter, ProjectBrowser): the page itself stays put. Its old and new
+   snapshots swap at once (the new one is opaque) under the parts that move; no fade, no backdrop, no rise (MOT2-02). */
 ::view-transition-image-pair(root) {
   isolation: auto;
 }
 ::view-transition-old(root),
 ::view-transition-new(root) {
   mix-blend-mode: normal;
+  animation: none;
 }
-::view-transition-old(root) {
+/* Page to page (type lc-page, added to every cross-document transition by BaseLayout): a fade-through instead of a
+   crossfade. The old page leaves fast (decelerating, so it is ≤ 15% after ~60 ms), then the new page fades in and
+   settles. Between the two the backdrop shows the new page's first screen: white, or under a dark hero navy down to
+   the hero's bottom edge and white below it (--vt-hero-b, measured at pagereveal), so no part of the screen dips
+   through the wrong colour (MOT2-25). Normal alpha, no plus-lighter. */
+:root:active-view-transition-type(lc-page)::view-transition {
+  background: var(--color-white, #fff);
+}
+:root:active-view-transition-type(lc-dark)::view-transition {
+  background: linear-gradient(var(--color-navy-950, #040e27) var(--vt-hero-b, 100%), var(--color-white, #fff) 0);
+}
+:root:active-view-transition-type(lc-page)::view-transition-old(root) {
   animation: lc-vt-out var(--vt-out) var(--ease-mech) both;
 }
-::view-transition-new(root) {
+:root:active-view-transition-type(lc-page)::view-transition-new(root) {
   animation:
     lc-vt-fade var(--vt-in) var(--ease-mech) var(--vt-gap) both,
     lc-vt-in var(--dur-page) var(--ease-emph) var(--vt-gap) both;
@@ -216,29 +246,66 @@
     clip-path: polygon(0 0, calc(100% - 132px) 0, 100% 100%, 0 100%);
   }
 }
+/* The new hero photo is still loading at pagereveal (type lc-hold, BaseLayout): the old picture flies all the way and
+   stays (no fade-out, normal blending); the new one fades in over it as soon as it has pixels. */
+:root:active-view-transition-type(lc-hold)::view-transition-old(lc-media) {
+  animation: none;
+}
+:root:active-view-transition-type(lc-hold)::view-transition-new(lc-media) {
+  animation: lc-vt-fade var(--dur-ui) var(--ease-mech) both;
+}
 /* Going "up" from a detail page to a page that has neither the card nor a hero photo: the old picture leaves at
    once instead of hovering over the new page. */
 :root:active-view-transition-type(lc-orphan)::view-transition-old(lc-media) {
   animation: lc-vt-gone var(--vt-out) var(--ease-mech) both;
 }
-/* Hero scrims (one side only): fade with the photo, so text contrast holds while it travels. */
+/* Hero scrims, named with the photo (MOT2-04). Both pages have them (hero → hero): they travel with the photo and
+   crossfade over the whole flight, so the text never sits on a bright photo. One side only (card ↔ hero): they stay
+   where they are; arriving, they fade in over the last --dur-ui of the morph, landing with the photo instead of
+   darkening the old page before it arrives; leaving, they go with the old page (--vt-out) instead of lingering over
+   the new one. Clipped to the panel's slant like the photo (a named layer does not inherit .lc-hero-media's
+   clip-path): hs0 / hs2 cover the panel, hs1 is its bottom 2/5 band, whose slanted edge starts 2/5 of the way along. */
 ::view-transition-group(lc-hs0),
 ::view-transition-group(lc-hs1),
 ::view-transition-group(lc-hs2),
 ::view-transition-group(lc-hs3) {
   z-index: 2;
+  animation-duration: var(--dur-morph);
+  animation-timing-function: var(--ease-mech);
 }
-::view-transition-new(lc-hs0),
-::view-transition-new(lc-hs1),
-::view-transition-new(lc-hs2),
-::view-transition-new(lc-hs3) {
-  animation: lc-vt-fade var(--dur-ui) var(--ease-mech) both;
+::view-transition-new(lc-hs0):only-child,
+::view-transition-new(lc-hs1):only-child,
+::view-transition-new(lc-hs2):only-child,
+::view-transition-new(lc-hs3):only-child {
+  animation: lc-vt-fade var(--dur-ui) var(--ease-mech) calc(var(--dur-morph) - var(--dur-ui)) both;
 }
-::view-transition-old(lc-hs0),
-::view-transition-old(lc-hs1),
-::view-transition-old(lc-hs2),
-::view-transition-old(lc-hs3) {
-  animation: lc-vt-gone var(--dur-ui) var(--ease-mech) both;
+::view-transition-old(lc-hs0):only-child,
+::view-transition-old(lc-hs1):only-child,
+::view-transition-old(lc-hs2):only-child,
+::view-transition-old(lc-hs3):only-child {
+  animation: lc-vt-gone var(--vt-out) var(--ease-mech) both;
+}
+@media (min-width: 64rem) {
+  ::view-transition-old(lc-hs0),
+  ::view-transition-new(lc-hs0),
+  ::view-transition-old(lc-hs2),
+  ::view-transition-new(lc-hs2) {
+    clip-path: polygon(132px 0, 100% 0, 100% 100%, 0 100%);
+  }
+  ::view-transition-old(lc-hs1),
+  ::view-transition-new(lc-hs1) {
+    clip-path: polygon(52.8px 0, 100% 0, 100% 100%, 0 100%);
+  }
+  :root[dir="rtl"]::view-transition-old(lc-hs0),
+  :root[dir="rtl"]::view-transition-new(lc-hs0),
+  :root[dir="rtl"]::view-transition-old(lc-hs2),
+  :root[dir="rtl"]::view-transition-new(lc-hs2) {
+    clip-path: polygon(0 0, calc(100% - 132px) 0, 100% 100%, 0 100%);
+  }
+  :root[dir="rtl"]::view-transition-old(lc-hs1),
+  :root[dir="rtl"]::view-transition-new(lc-hs1) {
+    clip-path: polygon(0 0, calc(100% - 52.8px) 0, 100% 100%, 0 100%);
+  }
 }
 /* The hero copy rides above the morphing photo (on phones the photo sits behind the text) and only appears once
    the new page covers the old one. */
@@ -267,6 +334,15 @@
 ::view-transition-group(lc-nav-ind),
 ::view-transition-group(lc-fab) {
   z-index: 4;
+}
+/* While a transition runs (html[data-vting], both pages) the header is captured as its own layer, and a layer has no
+   backdrop to blur: the bar is opaque instead of frosted, so the page never reads sharply through it. Afterwards the
+   frosted glass eases back in through the header's own transition (MOT2-05). The transparent state over a dark hero
+   (Header.astro, more specific) is untouched. */
+:root[data-vting] .lc-header-bg {
+  background-color: rgb(4 14 39 / 0.96);
+  backdrop-filter: none;
+  transition: none;
 }
 ::view-transition-group(lc-nav-ind) {
   animation-duration: var(--dur-morph);
@@ -415,8 +491,9 @@
 
 /*
  * Column index of a grid item (rows enter the viewport together, so cards cascade across a row from the
- * inline start; in RTL columns are mirrored, so the cascade is too). Derived from the grid utilities; items hidden
- * by a filter (ProjectBrowser) don't count, so the cascade follows the visible columns.
+ * inline start; in RTL columns are mirrored, so the cascade is too). Derived from the grid utilities (whole class
+ * tokens: [class~=…], so "lg:grid-cols-2" never matches "lg:grid-cols-12", CODE2-30); items hidden by a filter
+ * (ProjectBrowser) don't count, so the cascade follows the visible columns.
  */
 [class*="grid-cols-"] > * {
   --col: 0;
@@ -425,27 +502,27 @@
   --col: 1;
 }
 @media (min-width: 40rem) {
-  [class*="sm:grid-cols-2"] > :nth-child(n of :not([hidden])) {
+  [class~="sm:grid-cols-2"] > :nth-child(n of :not([hidden])) {
     --col: 0;
   }
-  [class*="sm:grid-cols-2"] > :nth-child(2n of :not([hidden])) {
+  [class~="sm:grid-cols-2"] > :nth-child(2n of :not([hidden])) {
     --col: 1;
   }
-  [class*="sm:grid-cols-3"] > :nth-child(n of :not([hidden])) {
+  [class~="sm:grid-cols-3"] > :nth-child(n of :not([hidden])) {
     --col: 0;
   }
-  [class*="sm:grid-cols-3"] > :nth-child(3n + 2 of :not([hidden])) {
+  [class~="sm:grid-cols-3"] > :nth-child(3n + 2 of :not([hidden])) {
     --col: 1;
   }
-  [class*="sm:grid-cols-3"] > :nth-child(3n of :not([hidden])) {
+  [class~="sm:grid-cols-3"] > :nth-child(3n of :not([hidden])) {
     --col: 2;
   }
 }
 @media (min-width: 48rem) {
-  [class*="md:grid-cols-2"] > :nth-child(n of :not([hidden])) {
+  [class~="md:grid-cols-2"] > :nth-child(n of :not([hidden])) {
     --col: 0;
   }
-  [class*="md:grid-cols-2"] > :nth-child(2n of :not([hidden])) {
+  [class~="md:grid-cols-2"] > :nth-child(2n of :not([hidden])) {
     --col: 1;
   }
 }
@@ -453,34 +530,34 @@
   [class*="lg:grid-cols-"] > :nth-child(n of :not([hidden])) {
     --col: 0;
   }
-  [class*="lg:grid-cols-2"] > :nth-child(2n of :not([hidden])) {
+  [class~="lg:grid-cols-2"] > :nth-child(2n of :not([hidden])) {
     --col: 1;
   }
-  [class*="lg:grid-cols-3"] > :nth-child(3n + 2 of :not([hidden])) {
+  [class~="lg:grid-cols-3"] > :nth-child(3n + 2 of :not([hidden])) {
     --col: 1;
   }
-  [class*="lg:grid-cols-3"] > :nth-child(3n of :not([hidden])) {
+  [class~="lg:grid-cols-3"] > :nth-child(3n of :not([hidden])) {
     --col: 2;
   }
-  [class*="lg:grid-cols-4"] > :nth-child(4n + 2 of :not([hidden])) {
+  [class~="lg:grid-cols-4"] > :nth-child(4n + 2 of :not([hidden])) {
     --col: 1;
   }
-  [class*="lg:grid-cols-4"] > :nth-child(4n + 3 of :not([hidden])) {
+  [class~="lg:grid-cols-4"] > :nth-child(4n + 3 of :not([hidden])) {
     --col: 2;
   }
-  [class*="lg:grid-cols-4"] > :nth-child(4n of :not([hidden])) {
+  [class~="lg:grid-cols-4"] > :nth-child(4n of :not([hidden])) {
     --col: 3;
   }
-  [class*="lg:grid-cols-5"] > :nth-child(5n + 2 of :not([hidden])) {
+  [class~="lg:grid-cols-5"] > :nth-child(5n + 2 of :not([hidden])) {
     --col: 1;
   }
-  [class*="lg:grid-cols-5"] > :nth-child(5n + 3 of :not([hidden])) {
+  [class~="lg:grid-cols-5"] > :nth-child(5n + 3 of :not([hidden])) {
     --col: 2;
   }
-  [class*="lg:grid-cols-5"] > :nth-child(5n + 4 of :not([hidden])) {
+  [class~="lg:grid-cols-5"] > :nth-child(5n + 4 of :not([hidden])) {
     --col: 3;
   }
-  [class*="lg:grid-cols-5"] > :nth-child(5n of :not([hidden])) {
+  [class~="lg:grid-cols-5"] > :nth-child(5n of :not([hidden])) {
     --col: 4;
   }
 }
@@ -800,10 +877,7 @@
     opacity: 0;
   }
 }
-.lc-lightbox [data-image] {
-  /* page-length, not section-length: the photo is settled when the fade ends, and closing isn't cut off */
-  transition: scale var(--dur-page) var(--ease-emph);
-}
+/* The photo layers' transitions (opacity, the paging slide, the page-length scale) live in Gallery.astro (MOT2-17). */
 .lc-lightbox:not([open]) [data-image] {
   scale: 0.97;
 }
@@ -856,26 +930,42 @@
   .lc-traces .pulse {
     animation: trace-pulse 6.5s linear calc(var(--d, 0s) + var(--p0)) 2;
   }
+  /* A ring node appears when its trace has drawn up to it (not before: four floating circles under the CTAs for 2–3 s
+     read as dust, VIS2-04), then flashes with each pulse. */
   .lc-traces .node {
-    animation: node-flash 6.5s var(--ease-emph) calc(var(--d, 0s) + var(--p0)) 2;
+    animation:
+      node-flash 6.5s var(--ease-emph) calc(var(--d, 0s) + var(--p0)) 2,
+      lc-node-in var(--dur-ui) var(--ease-mech) calc(var(--t0) + var(--i, 0) * 0.12s + 0.8s) backwards;
   }
-  /* Replay (mouse enters the host section): one round, starting now. */
-  .lc-traces[data-replay] :is(.pulse, .node) {
-    animation-delay: calc(var(--d, 0s) - 0.4s);
-    animation-iteration-count: 1;
+  @keyframes lc-node-in {
+    from {
+      opacity: 0;
+    }
   }
-  .lc-traces[data-replay="1"] .pulse {
-    animation-name: lc-trace-pulse-b;
-  }
-  .lc-traces[data-replay="1"] .node {
-    animation-name: lc-node-flash-b;
-  }
-  /* Arrived through a page transition: drawn already, pulses a little sooner. */
+  /* Arrived through a page transition (or motion was switched back on, motion-pref.ts): drawn already, nodes there,
+     pulses a little sooner. */
   :root[data-vt] .lc-traces {
     --p0: 1.5s;
   }
   :root[data-vt] .lc-traces .trace {
     animation: none;
+  }
+  :root[data-vt] .lc-traces .node {
+    animation-name: node-flash, none;
+  }
+  /* Replay (mouse enters the host section): one round, starting now (after the rules above). */
+  :root .lc-traces[data-replay] .pulse {
+    animation-delay: calc(var(--d, 0s) - 0.4s);
+    animation-iteration-count: 1;
+  }
+  :root .lc-traces[data-replay] .node {
+    animation: node-flash 6.5s var(--ease-emph) calc(var(--d, 0s) - 0.4s) 1;
+  }
+  :root .lc-traces[data-replay="1"] .pulse {
+    animation-name: lc-trace-pulse-b;
+  }
+  :root .lc-traces[data-replay="1"] .node {
+    animation-name: lc-node-flash-b;
   }
   @keyframes lc-trace-pulse-b {
     0% {

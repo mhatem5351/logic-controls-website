@@ -11,6 +11,8 @@
   "brands": {
     "title": "منصات PLC و HMI نبرمجها وندمجها",
     "productsLabel": "استخدمناها في مشروعاتنا",
+    "projectsTitle": "مشروعاتنا على هذه المنصة",
+    "allOnPlatform": "جميع مشروعات {brand}",
     "productNames": {
       "S7-1200": "S7-1200",
       "WinCC Professional": "WinCC Professional",
@@ -91,6 +93,7 @@
   "categories": {
     "eyebrow": "حسب الفئة",
     "title": "الانفرترات و SCADA والاتصالات والإشارات",
+    "tocLabel": "الانفرترات و SCADA والاتصالات",
     "intro": "وحدة التحكم جزء واحد فقط من النظام. هذه بقية الطبقات التي نصممها ونبرمجها ونشغّلها حولها."
   },
   "otherBrands": {
@@ -100,6 +103,7 @@
   "choosing": {
     "eyebrow": "طريقتنا في الاختيار",
     "title": "كيف نختار المنصة المناسبة",
+    "tocLabel": "اختيار المنصة",
     "items": [
       {
         "title": "قطع الغيار في مصر",

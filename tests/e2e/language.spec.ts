@@ -32,10 +32,12 @@ test("switching language keeps the page and remembers the choice for /", async (
   await expect(page).toHaveURL("/zh/");
 });
 
-test("the one-tap quick switch (English page → Arabic) keeps the page", async ({ page, context }) => {
+// ≥ 1024px the utility bar lists every language (one tap); phones use the globe menu (first test above)
+test("the one-tap quick switch (English page → Arabic) keeps the page", { tag: "@desktop-only" }, async ({ page, context }) => {
   await page.goto(`/en/${PATH}`);
-  const quick = page.locator('header a[data-set-lang="ar"][dir="rtl"]').filter({ visible: true }).first();
-  test.skip((await quick.count()) === 0, "quick switch hidden at this width (1024–1279px or < 352px)");
+  const quick = page.getByRole("banner").getByRole("list", { name: "Language" }).getByRole("link", { name: "العربية", exact: true });
+  await expect(quick).toBeVisible();
+  await expect(quick).toHaveAttribute("dir", "rtl");
   await quick.click();
   await expect(page).toHaveURL(`/ar/${PATH}`);
   await expect(page.locator("html")).toHaveAttribute("dir", "rtl");
@@ -58,6 +60,24 @@ test("every language link on every page type points to the same page in that lan
       const links = await page.locator("a[data-set-lang]").evaluateAll((as) => as.map((a) => [a.getAttribute("data-set-lang"), a.getAttribute("href")]));
       expect(links.length, `/${from}/${rest}`).toBeGreaterThanOrEqual(LOCALES.length);
       for (const [l, href] of links) expect(href, `/${from}/${rest} → ${l}`).toBe(`/${l}/${rest}`);
+    }
+  }
+});
+
+test("language menu: opens inside the page gutters on narrow phones, RTL included (never against the screen edge)", async ({ page }) => {
+  test.skip(!isNarrow(page), "the menu variant is < 1024px");
+  for (const width of [320, 360]) {
+    await page.setViewportSize({ width, height: 740 });
+    for (const loc of ["ar", "en", "zh"]) {
+      await page.goto(`/${loc}/`);
+      await page.locator(".lc-lang-menu button[popovertarget]").click();
+      const pop = page.locator(".lc-lang-pop");
+      await expect(pop).toBeVisible();
+      const box = (await pop.boundingBox())!;
+      expect(box.x, `${loc} ${width}px: start edge`).toBeGreaterThanOrEqual(15);
+      expect(box.x + box.width, `${loc} ${width}px: end edge`).toBeLessThanOrEqual(width - 15);
+      await page.keyboard.press("Escape");
+      await expect(pop).toBeHidden();
     }
   }
 });

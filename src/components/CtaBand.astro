@@ -8,7 +8,7 @@
  * on Arabic pages WhatsApp comes first and filled.
  */
 import { getMessages, pathWithoutLocale, type Locale } from "~/i18n";
-import { SITE } from "~/data/site";
+import { SITE, telLink } from "~/data/site";
 import Button from "./Button.astro";
 import BrandMark from "./BrandMark.astro";
 import Icon from "./Icon.astro";
@@ -16,7 +16,7 @@ import Swoosh from "./Swoosh.astro";
 import { contactCta, pageTopic, placeCtas, type Cta } from "./contact-cta";
 import CopyEmail from "./CopyEmail.astro";
 import { href as lhref, QUOTE_PATH, mailtoLink, prefersEmail } from "./nav";
-import { colon, ltr, toHtml } from "~/lib/text";
+import { colon, heading, ltr, toHtml } from "~/lib/text";
 
 interface Props {
   locale?: Locale;
@@ -83,7 +83,7 @@ const aside = Astro.slots.has("aside");
       </>
     )
   }
-  <div class:list={["wrap", aside && "grid items-start gap-12 lg:grid-cols-12 lg:gap-10"]}>
+  <div class:list={["wrap", aside && "grid grid-cols-1 items-start gap-12 lg:grid-cols-12 lg:gap-10"]}>
     <div class:list={[aside ? "lg:col-span-6 lg:pt-4" : "max-w-3xl"]}>
       {
         eyebrow && (
@@ -93,7 +93,7 @@ const aside = Astro.slots.has("aside");
           </p>
         )
       }
-      <h2 class="type-h2 text-white" set:html={toHtml(locale, title)} />
+      <h2 class="type-h2 text-white" set:html={heading(locale, title)} />
       <Swoosh tone="light" class="mt-5 w-40" />
       {textHtml ? <p class="mt-5 max-w-xl type-lead text-navy-200" set:html={toHtml(locale, textHtml)} /> : text && <p class="mt-5 type-lead text-navy-200" set:html={toHtml(locale, text)} />}
       <div class="mt-9 flex flex-wrap items-center gap-3">
@@ -109,7 +109,14 @@ const aside = Astro.slots.has("aside");
               external={c.external}
               class="max-sm:w-full"
             >
-              {c.cta.label}
+              {c.narrow ? (
+                <>
+                  <span class="max-[24.99rem]:hidden">{c.cta.label}</span>
+                  <span class="min-[25rem]:hidden">{c.narrow}</span>
+                </>
+              ) : (
+                c.cta.label
+              )}
             </Button>
           ))
         }
@@ -117,7 +124,7 @@ const aside = Astro.slots.has("aside");
       {
         contactLine && (
           <p class="mt-8 flex flex-wrap items-center gap-x-6 gap-y-2 text-sm text-navy-200">
-            <a href={`tel:${SITE.phone.tel}`} class="inline-flex min-h-6 items-center gap-2 hover:text-white">
+            <a href={telLink()} class="inline-flex min-h-6 items-center gap-2 hover:text-white">
               <Icon name="phone" size={16} class="text-royal-300" />
               <span class="sr-only">
                 {m.common.labels.phone}

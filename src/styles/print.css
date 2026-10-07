@@ -38,7 +38,8 @@
   :is(.text-white, .text-navy-50, .text-navy-100, .text-navy-200, .text-navy-300, .text-royal-200, .text-royal-300, .text-signal-300, .text-signal-400) {
     color: #1b2233 !important;
   }
-  :is(.bg-navy-950, .bg-navy-900, .bg-navy-800):not(:has(> picture, > img)) {
+  /* :where() keeps :has() forgiving: a browser without it (Firefox < 121) drops only that part, not the rule (DEV2-15) */
+  :is(.bg-navy-950, .bg-navy-900, .bg-navy-800):not(:where(:has(> picture, > img))) {
     background-color: transparent !important;
   }
 
@@ -79,7 +80,7 @@
   summary > span[aria-hidden="true"],
   /* decorative zones map (the address is printed in text next to it) */
   .lc-map,
-  div:has(> svg.lc-map),
+  :where(div:has(> svg.lc-map)),
   /* browse-on navigation at the end of a case study: previous / next and related projects */
   #more,
   #related-projects,
@@ -182,9 +183,18 @@
     orphans: 3;
     widows: 3;
   }
-  /* a closing band (title, one line, phone / e-mail) prints in one piece (not the one holding the quote checklist) */
-  .lc-band:not(:has(details)) .wrap {
+  /* a closing band (title, one line, phone / e-mail) prints in one piece (not the one holding the quote checklist).
+     Not in Arabic: with its taller lines the unbreakable band was what pushed one block onto an extra sheet (DEV2-14). */
+  [dir="ltr"] .lc-band:not(:where(:has(details))) .wrap {
     break-inside: avoid;
+  }
+  /* Arabic: the same content in the same number of sheets as English — tighter section rhythm and line height on
+     paper (DEV2-14; the screen keeps 1.75). */
+  [dir="rtl"] section {
+    padding-block: 3mm !important;
+  }
+  [dir="rtl"] body {
+    line-height: 1.5 !important;
   }
   img {
     max-width: 100% !important;

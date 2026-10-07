@@ -1,7 +1,9 @@
 {
   "seo": {
     "title": "Mısır'da Yeni Fabrikalara Otomasyon Desteği",
-    "description": "Mısır'da yeni fabrikalar için yerel otomasyon mühendisleri: ithal hatların devreye alınması, I/O testleri, FAT/SAT, Arapça HMI, yerel yedek parça."
+    "description": "Mısır'da yeni fabrikalar için yerel otomasyon mühendisleri: ithal hatların devreye alınması, I/O testleri, FAT/SAT, Arapça HMI, yerel yedek parça.",
+    "serviceName": "Mısır'daki yeni fabrikalar için otomasyon ve devreye alma desteği",
+    "serviceType": "Devreye alma ve otomasyon desteği"
   },
   "hero": {
     "eyebrow": "Mısır'da fabrika kuran veya üretimini Mısır'a taşıyan üreticiler için",
@@ -47,7 +49,8 @@
     "columns": {
       "need": "Tesisin ihtiyacı",
       "answer": "Bu boşluğu nasıl kapatıyoruz"
-    }
+    },
+    "more": "Tüm ihtiyaçları göster ({count})"
   },
   "services": {
     "title": "Yeni fabrikalar için neler yapıyoruz",
@@ -210,5 +213,16 @@
     "standards": "Dokümantasyon",
     "proof": "Deneyim",
     "languages": "Diller"
+  },
+  "toc": {
+    "needs": "İhtiyaçlar",
+    "services": "Hizmetler",
+    "oem": "Makine üreticileri",
+    "timeline": "Zamanlama",
+    "standards": "Dokümanlar",
+    "proof": "Deneyim",
+    "languages": "Diller",
+    "zones": "Konum",
+    "faq": "SSS"
   }
 }

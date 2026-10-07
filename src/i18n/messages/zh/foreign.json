@@ -1,7 +1,9 @@
 {
   "seo": {
     "title": "在埃及建厂：本地自动化与调试合作伙伴",
-    "description": "为在埃及建厂的制造企业提供本地自动化工程服务：进口生产线调试、I/O 测试、FAT/SAT 支持、阿拉伯语 HMI 及本地备件。"
+    "description": "为在埃及建厂的制造企业提供本地自动化工程服务：进口生产线调试、I/O 测试、FAT/SAT 支持、阿拉伯语 HMI 及本地备件。",
+    "serviceName": "在埃及新建工厂的自动化与调试支持",
+    "serviceType": "调试与自动化支持"
   },
   "hero": {
     "eyebrow": "面向在埃及新建或迁建工厂的制造企业",
@@ -47,7 +49,8 @@
     "columns": {
       "need": "工厂的需求",
       "answer": "我们如何解决"
-    }
+    },
+    "more": "查看全部 {count} 项需求"
   },
   "services": {
     "title": "我们为新建工厂提供的服务",
@@ -210,5 +213,16 @@
     "standards": "文件资料",
     "proof": "项目经验",
     "languages": "语言"
+  },
+  "toc": {
+    "needs": "需求",
+    "services": "服务",
+    "oem": "设备制造商",
+    "timeline": "时间节点",
+    "standards": "文件资料",
+    "proof": "项目经验",
+    "languages": "语言",
+    "zones": "地点",
+    "faq": "常见问题"
   }
 }

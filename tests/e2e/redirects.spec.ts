@@ -50,12 +50,24 @@ base.describe("HTTP", { tag: "@desktop-only" }, () => {
     expect(rules.length).toBeGreaterThanOrEqual(20);
   });
 
+  // A real page below each splat target: locale aliases (`/zh-cn/*  /zh/:splat`) get a section, a section splat
+  // (`/services/*  /en/services/:splat`) one of its pages — the target must answer 200.
+  const SPLAT_SAMPLE: Record<string, string> = {
+    "/en/services/": "process-control/",
+    "/en/industries/": "food-beverage/",
+    "/en/projects/": "milk-pasteurizer/",
+    "/en/contact/": "thanks/",
+  };
+  const seen = new Set<string>();
   for (const [rawFrom, rawTo, status] of rules) {
-    // Splat rules (`/zh-cn/*  /zh/:splat`) are checked with a real page below the prefix, and with the bare prefix.
-    const samples = rawFrom.endsWith("/*") ? ["services/", ""] : [null];
+    // Splat rules are checked with a real page below the prefix, and with the bare prefix.
+    const samples = rawFrom.endsWith("/*") ? [SPLAT_SAMPLE[rawTo.replace(":splat", "")] ?? "services/", ""] : [null];
     for (const rest of samples) {
       const from = rest === null ? rawFrom : rawFrom.replace("*", rest);
       const to = rest === null ? rawTo : rawTo.replace(":splat", rest);
+      // `/services/` is both an exact rule and the bare prefix of `/services/*`: test it once.
+      if (seen.has(from)) continue;
+      seen.add(from);
       base(`legacy ${from} → ${status} ${to}`, async ({ request }) => {
         const res = await request.get(from, { maxRedirects: 0 });
         expect(res.status()).toBe(Number(status));
@@ -64,6 +76,18 @@ base.describe("HTTP", { tag: "@desktop-only" }, () => {
       });
     }
   }
+
+  base("a locale-less section page reaches the English page; locale paths are never redirected", async ({ request }) => {
+    // Without the trailing slash too (the splat rule, then the trailing-slash redirect).
+    const res = await request.get("/services/control-panels");
+    expect(res.status()).toBe(200);
+    expect(new URL(res.url()).pathname).toBe("/en/services/control-panels/");
+    for (const path of ["/ar/services/control-panels/", "/zh/industries/", "/tr/projects/milk-pasteurizer/", "/en/contact/"]) {
+      expect((await request.get(path, { maxRedirects: 0 })).status(), path).toBe(200);
+    }
+    // An unknown page below a section is a 404 in its own locale, not a redirect.
+    expect((await request.get("/ar/services/unknown-service/", { maxRedirects: 0 })).status()).toBe(404);
+  });
 
   base("a page URL without the trailing slash redirects to the canonical one", async ({ request }) => {
     const res = await request.get("/en/services/process-control", { maxRedirects: 0 });
@@ -132,6 +156,45 @@ test.describe("browser", () => {
       }
       await page.locator('a[href="/ar/"]').first().click();
       await expect(page).toHaveURL(/\/ar\/$/);
+    });
+
+    test("the 404 page names itself and suggests the closest real page in the picked language", async ({ page }) => {
+      const msg = (locale: string, ns: string) =>
+        JSON.parse(readFileSync(join(ROOT, `src/i18n/messages/${locale}/${ns}.json`), "utf8")) as {
+          items: Record<string, { navTitle: string }>;
+          breadcrumbs: Record<string, string>;
+          notFound: { title: string };
+        };
+      const cases = [
+        // typo in the section and the slug
+        ["/en/servics/control-panel/", "/en/services/control-panels/", msg("en", "services").items["control-panels"]!.navTitle, "en"],
+        // typo in the slug: a project is labelled with its path
+        ["/ar/projects/milk-pasturizer/", "/ar/projects/milk-pasteurizer/", "/ar/projects/milk-pasteurizer/", "ar"],
+        [
+          "/zh/industries/pharmaceutcal/",
+          "/zh/industries/pharmaceutical/",
+          msg("zh", "industries").items["pharmaceutical"]!.navTitle,
+          "zh",
+        ],
+        // no locale (and no redirect rule): the visitor's language — this browser is set to Arabic
+        ["/servics/", "/ar/services/", msg("ar", "common").breadcrumbs["services"]!, "ar"],
+      ] as const;
+      for (const [path, href, label, locale] of cases) {
+        expect((await page.goto(path))?.status(), path).toBe(404);
+        await expect(page.getByRole("heading", { level: 1 })).toHaveAccessibleName(`404 — ${msg(locale, "ui").notFound.title}`);
+        const dym = page.locator("[data-suggest]:visible");
+        await expect(dym, path).toHaveCount(1);
+        await expect(page.locator(`#nf-list > li[data-l="${locale}"][data-primary] [data-suggest]`), path).toBeVisible();
+        await expect(dym.locator("a"), path).toHaveAttribute("href", href);
+        await expect(dym.locator("a"), path).toHaveText(label);
+      }
+      // Nothing close: no suggestion at all.
+      expect((await page.goto("/en/qqqqq/"))?.status()).toBe(404);
+      await expect(page.locator("[data-suggest]:visible")).toHaveCount(0);
+      // The suggestion is a plain same-origin link.
+      await page.goto("/en/servics/control-panel/");
+      await page.locator("[data-suggest] a").first().click();
+      await expect(page).toHaveURL(/\/en\/services\/control-panels\/$/);
     });
   });
 });

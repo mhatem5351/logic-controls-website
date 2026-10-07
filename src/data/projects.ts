@@ -83,6 +83,9 @@ export interface ProjectImage {
   /** Key into projects.json → items[slug].imageAlts */
   key: string;
   image: ImageMetadata;
+  /** Where a crop keeps the subject (cards crop covers to 16:10 at build time). A sharp position keyword: "top",
+   *  "bottom", "left", "right top"… (not CSS "center top": sharp rejects it). Default: centre. */
+  position?: "top" | "bottom" | "left" | "right" | "left top" | "right top" | "left bottom" | "right bottom";
 }
 
 export interface ProjectVideo {
@@ -296,8 +299,10 @@ export const PROJECTS: readonly ProjectData[] = [
     technologies: ["Wecon PLC with expansion module", "Wecon HMI", "VEICHI VFD"],
     location: "egypt",
     featured: false,
-    cover: { key: "hmi", image: cheeseHmi },
-    gallery: [{ key: "panel", image: cheesePanel }],
+    /* the panel photo leads (drive + PLC at the top of the frame); the busy HMI recipe screen is in the gallery, not
+       the cover, so the card never shows the opposite of the ISA-101 screens the site sells (VIS2-06) */
+    cover: { key: "panel", image: cheesePanel, position: "top" },
+    gallery: [{ key: "hmi", image: cheeseHmi }],
   },
   {
     slug: "milk-pasteurizer",

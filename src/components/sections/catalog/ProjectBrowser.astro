@@ -1,19 +1,33 @@
 ---
 /**
- * Portfolio grid with industry × service filters.
+ * Portfolio grid with industry × service × platform filters.
  *  - Without JS: the full list (filter controls are hidden, nothing is lost).
  *  - With JS: toggle buttons (aria-pressed), instant filtering, live result count (role="status"),
- *    URL sync (?industry=&service=, replaceState) and dynamic per-option counts.
+ *    URL sync (?industry=&service=&platform=, replaceState) and dynamic per-option counts.
+ *  - Each chip's name carries its count for assistive tech ("Food and beverage, 6 projects"; the visible badge is
+ *    aria-hidden), so an option that would give no results is announced as such; the reset chips are named
+ *    "All industries" / "All services" / "All platforms" (visible "All").
+ *  - Desktop (≥ 1024px, UX2-12): one compact bar — "Filter projects", a select-style button per group that shows the
+ *    active choice ("Industry: Food and beverage"), the result count and the reset. Each button discloses its group's
+ *    chips in a panel under the bar (APG disclosure: aria-expanded / aria-controls; one open at a time; Escape closes
+ *    and returns focus; an outside click or tabbing out closes; picking a chip applies it and closes the panel).
+ *  - Phones and tablets (< 1024px): the groups sit in a collapsed "Filter projects" disclosure (with the number of
+ *    active filters and their names); chips wrap onto rows instead of scrolling sideways.
  *  - The initial state is applied by an inline script right after the markup, before first paint,
  *    so a filtered deep link never flashes the full list (no layout shift).
- * Options and counts are derived from the data: new projects, industries or services need no edits here.
+ * Options and counts are derived from the data (platforms: catalog/platforms.ts), so new projects, industries,
+ * services or brands need no edits here.
  */
 import type { ProjectData } from "~/data/projects";
+import { BRANDS } from "~/data/technologies";
 import { getMessages, type Locale } from "~/i18n";
 import Button from "~/components/Button.astro";
 import Icon from "~/components/Icon.astro";
+import { fmt } from "~/components/nav";
+import { colon, punct } from "~/lib/text";
 import ProjectCard from "./ProjectCard.astro";
 import { countLabel, industryCopy, industrySlugs, quoteHref, serviceCopy, serviceSlugs } from "./catalog";
+import { platformsOf } from "./platforms";
 
 interface Props {
   locale: Locale;
@@ -23,84 +37,187 @@ const { locale, projects } = Astro.props;
 const m = getMessages(locale);
 const F = m.common.filters;
 const labels = m.projects.labels;
+const P = punct(locale);
 
 const has = (key: "industries" | "services", v: string) => projects.filter((p) => (p[key] as readonly string[]).includes(v)).length;
+const onPlatform = (slug: string) => projects.filter((p) => (platformsOf(p) as string[]).includes(slug)).length;
 const groups = [
   {
     key: "industry",
     label: F.byIndustry,
+    short: F.industry,
+    all: F.allIndustries,
     options: industrySlugs(locale)
-      .map((s) => ({ value: s, label: industryCopy(locale, s)!.navTitle, n: has("industries", s) }))
+      .map((s) => ({ value: s, label: industryCopy(locale, s)!.navTitle, n: has("industries", s), code: false }))
       .filter((o) => o.n > 0),
   },
   {
     key: "service",
     label: F.byService,
+    short: F.service,
+    all: F.allServices,
     options: serviceSlugs(locale)
-      .map((s) => ({ value: s, label: serviceCopy(locale, s)!.navTitle, n: has("services", s) }))
+      .map((s) => ({ value: s, label: serviceCopy(locale, s)!.navTitle, n: has("services", s), code: false }))
       .filter((o) => o.n > 0),
+  },
+  {
+    key: "platform",
+    label: F.byPlatform,
+    short: F.platform,
+    all: F.allPlatforms,
+    /* Brand names are language-neutral (rendered LTR, lang="en"). */
+    options: BRANDS.map((b) => ({ value: b.slug, label: b.name, n: onPlatform(b.slug), code: true })).filter((o) => o.n > 0),
   },
 ] as const;
 const total = projects.length;
+const optionCount = (n: number) => fmt(F.optionCount, { projects: countLabel(locale, n) });
+/* Chips: wrapping pills on phones; on desktop, equal tiles in the group's panel (count at the inline end). */
 const chip =
-  "group inline-flex min-h-10 shrink-0 items-center gap-2 whitespace-nowrap border border-charcoal-300 bg-white px-3.5 text-sm font-semibold text-navy-900 transition-colors hover:border-royal-600 hover:text-royal-700 aria-pressed:border-navy-950 aria-pressed:bg-navy-950 aria-pressed:text-white data-zero:border-dashed data-zero:text-charcoal-600";
+  "group flex min-h-10 shrink-0 items-center gap-2 border border-charcoal-300 bg-white px-3.5 text-start text-sm font-semibold text-navy-900 transition-colors duration-(--dur-micro) ease-mech hover:border-royal-600 hover:text-royal-700 pointer-coarse:min-h-11 aria-pressed:border-navy-950 aria-pressed:bg-navy-950 aria-pressed:text-white aria-pressed:hover:text-white data-zero:border-dashed data-zero:text-charcoal-600 lg:w-full lg:px-3 lg:py-1.5";
+const badge = "font-mono text-xs font-medium text-charcoal-600 group-aria-pressed:text-navy-200 lg:ms-auto";
+/* Desktop group buttons: a select-style field (label, current choice, chevron); navy while its panel is open. */
+const trigger =
+  "group/t inline-flex min-h-10 items-center gap-2.5 border border-charcoal-300 bg-white ps-3.5 pe-2.5 text-sm text-navy-900 transition-colors duration-(--dur-micro) ease-mech hover:border-royal-600 pointer-coarse:min-h-11 data-set:border-navy-950 aria-expanded:border-navy-950 aria-expanded:bg-navy-950 aria-expanded:text-white max-lg:hidden";
+const panelId = "pf-panel";
 ---
 
-<div class="lc-pf" data-pf data-count-one={labels.countOne} data-count-other={F.count}>
-  <div data-pf-controls class="lc-pf-controls border-y border-charcoal-200 py-5 sm:py-6">
-    <h2 class="sr-only">{F.label}</h2>
-    <div class="grid gap-5">
-      {
-        groups.map((g) => (
-          <div role="group" aria-labelledby={`pf-${g.key}`} class="grid gap-2.5 lg:grid-cols-[10.5rem_minmax(0,1fr)] lg:items-start lg:gap-6">
-            <p id={`pf-${g.key}`} class="type-label text-charcoal-600 lg:pt-3">
-              {g.label}
-            </p>
-            <ul
-              role="list"
-              class="lc-pf-row flex gap-2 max-md:-mx-(--spacing-gutter) max-md:overflow-x-auto max-md:px-(--spacing-gutter) max-md:pb-2 md:flex-wrap"
-            >
-              <li class="shrink-0">
-                <button type="button" class={chip} aria-pressed="true" data-pf-key={g.key} data-pf-value="">
-                  <span aria-hidden="true" class="size-1.5 rounded-full bg-charcoal-300 group-aria-pressed:bg-signal-400" />
-                  {F.all}
-                  <span aria-hidden="true" data-pf-n class="font-mono text-xs font-medium text-charcoal-600 group-aria-pressed:text-navy-200">
-                    {total}
-                  </span>
-                </button>
-              </li>
-              {g.options.map((o) => (
-                <li class="shrink-0">
-                  <button type="button" class={chip} aria-pressed="false" data-pf-key={g.key} data-pf-value={o.value}>
-                    <span aria-hidden="true" class="size-1.5 rounded-full bg-charcoal-300 group-aria-pressed:bg-signal-400" />
-                    {o.label}
-                    <span aria-hidden="true" data-pf-n class="font-mono text-xs font-medium text-charcoal-600 group-aria-pressed:text-navy-200">
-                      {o.n}
-                    </span>
-                  </button>
-                </li>
-              ))}
-            </ul>
-          </div>
-        ))
-      }
+<div
+  class="lc-pf"
+  data-pf
+  data-count-one={labels.countOne}
+  data-count-other={F.count}
+  data-opt={F.optionCount}
+  data-selected={`${P.open.trimStart()}${F.selected}${P.close}`}
+  data-sep={P.listSep}
+>
+  <div class="lc-pf-bar relative flex flex-wrap items-center gap-x-6 border-y border-charcoal-200 py-2 lg:gap-2 lg:py-3">
+    <div data-pf-controls class="lc-pf-controls max-lg:w-full lg:contents">
+      <h2 class="lg:me-3">
+        {/* Phones: the heading is the disclosure button (its name: "Filter projects", how many filters are on, and which). */}
+        <button
+          type="button"
+          data-pf-toggle
+          aria-expanded="false"
+          aria-controls={panelId}
+          class="group flex min-h-11 w-full items-center justify-between gap-3 py-1 text-start text-base font-bold text-navy-950 lg:hidden"
+        >
+          <span class="grid min-w-0 grid-cols-[auto_minmax(0,1fr)] items-center gap-x-2.5">
+            <span class="slant-bar text-royal-600" aria-hidden="true"></span>
+            <span class="flex items-center gap-2.5">
+              {F.label}
+              <span data-pf-active hidden class="inline-grid min-w-6 place-items-center bg-navy-950 px-1.5 py-0.5 font-mono text-xs text-white">
+                <span aria-hidden="true" data-pf-active-n>0</span>
+                <span class="sr-only" data-pf-active-sr></span>
+              </span>
+            </span>
+            <span data-pf-summary hidden class="col-start-2 text-sm font-medium text-charcoal-700"></span>
+          </span>
+          <Icon name="chevron-down" size={20} class="shrink-0 text-royal-600 transition-transform duration-(--dur-ui) ease-mech group-aria-expanded:rotate-180" />
+        </button>
+        <span class="flex items-center gap-2.5 type-label text-navy-950 max-lg:hidden">
+          <span class="slant-bar text-royal-600" aria-hidden="true"></span>
+          {F.label}
+        </span>
+      </h2>
+      <div id={panelId} data-pf-panel class="grid gap-5 max-lg:hidden max-lg:pt-2 max-lg:pb-4 max-lg:data-open:grid lg:contents">
+        {
+          groups.map((g) => (
+            <div data-pf-group>
+              <button type="button" class={trigger} data-pf-open={g.key} aria-expanded="false" aria-controls={`pf-pop-${g.key}`}>
+                {/* Name: "Industry: Food and beverage" (the visible parts are aria-hidden; the script keeps both in step). */}
+                <span aria-hidden="true" class="type-label text-charcoal-600 group-aria-expanded/t:text-navy-200">
+                  {g.short}
+                </span>
+                <span aria-hidden="true" class="flex items-center gap-1.5 font-semibold">
+                  <span class="hidden size-1.5 rounded-full bg-royal-600 group-aria-expanded/t:bg-signal-400 group-data-set/t:block" />
+                  <span data-pf-current>{F.all}</span>
+                </span>
+                <span class="sr-only">
+                  {g.short}
+                  {colon(locale)}
+                  <span data-pf-current>{F.all}</span>
+                </span>
+                <Icon
+                  name="chevron-down"
+                  size={16}
+                  class="shrink-0 text-royal-600 transition-transform duration-(--dur-ui) ease-mech group-aria-expanded/t:rotate-180 group-aria-expanded/t:text-signal-400"
+                />
+              </button>
+              <div
+                id={`pf-pop-${g.key}`}
+                data-pf-pop={g.key}
+                role="group"
+                aria-labelledby={`pf-${g.key}`}
+                class="lg:absolute lg:inset-x-0 lg:top-full lg:z-30 lg:-mt-px lg:border lg:border-t-2 lg:border-charcoal-200 lg:border-t-navy-950 lg:bg-white lg:p-5 lg:shadow-lift lg:transition-[opacity,translate] lg:duration-(--dur-micro) lg:ease-mech lg:not-data-open:hidden lg:starting:-translate-y-(--move-nudge) lg:starting:opacity-0"
+              >
+                <p id={`pf-${g.key}`} class="type-label text-charcoal-600">
+                  {g.label}
+                </p>
+                <ul role="list" class="mt-2.5 flex flex-wrap gap-2 lg:mt-3 lg:grid lg:grid-cols-[repeat(auto-fill,minmax(15rem,1fr))] lg:gap-1.5">
+                  <li>
+                    <button type="button" class={chip} aria-pressed="true" data-pf-key={g.key} data-pf-value="">
+                      <span aria-hidden="true" class="size-1.5 shrink-0 rounded-full bg-charcoal-300 group-aria-pressed:bg-signal-400" />
+                      {/* Name: "All industries, 15 projects" (sr-only parts written without whitespace between them). */}
+                      <span aria-hidden="true" data-pf-label>
+                        {F.all}
+                      </span>
+                      <span class="sr-only">{g.all}<span data-pf-sr>{optionCount(total)}</span></span>
+                      <span aria-hidden="true" data-pf-n class={badge}>
+                        {total}
+                      </span>
+                    </button>
+                  </li>
+                  {g.options.map((o) => (
+                    <li>
+                      <button type="button" class={chip} aria-pressed="false" data-pf-key={g.key} data-pf-value={o.value}>
+                        <span aria-hidden="true" class="size-1.5 shrink-0 rounded-full bg-charcoal-300 group-aria-pressed:bg-signal-400" />
+                        {/* Name: "<option>, 6 projects", all inside one visually hidden span (an sr-only box next to visible
+                            text gets a space before it in the computed name). */}
+                        <span aria-hidden="true" data-pf-label lang={o.code ? "en" : undefined} dir={o.code ? "ltr" : undefined}>
+                          {o.label}
+                        </span>
+                        <span class="sr-only"><span lang={o.code ? "en" : undefined} dir={o.code ? "ltr" : undefined}>{o.label}</span><span data-pf-sr>{optionCount(o.n)}</span></span>
+                        <span aria-hidden="true" data-pf-n class={badge}>
+                          {o.n}
+                        </span>
+                      </button>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            </div>
+          ))
+        }
+      </div>
+    </div>
+
+    <div class="flex min-h-11 flex-wrap items-center justify-between gap-x-6 max-lg:w-full lg:ms-auto lg:min-h-10 lg:ps-4">
+      <p role="status" aria-live="polite" aria-atomic="true" data-pf-count class="type-label text-navy-900">
+        {countLabel(locale, total)}
+      </p>
+      <button
+        type="button"
+        data-pf-reset
+        hidden
+        class="inline-flex min-h-11 items-center gap-2 text-sm font-bold text-royal-600 underline-offset-4 hover:text-royal-800 hover:underline lg:min-h-10 pointer-coarse:min-h-11"
+      >
+        <Icon name="close" size={16} />
+        {F.reset}
+      </button>
     </div>
   </div>
 
-  <div class="mt-6 flex min-h-11 flex-wrap items-center justify-between gap-x-6 gap-y-2">
-    <p role="status" aria-live="polite" aria-atomic="true" data-pf-count class="type-label text-navy-900">
-      {countLabel(locale, total)}
-    </p>
-    <button type="button" data-pf-reset hidden class="inline-flex min-h-11 items-center gap-2 text-sm font-bold text-royal-600 underline-offset-4 hover:text-royal-800 hover:underline">
-      <Icon name="close" size={16} />
-      {F.reset}
-    </button>
-  </div>
-
-  <ul role="list" data-pf-grid class="lc-grid-projects mt-8 gap-x-8 gap-y-14">
+  <h2 id="pf-results" class="sr-only">{F.results}</h2>
+  <ul role="list" aria-labelledby="pf-results" data-pf-grid class="lc-grid-projects mt-8 gap-x-8 gap-y-14">
     {
       projects.map((p) => (
-        <li data-pf-item data-industry={p.industries.join(" ")} data-service={p.services.join(" ")} style="view-transition-class: lc-pf">
+        <li
+          data-pf-item
+          data-industry={p.industries.join(" ")}
+          data-service={p.services.join(" ")}
+          data-platform={platformsOf(p).join(" ")}
+          style="view-transition-class: lc-pf"
+        >
           <ProjectCard project={p} locale={locale} headingLevel="h3" />
         </li>
       ))
@@ -121,14 +238,6 @@ const chip =
   :global(html:not(.js)) .lc-pf-controls {
     display: none;
   }
-  .lc-pf-row {
-    scrollbar-width: thin;
-    scroll-snap-type: x proximity;
-    -webkit-overflow-scrolling: touch;
-  }
-  .lc-pf-row > li {
-    scroll-snap-align: start;
-  }
 </style>
 
 <script is:inline>
@@ -136,24 +245,39 @@ const chip =
     let root = document.currentScript && document.currentScript.previousElementSibling;
     while (root && !root.hasAttribute("data-pf")) root = root.previousElementSibling;
     if (!root) return;
-    const items = Array.prototype.slice.call(root.querySelectorAll("[data-pf-item]"));
-    const buttons = Array.prototype.slice.call(root.querySelectorAll("[data-pf-key]"));
+    const all = function (sel) { return Array.prototype.slice.call(root.querySelectorAll(sel)); };
+    const items = all("[data-pf-item]");
+    const buttons = all("[data-pf-key]");
+    const triggers = all("[data-pf-open]");
     const countEl = root.querySelector("[data-pf-count]");
     const reset = root.querySelector("[data-pf-reset]");
     const resetAlt = root.querySelector("[data-pf-reset-alt]");
     const empty = root.querySelector("[data-pf-empty]");
-    const keys = ["industry", "service"];
-    const state = { industry: "", service: "" };
-    const valid = { industry: {}, service: {} };
+    const toggle = root.querySelector("[data-pf-toggle]");
+    const panel = root.querySelector("[data-pf-panel]");
+    const activeBadge = root.querySelector("[data-pf-active]");
+    const summary = root.querySelector("[data-pf-summary]");
+    const keys = ["industry", "service", "platform"];
+    const state = { industry: "", service: "", platform: "" };
+    const valid = { industry: {}, service: {}, platform: {} };
     buttons.forEach(function (b) { if (b.dataset.pfValue) valid[b.dataset.pfKey][b.dataset.pfValue] = true; });
 
+    /** Fills every {name} in a message template (a template may repeat a placeholder). */
+    function fill(tpl, name, value) { return String(tpl).split("{" + name + "}").join(value); }
     function tags(el, key) { return (el.getAttribute("data-" + key) || "").split(" "); }
     function matches(el, s) {
       return keys.every(function (k) { return !s[k] || tags(el, k).indexOf(s[k]) !== -1; });
     }
     function label(n) {
-      const tpl = n === 1 ? root.dataset.countOne : root.dataset.countOther;
-      return (tpl || "{count}").replace("{count}", String(n));
+      return fill((n === 1 ? root.dataset.countOne : root.dataset.countOther) || "{count}", "count", String(n));
+    }
+    /** Copies a chip's visible label (text, and lang / dir for brand names) into a span. */
+    function copyLabel(to, from) {
+      to.textContent = from ? from.textContent.trim() : "";
+      ["lang", "dir"].forEach(function (a) {
+        const v = from && from.getAttribute(a);
+        if (v) to.setAttribute(a, v); else to.removeAttribute(a);
+      });
     }
     const grid = root.querySelector("[data-pf-grid]");
     if (grid) grid.setAttribute("data-managed", "");
@@ -173,19 +297,45 @@ const chip =
       if (n % 3 === 2 && n > 2) shown[n - 2].setAttribute("data-c3", "2");
       if (countEl) countEl.textContent = label(n);
       if (empty) empty.hidden = n > 0;
-      const active = !!(state.industry || state.service);
-      if (reset) reset.hidden = !active;
+      const on = keys.filter(function (k) { return !!state[k]; });
+      if (reset) reset.hidden = !on.length;
+      const current = {};
       buttons.forEach(function (b) {
         const k = b.dataset.pfKey, v = b.dataset.pfValue || "";
         b.setAttribute("aria-pressed", String(state[k] === v));
-        // How many projects this option would show, given the other filter.
-        const probe = { industry: state.industry, service: state.service };
+        if (state[k] === v) current[k] = b.querySelector("[data-pf-label]");
+        // How many projects this option would show, given the other filters.
+        const probe = { industry: state.industry, service: state.service, platform: state.platform };
         probe[k] = v;
         const c = items.filter(function (el) { return matches(el, probe); }).length;
         const badge = b.querySelector("[data-pf-n]");
         if (badge) badge.textContent = String(c);
+        const sr = b.querySelector("[data-pf-sr]");
+        if (sr) sr.textContent = fill(root.dataset.opt || ", {projects}", "projects", label(c));
         if (c === 0 && state[k] !== v) b.setAttribute("data-zero", ""); else b.removeAttribute("data-zero");
       });
+      // Desktop: each group's button shows its current choice ("All" or the option).
+      triggers.forEach(function (t) {
+        const k = t.dataset.pfOpen;
+        t.toggleAttribute("data-set", !!state[k]);
+        t.querySelectorAll("[data-pf-current]").forEach(function (cur) { copyLabel(cur, current[k]); });
+      });
+      // Phones: the disclosure button names how many filters are on, and which.
+      if (activeBadge) {
+        activeBadge.hidden = !on.length;
+        activeBadge.querySelector("[data-pf-active-n]").textContent = String(on.length);
+        activeBadge.querySelector("[data-pf-active-sr]").textContent = " " + fill(root.dataset.selected || "{count}", "count", String(on.length));
+      }
+      if (summary) {
+        summary.hidden = !on.length;
+        summary.textContent = "";
+        on.forEach(function (k, i) {
+          if (i) summary.appendChild(document.createTextNode(root.dataset.sep || ", "));
+          const part = document.createElement("bdi");
+          copyLabel(part, current[k]);
+          summary.appendChild(part);
+        });
+      }
     }
     function sync() {
       const url = new URL(location.href);
@@ -196,12 +346,61 @@ const chip =
     keys.forEach(function (k) { const v = q.get(k); if (v && valid[k][v]) state[k] = v; });
     apply();
 
+    // Phones: the groups open / close under the "Filter projects" button.
+    if (toggle && panel) {
+      toggle.addEventListener("click", function () {
+        const open = toggle.getAttribute("aria-expanded") !== "true";
+        toggle.setAttribute("aria-expanded", String(open));
+        panel.toggleAttribute("data-open", open);
+      });
+    }
+
+    // Desktop: one disclosure per group (button → panel under the bar), one open at a time.
+    function popOf(t) { return document.getElementById(t.getAttribute("aria-controls")); }
+    function isOpen(t) { return t.getAttribute("aria-expanded") === "true"; }
+    function setOpen(t, open) {
+      t.setAttribute("aria-expanded", String(open));
+      const pop = popOf(t);
+      if (pop) pop.toggleAttribute("data-open", open);
+    }
+    function closeAll(except) { triggers.forEach(function (t) { if (t !== except && isOpen(t)) setOpen(t, false); }); }
+    function openTrigger() { return triggers.filter(isOpen)[0]; }
+    triggers.forEach(function (t) {
+      const wrap = t.parentElement;
+      t.addEventListener("click", function () {
+        const open = !isOpen(t);
+        closeAll(t);
+        setOpen(t, open);
+      });
+      // Tabbing out of the button + panel closes it. A click on the panel's padding moves focus to an ancestor (body, or
+      // <main tabindex="-1">) or nowhere: kept open (outside clicks are handled below).
+      wrap.addEventListener("focusout", function (e) {
+        const to = e.relatedTarget;
+        if (isOpen(t) && to && !wrap.contains(to) && !to.contains(wrap)) setOpen(t, false);
+      });
+    });
+    if (triggers.length) {
+      document.addEventListener("click", function (e) {
+        const t = openTrigger();
+        if (t && !t.parentElement.contains(e.target)) setOpen(t, false);
+      });
+      document.addEventListener("keydown", function (e) {
+        const t = e.key === "Escape" && openTrigger();
+        if (!t) return;
+        const a = document.activeElement;
+        setOpen(t, false);
+        if (!a || a === document.body || t.parentElement.contains(a)) t.focus();
+      });
+      // Crossing the 1024px breakpoint (rotation, resize): the panels' layout changes, so they start closed.
+      matchMedia("(min-width: 64rem)").addEventListener("change", function () { closeAll(); });
+    }
+
     // Filter changes animate as a same-document view transition (cards that stay glide to their new cell, the others
     // fade; CSS in motion.css, `view-transition-class: lc-pf`). Names are set only for the transition, so the cards
-    // never join a page-to-page transition. Instant when motion is off (html[data-motion="off"] / reduced motion).
+    // never join a page-to-page transition. Instant when motion is off: html[data-motion="off"] covers both the
+    // "Pause animations" toggle and the OS reduced-motion setting (BaseLayout head script, motion-pref.ts).
     function animated(fn) {
-      const still = document.documentElement.dataset.motion === "off" || matchMedia("(prefers-reduced-motion: reduce)").matches;
-      if (!document.startViewTransition || still) { fn(); return; }
+      if (!document.startViewTransition || document.documentElement.dataset.motion === "off") { fn(); return; }
       items.forEach(function (el, i) { el.style.viewTransitionName = "lc-pf-" + i; });
       const done = function () { items.forEach(function (el) { el.style.viewTransitionName = ""; }); };
       try {
@@ -215,12 +414,24 @@ const chip =
       b.addEventListener("click", function () {
         const k = b.dataset.pfKey, v = b.dataset.pfValue || "";
         state[k] = state[k] === v ? "" : v;
+        // Desktop: picking an option closes its panel (the button now shows the choice); focus goes back to it.
+        const t = openTrigger();
+        if (t && t.parentElement.contains(b)) {
+          const focused = document.activeElement === b;
+          setOpen(t, false);
+          if (focused) t.focus();
+        }
         animated(apply);
         sync();
       });
     });
-    function clear() { state.industry = ""; state.service = ""; animated(apply); sync(); }
-    if (reset) reset.addEventListener("click", function () { clear(); const first = root.querySelector("[data-pf-key]"); if (first) first.focus(); });
-    if (resetAlt) resetAlt.addEventListener("click", function () { clear(); const first = root.querySelector("[data-pf-key]"); if (first) first.focus(); });
+    function clear() { closeAll(); keys.forEach(function (k) { state[k] = ""; }); animated(apply); sync(); }
+    function focusFirst() {
+      // Desktop: the first group's button. Phones: the first chip when the groups are open, else the disclosure button.
+      const first = triggers.filter(function (t) { return !!t.offsetParent; })[0] || root.querySelector("[data-pf-key]");
+      if (first && first.offsetParent) first.focus(); else if (toggle) toggle.focus();
+    }
+    if (reset) reset.addEventListener("click", function () { clear(); focusFirst(); });
+    if (resetAlt) resetAlt.addEventListener("click", function () { clear(); focusFirst(); });
   })();
 </script>

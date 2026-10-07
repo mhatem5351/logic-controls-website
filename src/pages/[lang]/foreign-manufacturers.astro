@@ -4,8 +4,11 @@
  * Hero → "On this page" bar → what a new plant needs (need → how we close the gap) → services → for machine builders
  * (OEMs who need a local commissioning / service team) → when to involve us → standards & documentation → experience
  * with imported lines (+ founder strip) → languages → zones → FAQ → CTA. Section indices follow what is rendered.
- * Hero CTAs: quote + "Email an engineer" (documents and formal requests travel by email for foreign teams);
- * WhatsApp stays in the closing band.
+ * Hero CTAs: quote + "Email an engineer" (documents and formal requests travel by email for foreign teams; Arabic
+ * pages: WhatsApp, the channel Gulf/Egyptian investors use); WhatsApp stays in the closing band. A quiet link under
+ * the CTAs jumps to the machine-builder block.
+ * Phones (< 640px) get a shorter page without losing content: the first four needs (the rest one tap away), the
+ * services as compact rows, and the machine-builder block as a slim band with a plain checklist.
  */
 import { Picture } from "astro:assets";
 import BaseLayout from "~/layouts/BaseLayout.astro";
@@ -22,11 +25,13 @@ import CtaBand from "~/components/CtaBand.astro";
 import ZonesBlock from "~/components/sections/main/ZonesBlock.astro";
 import FounderStrip from "~/components/sections/main/FounderStrip.astro";
 import PageToc from "~/components/sections/main/PageToc.astro";
-import { html, emphasize } from "~/components/sections/main/rich";
+import { projectsOnPlatform } from "~/components/sections/catalog/platforms";
+import { projectsFor } from "~/components/sections/catalog/catalog";
+import { html, heading, emphasize } from "~/lib/text";
 import { getMessages, localeStaticPaths, localePath, LOCALE_META, type Locale } from "~/i18n";
 import { absUrl, graph, service, webPage } from "~/lib/jsonld";
 import { STATS } from "~/data/stats";
-import { href, whatsappLink, mailtoLink, prefersEmail } from "~/components/nav";
+import { href, whatsappLink, mailtoLink, prefersEmail, prefersWhatsapp, fmt, OEM_PATH } from "~/components/nav";
 import heroImage from "~/assets/projects/tablet-coating-scada/machine.jpg";
 import proofHmi from "~/assets/projects/anaerobic-waste-treatment-commissioning/hmi.jpg";
 import proofPanel from "~/assets/projects/anaerobic-waste-treatment-commissioning/panel.jpg";
@@ -43,7 +48,12 @@ const PATH = "foreign-manufacturers";
 const oem = f.oem;
 const oemQuote = `${href(locale, "contact")}?service=oem-partner#quote`;
 const oemMessage = c.whatsapp.oem;
-const oemIcons: IconName[] = ["check", "users", "hmi", "wrench"];
+/* Hero secondary: email for foreign teams (documents travel by email); WhatsApp first on Arabic pages (placeCtas). */
+const heroSecondary = prefersWhatsapp(locale)
+  ? { label: t.ui.cta.whatsapp, href: whatsappLink(c.whatsapp.foreign) }
+  : { label: t.ui.cta.emailEngineer, href: mailtoLink(undefined, { locale, topic: t.ui.nav.foreign, path: "foreign-manufacturers" }) };
+/* Phones: the first four needs, the rest behind "Show all" (with JS; all of them without). */
+const NEEDS_MOBILE = 4;
 
 /* Section numbers follow what is rendered. */
 let n = 0;
@@ -59,19 +69,22 @@ const I = {
   zones: idx(),
   faq: idx(),
 };
+/* Short labels (foreign.toc) so the nine items fit one row from 1024px in every language. */
 const toc = [
-  { id: "needs", label: f.eyebrows.needs },
-  { id: "services", label: c.labels.services },
-  ...(oem ? [{ id: "oem", label: oem.eyebrow }] : []),
-  { id: "timeline", label: f.eyebrows.timeline },
-  { id: "standards", label: f.eyebrows.standards },
-  { id: "proof", label: f.eyebrows.proof },
-  { id: "languages", label: f.eyebrows.languages },
-  { id: "zones", label: c.labels.location },
-  { id: "faq", label: c.labels.faq },
+  { id: "needs", label: f.toc.needs },
+  { id: "services", label: f.toc.services },
+  ...(oem ? [{ id: "oem", label: f.toc.oem }] : []),
+  { id: "timeline", label: f.toc.timeline },
+  { id: "standards", label: f.toc.standards },
+  { id: "proof", label: f.toc.proof },
+  { id: "languages", label: f.toc.languages },
+  { id: "zones", label: f.toc.zones },
+  { id: "faq", label: f.toc.faq },
 ];
 const caseSlug = "anaerobic-waste-treatment-commissioning";
 const caseItem = t.projects.items[caseSlug];
+/* "We work every day with Wecon" (proof copy) → the portfolio filtered to that platform (UX2-15). */
+const weconCount = projectsOnPlatform("wecon", projectsFor(locale)).length;
 const caseAlts = (caseItem?.imageAlts ?? {}) as Record<string, string>;
 const heroAlt = ((t.projects.items["tablet-coating-scada"]?.imageAlts ?? {}) as Record<string, string>).machine ?? "";
 
@@ -100,7 +113,7 @@ const proof = STATS.map((s) => ({ value: s.value, label: c.stats[s.key].label })
 /* Structured data (src/lib/jsonld.ts): the page + the service for manufacturers setting up in Egypt (localized). */
 const jsonLd = graph(
   webPage(locale, { path: "foreign-manufacturers", name: f.seo.title, description: f.seo.description, mainEntity: { "@id": `${absUrl(localePath(locale, "foreign-manufacturers"))}#service` } }),
-  service(locale, { path: "foreign-manufacturers", name: f.hero.title, serviceType: f.seo.title, description: f.seo.description, audience: f.hero.eyebrow }),
+  service(locale, { path: "foreign-manufacturers", name: f.seo.serviceName, serviceType: f.seo.serviceType, description: f.seo.description, audience: f.hero.eyebrow }),
 );
 ---
 
@@ -116,10 +129,24 @@ const jsonLd = graph(
     imageAlt={heroAlt}
     priority
     primary={{ label: f.hero.ctaPrimary, href: quoteHref }}
-    secondary={{ label: t.ui.cta.emailEngineer, href: mailtoLink(undefined, { locale, topic: t.ui.nav.foreign, path: PATH }) }}
+    secondary={heroSecondary}
   >
     <Breadcrumbs slot="breadcrumbs" locale={locale} items={[{ label: c.breadcrumbs.foreign }]} />
-    <ul role="list" class="lc-rise mt-9 grid max-w-xl gap-2.5 border-t border-white/10 pt-6" style="--i:3" data-fab-avoid>
+    {
+      /* Machine builders (OEMs) don't see themselves as "setting up a factory": one quiet line straight to their block. */
+      oem && (
+        <a
+          href={href(locale, OEM_PATH)}
+          class="lc-rise group mt-5 inline-flex min-h-11 items-center gap-2 text-sm font-semibold text-signal-300 underline-offset-4 transition-colors hover:text-white hover:underline"
+          style="--i:2"
+          data-fab-avoid
+        >
+          <span set:html={html(locale, oem.title)} />
+          <Icon name="arrow" size={16} class="transition-transform group-hover:translate-x-0.5 rtl:group-hover:-translate-x-0.5" />
+        </a>
+      )
+    }
+    <ul role="list" class="lc-rise mt-7 grid max-w-xl grid-cols-1 gap-2.5 border-t border-white/10 pt-6" style="--i:3" data-fab-avoid>
       {
         f.hero.chips.map((chip) => (
           <li class="flex items-start gap-3 text-[0.9375rem] text-navy-100">
@@ -165,10 +192,11 @@ const jsonLd = graph(
       <span></span>
       <p class="type-label text-charcoal-600">{f.needs.columns.answer}</p>
     </div>
+    <div class="lc-cap-needs" data-cap data-capped>
     <ol role="list" class="mt-10 lg:mt-0">
       {
         f.needs.items.map((item, i) => (
-          <li class="group grid gap-3 border-b border-charcoal-200 py-6 lg:grid-cols-[minmax(0,5fr)_4rem_minmax(0,7fr)] lg:items-center lg:gap-6 lg:py-7">
+          <li class="group grid grid-cols-1 gap-3 border-b border-charcoal-200 py-6 lg:grid-cols-[minmax(0,5fr)_4rem_minmax(0,7fr)] lg:items-center lg:gap-6 lg:py-7">
             <div class="flex items-center gap-4">
               <span class="chamfer grid size-12 shrink-0 place-items-center bg-navy-950 text-royal-300 transition-colors [--chamfer:10px] group-hover:bg-royal-700 group-hover:text-white">
                 <Icon name={needIcons[i] ?? "check"} size={22} />
@@ -182,35 +210,47 @@ const jsonLd = graph(
               <span class="absolute -top-[3px] start-0 size-[7px] rounded-full border border-royal-600 bg-white" />
               <Icon name="chevron-right" size={16} class="absolute -end-1.5 -top-2 text-royal-600" />
             </span>
-            <p class="text-charcoal-700 max-lg:ps-16" set:html={html(locale, item.text)} />
+            <p class="text-charcoal-700 sm:max-lg:ps-16" set:html={html(locale, item.text)} />
           </li>
         ))
       }
     </ol>
+    {
+      f.needs.items.length > NEEDS_MOBILE && (
+        <button type="button" class="lc-cap-more lc-btn mt-6 sm:hidden" data-variant="secondary" aria-expanded="false">
+          <span class="lc-btn-label">{fmt(f.needs.more, { count: f.needs.items.length })}</span>
+          <Icon name="chevron-down" size={18} />
+        </button>
+      )
+    }
+    </div>
   </Section>
 
   {/* ---------- 02 services for new factories ---------- */}
   <Section variant="muted" id="services" aria-labelledby="services-title">
     <SectionHeading id="services-title" index={I.services} eyebrow={c.labels.services} title={html(locale, f.services.title)} />
-    <ul role="list" class="mt-12 grid gap-px overflow-hidden border border-charcoal-200 bg-charcoal-200 sm:grid-cols-2 lg:grid-cols-4">
+    {/* Phones: compact rows (icon · title · two-line summary · arrow); from 640px: the card grid. */}
+    <ul role="list" class="mt-8 grid grid-cols-1 gap-px overflow-hidden border border-charcoal-200 bg-charcoal-200 sm:mt-12 sm:grid-cols-2 lg:grid-cols-4">
       {
         f.services.items.map((s, i) => (
-          <li class="group relative bg-white p-6 transition-colors hover:bg-royal-50/40 has-[a:focus-visible]:z-10 has-[a:focus-visible]:outline-2 has-[a:focus-visible]:-outline-offset-2 has-[a:focus-visible]:outline-(--focus) sm:p-7">
-            <span aria-hidden="true" class="absolute -top-px start-6 h-1 w-8 skew-x-[-10deg] bg-royal-600 transition-[width] duration-300 group-hover:w-14 rtl:skew-x-[10deg] sm:start-7" />
+          <li class="group relative grid grid-cols-[auto_minmax(0,1fr)_auto] items-center gap-x-4 bg-white p-4 transition-colors hover:bg-royal-50/40 has-[a:focus-visible]:z-10 has-[a:focus-visible]:outline-2 has-[a:focus-visible]:-outline-offset-2 has-[a:focus-visible]:outline-(--focus) sm:block sm:p-7">
+            <span aria-hidden="true" class="absolute -top-px start-6 h-1 w-8 skew-x-[-10deg] bg-royal-600 transition-[width] duration-(--dur-ui) ease-mech group-hover:w-14 max-sm:hidden rtl:skew-x-[10deg] sm:start-7" />
             <div class="flex items-center justify-between">
-              <Icon name={serviceIcons[i] ?? "check"} size={26} class="text-royal-600" />
-              <span aria-hidden="true" class="font-mono text-xs text-charcoal-600 ltr" dir="ltr">{String(i + 1).padStart(2, "0")}</span>
+              <Icon name={serviceIcons[i] ?? "check"} size={26} class="text-royal-600 max-sm:size-[22px]" />
+              <span aria-hidden="true" class="font-mono text-xs text-charcoal-600 ltr max-sm:hidden" dir="ltr">{String(i + 1).padStart(2, "0")}</span>
             </div>
-            <h3 class="mt-5 type-h4 text-navy-950">
-              {serviceLinks[i] ? (
-                <a href={href(locale, serviceLinks[i])} class="lc-stretch after:absolute after:inset-0 after:content-[''] group-hover:text-royal-700" set:html={html(locale, s.title)} />
-              ) : (
-                <span set:html={html(locale, s.title)} />
-              )}
-            </h3>
-            <p class="mt-2 text-[0.9375rem] text-charcoal-600" set:html={html(locale, s.text)} />
+            <div class="min-w-0">
+              <h3 class="type-h4 text-navy-950 max-sm:text-base sm:mt-5">
+                {serviceLinks[i] ? (
+                  <a href={href(locale, serviceLinks[i])} class="lc-stretch after:absolute after:inset-0 after:content-[''] group-hover:text-royal-700" set:html={html(locale, s.title)} />
+                ) : (
+                  <span set:html={html(locale, s.title)} />
+                )}
+              </h3>
+              <p class="mt-0.5 text-sm text-charcoal-600 max-sm:line-clamp-2 sm:mt-2 sm:text-[0.9375rem]" set:html={html(locale, s.text)} />
+            </div>
             {serviceLinks[i] && (
-              <Icon name="arrow" size={16} class="mt-4 text-royal-600 transition-transform group-hover:translate-x-1 rtl:group-hover:-translate-x-1" />
+              <Icon name="arrow" size={16} class="text-royal-600 transition-transform group-hover:translate-x-1 sm:mt-4 rtl:group-hover:-translate-x-1" />
             )}
           </li>
         ))
@@ -218,14 +258,16 @@ const jsonLd = graph(
     </ul>
   </Section>
 
-  {/* ---------- for machine builders (OEMs): commissioning and support on their behalf ---------- */}
+  {/* ---------- for machine builders (OEMs): commissioning and support on their behalf. A slim audience band (the
+       services grid above already shows the work as cards): pitch + actions, then a plain checklist. ---------- */}
   {
     oem && (
-      <Section id="oem" aria-labelledby="oem-title">
-        <div class="grid items-start gap-10 lg:grid-cols-12 lg:gap-14">
-          <div class="lg:col-span-5">
+      <Section id="oem" compact aria-labelledby="oem-title">
+        <div class="relative grid grid-cols-1 items-start gap-8 border border-charcoal-200 bg-navy-50 p-5 sm:p-8 lg:grid-cols-12 lg:gap-14 lg:p-10">
+          <span aria-hidden="true" class="absolute -top-px start-5 h-1 w-14 skew-x-[-10deg] bg-signal-400 sm:start-8 rtl:skew-x-[10deg] lg:start-10" />
+          <div class="lg:col-span-6">
             <SectionHeading id="oem-title" index={I.oem} eyebrow={oem.eyebrow} title={html(locale, oem.title)} lead={html(locale, oem.intro)} />
-            <div class="mt-8 flex flex-wrap gap-3">
+            <div class="mt-6 flex flex-wrap gap-3 sm:mt-8">
               <Button href={oemQuote} iconEnd="arrow" class="max-sm:w-full">{oem.cta}</Button>
               {
                 email ? (
@@ -240,20 +282,19 @@ const jsonLd = graph(
               }
             </div>
           </div>
-          <ol role="list" class="relative grid gap-px overflow-hidden border border-charcoal-200 bg-charcoal-200 sm:grid-cols-2 lg:col-span-7">
-            {oem.items.map((item, i) => (
-              <li class="relative bg-white p-6 sm:p-7">
-                <div class="flex items-center justify-between">
-                  <span class="chamfer inline-grid size-11 place-items-center bg-navy-950 text-royal-300 [--chamfer:9px]" aria-hidden="true">
-                    <Icon name={oemIcons[i] ?? "check"} size={22} />
-                  </span>
-                  <span aria-hidden="true" class="font-mono text-xs text-charcoal-600 ltr" dir="ltr">{String(i + 1).padStart(2, "0")}</span>
-                </div>
-                <h3 class="mt-5 type-h4 text-navy-950" set:html={html(locale, item.title)} />
-                <p class="mt-2 text-[0.9375rem] text-charcoal-600" set:html={html(locale, item.text)} />
+          <ul role="list" class="divide-y divide-charcoal-200 border-y border-charcoal-200 lg:col-span-6 lg:self-center">
+            {oem.items.map((item) => (
+              <li class="flex items-start gap-3 py-3.5 sm:py-4">
+                <span class="mt-0.5 grid size-5 shrink-0 place-items-center bg-navy-950 text-signal-300" aria-hidden="true">
+                  <Icon name="check" size={14} strokeWidth={2.5} />
+                </span>
+                <p class="min-w-0 text-[0.9375rem] leading-snug text-charcoal-700">
+                  <strong class="block font-bold text-navy-950" set:html={html(locale, item.title)} />
+                  <span class="mt-1 block text-sm text-charcoal-600" set:html={html(locale, item.text)} />
+                </p>
               </li>
             ))}
-          </ol>
+          </ul>
         </div>
       </Section>
     )
@@ -267,7 +308,7 @@ const jsonLd = graph(
 
   {/* ---------- 04 standards & documentation ---------- */}
   <Section variant="dark" angle="both" id="standards" aria-labelledby="standards-title">
-    <div class="grid items-start gap-12 lg:grid-cols-12">
+    <div class="grid grid-cols-1 items-start gap-12 lg:grid-cols-12">
       <div class="lg:col-span-6">
         <SectionHeading id="standards-title" index={I.standards} eyebrow={f.eyebrows.standards} title={html(locale, f.standards.title)} />
         <div class="mt-6 space-y-4 text-navy-200">
@@ -297,9 +338,9 @@ const jsonLd = graph(
 
   {/* ---------- 05 experience with imported lines ---------- */}
   <Section id="proof" aria-labelledby="proof-title">
-    <div class="grid items-center gap-12 lg:grid-cols-12 lg:gap-14">
+    <div class="grid grid-cols-1 items-center gap-10 sm:gap-12 lg:grid-cols-12 lg:gap-14">
       <div class="relative lg:col-span-6">
-        <div class="chamfer-lg relative aspect-[4/3] overflow-hidden bg-navy-950">
+        <div class="chamfer-lg relative aspect-[16/9] overflow-hidden bg-navy-950 sm:aspect-[4/3]">
           <Picture src={proofHmi} alt={caseAlts.hmi ?? ""} formats={["avif", "webp"]} widths={[480, 720, 960]} sizes="(min-width: 1024px) 45vw, 100vw" layout="full-width" class="size-full object-cover" />
         </div>
         <div class="absolute -bottom-8 end-4 w-[42%] border-4 border-white bg-white shadow-lift sm:end-6">
@@ -312,12 +353,27 @@ const jsonLd = graph(
           {f.proof.paragraphs.map((p) => <p set:html={html(locale, p)} />)}
         </div>
         {
+          weconCount > 0 && (
+            <a
+              href={`${localePath(locale, "projects")}?platform=wecon`}
+              class="group mt-5 inline-flex min-h-11 items-center gap-2 font-bold text-royal-700 underline decoration-royal-200 underline-offset-4 hover:decoration-royal-600"
+            >
+              <span set:html={html(locale, fmt(t.technologies.brands.allOnPlatform, { brand: "Wecon" }))} />
+              {/* read as "All Wecon projects (9)" */}
+              <span class="sr-only"> (</span>
+              <span class="inline-grid min-w-7 place-items-center bg-royal-50 px-1.5 py-0.5 font-mono text-xs text-royal-700 no-underline ltr" dir="ltr">{weconCount}</span>
+              <span class="sr-only">)</span>
+              <Icon name="arrow" size={16} class="transition-transform group-hover:translate-x-1 rtl:group-hover:-translate-x-1" />
+            </a>
+          )
+        }
+        {
           caseItem && (
             <a href={href(locale, `projects/${caseSlug}`)} class="group mt-8 flex items-center gap-4 border border-charcoal-200 p-4 transition-colors hover:border-royal-600">
               <span class="chamfer grid size-11 shrink-0 place-items-center bg-navy-950 text-signal-300 [--chamfer:9px]"><Icon name="check" size={20} /></span>
               <span class="min-w-0 flex-1">
                 <span class="block type-label text-charcoal-600">{f.proof.cta}</span>
-                <span class="mt-0.5 block font-bold text-navy-950 group-hover:text-royal-700">{caseItem.cardTitle}</span>
+                <span class="mt-0.5 block font-bold text-navy-950 group-hover:text-royal-700" set:html={heading(locale, caseItem.cardTitle)} />
               </span>
               <Icon name="arrow" size={20} class="shrink-0 text-royal-600 transition-transform group-hover:translate-x-1 rtl:group-hover:-translate-x-1" />
             </a>
@@ -330,34 +386,34 @@ const jsonLd = graph(
             <Icon name="users" size={20} class="shrink-0 text-royal-600" />
             {c.labels.referenceTitle}
           </p>
-          <p class="mt-2 text-[0.9375rem] leading-relaxed text-charcoal-700">{c.labels.referenceText}</p>
-          <a href={`${href(locale, "contact")}?service=other#quote`} class="group mt-4 inline-flex min-h-6 items-center gap-2 text-sm font-bold text-royal-600 hover:text-royal-800">
+          <p class="mt-2 text-[0.9375rem] leading-relaxed text-charcoal-700" set:html={html(locale, c.labels.referenceText)} />
+          <a href={`${href(locale, "contact")}?service=other&intent=reference#quote`} class="group mt-4 inline-flex min-h-6 items-center gap-2 text-sm font-bold text-royal-600 hover:text-royal-800">
             {c.labels.referenceCta}
             <Icon name="arrow" size={16} class="transition-transform group-hover:translate-x-1 rtl:group-hover:-translate-x-1" />
           </a>
         </div>
       </div>
     </div>
-    <LogoWall locale={locale} class="mt-20 [&_li]:text-charcoal-600" />
-    <FounderStrip locale={locale} class="mt-14 lg:mt-16" />
+    <LogoWall locale={locale} class="mt-14 sm:mt-20 [&_li]:text-charcoal-600" />
+    <FounderStrip locale={locale} class="mt-10 sm:mt-14 lg:mt-16" />
   </Section>
 
   {/* ---------- 06 languages ---------- */}
   <Section variant="muted" id="languages" aria-labelledby="languages-title">
-    <div class="grid gap-10 lg:grid-cols-12 lg:gap-14">
+    <div class="grid grid-cols-1 gap-10 lg:grid-cols-12 lg:gap-14">
       <div class="lg:col-span-5">
         <SectionHeading id="languages-title" index={I.languages} eyebrow={f.eyebrows.languages} title={html(locale, f.languages.title)} />
         <p class="mt-6 text-charcoal-700" set:html={html(locale, f.languages.text)} />
       </div>
-      <ul role="list" class="grid content-start gap-4 sm:grid-cols-2 lg:col-span-7">
+      <ul role="list" class="grid grid-cols-2 content-start gap-3 sm:gap-4 lg:col-span-7">
         {
           (["ar", "en", "zh", "tr"] as const).map((l) => (
-            <li class:list={["relative border bg-white p-5 sm:p-6", l === locale ? "border-royal-600 shadow-card" : "border-charcoal-200"]}>
+            <li class:list={["relative min-w-0 border bg-white p-4 sm:p-6", l === locale ? "border-royal-600 shadow-card" : "border-charcoal-200"]}>
               <p lang={LOCALE_META[l].htmlLang} class="type-h3 text-navy-950">
                 {LOCALE_META[l].native}
               </p>
-              <p class="mt-2 text-sm text-charcoal-600" set:html={html(locale, f.languages.roles[l])} />
-              {l === locale && <span class="lc-led absolute end-5 top-6" aria-hidden="true" />}
+              <p class="mt-2 text-sm break-words text-charcoal-600" set:html={html(locale, f.languages.roles[l])} />
+              {l === locale && <span class="lc-led absolute end-4 top-5 sm:end-5 sm:top-6" aria-hidden="true" />}
             </li>
           ))
         }
@@ -373,7 +429,7 @@ const jsonLd = graph(
 
   {/* ---------- 08 FAQ ---------- */}
   <Section variant="muted" id="faq" aria-labelledby="faq-title">
-    <div class="grid gap-10 lg:grid-cols-12 lg:gap-14">
+    <div class="grid grid-cols-1 gap-10 lg:grid-cols-12 lg:gap-14">
       <div class="lg:col-span-4">
         <div class="lg:sticky lg:top-[calc(var(--header-h)+2rem)]">
           <SectionHeading id="faq-title" index={I.faq} eyebrow={c.labels.faq} title={html(locale, f.faq.title)} />
@@ -393,3 +449,32 @@ const jsonLd = graph(
     secondary={email ? undefined : { label: f.hero.ctaSecondary, href: whatsappLink(c.whatsapp.foreign) }}
   />
 </BaseLayout>
+
+<style>
+  /* Phones: the first four needs; the rest behind "Show all" (with JS; all of them without). */
+  @media (max-width: 39.99rem) {
+    :global(html.js) .lc-cap-needs[data-capped] ol > li:nth-child(n + 5) {
+      display: none;
+    }
+  }
+  :global(html:not(.js)) .lc-cap-more,
+  [data-cap]:not([data-capped]) .lc-cap-more {
+    display: none;
+  }
+</style>
+
+<script>
+  /* Phones: "Show all needs" reveals the rest in place and moves focus to the first item revealed. */
+  document.querySelectorAll<HTMLElement>(".lc-cap-needs[data-cap]").forEach((box) => {
+    const btn = box.querySelector<HTMLButtonElement>(".lc-cap-more");
+    btn?.addEventListener("click", () => {
+      const first = [...box.querySelectorAll<HTMLElement>("ol > li")].find((el) => el.offsetParent === null);
+      box.removeAttribute("data-capped");
+      btn.setAttribute("aria-expanded", "true");
+      if (first) {
+        first.tabIndex = -1;
+        first.focus();
+      }
+    });
+  });
+</script>

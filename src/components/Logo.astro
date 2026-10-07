@@ -3,7 +3,7 @@
  * The Logic Controls logo (raster, derived from the client's original artwork — never redrawn or recoloured
  * beyond the dark-background variant). `variant="dark"` is for navy/charcoal backgrounds.
  */
-import { Image } from "astro:assets";
+import { Picture } from "astro:assets";
 import logoLight from "~/assets/brand/logo.png";
 import logoDark from "~/assets/brand/logo-dark.png";
 
@@ -18,18 +18,27 @@ interface Props {
 
 const { variant = "light", width = 124, alt = "Logic Controls", class: className, loading = "lazy" } = Astro.props;
 const src = variant === "dark" ? logoDark : logoLight;
+/* 1x / 2x / 3x candidates (VIS2-22): `layout="fixed"` alone stops at 2x, so the mark (and its small "CONTROLS" line) was
+   upscaled ×1.3 on 3x phones. Capped at the artwork's own width. */
+const widths = [...new Set([width, width * 2, width * 3].map((w) => Math.min(w, src.width)))];
 /* Emit each class once (callers may repeat the defaults, e.g. "h-auto"). */
 const classes = [...new Set(["block", "h-auto", "select-none", ...(className ?? "").split(/\s+/)].filter(Boolean))].join(" ");
 ---
 
-<Image
+{/* AVIF (WebP in the <img> for the rest) at quality 60 (PERF2-11): the lossy alpha channel made the q90 WebP heavy —
+    header 2x 18.5 → 9.4 KB, footer 2x 23.6 → ~11.6 KB, the same pixels at a glance (compared at 3x zoom). The
+    <picture> is display: contents, so the <img> keeps its place in the layout. */}
+<Picture
   src={src}
   alt={alt}
   width={width}
+  widths={widths}
   layout="fixed"
-  format="webp"
-  quality={90}
+  formats={["avif"]}
+  fallbackFormat="webp"
+  quality={60}
   loading={loading}
   decoding="async"
   class={classes}
+  pictureAttributes={{ class: "contents" }}
 />

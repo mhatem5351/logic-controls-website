@@ -94,7 +94,7 @@
       },
       "message": {
         "label": "请描述设备或项目",
-        "help": "设备类型、需要实现的功能、目前存在的问题，以及 PLC 或 HMI 品牌（如已知）。"
+        "help": "设备类型、需要实现的功能、目前存在的问题，以及 PLC 或 HMI 品牌（如已知）。最多 {max} 个字符。"
       },
       "phoneOptional": {
         "label": "电话",
@@ -104,8 +104,17 @@
         "label": "图纸、照片或文件",
         "help": "最多 {count} 个文件，总大小不超过 {size}：PDF、JPG、PNG、WebP、ZIP、DWG 或 DXF。",
         "choose": "选择文件",
+        "addMore": "继续添加文件",
+        "drop": "或拖放到此处",
         "remove": "移除 {name}",
-        "summary": "{count}/{max} 个文件 · {size}/{maxSize}"
+        "summary": "{count}/{max} 个文件 · {size}/{maxSize}",
+        "preparing": "正在检查和处理……",
+        "reduced": "照片已压缩以便发送（原为 {size}）",
+        "badType": "无法发送此类文件。请移除，或在提交需求后通过电子邮件发送。",
+        "badContent": "此文件看起来不是有效的 {ext} 文件，可能无法附加。您可以在提交需求后通过电子邮件发送。",
+        "uploading": "正在上传文件…… {percent}%",
+        "progress": "上传进度",
+        "keepOpen": "发送完成前请勿关闭此页面。"
       },
       "contactPreference": {
         "label": "希望我们如何联系您？",
@@ -123,6 +132,13 @@
     "whatsappHint": {
       "text": "身在埃及、习惯用 WhatsApp？可直接发送设备、铭牌、控制柜的照片或图纸。",
       "cta": "通过 WhatsApp 发送图纸"
+    },
+    "urgentStopped": "是的，设备现在已停机",
+    "context": {
+      "project": "关于案例：{title}",
+      "projectMessage": "我的项目与贵司案例“{title}”类似。",
+      "reference": "申请联系参考客户：请告诉我们您的行业和设备类型，我们会寻找有类似项目、并同意与您交流的过往客户。",
+      "referenceMessage": "我希望与贵司的一位过往客户交流。"
     },
     "privacyNote": "您的信息仅用于回复本次需求，我们不会将您加入任何邮件列表。",
     "sent": "需求已发送，正在打开确认页面……",
@@ -148,21 +164,25 @@
     "messageTooLong": "描述请控制在 {max} 个字符以内。",
     "summary": "请检查已标出的项目。",
     "summaryCount": "请检查以下项目（{count} 项）：",
-    "filesType": "部分文件的格式无法接收。请使用 PDF、JPG、PNG、WebP、ZIP、DWG 或 DXF。",
+    "filesType": "以下文件的格式无法接收：{files}。请使用 PDF、JPG、PNG、WebP、ZIP、DWG 或 DXF。",
     "filesCount": "最多选择 {max} 个文件，其余文件可在提交后发送。",
     "filesSize": "文件总大小超过 {max}。请在此移除部分文件，提交后再通过邮件发送：确认页面会提供需求编号，发送时请注明。",
-    "emailForReply": "请填写电子邮箱，以便我们通过邮件回复您。"
+    "emailForReply": "请填写电子邮箱，以便我们通过邮件回复您。",
+    "phoneForReply": "请填写电话号码，以便我们致电回复您。",
+    "phoneCountry": "请填写国家或地区代码，例如中国 +86、埃及 +20，以免我们拨错号码。",
+    "messageNear": "已输入 {count}/{max} 个字符。"
   },
   "errors": {
     "title": "您的需求未能发送",
     "invalid": "部分信息缺失或无效，请检查表单后重试。",
-    "verification": "安全验证未完成。请重试，或通过电子邮件、WhatsApp 联系我们。",
-    "send": "由于技术问题，您的需求未能发送。请几分钟后重试，或通过电子邮件、WhatsApp 联系我们。",
-    "unknown": "出现错误。请重试，或通过电子邮件、WhatsApp 联系我们。",
+    "verification": "安全验证未完成。请重试，或通过电话、电子邮件联系我们。",
+    "send": "由于技术问题，您的需求未能发送。请几分钟后重试，或通过电话、电子邮件联系我们。",
+    "unknown": "出现错误。请重试，或通过电话、电子邮件联系我们。",
     "fallback": "您也可以直接联系我们：",
-    "attachments": "文件无法附加。最多可附加 3 个文件，总大小不超过 4 MB（PDF、JPG、PNG、WebP、ZIP、DWG 或 DXF）。请移除文件后提交需求，再通过邮件发送文件。",
-    "verificationBlocked": "安全验证无法加载，可能被浏览器插件、防火墙或网络拦截。",
-    "handover": "您填写的信息已复制到消息中，无需重新输入。"
+    "attachments": "文件无法接收：可能超出限制（最多 3 个文件，总大小 4 MB），或不是 PDF、JPG、PNG、WebP、ZIP、DWG、DXF 格式。请移除文件后提交需求，再通过电子邮件发送文件。",
+    "verificationBlocked": "安全验证无法加载，可能被浏览器插件、防火墙或网络拦截。请刷新页面或更换网络，也可通过下方方式直接联系我们。",
+    "handover": "您填写的信息已复制到消息中，无需重新输入。",
+    "timeout": "发送时间过长，已停止。您的网络可能较慢或已中断。请重试，或通过电话、电子邮件联系我们。"
   },
   "channels": {
     "title": "其他联系方式",
@@ -213,7 +233,16 @@
       "text": "如需紧急协助，请立即致电或发送邮件，并注明您已提交过需求；如您在埃及，也可通过 WhatsApp 联系我们。",
       "cta": "WhatsApp 联系工程师"
     },
+    "urgentNow": {
+      "title": "设备已停机？请立即致电工程师。",
+      "text": "接通后请提供您的需求编号 {ref}。"
+    },
+    "received": "已收到的文件：{files}",
+    "skipped": "以下文件未能附加：{files}，因为文件内容与格式不符。请通过电子邮件发送，并注明需求编号。",
+    "skippedSome": "部分文件因内容与格式不符而未能附加。请通过电子邮件发送，并注明需求编号。",
+    "replyBy": "首选联系方式：{channel}",
     "more": {
+      "titleMore": "还有其他文件？",
       "title": "有照片或图纸？",
       "text": "请通过电子邮件或 WhatsApp 发送，有助于我们更快准备报价。",
       "cta": "通过 WhatsApp 发送图纸"
@@ -223,6 +252,8 @@
     "ref": {
       "label": "需求编号",
       "hint": "致电或补充发送文件时请注明此编号。",
+      "copy": "复制编号",
+      "copied": "编号已复制",
       "whatsapp": "您好，Logic Controls：关于我在网站提交的需求 {ref}，我补充发送文件。",
       "emailSubject": "网站需求 {ref}：补充文件"
     },

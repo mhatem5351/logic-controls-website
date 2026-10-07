@@ -1,0 +1,17 @@
+---
+/**
+ * An icon from the chrome sprite (ChromeSprite.astro, rendered once by <Header>): <svg><use href="#lc-ci-…"></svg>.
+ * Decorative (aria-hidden), sized like <Icon>. Only for the names the sprite holds: service / industry icons and
+ * chrome-icons.ts.
+ */
+import type { IconName } from "./Icon.astro";
+
+interface Props {
+  name: IconName;
+  size?: number;
+  class?: string;
+}
+const { name, size = 24, class: className } = Astro.props;
+---
+
+<svg viewBox="0 0 24 24" width={size} height={size} aria-hidden="true" focusable="false" class:list={["shrink-0", className]}><use href={`#lc-ci-${name}`} /></svg>

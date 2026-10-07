@@ -11,6 +11,8 @@
   "brands": {
     "title": "Programladığımız ve entegre ettiğimiz PLC ve HMI platformları",
     "productsLabel": "Projelerimizde kullanılanlar",
+    "projectsTitle": "Bu platformdaki projelerimiz",
+    "allOnPlatform": "Tüm {brand} projeleri",
     "productNames": {
       "S7-1200": "S7-1200",
       "WinCC Professional": "WinCC Professional",
@@ -91,6 +93,7 @@
   "categories": {
     "eyebrow": "Kategoriye göre",
     "title": "Sürücüler, SCADA, haberleşme ve sinyaller",
+    "tocLabel": "Sürücüler, SCADA ve haberleşme",
     "intro": "Kontrolör sistemin yalnızca bir parçasıdır. Çevresinde tasarladığımız, programladığımız ve devreye aldığımız diğer katmanlar şunlardır."
   },
   "otherBrands": {
@@ -100,6 +103,7 @@
   "choosing": {
     "eyebrow": "Yaklaşımımız",
     "title": "Platformu nasıl seçiyoruz",
+    "tocLabel": "Platform seçimi",
     "items": [
       {
         "title": "Mısır'da yedek parça",

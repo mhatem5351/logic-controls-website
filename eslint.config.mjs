@@ -21,6 +21,7 @@ export default defineConfig(
       "public/**",
       "test-results/**",
       "playwright-report/**",
+      "playwright-report-json/**",
       "blob-report/**",
       ".lighthouseci/**",
       ".playwright-mcp/**",
@@ -49,8 +50,37 @@ export default defineConfig(
   },
   // <dialog> close buttons use `autofocus`: the HTML spec's way to set a modal dialog's initial focus.
   {
-    files: ["src/components/Gallery.astro", "src/components/Header.astro"],
+    files: ["src/components/Gallery.astro", "src/components/Header.astro", "src/components/HeaderDrawer.astro"],
     rules: { "astro/jsx-a11y/no-autofocus": "off" },
+  },
+  // One source of truth for "is motion off?" (CODE2-06): the OS setting AND the site's pause toggle. Scripts use
+  // motionOff() / scrollBehavior() / onMotionChange from ~/scripts/motion/motion-pref (or html[data-motion="off"],
+  // which the head script sets for both); a raw matchMedia("(prefers-reduced-motion…)") ignores the toggle.
+  // CSS @media blocks are not affected. Exempt: motion-pref.ts itself and BaseLayout's pre-paint head script.
+  {
+    files: ["src/**/*.{ts,astro,mjs,js}"],
+    ignores: ["src/scripts/motion/motion-pref.ts", "src/layouts/BaseLayout.astro", "src/layouts/BaseLayout.astro/**"],
+    rules: {
+      "no-restricted-syntax": [
+        "error",
+        {
+          selector: "CallExpression[callee.name='matchMedia'] Literal[value=/prefers-reduced-motion/]",
+          message: "Use motionOff() / scrollBehavior() from ~/scripts/motion/motion-pref (they also honour the 'Pause animations' toggle).",
+        },
+        {
+          selector: "CallExpression[callee.property.name='matchMedia'] Literal[value=/prefers-reduced-motion/]",
+          message: "Use motionOff() / scrollBehavior() from ~/scripts/motion/motion-pref (they also honour the 'Pause animations' toggle).",
+        },
+        {
+          selector: "CallExpression[callee.name='matchMedia'] TemplateElement[value.raw=/prefers-reduced-motion/]",
+          message: "Use motionOff() / scrollBehavior() from ~/scripts/motion/motion-pref (they also honour the 'Pause animations' toggle).",
+        },
+        {
+          selector: "CallExpression[callee.property.name='matchMedia'] TemplateElement[value.raw=/prefers-reduced-motion/]",
+          message: "Use motionOff() / scrollBehavior() from ~/scripts/motion/motion-pref (they also honour the 'Pause animations' toggle).",
+        },
+      ],
+    },
   },
   // Case-study clips have their audio stripped and a visible text description (videoDescription): nothing to caption.
   {

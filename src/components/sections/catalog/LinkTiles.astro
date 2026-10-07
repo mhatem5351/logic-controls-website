@@ -3,9 +3,13 @@
  * Compact cross-link tiles (related industries on a service page, relevant services on an industry page).
  * One link per tile (stretched), icon chip, title, optional one-line summary and a trailing arrow.
  * The focus ring is drawn on the tile via :has(); `lc-stretch` keeps the link's own ring where :has() is missing.
+ * Columns: 4 → 2 (sm) · 4 (lg). In the 4-up row (≥1024px, tiles from ~230px) the tile stacks: icon and arrow on top,
+ * the title below at the tile's full width, so words are never split mid-letter (VIS2-02: the side-by-side layout left
+ * ~100px for the title at 1024). English titles hyphenate, Turkish breaks only at the text engine's soft hyphens,
+ * Arabic words are never broken (`lc-tile-title`, global.css).
  */
 import Icon, { type IconName } from "~/components/Icon.astro";
-import { html } from "~/lib/text";
+import { heading, html } from "~/lib/text";
 import type { Locale } from "~/i18n";
 
 interface Tile {
@@ -25,25 +29,34 @@ interface Props {
 const { items, headingLevel: H = "h3", columns = 4, class: className } = Astro.props;
 const locale = Astro.currentLocale as Locale | undefined;
 const grid = { 2: "sm:grid-cols-2", 3: "sm:grid-cols-2 lg:grid-cols-3", 4: "sm:grid-cols-2 lg:grid-cols-4" }[columns];
+/** Stacked tiles from 1024px (4 columns): icon + arrow row, then the title at full width. */
+const stack = columns === 4;
 ---
 
-<ul role="list" class:list={["grid gap-4", grid, className]}>
+<ul role="list" class:list={["grid grid-cols-1 gap-4", grid, className]}>
   {
     items.map((it) => (
-      <li class="lc-reveal group relative flex items-start gap-4 border border-charcoal-200 bg-white p-5 transition-[translate,border-color,box-shadow] duration-(--dur-ui) ease-mech hover:-translate-y-(--move-lift) hover:border-royal-300 hover:shadow-lift has-[a:focus-visible]:outline-2 has-[a:focus-visible]:outline-offset-4 has-[a:focus-visible]:outline-(--focus) on-dark:border-white/10 on-dark:bg-white/[0.03]">
+      <li class:list={["lc-reveal group relative grid min-w-0 grid-cols-[auto_minmax(0,1fr)_auto] content-start items-start gap-x-4 border border-charcoal-200 bg-white p-5 transition-[translate,border-color,box-shadow] duration-(--dur-ui) ease-mech hover:-translate-y-(--move-lift) hover:border-royal-300 hover:shadow-lift has-[a:focus-visible]:outline-2 has-[a:focus-visible]:outline-offset-4 has-[a:focus-visible]:outline-(--focus) on-dark:border-white/10 on-dark:bg-white/[0.03]", stack && "lg:gap-y-4"]}>
         <span class="chamfer inline-grid size-11 shrink-0 place-items-center bg-navy-950 text-royal-300 [--chamfer:9px]">
           <Icon name={it.icon} size={22} />
         </span>
-        <div class="min-w-0 flex-1">
-          <H class="type-h4 text-navy-950 transition-colors duration-(--dur-micro) ease-mech group-hover:text-royal-700 on-dark:text-white">
+        <div class:list={["min-w-0", stack && "lg:col-span-3 lg:row-start-2"]}>
+          <H class="lc-tile-title type-h4 text-navy-950 transition-colors duration-(--dur-micro) ease-mech group-hover:text-royal-700 on-dark:text-white">
             <a href={it.href} class="lc-stretch after:absolute after:inset-0 after:content-['']">
-              <Fragment set:html={html(locale, it.title)} />
+              <Fragment set:html={heading(locale, it.title)} />
             </a>
           </H>
           {it.meta && <span class="mt-1 block type-label text-charcoal-600 on-dark:text-navy-300">{it.meta}</span>}
           {it.text && <span class="mt-2 block text-sm text-charcoal-600 on-dark:text-navy-200" set:html={html(locale, it.text)} />}
         </div>
-        <Icon name="arrow" size={18} class="mt-1 text-royal-600 transition-[translate] duration-(--dur-ui) ease-mech group-hover:translate-x-1 rtl:group-hover:-translate-x-1" />
+        <Icon
+          name="arrow"
+          size={18}
+          class:list={[
+            "mt-1 shrink-0 text-royal-600 transition-[translate] duration-(--dur-ui) ease-mech group-hover:translate-x-1 rtl:group-hover:-translate-x-1",
+            stack && "lg:col-start-3 lg:row-start-1 lg:mt-0 lg:self-center",
+          ]}
+        />
       </li>
     ))
   }

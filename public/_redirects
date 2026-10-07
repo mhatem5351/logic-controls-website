@@ -23,6 +23,18 @@
 /about/         /en/about/        301
 /about.html     /en/about/        301
 
+# Section URLs without a locale (UX2-26), the rest of the site's sections; pages below them are the splat rules at the
+# end. Exact (static) rules come before every splat (dynamic) rule, and the first matching rule wins. Locale-prefixed
+# paths are never redirected; an unknown one gets the 404 page, which suggests the closest real page.
+/industries                 /en/industries/              301
+/industries/                /en/industries/              301
+/technologies               /en/technologies/            301
+/technologies/              /en/technologies/            301
+/foreign-manufacturers      /en/foreign-manufacturers/   301
+/foreign-manufacturers/     /en/foreign-manufacturers/   301
+/privacy                    /en/privacy/                 301
+/privacy/                   /en/privacy/                 301
+
 # Locale-style aliases people type or share (I18N-22): region / script subtags and upper case go to the site's locale.
 /zh-cn/*        /zh/:splat        301
 /zh-CN/*        /zh/:splat        301
@@ -40,3 +52,10 @@
 /en-US/*        /en/:splat        301
 /en-gb/*        /en/:splat        301
 /EN/*           /en/:splat        301
+
+# Pages below a section, linked without a locale (UX2-26): /services/control-panels/ → /en/services/control-panels/.
+# The flat pages (about, technologies, privacy, …) have no pages below them: a path under them is a 404 with a suggestion.
+/services/*     /en/services/:splat     301
+/industries/*   /en/industries/:splat   301
+/projects/*     /en/projects/:splat     301
+/contact/*      /en/contact/:splat      301

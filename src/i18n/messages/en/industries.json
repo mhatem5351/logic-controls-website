@@ -4,9 +4,9 @@
       "title": "Industries We Serve in Egypt | Logic Controls",
       "description": "Automation for food and dairy, pharma, cosmetics, packaging, building materials, commercial laundry and test equipment in Egypt. See our projects."
     },
-    "h1": "Industries we serve",
+    "h1": "Automation for food, pharma, cosmetics, packaging and other plants in Egypt",
     "intro": [
-      "Each industry page shows what matters in that sector, the machines and processes we automate, and the projects we have delivered.",
+      "Our case studies cover seven industries, from pasteurizers and tablet coating machines to batching plants and test rigs. Pick yours to see typical requirements, the machines we automate and the projects behind them.",
       "Is your industry not listed? The same control principles apply to most machines and processes. Tell us what you run."
     ]
   },
@@ -18,9 +18,11 @@
       "seoTitle": "Food & Beverage Automation in Egypt | Logic Controls",
       "seoDescription": "PLC control for pasteurizers, CIP, cheese cookers, autoclaves, syrup mixing and food-plant utilities in Egypt. Temperature control, interlocks, recipes.",
       "h1": "Automation for food, beverage and dairy plants",
+      "needsTitle": "What food and dairy lines need from their controls",
+      "applicationsTitle": "Food and beverage machines we automate",
       "intro": [
         "Food safety depends on control: the right temperature for the right time, in every batch. Our food and dairy systems hold process setpoints, hold back unsafe product and keep records your quality team can use.",
-        "We have delivered control systems for two pasteurizers, a cheese cooker, an olive sterilization autoclave and a beverage syrup mixing system, and commissioned a waste treatment system at a food and beverage plant. Our engineers' wider experience includes chocolate cookers, bakery lines, edible-oil and liquid-egg fillers and ultrafiltration."
+        "We have delivered control systems for two pasteurizers, a cheese cooker, an olive sterilization autoclave and a beverage syrup mixing system. We also commissioned a waste treatment system at a food and beverage plant. Our engineers' wider experience includes chocolate cookers, bakery lines, edible-oil and liquid-egg fillers and ultrafiltration."
       ],
       "needs": [
         {
@@ -74,6 +76,8 @@
       "seoTitle": "Pharmaceutical Machine Automation in Egypt | Logic Controls",
       "seoDescription": "SCADA and PLC control for tablet coating, bottle printing and packaging machines in Egyptian pharma plants: recipes, alarms, user log-in, records.",
       "h1": "Automation for pharmaceutical production",
+      "needsTitle": "What pharma production needs from its controls",
+      "applicationsTitle": "Pharma machines we automate",
       "intro": [
         "Pharma production needs repeatable processes and documentation. We build control systems with formulation recipes, user access and alarm history, so every batch runs the same way and leaves a record.",
         "Our pharma work includes a tablet coating machine on a Siemens S7-1200 PLC with WinCC Professional SCADA, and a motion-control retrofit of a printing machine for pharmaceutical and cosmetic bottles. Our engineers' experience also includes ampoule filling, environmental monitoring for sterile areas and purified-water systems in a GMP environment."
@@ -128,9 +132,11 @@
       "seoTitle": "Cosmetics Filling Automation in Egypt | Logic Controls",
       "seoDescription": "PLC and HMI control for shampoo and liquid filling, bottle printing and labeling machines in Egypt. Filling accuracy, recipes and quick changeovers.",
       "h1": "Automation for cosmetics and personal-care lines",
+      "needsTitle": "What filling and packing lines need",
+      "applicationsTitle": "Cosmetics machines we automate",
       "intro": [
         "Cosmetics plants run many products and bottle sizes on the same machines. Fill volume, speed and changeover time decide output and waste. We build controls that keep fills accurate and turn a changeover into a few settings on the HMI.",
-        "We have automated two shampoo filling machines, one on an LS Electric PLC and one on a Delta PLC, both with Wecon HMIs, and upgraded a bottle printing machine with motion control. Our engineers have also worked on wax filling and capping machines."
+        "We have automated two shampoo filling machines, one on an LS Electric PLC and one on a Delta PLC, both with Wecon HMIs. We also upgraded a bottle printing machine with motion control. Our engineers have also worked on wax filling and capping machines."
       ],
       "needs": [
         {
@@ -179,6 +185,8 @@
       "seoTitle": "Packaging & Labeling Automation in Egypt | Logic Controls",
       "seoDescription": "Controls for labeling, filling and bottle printing machines in Egypt: stepper and motion control, missing-label detection, recipes and counters.",
       "h1": "Automation for packaging, labeling and printing machines",
+      "needsTitle": "What packaging machines need from their controls",
+      "applicationsTitle": "Packaging machines we automate",
       "intro": [
         "Packaging machines depend on timing: the label must meet the bottle, the print must meet the surface, and every product must be counted. We design the motion, sensing and logic that keep them synchronized with the line.",
         "Our packaging work includes a labeling machine with a Delta PLC, Wecon HMI and Schneider Electric stepper drives, a motion-control retrofit of a bottle printing machine, and two filling machines."
@@ -229,6 +237,8 @@
       "seoTitle": "Concrete Batching Plant Automation in Egypt | Logic Controls",
       "seoDescription": "PLC and SCADA control for concrete batching plants in Egypt: dosing of cement, aggregates, water and additives, mix recipes, alarms.",
       "h1": "Automation for concrete batching plants",
+      "needsTitle": "What a batching plant needs from its controls",
+      "applicationsTitle": "Batching equipment we automate",
       "intro": [
         "A batching plant must produce the same mix, batch after batch. Weighing accuracy, discharge timing and mixing time decide concrete quality and material cost.",
         "We delivered a concrete batching control system on a Siemens S7-1200 PLC with WinCC Professional SCADA. It covers dosing of cement, aggregates, water and additives, automatic batching and mixing sequences, and recipe management for different mixes."
@@ -283,6 +293,8 @@
       "seoTitle": "Hotel Laundry Machine Controls in Egypt | Logic Controls",
       "seoDescription": "PLC and HMI control for hotel and commercial washer-extractors in Egypt: wash programs, water level, temperature, chemical dosing and alarms.",
       "h1": "Control systems for hotel and commercial laundry machines",
+      "needsTitle": "What a hotel laundry needs from its washers",
+      "applicationsTitle": "Laundry machines we automate",
       "intro": [
         "Hotel laundries wash towels, bed sheets and uniforms in different ways. A good controller lets the laundry manager set each program once and run it the same way every time.",
         "We have delivered Wecon PLC and HMI control systems for laundry washers, with editable multi-step programs, water level and temperature control, chemical dosing and safety interlocks."
@@ -333,6 +345,8 @@
       "seoTitle": "Test Rig Automation & Reports in Egypt | Logic Controls",
       "seoDescription": "PLC and HMI control for industrial test rigs in Egypt: repeatable test sequences, live readings and automatic test reports for QC and traceability.",
       "h1": "Control systems for test rigs and quality-control equipment",
+      "needsTitle": "What a test rig needs from its controls",
+      "applicationsTitle": "Test machines we automate",
       "intro": [
         "A test is only useful if it is repeatable and recorded. We automate test rigs so that each test follows the same sequence and produces a report without manual writing.",
         "We delivered a Wecon PLC and HMI control system for a pipe testing machine that records make and break values, in ft·lb and psi, and generates test reports automatically."

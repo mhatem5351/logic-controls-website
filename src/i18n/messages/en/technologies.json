@@ -11,6 +11,8 @@
   "brands": {
     "title": "PLC and HMI platforms we program and integrate",
     "productsLabel": "Used in our projects",
+    "projectsTitle": "Case studies on this platform",
+    "allOnPlatform": "All {brand} projects",
     "productNames": {
       "S7-1200": "S7-1200",
       "WinCC Professional": "WinCC Professional",
@@ -91,6 +93,7 @@
   "categories": {
     "eyebrow": "By category",
     "title": "Drives, SCADA, networks and signals",
+    "tocLabel": "Drives, SCADA and networks",
     "intro": "The controller is only one part of the system. These are the other layers we design, program and commission around it."
   },
   "otherBrands": {
@@ -100,6 +103,7 @@
   "choosing": {
     "eyebrow": "Our approach",
     "title": "How we choose a platform",
+    "tocLabel": "Choosing a platform",
     "items": [
       {
         "title": "Spare parts in Egypt",

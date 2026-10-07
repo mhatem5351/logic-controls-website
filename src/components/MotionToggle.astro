@@ -3,17 +3,21 @@
  * "Pause animations" switch (WCAG 2.2.2): one toggle button that stops every decorative loop site-wide.
  *   <MotionToggle />                    footer row (default)
  *   <MotionToggle variant="drawer" />   mobile drawer (full width)
+ *   <MotionToggle variant="bar" />      compact, for the desktop utility bar (early in the Tab order)
  *
  * State lives on <html data-motion="off"> (set before first paint by BaseLayout, persisted in localStorage) — see
- * src/scripts/motion/motion-pref.ts for the contract. The label never changes; aria-pressed="true" means paused.
- * When the OS asks for reduced motion, motion is already off: the button shows pressed, is aria-disabled and says why.
- * Every instance on the page stays in sync.
+ * src/scripts/motion/motion-pref.ts for the contract. The label never changes (it is the button's accessible name);
+ * aria-pressed="true" means paused. The state is also visible (A11Y2-18): the pause glyph turns amber and a small
+ * switch at the end slides on — no play triangle, so nothing contradicts the label and nothing mirrors in RTL.
+ * When the OS asks for reduced motion, motion is already off: the button shows pressed, is aria-disabled and a
+ * visible note under it says why (also its aria-describedby). Every instance on the page stays in sync, also when
+ * the OS setting changes while the page is open.
  */
 import { getMessages, type Locale } from "~/i18n";
 import { uid } from "./uid";
 
 interface Props {
-  variant?: "footer" | "drawer";
+  variant?: "footer" | "drawer" | "bar";
   locale?: Locale;
   class?: string;
 }
@@ -23,42 +27,67 @@ const t = getMessages(locale).ui.motion;
 const note = uid("lc-mt");
 ---
 
-<button
-  type="button"
-  class:list={[
-    "lc-motion-toggle inline-flex min-h-11 items-center gap-2.5 border border-white/15 px-3 text-start text-navy-100 transition-colors hover:border-white/40 hover:text-white",
-    variant === "drawer" && "w-full",
-    className,
-  ]}
-  data-motion-toggle
-  data-variant={variant}
-  aria-pressed="false"
->
-  <span class="lc-mt-icon grid size-4 shrink-0 place-items-center" aria-hidden="true">
-    <svg class="lc-mt-pause" viewBox="0 0 16 16" width="16" height="16" fill="currentColor"><rect x="3.5" y="2.5" width="3" height="11" rx=".6"></rect><rect x="9.5" y="2.5" width="3" height="11" rx=".6"></rect></svg>
-    <svg class="lc-mt-play" viewBox="0 0 16 16" width="16" height="16" fill="currentColor"><path d="M4.5 2.9a.8.8 0 0 1 1.2-.7l8 4.9a1 1 0 0 1 0 1.8l-8 4.9a.8.8 0 0 1-1.2-.7z"></path></svg>
-  </span>
-  <span class="lc-mt-label">{t.pause}</span>
-  <span id={note} class="sr-only" data-mt-note hidden>{t.systemReduced}</span>
-</button>
+<div class:list={["lc-mt", variant === "drawer" ? "w-full" : "inline-block", className]} data-variant={variant}>
+  <button
+    type="button"
+    class:list={[
+      "lc-motion-toggle inline-flex items-center gap-2.5 text-start text-navy-100 transition-colors hover:text-white",
+      variant === "bar" ? "min-h-9 px-1.5" : "min-h-11 border border-white/15 px-3 hover:border-white/40",
+      variant === "drawer" && "w-full",
+    ]}
+    data-motion-toggle
+    aria-pressed="false"
+  >
+    <span class="lc-mt-icon grid size-4 shrink-0 place-items-center" aria-hidden="true">
+      <svg viewBox="0 0 16 16" width="16" height="16" fill="currentColor"><rect x="3.5" y="2.5" width="3" height="11" rx=".6"></rect><rect x="9.5" y="2.5" width="3" height="11" rx=".6"></rect></svg>
+    </span>
+    <span class="lc-mt-label">{t.pause}</span>
+    <span class="lc-mt-sw" aria-hidden="true"></span>
+  </button>
+  <p id={note} class="lc-mt-note" data-mt-note hidden>{t.systemReduced}</p>
+</div>
 
 <style>
-  /* Icon follows the state from the first frame (the attribute is set before paint); aria-pressed follows on init. */
-  .lc-mt-icon > svg {
-    grid-area: 1 / 1;
+  /* The switch: a small track whose knob slides to the inline end and turns amber while animations are paused. It
+     follows html[data-motion] from the first frame (set before paint); aria-pressed follows on init. */
+  .lc-mt-sw {
+    position: relative;
+    flex: none;
+    inline-size: 1.75rem;
+    block-size: 1rem;
+    margin-inline-start: auto;
+    border: 1px solid rgb(255 255 255 / 0.35);
+    border-radius: 999px;
+    transition:
+      background-color var(--dur-micro) var(--ease-mech),
+      border-color var(--dur-micro) var(--ease-mech);
   }
-  .lc-mt-play,
-  :global(:root[data-motion="off"]) .lc-mt-pause {
-    display: none;
+  .lc-mt-sw::after {
+    content: "";
+    position: absolute;
+    inset-block: 2px;
+    inset-inline-start: 2px;
+    inline-size: 0.625rem;
+    border-radius: 999px;
+    background: currentColor;
+    transition: translate var(--dur-micro) var(--ease-mech);
   }
-  :global(:root[data-motion="off"]) .lc-mt-play {
-    display: block;
+  .lc-mt:not([data-variant="drawer"]) .lc-mt-sw {
+    margin-inline-start: 0.25rem;
   }
-  .lc-motion-toggle[aria-pressed="true"] {
-    border-color: rgb(255 176 43 / 0.45);
+  :global(:root[data-motion="off"]) .lc-mt-sw {
+    border-color: var(--color-signal-400);
+    background-color: rgb(255 176 43 / 0.25);
   }
-  .lc-motion-toggle[aria-pressed="true"] .lc-mt-icon {
+  :global(:root[data-motion="off"]) .lc-mt-sw::after {
+    background: var(--color-signal-300);
+    translate: calc(0.75rem * var(--vt-sign, 1)) 0;
+  }
+  :global(:root[data-motion="off"]) .lc-mt-icon {
     color: var(--color-signal-300);
+  }
+  .lc-mt:not([data-variant="bar"]) .lc-motion-toggle[aria-pressed="true"] {
+    border-color: rgb(255 176 43 / 0.45);
   }
   .lc-motion-toggle[aria-disabled="true"] {
     cursor: default;
@@ -67,9 +96,23 @@ const note = uid("lc-mt");
     outline: 2px solid var(--color-signal-400);
     outline-offset: 2px;
   }
-  /* The play triangle points along the reading direction. */
-  :global([dir="rtl"]) .lc-mt-play {
-    scale: -1 1;
+  .lc-mt-note {
+    margin-block-start: 0.375rem;
+    max-inline-size: 22rem;
+    font-size: 0.75rem;
+    line-height: 1.45;
+    color: var(--color-navy-200);
+  }
+  .lc-mt[data-variant="bar"] .lc-mt-note {
+    display: none; /* the footer / drawer instances carry it; the bar has no room */
+  }
+  @media (forced-colors: active) {
+    .lc-mt-sw::after {
+      background: CanvasText;
+    }
+    :global(:root[data-motion="off"]) .lc-mt-sw::after {
+      background: Highlight;
+    }
   }
 </style>
 
@@ -82,15 +125,14 @@ const note = uid("lc-mt");
     const locked = systemReduced();
     for (const b of buttons) {
       b.setAttribute("aria-pressed", String(off));
-      const note = b.querySelector<HTMLElement>("[data-mt-note]");
+      const note = b.parentElement?.querySelector<HTMLElement>("[data-mt-note]");
+      if (note) note.hidden = !locked;
       if (locked) {
         b.setAttribute("aria-disabled", "true");
         if (note) b.setAttribute("aria-describedby", note.id);
-        b.title = note?.textContent ?? "";
       } else {
         b.removeAttribute("aria-disabled");
         b.removeAttribute("aria-describedby");
-        b.removeAttribute("title");
       }
     }
   };
@@ -100,6 +142,6 @@ const note = uid("lc-mt");
       setMotionOff(!motionOff());
     });
   }
-  onMotionChange(sync);
+  onMotionChange(sync); // also fires when only the OS lock changed (motion-pref.ts), so the lock never goes stale
   sync();
 </script>

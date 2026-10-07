@@ -196,12 +196,22 @@ describe("site facts, stats and technologies", () => {
     expect(`20${digits(SITE.phone.local).slice(1)}`).toBe(SITE.whatsapp);
   });
 
-  it("stats are derived from the data (no hand-typed numbers)", () => {
-    const v = Object.fromEntries(STATS.map((s) => [s.key, s.value]));
-    expect(v.platforms).toBe(String(SITE.brands.length));
-    expect(v.industries).toBe(`${INDUSTRIES.length}+`);
-    expect(v.projects).toBe(`${SITE.projectsCount}+`);
-    expect(SITE.projectsCount).toBeGreaterThanOrEqual(PROJECTS.length);
+  it("stats: the proof figures every page shows (a change here is a change to a public claim: update on purpose)", () => {
+    expect(STATS.map((s) => [s.key, s.value])).toEqual([
+      ["projects", "50+"],
+      ["experience", "4+"],
+      ["platforms", "5"],
+      ["industries", "7+"],
+    ]);
+  });
+
+  it("stats never claim more than the site documents", () => {
+    const n = (key: string) => Number.parseInt(STATS.find((s) => s.key === key)!.value, 10);
+    // Western digits in every locale; "N+" is a floor, the platform count is exact
+    for (const s of STATS) expect(s.value, s.key).toMatch(/^[1-9][0-9]*\+?$/);
+    expect(n("projects")).toBeGreaterThanOrEqual(PROJECTS.length);
+    expect(n("industries")).toBeLessThanOrEqual(INDUSTRY_SLUGS.length);
+    expect(n("platforms")).toBe(BRANDS.length); // the brands the technologies page presents
   });
 
   it("BRANDS follow SITE.brands and have text in every locale", () => {

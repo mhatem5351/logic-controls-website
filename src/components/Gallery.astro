@@ -7,6 +7,14 @@
  *  - Lightbox: the photo always fits the screen (never cropped, never scrolls), caption below it, prev/next buttons,
  *    arrow keys (mirrored in RTL), swipe on touch, Esc / tap outside the photo to close. Each change is announced
  *    ("Image 3 of 4: <alt>"); the page behind does not scroll (global.css) and focus returns to the opening thumbnail.
+ *    One photo: no prev / next, no counter, the alt alone is announced. A caption that repeats the alt is hidden from
+ *    assistive tech (aria-hidden="true"). Swipe pages only when the page is not pinch-zoomed (a zoomed photo pans
+ *    sideways instead), and only a mouse drag swallows the click that follows it. Landscape phones: the controls clear
+ *    the side safe areas (notch) and the counter / close row overlays the photo so it gets ~90% of the height.
+ *  - Page turns (MOT2-17): the next photo is decoded first, then crossfades in, sliding 24px from the side it comes
+ *    from while the old one drifts 12px on (mirrored in RTL); the counter, caption and announcement change with the
+ *    photo. On touch the photo follows the finger (resisted past the first / last photo) and pages past 40px or on a
+ *    flick, else eases back. Motion off (html[data-motion="off"]): instant swaps, no slide, no follow.
  * Without JS each thumbnail is a plain link to the full-size image.
  */
 import type { ImageMetadata } from "astro";
@@ -14,7 +22,8 @@ import { Picture, getImage } from "astro:assets";
 import { getMessages, type Locale } from "~/i18n";
 import { BLANK_IMAGE } from "./hero-media";
 import Icon from "./Icon.astro";
-import { fmt } from "./nav";
+import { fmt } from "~/lib/format";
+import { html, punct } from "~/lib/text";
 import { uid } from "./uid";
 
 interface Item {
@@ -40,7 +49,9 @@ const locale = (Astro.props.locale ?? Astro.currentLocale ?? "en") as Locale;
 const t = getMessages(locale).ui;
 const { images, columns = 3, lead = false, crop = "landscape", sizes, class: className } = Astro.props;
 const id = uid("gal");
-const full = await Promise.all(images.map((img) => getImage({ src: img.src, width: Math.min(1800, img.src.width), format: "webp", quality: 82 })));
+const full = await Promise.all(
+  images.map((img) => getImage({ src: img.src, width: Math.min(1800, img.src.width), format: "webp", quality: 82 })),
+);
 const total = images.length;
 const isLead = lead && total >= 3;
 const grid = isLead
@@ -62,49 +73,52 @@ const thumbWidths = [320, 480, 640, 800, 960, 1200];
 
 <div class:list={["lc-gallery", className]} data-gallery={id}>
   <ul role="list" class:list={["grid gap-3 sm:gap-4", grid]}>
-    {
-      images.map((img, i) => (
-        <li class:list={["lc-reveal min-w-0", isLead && i === 0 && "relative max-sm:col-span-2 sm:row-span-2"]}>
-          <a
-            href={full[i]!.src}
-            data-index={i}
-            data-full={full[i]!.src}
-            data-caption={img.caption ?? ""}
+    {images.map((img, i) => (
+      <li class:list={["lc-reveal min-w-0", isLead && i === 0 && "relative max-sm:col-span-2 sm:row-span-2"]}>
+        <a
+          href={full[i]!.src}
+          data-index={i}
+          data-full={full[i]!.src}
+          data-caption={img.caption ?? ""}
+          class:list={[
+            "group relative block overflow-hidden bg-navy-950",
+            crop === "square" ? "aspect-square" : "aspect-[4/3]",
+            /* The lead fills the two rows the thumbnails define (out of the flow, so its photo can't stretch them). */
+            isLead && i === 0 && "sm:absolute sm:inset-0 sm:aspect-auto",
+          ]}
+        >
+          <Picture
+            src={img.src}
+            alt={img.alt}
+            formats={["avif", "webp"]}
+            widths={thumbWidths}
+            sizes={thumbSizes(i)}
+            loading="lazy"
+            layout="full-width"
+            class="size-full object-cover transition-[scale,opacity] duration-(--dur-section) ease-emph group-hover:scale-[1.04] group-hover:opacity-90"
+          />
+          <span class="sr-only"> {fmt(t.gallery.openSuffix, { n: i + 1, total })}</span>
+          <span
+            aria-hidden="true"
+            class="absolute end-3 top-3 grid size-9 place-items-center bg-navy-950/70 text-white opacity-0 backdrop-blur-sm transition-opacity duration-(--dur-ui) ease-mech group-hover:opacity-100 group-focus-visible:opacity-100 [@media(hover:none)]:opacity-100"
+          >
+            <Icon name="plus" size={18} />
+          </span>
+        </a>
+        {img.caption && (
+          <p
             class:list={[
-              "group relative block overflow-hidden bg-navy-950",
-              crop === "square" ? "aspect-square" : "aspect-[4/3]",
-              /* The lead fills the two rows the thumbnails define (out of the flow, so its photo can't stretch them). */
-              isLead && i === 0 && "sm:absolute sm:inset-0 sm:aspect-auto",
+              "text-sm text-charcoal-700 on-dark:text-navy-200",
+              isLead && i === 0
+                ? "mt-2 sm:pointer-events-none sm:absolute sm:inset-x-0 sm:bottom-0 sm:m-0 sm:bg-navy-950/80 sm:px-4 sm:py-2.5 sm:text-white"
+                : "mt-2",
             ]}
           >
-            <Picture
-              src={img.src}
-              alt={img.alt}
-              formats={["avif", "webp"]}
-              widths={thumbWidths}
-              sizes={thumbSizes(i)}
-              loading="lazy"
-              layout="full-width"
-              class="size-full object-cover transition-[scale,opacity] duration-(--dur-section) ease-emph group-hover:scale-[1.04] group-hover:opacity-90"
-            />
-            <span class="sr-only"> {fmt(t.gallery.openSuffix, { n: i + 1, total })}</span>
-            <span aria-hidden="true" class="absolute end-3 top-3 grid size-9 place-items-center bg-navy-950/70 text-white opacity-0 backdrop-blur-sm transition-opacity duration-(--dur-ui) ease-mech group-hover:opacity-100 group-focus-visible:opacity-100 [@media(hover:none)]:opacity-100">
-              <Icon name="plus" size={18} />
-            </span>
-          </a>
-          {img.caption && (
-            <p
-              class:list={[
-                "text-sm text-charcoal-700 on-dark:text-navy-200",
-                isLead && i === 0 ? "mt-2 sm:pointer-events-none sm:absolute sm:inset-x-0 sm:bottom-0 sm:m-0 sm:bg-navy-950/80 sm:px-4 sm:py-2.5 sm:text-white" : "mt-2",
-              ]}
-            >
-              {img.caption}
-            </p>
-          )}
-        </li>
-      ))
-    }
+            <span set:html={html(locale, img.caption)} />
+          </p>
+        )}
+      </li>
+    ))}
   </ul>
 
   <dialog
@@ -112,21 +126,27 @@ const thumbWidths = [320, 480, 640, 800, 960, 1200];
     aria-label={t.gallery.label}
     data-counter={t.gallery.counter}
     data-counter-long={t.gallery.counterLong}
-    data-sep={locale === "zh" ? "：" : ": "}
+    data-sep={punct(locale).colon}
   >
-    <div class="grid size-full grid-rows-[auto_minmax(0,1fr)] pb-[max(1rem,env(safe-area-inset-bottom))]">
-      <div class="flex items-center justify-between px-4 pt-[max(0.75rem,env(safe-area-inset-top))] pb-3 sm:px-6">
-        <p class="font-mono text-sm text-navy-200" dir="auto" aria-hidden="true" data-counter></p>
-        <button type="button" data-close class="inline-flex size-11 items-center justify-center border border-white/25 hover:border-white/60" autofocus>
+    <div class="lc-lb-grid grid size-full grid-rows-[auto_minmax(0,1fr)] pb-[max(1rem,env(safe-area-inset-bottom))]">
+      <div class="lc-lb-bar flex items-center justify-between px-4 pt-[max(0.75rem,env(safe-area-inset-top))] pb-3 sm:px-6">
+        {total > 1 ? <p class="font-mono text-sm text-navy-200" dir="auto" aria-hidden="true" data-counter></p> : <span />}
+        <button
+          type="button"
+          data-close
+          class="inline-flex size-11 items-center justify-center border border-white/25 hover:border-white/60"
+          autofocus
+        >
           <Icon name="close" size={22} />
           <span class="sr-only">{t.gallery.close}</span>
         </button>
       </div>
-      <figure data-figure class="relative grid min-h-0 grid-rows-[minmax(0,1fr)_auto] gap-3 sm:px-20">
+      <figure data-figure class:list={["lc-lb-figure relative grid min-h-0 grid-rows-[minmax(0,1fr)_auto] gap-3", total > 1 && "sm:px-20"]}>
         {/* The stage has a definite height (grid track), so the photo is fitted inside it: never taller than the
             screen, never upscaled. src is replaced on open; lazy, so the closed dialog never downloads it. */}
         <div data-stage class="relative min-h-0 touch-pan-y touch-pinch-zoom">
-          {/* Two layers: the next photo is decoded behind the current one, then they crossfade (instant with motion off). */}
+          {/* Two layers: the next photo is decoded behind the current one, then they crossfade with a short slide in the
+              direction of travel (both instant with motion off). */}
           {[0, 1].map((layer) => (
             <img
               data-image
@@ -137,28 +157,127 @@ const thumbWidths = [320, 480, 640, 800, 960, 1200];
               decoding="async"
               draggable="false"
               class:list={["absolute inset-0 m-auto max-h-full max-w-full object-contain select-none", layer === 1 && "opacity-0"]}
-              style="transition: opacity var(--dur-ui) var(--ease-mech), scale var(--dur-section) var(--ease-emph)"
             />
           ))}
         </div>
-        <button type="button" data-prev class="absolute start-2 top-1/2 inline-flex size-11 -translate-y-1/2 items-center justify-center border border-white/25 bg-navy-950/60 hover:border-white/60 sm:start-4">
-          <Icon name="chevron-left" size={24} />
-          <span class="sr-only">{t.gallery.prev}</span>
-        </button>
-        <button type="button" data-next class="absolute end-2 top-1/2 inline-flex size-11 -translate-y-1/2 items-center justify-center border border-white/25 bg-navy-950/60 hover:border-white/60 sm:end-4">
-          <Icon name="chevron-right" size={24} />
-          <span class="sr-only">{t.gallery.next}</span>
-        </button>
+        {total > 1 && (
+          <>
+            <button
+              type="button"
+              data-prev
+              class="absolute start-2 top-1/2 inline-flex size-11 -translate-y-1/2 items-center justify-center border border-white/25 bg-navy-950/60 hover:border-white/60 sm:start-4"
+            >
+              <Icon name="chevron-left" size={24} />
+              <span class="sr-only">{t.gallery.prev}</span>
+            </button>
+            <button
+              type="button"
+              data-next
+              class="absolute end-2 top-1/2 inline-flex size-11 -translate-y-1/2 items-center justify-center border border-white/25 bg-navy-950/60 hover:border-white/60 sm:end-4"
+            >
+              <Icon name="chevron-right" size={24} />
+              <span class="sr-only">{t.gallery.next}</span>
+            </button>
+          </>
+        )}
         {/* Last child (a figcaption must be first or last); the buttons are absolutely positioned, so it still fills the
             grid's second row under the stage. */}
-        <figcaption data-caption class="mx-auto max-w-[min(92%,48rem)] px-4 text-center text-sm text-navy-100 empty:hidden"></figcaption>
+        <figcaption
+          data-caption
+          class="lc-lb-cap mx-auto max-w-[min(92%,48rem)] px-4 text-center text-sm text-navy-100 empty:hidden"
+        ></figcaption>
       </figure>
       <p class="sr-only" aria-live="polite" data-live></p>
     </div>
   </dialog>
 </div>
 
+<style>
+  /* Photo layers (MOT2-17): crossfade and paging cue on --dur-ui; the open / close scale (motion.css) keeps its
+     page-length timing. Scoped, so this list wins over motion.css's scale-only one. */
+  .lc-lightbox [data-image] {
+    transition:
+      opacity var(--dur-ui) var(--ease-mech),
+      translate var(--dur-ui) var(--ease-mech),
+      scale var(--dur-page) var(--ease-emph);
+  }
+  /* Lightbox, landscape phones (DEV2-06): keep the controls clear of the side safe areas (the notch / Dynamic Island
+     side; physical sides, as env() insets are physical) ... */
+  .lc-lb-grid {
+    padding-left: env(safe-area-inset-left);
+    padding-right: env(safe-area-inset-right);
+  }
+  /* ... and give the photo the height: the counter / close row floats over it, the caption keeps one line. */
+  @media (max-height: 30rem) {
+    .lc-lb-grid {
+      grid-template-rows: minmax(0, 1fr);
+      padding-top: max(0.5rem, env(safe-area-inset-top));
+      padding-bottom: max(0.5rem, env(safe-area-inset-bottom));
+    }
+    .lc-lb-bar {
+      position: absolute;
+      inset-inline: 0;
+      top: 0;
+      z-index: 2;
+      padding-top: max(0.5rem, env(safe-area-inset-top));
+      padding-left: max(1rem, env(safe-area-inset-left));
+      padding-right: max(1rem, env(safe-area-inset-right));
+      background: linear-gradient(rgb(4 14 39 / 0.75), transparent);
+      pointer-events: none;
+    }
+    .lc-lb-bar > * {
+      pointer-events: auto;
+    }
+    .lc-lb-figure {
+      gap: 0.375rem;
+      padding-inline: 3.75rem;
+    }
+    .lc-lb-cap {
+      display: -webkit-box;
+      overflow: hidden;
+      -webkit-box-orient: vertical;
+      -webkit-line-clamp: 1;
+      line-clamp: 1;
+    }
+  }
+</style>
+
 <script>
+  import { fmt } from "~/lib/format";
+  import { motionOff } from "~/scripts/motion/motion-pref";
+
+  /* Paging cue (MOT2-17): the incoming photo enters from ENTER px in the direction of travel while the outgoing one
+     drifts DRIFT px on; a touch drag moves the photo with the finger (EDGE_DAMP of the distance at the first / last
+     photo) and pages past COMMIT_PX or a COMMIT_V px/ms flick, else it eases back. All of it is skipped with motion off. */
+  const ENTER = 24;
+  const DRIFT = 12;
+  const EDGE_DAMP = 0.35;
+  const COMMIT_PX = 40;
+  const COMMIT_V = 0.3;
+  /* A touch must move this far before it counts as a horizontal drag (or a vertical one, which is left alone). */
+  const SLOP = 8;
+  /* transition-property while a layer is placed or dragged: its fade and cue are off, the dialog's open / close scale runs on. */
+  const HOLD = "scale";
+
+  /** The layer's own fade / cue transitions still running (not the open / close scale). */
+  const moving = (img: HTMLImageElement) =>
+    img.getAnimations().filter((a): a is CSSTransition => a instanceof CSSTransition && a.transitionProperty !== "scale");
+  /** Sets a layer's offset (and opacity) at once, ending a fade or cue still running on it; later changes animate again. */
+  const place = (img: HTMLImageElement, translate: string, opacity?: string) => {
+    img.style.transitionProperty = HOLD;
+    img.style.translate = translate;
+    if (opacity !== undefined) img.style.opacity = opacity;
+    img.getBoundingClientRect(); /* flush: the next change transitions from here */
+    img.style.transitionProperty = "";
+  };
+
+  interface Cue {
+    /** Physical direction of travel: +1 = the photos move left (the new one enters from the right), -1 = right, 0 = no cue. */
+    s: number;
+    /** Where a touch drag left the front photo (px). */
+    from?: number;
+  }
+
   document.querySelectorAll<HTMLElement>("[data-gallery]").forEach((root) => {
     const links = [...root.querySelectorAll<HTMLAnchorElement>("a[data-full]")];
     const dialog = root.querySelector<HTMLDialogElement>(".lc-lightbox");
@@ -167,95 +286,201 @@ const thumbWidths = [320, 480, 640, 800, 960, 1200];
     let front = 0;
     let swap = 0;
     const cap = dialog.querySelector<HTMLElement>("[data-caption]")!;
-    const counter = dialog.querySelector<HTMLElement>("[data-counter]")!;
+    const counter = dialog.querySelector<HTMLElement>("[data-counter]");
     const live = dialog.querySelector<HTMLElement>("[data-live]")!;
     const stage = dialog.querySelector<HTMLElement>("[data-stage]")!;
     const figure = dialog.querySelector<HTMLElement>("[data-figure]")!;
     const rtl = document.documentElement.dir === "rtl";
     const total = links.length;
-    const fill = (tpl = "", n: number) => tpl.replace("{n}", String(n)).replace("{total}", String(total));
+    const fill = (tpl = "", n: number) => fmt(tpl, { n, total });
     let index = 0;
     let opener: HTMLAnchorElement | null = null;
+    /* The "which photo is open" announcement that follows the dialog's own name; cancelled by a close or a page turn. */
+    let announceTimer = 0;
     const altOf = (a: HTMLAnchorElement) => a.querySelector("img")?.alt ?? "";
-    const announce = () => (live.textContent = `${fill(dialog.dataset.counterLong, index + 1)}${dialog.dataset.sep ?? ": "}${altOf(links[index]!)}`);
+    /* One photo: just its alt ("Image 1 of 1" is noise). */
+    const announce = (i: number) =>
+      (live.textContent =
+        total > 1 ? `${fill(dialog.dataset.counterLong, i + 1)}${dialog.dataset.sep ?? ": "}${altOf(links[i]!)}` : altOf(links[i]!));
     /* Warm the neighbours so prev / next swap without a blank frame. */
     const warm = (i: number) => (new Image().src = links[(i + total) % total]!.dataset.full!);
-    const still = () => document.documentElement.dataset.motion === "off" || matchMedia("(prefers-reduced-motion: reduce)").matches;
-    /* Put a photo on the stage: instantly (opening, motion off) or decoded on the back layer, then crossfaded. */
-    const paint = async (src: string, alt: string, fade: boolean) => {
+
+    /* Touch drag state: `held` is the front photo while it follows the finger. */
+    let held: HTMLImageElement | null = null;
+    let pid = -1;
+    const easeBack = (img: HTMLImageElement) => {
+      img.style.transitionProperty = "";
+      img.style.translate = "0px";
+    };
+
+    /**
+     * Put a photo on the stage. Opening: straight onto the front layer (the dialog's own fade covers the load). Paging:
+     * decoded on the back layer, then the layers swap (crossfade + cue). `done` runs once the new photo is in front: the
+     * counter, caption and announcement follow the photo, not the key press.
+     */
+    const paint = async (src: string, alt: string, cue: Cue | null, done: () => void) => {
       const id = ++swap;
       const cur = layers[front]!;
       const next = layers[1 - front];
-      if (!fade || !next) {
+      if (!cue || !next) {
         cur.src = src;
         cur.alt = alt;
+        done();
         return;
       }
+      /* Rapid paging: the last swap's fade / cue ends at once, so the back layer is hidden before it gets the new photo
+         (a front photo held by a drag stays where the finger left it). */
+      if (moving(next).length || next.style.translate) place(next, "", "0");
+      if (cue.from === undefined && moving(cur).length) place(cur, "", "1");
       next.src = src;
       try {
         await next.decode();
       } catch {
         /* not decodable yet: show it anyway */
       }
-      if (id !== swap) return; /* a newer swap won */
+      if (id !== swap) return; /* a newer swap (or a close) won */
+      if (held === cur) {
+        held = null; /* a new drag started while this photo decoded: the swap wins */
+        pid = -1;
+      }
       next.alt = alt;
       next.removeAttribute("aria-hidden");
-      next.style.opacity = "1";
-      cur.style.opacity = "0";
       cur.alt = "";
       cur.setAttribute("aria-hidden", "true");
+      if (cue.s) place(next, `${cue.s * ENTER}px`);
+      cur.style.transitionProperty = ""; /* after a drag */
+      next.style.opacity = "1";
+      cur.style.opacity = "0";
+      if (cue.s) {
+        next.style.translate = "0px";
+        cur.style.translate = `${(cue.from ?? 0) - cue.s * DRIFT}px`;
+      }
       front = 1 - front;
+      done();
     };
-    const show = (i: number, speak = true, fade = true) => {
+    /* After a cue: the outgoing layer (now hidden) and a settled front photo drop their offset. */
+    layers.forEach((img) =>
+      img.addEventListener("transitionend", (e) => {
+        if (e.propertyName !== "translate" || img === held || moving(img).some((t) => t.transitionProperty === "translate")) return;
+        if (img !== layers[front] || !parseFloat(img.style.translate || "0")) place(img, "");
+      }),
+    );
+
+    const show = (i: number, cue: Cue | null) => {
       index = (i + total) % total;
-      const a = links[index]!;
+      const at = index;
+      const a = links[at]!;
       const alt = altOf(a);
       const caption = a.dataset.caption || alt;
-      paint(a.dataset.full!, alt, fade && !still());
-      cap.textContent = caption;
-      /* A caption that only repeats the alt stays visible but is not read a second time. */
-      cap.toggleAttribute("aria-hidden", caption === alt);
-      counter.textContent = fill(dialog.dataset.counter, index + 1);
-      if (speak) announce();
+      if (cue) clearTimeout(announceTimer);
+      paint(a.dataset.full!, alt, cue, () => {
+        cap.textContent = caption;
+        /* A caption that only repeats the alt stays visible but is not read a second time (an empty aria-hidden value
+           would mean "undefined", i.e. not hidden). */
+        if (caption === alt) cap.setAttribute("aria-hidden", "true");
+        else cap.removeAttribute("aria-hidden");
+        if (counter) counter.textContent = fill(dialog.dataset.counter, at + 1);
+        if (cue && dialog.open) announce(at);
+      });
       if (total > 1) {
-        warm(index + 1);
-        warm(index - 1);
+        warm(at + 1);
+        warm(at - 1);
       }
     };
+    /* d: +1 next / -1 previous. Next travels towards the inline start: left in LTR, right in RTL. */
+    const step = (d: number, drag?: Cue) => show(index + d, motionOff() ? { s: 0 } : (drag ?? { s: rtl ? -d : d }));
+
     links.forEach((a, i) =>
       a.addEventListener("click", (e) => {
         e.preventDefault();
         opener = a;
         live.textContent = "";
-        show(i, false, false);
+        /* From rest: a swap, cue or drag cut short by the last close is not resumed. */
+        swap++;
+        held = null;
+        pid = -1;
+        layers.forEach((img, k) => place(img, "", k === front ? "1" : "0"));
+        show(i, null);
         dialog.showModal();
         /* After the dialog's own name, say which photo is open. */
-        setTimeout(announce, 150);
+        clearTimeout(announceTimer);
+        announceTimer = window.setTimeout(() => dialog.open && announce(index), 150);
       }),
     );
-    const step = (d: number) => show(index + d);
     dialog.querySelector("[data-close]")?.addEventListener("click", () => dialog.close());
     dialog.querySelector("[data-prev]")?.addEventListener("click", () => step(-1));
     dialog.querySelector("[data-next]")?.addEventListener("click", () => step(1));
     dialog.addEventListener("keydown", (e) => {
+      if (total < 2) return;
       if (e.key === "ArrowRight") step(rtl ? -1 : 1);
       if (e.key === "ArrowLeft") step(rtl ? 1 : -1);
     });
-    /* Swipe (touch, pen, mouse drag): a mostly horizontal move of 40px+ pages; towards the inline start = next. */
+
+    /* Swipe: a mostly horizontal move pages; towards the inline start = next. Touch (motion on): the photo follows the
+       finger and pages past 40px or on a flick. Mouse / pen (and touch with motion off): pages on release past 40px. */
     let sx = 0;
     let sy = 0;
-    let pid = -1;
     let swiped = false;
-    stage.addEventListener("pointerdown", (e) => ((pid = e.pointerId), (sx = e.clientX), (sy = e.clientY)));
-    stage.addEventListener("pointercancel", () => (pid = -1));
+    /* Recent [x, time] samples of a touch drag (the last ~100 ms), for its release velocity. */
+    let trail: [number, number][] = [];
+    /* Pinch-zoomed (visual viewport scaled): the browser pans the photo; no swipe paging, and sideways panning is allowed. */
+    const zoomed = () => (window.visualViewport?.scale ?? 1) > 1.01;
+    const syncTouch = () => (stage.style.touchAction = zoomed() ? "auto" : "");
+    window.visualViewport?.addEventListener("resize", syncTouch);
+    /* Any new press clears a swallowed-click flag: a touch swipe is never followed by a click, so it can't eat the next tap. */
+    dialog.addEventListener("pointerdown", () => (swiped = false));
+    const drop = () => {
+      if (held) easeBack(held);
+      held = null;
+      pid = -1;
+    };
+    stage.addEventListener("pointerdown", (e) => {
+      if (!e.isPrimary) return drop(); /* a second finger (pinch): no swipe */
+      pid = e.pointerId;
+      sx = e.clientX;
+      sy = e.clientY;
+      trail = [[e.clientX, e.timeStamp]];
+    });
+    stage.addEventListener("pointermove", (e) => {
+      if (e.pointerId !== pid || e.pointerType !== "touch" || total < 2) return;
+      const dx = e.clientX - sx;
+      if (!held) {
+        const dy = e.clientY - sy;
+        if (Math.max(Math.abs(dx), Math.abs(dy)) < SLOP || zoomed() || motionOff()) return;
+        if (Math.abs(dy) > Math.abs(dx)) return void (pid = -1); /* vertical: not a swipe */
+        const back = layers[1 - front];
+        if (back && (moving(back).length || back.style.translate)) place(back, "", "0");
+        held = layers[front]!;
+        held.style.transitionProperty = HOLD;
+        held.style.opacity = "1";
+      }
+      trail.push([e.clientX, e.timeStamp]);
+      while (trail.length > 2 && e.timeStamp - trail[0]![1] > 100) trail.shift();
+      /* Resisted beyond the first / last photo (paging there wraps around). */
+      const edge = dx < 0 !== rtl ? index === total - 1 : index === 0;
+      held.style.translate = `${edge ? dx * EDGE_DAMP : dx}px`;
+    });
+    stage.addEventListener("pointercancel", (e) => e.pointerId === pid && drop());
     stage.addEventListener("pointerup", (e) => {
       if (e.pointerId !== pid) return;
       pid = -1;
       const dx = e.clientX - sx;
       const dy = e.clientY - sy;
-      if (total > 1 && Math.abs(dx) > 40 && Math.abs(dx) > Math.abs(dy)) {
-        swiped = true;
-        step(dx < 0 !== rtl ? 1 : -1);
+      const d = dx < 0 !== rtl ? 1 : -1;
+      if (held) {
+        const img = held;
+        held = null;
+        const [x0, t0] = trail[0]!;
+        const v = e.timeStamp > t0 ? (e.clientX - x0) / (e.timeStamp - t0) : 0;
+        if (Math.abs(dx) > COMMIT_PX || (Math.abs(v) > COMMIT_V && v * dx > 0))
+          step(d, { s: dx < 0 ? 1 : -1, from: parseFloat(img.style.translate) || 0 });
+        else easeBack(img);
+        return;
+      }
+      if (total > 1 && !zoomed() && Math.abs(dx) > COMMIT_PX && Math.abs(dx) > Math.abs(dy)) {
+        /* Only a mouse drag is followed by a click on the dialog; a touch / pen swipe is not. */
+        swiped = e.pointerType === "mouse";
+        step(d);
       }
     });
     /* Tap / click outside the photo (backdrop, stage margins) closes. */
@@ -264,8 +489,16 @@ const thumbWidths = [320, 480, 640, 800, 960, 1200];
       if (e.target === dialog || e.target === stage || e.target === figure) dialog.close();
     });
     dialog.addEventListener("close", () => {
+      /* Nothing is said or swapped in after the close: a pending announcement or a photo still decoding is dropped. */
+      clearTimeout(announceTimer);
+      swap++;
+      held = null;
+      pid = -1;
       live.textContent = "";
       (opener ?? links[index])?.focus({ preventScroll: true });
     });
+    /* The script loads when the gallery comes near (src/scripts/site.ts); until then a thumbnail is a plain link to
+       the full image. Tests wait for this flag. */
+    root.dataset.ready = "";
   });
 </script>

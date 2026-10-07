@@ -118,7 +118,6 @@
   border: 1.5px solid currentColor;
   border-radius: 50%;
   font: 700 0.6875rem/1 var(--font-mono);
-  opacity: 0.8;
   transition:
     background-color var(--dur-ui) var(--ease-mech),
     border-color var(--dur-ui) var(--ease-mech),
@@ -132,18 +131,27 @@
 .lc-hmi-tour li[aria-current="step"] .lc-hmi-stepn {
   border-color: var(--color-royal-600);
   color: var(--color-royal-600);
-  opacity: 1;
 }
 /* done: a filled disc with a tick replaces the number */
 .lc-hmi-tour li[data-done] .lc-hmi-stepn {
   border-color: var(--color-royal-600);
   background: var(--color-royal-600) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 12'%3E%3Cpath d='M2.6 6.3l2.2 2.2 4.6-4.8' fill='none' stroke='%23fff' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E") center / 72% no-repeat;
   color: transparent;
-  opacity: 1;
 }
 .lc-hmi-tour li[data-done] > span:not([class]) {
   text-decoration: line-through;
   text-decoration-color: color-mix(in oklab, currentColor 45%, transparent);
+}
+/* "Simulate a fault" while the fault develops: what to watch (static; the TT-102 headline carries the same cue) */
+.lc-hmi-hint {
+  padding: 0.05rem 0.45rem;
+  border-inline-start: 2px solid var(--color-signal-500);
+  background: rgb(255 176 43 / 0.14);
+  font-weight: 600;
+  white-space: nowrap;
+}
+.lc-hmi-hint[hidden] {
+  display: none;
 }
 
 .lc-hmi-foot {
@@ -213,8 +221,38 @@
   text-decoration: none;
   transition: background-color var(--dur-micro) var(--ease-mech);
 }
-.lc-hmi-btn:hover {
-  background: var(--color-royal-700);
+/* hover only where a pointer hovers: on touch screens a tap would leave it "stuck" (DEV2-12) */
+@media (hover: hover) {
+  .lc-hmi-btn:hover {
+    background: var(--color-royal-700);
+  }
+}
+/* the real project behind the demo (UX2-16): a quiet text link next to the quote button */
+.lc-hmi-more {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  min-height: 2.75rem;
+  font-weight: 700;
+  color: var(--color-royal-700);
+  text-decoration: underline;
+  text-underline-offset: 0.2em;
+  text-decoration-thickness: 1px;
+}
+@media (hover: hover) {
+  .lc-hmi-more:hover {
+    text-decoration-thickness: 2px;
+  }
+}
+.lc-hmi-more path {
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.7;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+.lc-hmi-wrap[data-tone="dark"] .lc-hmi-more {
+  color: var(--color-royal-200);
 }
 .lc-hmi-sr {
   position: absolute;
@@ -259,8 +297,10 @@
   background: #fff;
   color: var(--color-navy-900);
 }
-.lc-hmi-wrap[data-tone="dark"] .lc-hmi-btn:hover {
-  background: var(--color-royal-100);
+@media (hover: hover) {
+  .lc-hmi-wrap[data-tone="dark"] .lc-hmi-btn:hover {
+    background: var(--color-royal-100);
+  }
 }
 
 /* ----------------------------------------------------------------- the device */
@@ -403,6 +443,12 @@
   font-style: italic;
   letter-spacing: 0.01em;
   font-family: var(--font-latin);
+}
+/* Arabic pages: the panel's Latin (tags, units, the bezel's brand and LEDs) is drawn in Alexandria's Latin like every
+   other Latin island on those pages, so the demo never pulls the Montserrat file onto an Arabic page (PERF2-12). */
+.lc-hmi-screen:lang(ar),
+:lang(ar) :is(.hs-brand, .lc-hmi-chin) {
+  font-family: var(--font-ar-text);
 }
 .hs-mark {
   width: auto;
@@ -925,6 +971,12 @@
 .hs-big[data-alm="1"] .hs-almi {
   display: inline-grid;
 }
+/* "watch this": between Simulate fault and the divert the headline carries the story's amber lamp (static outline) */
+.hs-big[data-next] {
+  outline: 2px solid #ffb02b;
+  outline-offset: 3px;
+  border-radius: 2px;
+}
 .hs-big[data-alm="1"] .hs-bigv {
   color: var(--h-p1);
 }
@@ -1116,7 +1168,24 @@
   border-color: var(--h-dark);
   background: var(--h-dark) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 12'%3E%3Cpath d='M2.5 6.2l2.2 2.2 4.8-4.9' fill='none' stroke='%23fff' stroke-width='1.8'/%3E%3C/svg%3E") center / 100% no-repeat;
 }
+/* a state word whose box keeps the width of its longest alternative (MOT2-12: "BLOCKED" ↔ "OK" re-wrapped the
+   permissive heading and "DIVERT" ↔ "FORWARD" the headline row, moving the desktop command bar by 12–21px) */
+.hs-stk {
+  display: inline-grid;
+  justify-items: center;
+  white-space: nowrap;
+}
+.hs-stk > * {
+  grid-area: 1 / 1;
+}
+.hs-stk > .hs-sz {
+  visibility: hidden;
+}
+.hs-fdv .hs-stk {
+  justify-items: end; /* flush with the row's end, like a right-aligned value */
+}
 .hs-permst {
+  flex: none;
   padding: 1px 6px;
   border-radius: 2px;
   background: #dfe1e6;
@@ -1259,6 +1328,34 @@
   background: var(--h-p2);
   color: #1d1300;
 }
+/* the story is complete: a tick, and a real link to the quote form */
+.hs-msg[data-tone="ok"]::before {
+  content: "✓";
+  content: "✓" / "";
+}
+.hs-link {
+  color: var(--h-act);
+  text-decoration: underline;
+  text-underline-offset: 0.18em;
+  white-space: nowrap;
+}
+/* phones: the current "Try it" step, mirrored next to the message (the list above is off screen while playing) */
+.hs-tourn {
+  display: none;
+  flex: none;
+  margin-inline-start: auto;
+  align-self: start;
+  padding: 1px 6px;
+  border: 1px solid var(--h-bd);
+  border-radius: 9px;
+  background: var(--h-val);
+  font: 700 11px/16px var(--font-mono);
+  color: var(--h-mut);
+}
+.hs-tourn[data-done] {
+  border-color: var(--h-act);
+  color: var(--h-act);
+}
 /* every new note (refusal, hint) registers with a short highlight (opacity only) */
 .hs-msg::after {
   content: "";
@@ -1341,9 +1438,11 @@
   letter-spacing: 0.06em;
   cursor: pointer;
 }
-.lc-hmi-screen .hs-tgl:hover {
-  border-color: var(--h-bd);
-  background: var(--h-val);
+@media (hover: hover) {
+  .lc-hmi-screen .hs-tgl:hover {
+    border-color: var(--h-bd);
+    background: var(--h-val);
+  }
 }
 .lc-hmi-screen .hs-tgl::after {
   content: "";
@@ -1461,7 +1560,7 @@
 }
 .hs-alist {
   position: relative;
-  height: 108px;
+  min-height: 108px;
   overflow: hidden;
   border: 1px solid var(--h-bd);
   background: var(--h-val);
@@ -1471,10 +1570,11 @@
   grid-template-columns: 16px 58px 50px minmax(0, 1fr) auto;
   align-items: center;
   gap: 8px;
-  height: 21.6px;
-  padding: 0 8px;
+  min-height: 21.6px;
+  padding: 2px 8px;
   border-bottom: 1px solid #e3e5e9;
   font-size: 11.5px;
+  line-height: 1.3;
   white-space: nowrap;
 }
 .hs-alist [data-rows] > .hs-empty {
@@ -1496,9 +1596,10 @@
   overflow: hidden;
   text-overflow: ellipsis;
 }
+/* the message wraps rather than being cut with an ellipsis (A11Y2-10: nothing could reveal the rest) */
 .hs-alist .a-tx {
-  overflow: hidden;
-  text-overflow: ellipsis;
+  white-space: normal;
+  overflow-wrap: break-word;
 }
 .hs-alist .a-st {
   font-size: 10.5px;
@@ -1535,16 +1636,30 @@
   background: #6c6e77;
 }
 /* acknowledged but still active: hollow priority shape (unacknowledged = filled + blinking) */
-[data-st="acked"]:is([data-p="1"], [data-p="2"], [data-p="3"]) .a-ic {
-  box-shadow: inset 0 0 0 2px currentColor;
-}
 [data-st="acked"][data-p="1"] .a-ic {
+  box-shadow: inset 0 0 0 2px currentColor;
   background: var(--h-val);
-  color: var(--h-p1);
+  color: #b42318; /* 6.2:1 on the row */
 }
-[data-st="acked"][data-p="2"] .a-ic,
+/* triangle / diamond: the coloured shape stays as a rim around a light core (a box-shadow ring would be clipped by
+   the shape), the digit in dark ink on the core (A11Y2-12: was 4.13:1 at opacity .75) */
+[data-st="acked"]:is([data-p="2"], [data-p="3"]) .a-ic {
+  position: relative;
+  isolation: isolate;
+}
+[data-st="acked"]:is([data-p="2"], [data-p="3"]) .a-ic::before {
+  content: "";
+  position: absolute;
+  inset: 3px 3px 2px;
+  z-index: -1;
+  background: var(--h-val);
+  clip-path: inherit;
+}
+[data-st="acked"][data-p="2"] .a-ic {
+  color: #7a4500;
+}
 [data-st="acked"][data-p="3"] .a-ic {
-  opacity: 0.75;
+  color: #5e4d00;
 }
 .hs-alist [role="row"][data-p="0"] {
   color: var(--h-mut);
@@ -1597,8 +1712,10 @@
   height: 14px;
   fill: currentColor;
 }
-.lc-hmi-screen button:hover {
-  border-color: var(--h-act);
+@media (hover: hover) {
+  .lc-hmi-screen button:hover {
+    border-color: var(--h-act);
+  }
 }
 .lc-hmi-screen button:focus-visible {
   outline: 2px solid var(--h-act);
@@ -1638,8 +1755,10 @@
   box-shadow: inset 0 1px 0 rgb(255 255 255 / 0.18), 0 1px 2px rgb(0 0 0 / 0.2);
   color: #fff;
 }
-.lc-hmi-screen button[data-c="start"][aria-pressed="false"]:hover {
-  background: var(--color-royal-700, #034996);
+@media (hover: hover) {
+  .lc-hmi-screen button[data-c="start"][aria-pressed="false"]:hover {
+    background: var(--color-royal-700, #034996);
+  }
 }
 /* attention rings (opacity / scale of a pseudo-element: composited): Start, twice, the first time it is on screen;
    Acknowledge while alarms are unacknowledged */
@@ -1668,7 +1787,8 @@
   border-color: var(--h-p1);
   box-shadow: 0 0 0 1px var(--h-p1);
 }
-.lc-hmi-screen[data-unack]:not([data-unack="0"]) .hs-ack::before {
+/* the attention ring: from the divert on (data-ack-cue, hmi-demo.ts), not while the visitor should watch TT-102 */
+.lc-hmi-screen[data-ack-cue] .hs-ack::before {
   border-color: rgb(217 45 32 / 0.55);
   opacity: 0.6;
   animation: hmi-ring 1.4s var(--ease-inout) infinite;
@@ -1830,12 +1950,28 @@
   .hs-right {
     margin-inline-start: auto;
   }
+  /* the unacknowledged-alarm chip keeps its place while hidden: appearing at a fault it re-wrapped the bar (360px)
+     and moved everything below, the command keys included, by 18px (MOT2-12) */
+  .hs-alm {
+    display: inline-flex;
+    visibility: hidden;
+  }
+  .lc-hmi-screen[data-unack]:not([data-unack="0"]) .hs-alm {
+    visibility: visible;
+  }
   .hs-mimic {
     padding: 4px 2px 0;
   }
-  /* two lines reserved: most messages fit, so the command keys below rarely move under a finger */
+  /* hmi-demo.ts reserves the longest story message at this width (MOT2-12); before it runs (and without JS) the
+     usual phone value: three lines (two for Chinese), so the line rarely changes when the controller arrives */
   .hs-msg {
+    min-height: calc(3 * 1.35em + 14px);
+  }
+  .hs-msg:lang(zh-Hans) {
     min-height: calc(2 * 1.35em + 14px);
+  }
+  .hs-tourn {
+    display: block;
   }
   /* no-JS fallback (with JS, hmi-fit.ts crops and sizes the mimic and data-fit decides) */
   .hs-mimic:not([data-fit]) :is(.m-lbl text:not(.m-fdvst), .m-key, .m-ro, .m-tags, .m-sec, .m-alm) {
@@ -1863,7 +1999,9 @@
     min-height: 44px;
     padding: 6px;
     white-space: normal;
-    overflow-wrap: anywhere;
+    /* a word breaks only if it is wider than the whole key, never mid-word to save a line (I18N2-09: "Durdu|r") */
+    overflow-wrap: break-word;
+    hyphens: manual;
     text-wrap: balance;
     line-height: 1.15;
   }
@@ -1907,9 +2045,7 @@
     border-top: 1px solid var(--h-bd);
   }
   .hs-alist {
-    height: auto;
     min-height: 44px;
-    max-height: 130px;
   }
   .hs-alist [data-rows] > [role="row"] {
     grid-template-columns: 16px 54px 0 minmax(0, 1fr) auto;
@@ -1927,11 +2063,24 @@
   }
 }
 
+/* Turkish key labels are the longest ("Durdur", "Otomatik | Manuel"): in two columns a key is ~80px at 390 and
+   "Durdur" split; one column until the keys fit them whole (from ~412px phones two columns fit again). */
+@container hmi (max-width: 370px) {
+  .lc-hmi-screen:lang(tr) .hs-cmd {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
 /* ----------------------------------------------------------------- Arabic / Chinese: no UI text under 12px */
 .lc-hmi-screen:is(:lang(ar), :lang(zh-Hans)) :is(.hs-chip, .hs-h, .hs-ah, .hs-tgl, .hs-k, .hs-grid dt, .hs-rl, .hs-perm li, .hs-cause) {
   font-size: 12px;
 }
 .lc-hmi-screen:is(:lang(ar), :lang(zh-Hans)) :is(.hs-tgl small, .hs-alist [role="row"], .hs-alist .a-st, .hs-alist .a-src) {
+  font-size: 12px;
+}
+/* I18N2-15: the FDV state word, the limit line and the trend legend too (Alexandria bold fills its counters at 11px,
+   Han loses strokes at 10.5px on 1x screens) */
+.lc-hmi-screen:is(:lang(ar), :lang(zh-Hans)) :is(.hs-fdv b, .hs-sub, .hs-legend) {
   font-size: 12px;
 }
 
@@ -1951,7 +2100,7 @@
   .lc-hmi .m-arrp {
     display: inline;
   }
-  .lc-hmi-screen[data-unack]:not([data-unack="0"]) .hs-ack::before {
+  .lc-hmi-screen[data-ack-cue] .hs-ack::before {
     opacity: 1;
   }
 }
@@ -1966,7 +2115,7 @@
 :root[data-motion="off"] .lc-hmi .m-arrp {
   display: inline;
 }
-:root[data-motion="off"] .lc-hmi-screen[data-unack]:not([data-unack="0"]) .hs-ack::before {
+:root[data-motion="off"] .lc-hmi-screen[data-ack-cue] .hs-ack::before {
   opacity: 1;
 }
 
@@ -2021,5 +2170,22 @@
   .hs-cause,
   .hs-msg[data-tone="warn"] {
     border: 1px solid CanvasText;
+  }
+  /* A11Y2-11: the process drawing renders as authored on its own light ground, like an image (its readouts and alarm
+     shapes already keep their colours); otherwise dark themes force a black ground under dark SVG text (1.3–3.2:1) */
+  .lc-hmi-screen .hs-mimic {
+    forced-color-adjust: none;
+    background: var(--h-bg);
+  }
+  /* the done tick (white) keeps its own ground in every contrast theme: royal-500 is ≥ 4.4:1 against the white tick
+     and against both a black and a white Canvas (a system colour such as Highlight can be pale in dark themes) */
+  .lc-hmi-wrap .lc-hmi-tour li[data-done] .lc-hmi-stepn {
+    forced-color-adjust: none;
+    background-color: #257ae0;
+    border-color: #257ae0;
+    color: transparent;
+  }
+  .hs-big[data-next] {
+    outline-color: Highlight;
   }
 }

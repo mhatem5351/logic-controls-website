@@ -4,8 +4,10 @@
  *
  * One company entity: a single ProfessionalService node (a subtype of Organization) with @id …/#organization, emitted
  * in full on home, about and contact; every other page refers to it with orgRef(). The founder is a Person
- * (…/#founder), in full on /about/ (AboutPage.mainEntity). Facts come from src/data/site.ts and the messages
- * (localized names, roles, descriptions), never typed in here. Not claimed until the client approves / provides it:
+ * (…/#founder), in full on /about/ (AboutPage.mainEntity). Facts come from src/data/site.ts and the messages, never
+ * typed in here. Entity nodes (#organization, #founder) are identical on every page and in every locale (English
+ * values, the Arabic name as alternateName): search engines merge nodes by @id and keep one value, so per-locale
+ * variants would only compete (CS2-07). Localised text lives on the page nodes (WebPage, Service, Article). Not claimed until the client approves / provides it:
  * the Arabic brand spelling (CS-20), the founder's LinkedIn (sameAs), a street address and geo point (CS-05).
  *
  * Every text value goes through cleanText(): JSON-LD gets the words, never the display controls html()/plain() add
@@ -19,7 +21,7 @@ import { ZONES } from "~/data/zones";
 import type { ProjectData } from "~/data/projects";
 import { cleanText, techLabel } from "~/lib/text";
 import { ogCard, ogDefault } from "~/lib/og";
-import { firstCommitted, lastModified } from "../../scripts/content-dates.mjs";
+import { pageDates } from "../../scripts/content-dates.mjs";
 
 export type JsonLdNode = Record<string, unknown>;
 
@@ -56,9 +58,15 @@ const address = () => ({
   addressCountry: SITE.address.country,
 });
 const egypt = (locale: Locale) => ({ "@type": "Country", name: txt((getMessages(locale).common.locations as Record<string, string>).egypt) ?? "Egypt" });
+/** Locale of the entity nodes (#organization, #founder): one set of values everywhere. */
+const ENTITY_LOCALE: Locale = "en";
 
-/** The single company node (CS-07): ProfessionalService + founder + services offered + areas served. */
-export function organization(locale: Locale): JsonLdNode {
+/**
+ * The single company node (CS-07): ProfessionalService + founder + services offered + areas served. The same values on
+ * every page and in every locale (CS2-07); `locale` is accepted for call-site compatibility only.
+ */
+export function organization(_locale?: Locale): JsonLdNode {
+  const locale = ENTITY_LOCALE;
   const t = getMessages(locale);
   const zones = t.common.zones.items as Record<string, { name: string }>;
   const services = t.services.items as Record<string, { title: string; navTitle?: string }>;
@@ -70,7 +78,7 @@ export function organization(locale: Locale): JsonLdNode {
     alternateName: ["Logic Controls Egypt"],
     url: `${SITE.url}/`,
     logo: LOGO,
-    image: absUrl(ogDefault(locale).url),
+    image: absUrl(ogDefault(ENTITY_LOCALE).url),
     description: txt(t.seo.organizationDescription),
     email: SITE.email,
     telephone: SITE.phone.tel,
@@ -124,13 +132,15 @@ const founderCopy = (locale: Locale) => {
 
 /**
  * Founder Person (CS-07), for AboutPage.mainEntity. Facts from about.founder (name, role) and the founder bio
- * (B.Sc., Helwan University). The other-script spelling of the name is the alternateName. No LinkedIn sameAs (its
- * dates and employer names are not cleared for the site).
+ * (B.Sc., Helwan University). One node in every locale (CS2-07): the Latin name, the Arabic spelling as alternateName,
+ * the English role, the English about page as url. No LinkedIn sameAs (its dates and employer names are not cleared
+ * for the site).
  */
-export async function founder(locale: Locale): Promise<JsonLdNode | undefined> {
+export async function founder(_locale?: Locale): Promise<JsonLdNode | undefined> {
+  const locale = ENTITY_LOCALE;
   const f = founderCopy(locale);
   if (!f) return undefined;
-  const other = founderCopy(locale === "ar" ? "en" : "ar")?.name;
+  const other = founderCopy("ar")?.name;
   // lazy: keeps this module importable outside Astro (unit tests import catalog.ts, which re-exports orgRef)
   const [{ getImage }, { default: photoSrc }] = await Promise.all([import("astro:assets"), import("~/assets/people/founder.jpg")]);
   const photo = await getImage({ src: photoSrc, width: 600, format: "jpg", quality: 80 });
@@ -152,6 +162,9 @@ export async function founder(locale: Locale): Promise<JsonLdNode | undefined> {
 
 type PageType = "WebPage" | "AboutPage" | "ContactPage" | "CollectionPage";
 
+/** "Title | Logic Controls" → "Title": a page node is named by its own title, never with the site-name suffix. */
+const withoutBrand = (name: string) => name.replace(new RegExp(`\\s*[|｜]\\s*${SITE.name}\\s*$`), "").trim() || name;
+
 /** A page node: always inLanguage + isPartOf the site; `mainEntity` / `about` link it to what the page is about. */
 export function webPage(
   locale: Locale,
@@ -162,7 +175,7 @@ export function webPage(
     "@type": o.type ?? "WebPage",
     "@id": `${url}#webpage`,
     url,
-    name: txt(o.name),
+    name: txt(withoutBrand(o.name)),
     description: txt(o.description),
     inLanguage: lang(locale),
     isPartOf: { "@id": WEBSITE_ID },
@@ -270,10 +283,23 @@ interface CaseStudyCopy {
 }
 
 /**
- * Case study (CS-08): Article with publication dates from git (datePublished = first commit of the project entry,
- * dateModified = newest commit of its data / copy / images; omitted when git history is unavailable), the project
- * year as temporalCoverage (not a publication claim), localized industries (about) and technologies (keywords), the
- * brands as mentions, the generated 1200×630 card + the cover photo as images, and the film as VideoObject.
+ * A bare date ("2026-09-15", the Facebook post day of a clip) as midnight in Cairo with its UTC offset, which schema.org
+ * DateTime consumers expect ("2026-09-15T00:00:00+03:00"); full timestamps pass through unchanged.
+ */
+function withCairoOffset(date: string | undefined): string | undefined {
+  if (!date || !/^\d{4}-\d{2}-\d{2}$/.test(date)) return date;
+  const noonUtc = new Date(`${date}T12:00:00Z`);
+  const name = new Intl.DateTimeFormat("en", { timeZone: "Africa/Cairo", timeZoneName: "longOffset" }).formatToParts(noonUtc).find((p) => p.type === "timeZoneName")?.value;
+  const offset = /GMT([+-]\d{2}:\d{2})/.exec(name ?? "")?.[1] ?? "+02:00";
+  return `${date}T00:00:00${offset}`;
+}
+
+/**
+ * Case study (CS-08): Article with publication dates of the page's own content (datePublished = when its copy first
+ * existed, dateModified = when its copy, data record or photos last changed: src/data/content-dates.json, maintained by
+ * scripts/content-dates.mjs — CS2-04), the project year as temporalCoverage (not a publication claim), localized
+ * industries (about) and technologies (keywords), the brands as mentions, the generated 1200×630 card + the cover
+ * photo as images, and the film as VideoObject.
  */
 export function article(
   locale: Locale,
@@ -291,8 +317,8 @@ export function article(
   const { project: p, copy: c } = o;
   const url = pageUrl(locale, o.path);
   const card = ogCard(locale, o.path);
-  const published = firstCommitted("src/data/projects.ts", `slug: "${p.slug}"`);
-  const modified = lastModified(["src/data/projects.ts", `src/i18n/messages/${locale}/projects.json`, `src/assets/projects/${p.slug}/`]);
+  // dates of this page's own content (copy + data record + photos): scripts/content-dates.mjs, src/data/content-dates.json
+  const { published, modified } = pageDates(url);
   const tech = p.technologies.join(" | ").toLowerCase();
   const video = p.video;
   return compact({
@@ -323,9 +349,9 @@ export function article(
           description: txt(c.summary),
           thumbnailUrl: absUrl(video.poster),
           contentUrl: absUrl(video.src),
-          uploadDate: video.uploadDate,
+          uploadDate: withCairoOffset(video.uploadDate),
           duration: mp4Duration(video.src),
-          inLanguage: lang(locale),
+          // no inLanguage: the clips have no speech (projects.ts video notes), so they are in no language
         })
       : undefined,
   });

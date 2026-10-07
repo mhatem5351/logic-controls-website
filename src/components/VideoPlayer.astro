@@ -20,6 +20,7 @@ import { getMessages, type Locale } from "~/i18n";
 import Icon from "./Icon.astro";
 import { fmt } from "./nav";
 import { uid } from "./uid";
+import { html } from "~/lib/text";
 
 interface Track {
   src: string;
@@ -110,7 +111,7 @@ if (typeof poster === "string") {
       >
         {/* the focus ring goes on the disc: the chamfered, overflow-hidden box would clip an outline on the button */}
         <span
-          class="relative grid size-20 place-items-center rounded-full border border-white/40 bg-navy-950/60 outline-offset-4 outline-signal-400 backdrop-blur-sm transition duration-300 group-hover:scale-105 group-hover:border-signal-300 group-hover:bg-royal-600 group-focus-visible:scale-105 group-focus-visible:border-signal-300 group-focus-visible:bg-royal-600 group-focus-visible:outline-2 group-focus-visible:outline-solid sm:size-24"
+          class="relative grid size-20 place-items-center rounded-full border border-white/40 bg-navy-950/60 outline-offset-4 outline-signal-400 backdrop-blur-sm transition duration-(--dur-ui) group-hover:scale-105 group-hover:border-signal-300 group-hover:bg-royal-600 group-focus-visible:scale-105 group-focus-visible:border-signal-300 group-focus-visible:bg-royal-600 group-focus-visible:outline-2 group-focus-visible:outline-solid sm:size-24"
         >
           <span class="absolute -inset-2 rounded-full border border-white/15" aria-hidden="true"></span>
           <Icon name="play" size={30} class="translate-x-0.5 text-white" />
@@ -128,12 +129,9 @@ if (typeof poster === "string") {
   {
     (caption || description) && (
       <figcaption class="mt-3 text-sm text-charcoal-600 on-dark:text-navy-200">
-        {caption && <span class="block">{caption}</span>}
-        {description && (
-          <span id={descId} class:list={["block max-w-prose", caption && "mt-1.5"]}>
-            {description}
-          </span>
-        )}
+        {caption && <span class="block" set:html={html(locale, caption)} />}
+        {/* through the text engine (I18N2-12): zh breaks between words, never inside one (印|刷) */}
+        {description && <span id={descId} class:list={["block max-w-prose", caption && "mt-1.5"]} set:html={html(locale, description)} />}
       </figcaption>
     )
   }

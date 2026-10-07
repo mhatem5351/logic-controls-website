@@ -14,9 +14,9 @@ import RfqForm from "~/components/sections/main/RfqForm.astro";
 import ContactChannels from "~/components/sections/main/ContactChannels.astro";
 import NextSteps from "~/components/sections/main/NextSteps.astro";
 import ChecklistPanel from "~/components/sections/main/ChecklistPanel.astro";
-import { html, colon } from "~/components/sections/main/rich";
+import { html, colon } from "~/lib/text";
 import { getMessages, localeStaticPaths, type Locale } from "~/i18n";
-import { SITE } from "~/data/site";
+import { SITE, telLink } from "~/data/site";
 import { ORG_ID, graph, organization, webPage } from "~/lib/jsonld";
 import { whatsappLink, mailtoLink, prefersEmail } from "~/components/nav";
 
@@ -31,19 +31,26 @@ const jsonLd = graph(
   webPage(locale, { type: "ContactPage", path: "contact", name: c.seo.title, description: c.seo.description, about: { "@id": ORG_ID }, mainEntity: { "@id": ORG_ID } }),
 );
 
-/* quick channel pills in the header: WhatsApp first on ar/en/tr, email first on zh */
+/* quick channel pills in the header: WhatsApp first on ar/en/tr, email first on zh. From 1024px they become large rows
+   (channel name over the number / address) in the hero's otherwise empty inline-end column (VIS2-14). */
 const pills = [
-  ...(email ? [] : [{ icon: "whatsapp" as const, label: t.common.labels.whatsapp, value: undefined, href: whatsappLink(t.common.whatsapp.quote), external: true, iconClass: "text-whatsapp-500" }]),
-  { icon: "phone" as const, label: t.common.labels.phone, value: SITE.phone.display, href: `tel:${SITE.phone.tel}`, external: false, iconClass: "text-royal-300" },
-  { icon: "mail" as const, label: t.common.labels.email, value: SITE.email, href: mailtoLink(t.ui.email.subject, { locale, path: "contact" }), external: false, iconClass: "text-royal-300" },
+  ...(email
+    ? []
+    : [{ icon: "whatsapp" as const, label: t.common.labels.whatsapp, value: undefined, note: c.form.whatsappHint.cta, href: whatsappLink(t.common.whatsapp.quote), external: true, iconClass: "text-whatsapp-500" }]),
+  { icon: "phone" as const, label: t.common.labels.phone, value: SITE.phone.display, note: undefined, href: telLink(), external: false, iconClass: "text-royal-300" },
+  { icon: "mail" as const, label: t.common.labels.email, value: SITE.email, note: undefined, href: mailtoLink(t.ui.email.subject, { locale, path: "contact" }), external: false, iconClass: "text-royal-300" },
 ];
 if (email) pills.reverse();
 ---
 
 <BaseLayout locale={locale} title={c.seo.title} description={c.seo.description} path="contact" heroDark jsonLd={jsonLd} whatsappMessage={t.common.whatsapp.quote}>
-  <Hero locale={locale} size="page" title={html(locale, c.h1)} lead={html(locale, c.intro)} primary={false} secondary={false} traces class="lc-contact-hero">
+  <Hero locale={locale} size="page" title={html(locale, c.h1)} lead={html(locale, c.intro)} primary={false} secondary={false} traces={false} class="lc-contact-hero">
     <Breadcrumbs slot="breadcrumbs" locale={locale} items={[{ label: t.common.breadcrumbs.contact }]} />
-    <ul role="list" class="lc-rise mt-7 flex flex-wrap gap-2.5" style="--i:2">
+    <ul
+      role="list"
+      class="lc-rise mt-7 flex flex-wrap gap-2.5 lg:absolute lg:end-(--spacing-gutter) lg:top-[calc(var(--header-h)+var(--utility-h)+2.5rem)] lg:mt-0 lg:w-[32%] lg:flex-col lg:flex-nowrap lg:gap-2"
+      style="--i:2"
+    >
       {
         pills.map((p) => (
           <li>
@@ -51,17 +58,27 @@ if (email) pills.reverse();
               href={p.href}
               target={p.external ? "_blank" : undefined}
               rel={p.external ? "noopener" : undefined}
-              class="inline-flex min-h-11 items-center gap-2.5 border border-white/15 bg-white/[0.04] px-3.5 text-sm text-navy-100 transition-colors hover:border-white/40 hover:text-white"
+              class="inline-flex min-h-11 items-center gap-2.5 border border-white/15 bg-white/[0.04] px-3.5 text-sm text-navy-100 transition-colors hover:border-white/40 hover:text-white lg:flex lg:w-full lg:items-center lg:gap-4 lg:px-4 lg:py-2 lg:text-base"
             >
-              <Icon name={p.icon} size={18} class={p.iconClass} />
-              {p.value ? (
-                <>
-                  <span class="sr-only">{p.label}{colon(locale)}</span>
-                  <span class="ltr font-semibold" dir="ltr">{p.value}</span>
-                </>
-              ) : (
-                <span class="font-semibold">{p.label}</span>
-              )}
+              <Icon name={p.icon} size={18} class:list={[p.iconClass, "shrink-0"]} />
+              <span class="min-w-0 lg:flex lg:flex-col">
+                {p.value ? (
+                  <>
+                    <span class="max-lg:sr-only lg:text-xs lg:font-semibold lg:text-navy-300">
+                      {p.label}
+                      <span class="sr-only">{colon(locale)}</span>
+                    </span>
+                    <span class="ltr font-semibold break-all text-white" dir="ltr">
+                      {p.value}
+                    </span>
+                  </>
+                ) : (
+                  <>
+                    <span class="font-semibold text-white lg:text-xs lg:text-navy-300">{p.label}</span>
+                    {p.note && <span class="hidden font-semibold text-white lg:block">{p.note}</span>}
+                  </>
+                )}
+              </span>
               {p.external && <span class="sr-only">({t.ui.a11y.newTab})</span>}
             </a>
           </li>
@@ -70,13 +87,15 @@ if (email) pills.reverse();
     </ul>
   </Hero>
 
-  <section class="relative pb-section" aria-label={c.form.title}>
+  {/* no aria-label: the form inside is already the "Quote request" landmark (A11Y2-17) */}
+  <section class="relative pb-section">
     <div class="wrap grid items-start gap-10 lg:grid-cols-12 lg:gap-10 xl:gap-14">
       <div class="relative z-10 -mt-14 sm:-mt-16 lg:col-span-7 lg:-mt-20">
         <RfqForm locale={locale} />
         <NextSteps locale={locale} class="mt-10 hidden border border-charcoal-200 bg-navy-50/60 p-6 sm:p-8 lg:block" />
       </div>
-      <div class="lg:col-span-5 lg:pt-10">
+      {/* from 1024px the sidebar starts on the hero's edge, level with the form card (VIS2-14) */}
+      <div class="relative z-10 lg:col-span-5 lg:-mt-20">
         <ChecklistPanel locale={locale} tone="light" hint={false} headingLevel="h2" class="mb-6" />
         <aside aria-label={c.channels.title}>
           <ContactChannels locale={locale} />
@@ -87,3 +106,13 @@ if (email) pills.reverse();
   </section>
 
 </BaseLayout>
+
+<style>
+  /* VIS2-14: from 1024px the channel rows sit in the hero's end column and the sidebar is pulled up level with the
+     form card; a little more hero below the rows keeps them clear of the sidebar's top edge. */
+  @media (min-width: 64rem) {
+    :global(.lc-contact-hero > .wrap) {
+      padding-block-end: calc(7rem + 1.5rem);
+    }
+  }
+</style>

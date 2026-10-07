@@ -5,6 +5,10 @@
  */
 import type { Page } from "@playwright/test";
 import { test, expect } from "./fixtures";
+import { ZONES } from "../../src/data/zones";
+
+/** Pin order on the map toolbar = src/data/zones.ts order (home base first). */
+const PINS = ZONES.map((z) => z.slug);
 
 // Reduced motion: the signal travel animation is skipped, so the tooltip shows at once (behaviour is otherwise equal).
 test.use({ reducedMotion: "reduce" });
@@ -13,6 +17,8 @@ async function openMap(page: Page, locale = "en") {
   await page.goto(`/${locale}/`);
   const block = page.locator("[data-zones]").first();
   await block.scrollIntoViewIfNeeded();
+  // the map script is running (it marks the map once it has scrolled into view)
+  await expect(block.locator("[data-zm]")).toHaveAttribute("data-intro", "");
   return block;
 }
 const pin = (block: ReturnType<Page["locator"]>, zone: string) => block.locator(`button.lc-zm-pin[data-zone="${zone}"]`);
@@ -35,6 +41,8 @@ test("hover a pin → tooltip with name and distance; leaving hides it", { tag: 
   await expect(tip).toBeVisible();
   await expect(tip.locator(".lc-zm-name")).toHaveText(/Borg El Arab/);
   await expect(tip.locator(".lc-zm-dist b")).toHaveText(/^\d+$/);
+  // compact: name + distance only (governorate · region and the SCZONE chip stay in the card and the list)
+  await expect(tip.locator(".lc-zm-meta")).toBeHidden();
   await expect(mark(block, "borg-el-arab")).toHaveAttribute("data-hl", "");
   await expect(row(block, "borg-el-arab")).toHaveAttribute("data-hl", "");
   // the tooltip stays inside the map box
@@ -50,27 +58,131 @@ test("keyboard: the pins are one Tab stop (arrow keys move along them); focus pr
   const block = await openMap(page);
   const tip = block.locator("[data-zm-tip]");
   // reach the pins with the keyboard (focus-visible): one stop, on the home base
-  await pin(block, "6th-of-october").focus();
+  await pin(block, PINS[0]!).focus();
   await page.keyboard.press("Shift+Tab");
   await page.keyboard.press("Tab");
-  await expect(pin(block, "6th-of-october")).toBeFocused();
+  await expect(pin(block, PINS[0]!)).toBeFocused();
   await expect(block.locator('button.lc-zm-pin[tabindex="0"]')).toHaveCount(1);
+  // the arrow-key hint is visible while the pins have keyboard focus (in the legend's place), and it describes the map
+  const kbd = block.locator(".lc-zm-kbd");
+  await expect(kbd).toHaveCSS("opacity", "1");
+  await expect(block.locator(".lc-zm-lg-base")).toHaveCSS("opacity", "0");
+  await expect(block.locator("[data-zm-pins]")).toHaveAccessibleDescription(/Arrow keys/);
   // arrows / End move between the zones (roving tabindex) and preview them
   await page.keyboard.press("ArrowRight");
-  await expect(pin(block, "obour")).toBeFocused();
+  await expect(pin(block, PINS[1]!)).toBeFocused();
   await expect(tip).toBeVisible();
-  await expect(mark(block, "obour")).toHaveAttribute("data-hl", "");
+  await expect(mark(block, PINS[1]!)).toHaveAttribute("data-hl", "");
   await page.keyboard.press("End");
-  await expect(pin(block, "east-port-said")).toBeFocused();
-  await expect(pin(block, "east-port-said")).toHaveAttribute("tabindex", "0");
+  await expect(pin(block, PINS.at(-1)!)).toBeFocused();
+  await expect(pin(block, PINS.at(-1)!)).toHaveAttribute("tabindex", "0");
   // Tab leaves the toolbar (next: the zone list)
   await page.keyboard.press("Tab");
   const focused = await page.evaluate(() => (document.activeElement as HTMLElement).dataset.zone);
   expect(focused).toBeTruthy();
   await expect(page.locator(":focus")).toHaveAttribute("data-zm-row", "");
   await expect(tip).toBeVisible();
+  // focus left the pins: the legend is back
+  await expect(kbd).toHaveCSS("opacity", "0");
   await page.keyboard.press("Escape");
   await expect(tip).toBeHidden();
+});
+
+test("keyboard on the Arabic page: the arrows follow the reading direction (ArrowLeft = next), Up / Down do not flip", { tag: "@desktop-only" }, async ({ page }) => {
+  const block = await openMap(page, "ar");
+  await expect(block.locator("[data-zm-pins]")).toHaveCSS("direction", "rtl");
+  const at = async (i: number) => {
+    const z = PINS[(i + PINS.length) % PINS.length]!;
+    await expect(pin(block, z)).toBeFocused();
+    await expect(block.locator('button.lc-zm-pin[tabindex="0"]')).toHaveAttribute("data-zone", z);
+  };
+  await pin(block, PINS[0]!).focus();
+  await page.keyboard.press("Shift+Tab");
+  await page.keyboard.press("Tab");
+  await at(0);
+  await page.keyboard.press("ArrowLeft");
+  await at(1);
+  await expect(mark(block, PINS[1]!)).toHaveAttribute("data-hl", "");
+  await page.keyboard.press("ArrowLeft");
+  await at(2);
+  await page.keyboard.press("ArrowRight");
+  await at(1);
+  await page.keyboard.press("ArrowDown");
+  await at(2);
+  await page.keyboard.press("ArrowUp");
+  await at(1);
+  await page.keyboard.press("End");
+  await at(-1);
+  await page.keyboard.press("ArrowLeft"); // next from the last pin wraps to the first
+  await at(0);
+  await page.keyboard.press("ArrowRight"); // previous from the first wraps to the last
+  await at(-1);
+  await page.keyboard.press("Home");
+  await at(0);
+});
+
+test("the tooltip never hides a neighbouring pin (eastern cluster included)", { tag: "@desktop-only" }, async ({ page }) => {
+  const block = await openMap(page);
+  await page.evaluate(() => document.fonts.ready);
+  const tip = block.locator("[data-zm-tip]");
+  const zones = await block.locator("button.lc-zm-pin").evaluateAll((bs) => bs.map((b) => (b as HTMLElement).dataset.zone!));
+  for (const z of zones) {
+    await page.mouse.move(2, 2);
+    await expect(tip).toBeHidden();
+    const dot = await mark(block, z).locator(":is(.lc-map-dot, .lc-map-home-dot)").boundingBox();
+    await page.mouse.move(dot!.x + dot!.width / 2, dot!.y + dot!.height / 2);
+    await expect(tip).toBeVisible();
+    // a face the tooltip is the first to use (bold) may still be loading (the script places it again once loaded),
+    // and the reduced-motion catch-all turns every property change into a 0.01 ms transition: measure once settled
+    await page.evaluate(() => document.fonts.ready);
+    await settle(tip);
+    // share of every other pin's dot under the tooltip: grazing an edge is fine, hiding a quarter of a pin is not
+    const hidden = await tip.evaluate((t, z) => {
+      const tr = t.getBoundingClientRect();
+      return [...document.querySelectorAll<SVGGElement>("[data-zones] g.lc-map-pin")]
+        .filter((g) => g.dataset.zone !== z)
+        .filter((g) => {
+          const r = g.querySelector(":is(.lc-map-dot, .lc-map-home-dot)")!.getBoundingClientRect();
+          const a = Math.max(0, Math.min(r.right, tr.right) - Math.max(r.left, tr.left)) * Math.max(0, Math.min(r.bottom, tr.bottom) - Math.max(r.top, tr.top));
+          return a / (r.width * r.height) > 0.25;
+        })
+        .map((g) => g.dataset.zone);
+    }, z);
+    expect(hidden, `tooltip of ${z}`).toEqual([]);
+  }
+});
+
+test("phones: pin hit squares never overlap (all locales, 320 / 360 / 390, Arabic's larger root size included)", { tag: "@desktop-only" }, async ({ page }) => {
+  for (const locale of ["en", "ar", "zh", "tr"]) {
+    for (const width of [320, 360, 390]) {
+      await page.setViewportSize({ width, height: 760 });
+      const block = await openMap(page, locale);
+      const overlaps = await block.locator("button.lc-zm-pin").evaluateAll((bs) => {
+        const r = bs.map((b) => [(b as HTMLElement).dataset.zone, b.getBoundingClientRect()] as const);
+        const out: string[] = [];
+        for (let i = 0; i < r.length; i++)
+          for (let j = i + 1; j < r.length; j++) {
+            const [a, b] = [r[i][1], r[j][1]];
+            if (Math.min(a.right, b.right) - Math.max(a.left, b.left) > 0.05 && Math.min(a.bottom, b.bottom) - Math.max(a.top, b.top) > 0.05) out.push(`${r[i][0]}∩${r[j][0]}`);
+          }
+        return out;
+      });
+      expect(overlaps, `${locale} @ ${width}px`).toEqual([]);
+    }
+  }
+});
+
+test("touch: a tap goes to the pin nearest the finger (44px targets overlap in the cluster)", async ({ page, isMobile }) => {
+  test.skip(!isMobile, "touch screens only");
+  const block = await openMap(page);
+  const centre = async (z: string) => {
+    const b = (await mark(block, z).locator(".lc-map-dot").boundingBox())!;
+    return [b.x + b.width / 2, b.y + b.height / 2];
+  };
+  const [o, b] = [await centre("obour"), await centre("badr")];
+  // 62% of the way from Obour to Badr: nearer Badr (whatever hit square lies on top there)
+  await page.touchscreen.tap(o[0] + (b[0] - o[0]) * 0.62, o[1] + (b[1] - o[1]) * 0.62);
+  await expect(pin(block, "badr")).toHaveAttribute("aria-expanded", "true");
 });
 
 test("pins are named with the number drawn on them (WCAG 2.5.3)", { tag: "@desktop-only" }, async ({ page }) => {
@@ -91,8 +203,14 @@ test("select a zone → detail card, CTA with ?location=, two-way list linking, 
   // the list row lights with the pin (its own disclosure stays closed)
   await expect(row(block, "obour")).toHaveAttribute("data-sel", "");
   await expect(row(block, "obour")).toHaveAttribute("aria-expanded", "false");
-  // the trace from our base switches on (amber, solid)
-  await expect(block.locator('.lc-map-links path[data-zone="obour"]')).toHaveCSS("stroke", "rgba(255, 198, 75, 0.9)");
+  // the trace from our base switches on: it is the one selected trace, drawn solid and unlike an idle trace
+  const trace = (z: string) => block.locator(`.lc-map-links path[data-zone="${z}"]`);
+  await expect(block.locator(".lc-map-links path[data-sel]")).toHaveCount(1);
+  await expect(trace("obour")).toHaveAttribute("data-sel", "");
+  await expect(trace("obour")).toHaveCSS("stroke-dasharray", "none");
+  await expect(trace("badr")).not.toHaveCSS("stroke-dasharray", "none");
+  const stroke = (z: string) => trace(z).evaluate((p) => getComputedStyle(p).stroke);
+  expect(await stroke("obour"), "the selected trace is lit").not.toBe(await stroke("badr"));
   await expect(block.locator("[data-zm-live]")).not.toBeEmpty();
   const cta = card.locator("a.lc-zm-cta");
   await expect(cta).toHaveAttribute("href", "/en/contact/?location=obour#quote");

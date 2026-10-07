@@ -118,6 +118,22 @@ jobs:
           E2E_ARGS: ${{ (github.event_name == 'schedule' || github.event_name == 'workflow_dispatch') && ' ' || '--project=chromium-desktop' }}
         run: npm run test:e2e -- $E2E_ARGS
 
+      # Tests that failed first and passed on the retry: listed in the run summary (and as a warning), never silent.
+      - name: Flaky E2E tests
+        if: always() && hashFiles('playwright-report-json/results.json') != ''
+        run: |
+          node -e '
+            const r = require("./playwright-report-json/results.json");
+            const out = [];
+            const walk = (s, path) => {
+              for (const c of s.suites ?? []) walk(c, [...path, c.title]);
+              for (const sp of s.specs ?? []) for (const t of sp.tests ?? []) if (t.status === "flaky") out.push(`${[...path, sp.title].filter(Boolean).join(" › ")} [${t.projectName}]`);
+            };
+            walk(r, []);
+            console.log(`### E2E: ${r.stats.expected} passed, ${r.stats.unexpected} failed, ${r.stats.flaky} flaky, ${r.stats.skipped} skipped`);
+            for (const f of out) { console.log(`- flaky: ${f}`); console.error(`::warning::flaky E2E test: ${f}`); }
+          ' >> "$GITHUB_STEP_SUMMARY"
+
       - name: Upload Playwright report
         if: failure()
         uses: actions/upload-artifact@v7

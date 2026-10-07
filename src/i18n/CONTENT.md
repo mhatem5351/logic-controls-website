@@ -2,7 +2,9 @@
 
 English (`messages/en/`) is the single source of truth. `ar/`, `zh/`, `tr/` hold full native transcreations of every namespace (not word-for-word translations). Any change to English must be mirrored in all three, keeping the same keys and array lengths (`node scripts/check-i18n.mjs` enforces this).
 
-All strings are plain text: no HTML, no Markdown. Paragraphs are arrays. Render brand, model and protocol names exactly as written (LTR inside RTL, wrap in `<bdi>`).
+All strings are plain text: no HTML, no Markdown, no entities, no bidi or soft-hyphen controls. Paragraphs are arrays. Write brand, model and protocol names exactly as written; the text engine (`src/lib/text.ts`) does the typography: it isolates Latin runs and phone numbers / digit groups in Arabic text (no LRI/PDI needed in the copy; `check-i18n` warns when it finds them), keeps codes and names on one line, breaks Chinese between words, and adds Turkish soft hyphens to headings only. Links inside copy use `{link:<site-path>|label}` (or `{link:ext:https://…|label}` for an allow-listed official host, `src/lib/link-policy.mjs`), with the same targets in every locale.
+
+Page builders: headings, card titles, FAQ questions and tile / TOC labels go through `heading()`; body text (paragraphs, leads, answers, summaries, chips) through `html()`; attributes, `<title>` and breadcrumb labels through `plain()`; JSON-LD and `og:image:alt` through `cleanText()`. A component that renders a text prop with `set:html` uses `heading()` or `toHtml()`, which accept plain text or already rendered HTML. Never put a raw message string in `set:html` or in a text node: it skips the line-breaking and bidi rules.
 
 ## 1. Namespaces
 
@@ -24,9 +26,9 @@ All strings are plain text: no HTML, no Markdown. Paragraphs are arrays. Render 
 
 **Item shapes**
 
-- `services.items[slug]`: `title`, `navTitle`, `summary` (cards), `seoTitle`, `seoDescription`, `h1`, `intro[]`, `capabilities[] {title,text}`, `deliverables[]`, `situations[]`, `faq[] {q,a}`, `cta {title,text}`
-- `industries.items[slug]`: `title`, `navTitle`, `summary`, `seoTitle`, `seoDescription`, `h1`, `intro[]`, `needs[] {title,text}`, `applications[]`, `faq[] {q,a}`, `cta {title,text}`
-- `projects.items[slug]`: `title` (H1), `cardTitle` (cards), `client` (anonymised), `summary`, `seoTitle`, `seoDescription`, `challenge`, `solution[]` (2–3 paragraphs; same count in every locale), `scope[]`, `result`, `highlights[3]` ("At a glance" chips), `facts[] {label, value}` ("Project facts" table, 5–6 rows, same row count in every locale), `imageAlts{key}`, plus `videoTitle` and `videoDescription` **only** on projects with a video.
+- `services.items[slug]`: `title`, `navTitle`, `summary` (cards), `seoTitle`, `seoDescription`, `h1`, `capabilitiesTitle` / `situationsTitle` (the H2s of those sections, naming the service: "What our control-panel work covers"; optional, the generic `common.labels.capabilities` / `situations` are the fallback), `intro[]`, `capabilities[] {title,text}`, `deliverables[]`, `situations[]`, `faq[] {q,a}`, `cta {title,text}`
+- `industries.items[slug]`: `title`, `navTitle`, `summary`, `seoTitle`, `seoDescription`, `h1`, `needsTitle` / `applicationsTitle` (H2s naming the sector: "What food and dairy lines need from their controls"; optional, generic labels as fallback), `intro[]`, `needs[] {title,text}`, `applications[]`, `faq[] {q,a}`, `cta {title,text}`
+- `projects.items[slug]`: `title` (H1), `cardTitle` (cards), `client` (anonymised), `summary`, `seoTitle`, `seoDescription`, `challenge`, `solution[]` (2–3 paragraphs; same count in every locale), `scope[]`, `result`, `highlights[3]` ("At a glance" chips), `facts[] {label, value}` ("Project facts" table, 5–6 rows, same row count in every locale), `imageAlts{key}`, optional `imageCaptions{key}` (a short visible caption under a gallery photo, ≤ 60 characters, for screens that are unreadable at thumbnail size: settings, recipes, program editor; only facts the item's copy already states), plus `videoTitle` and `videoDescription` **only** on projects with a video. `cardTitle` is also the link text of every in-content link to the case study, the last breadcrumb, the OG card headline and `Article.name`: near-duplicate pairs (the two shampoo fillers, pasteurizers, laundry washers) must differ in what the job was, not only in the PLC brand.
   - `facts` uses only what the copy and `projects.ts` already state: equipment, our scope, PLC, HMI/SCADA, drives, and a figure already in the copy (15 steps, 5 chemical inputs, 6-step recipes, 4 nozzles, 2 VFDs). Never add an I/O count, duration, percentage or result the client has not given. Labels are reused across projects (see `GLOSSARY.md` → Project facts labels).
   - `videoDescription`: a plain description of what the clip shows (text alternative for viewers who cannot see it). Describe only what is visible; no claims.
 - `foreign.oem` {`eyebrow`, `title`, `intro`, `items[] {title,text}`, `cta`}: block for foreign machine builders (OEMs) who need a local commissioning and service team. CTA → `contact/?service=oem-partner` (need option `contact.form.fields.need.options.oem-partner`), WhatsApp `common.whatsapp.oem`. No partnership, agency or authorization wording.
@@ -68,7 +70,7 @@ WhatsApp links: `whatsappLink(t.common.whatsapp.<key>)` after replacing placehol
 ## 4. Page section order
 
 **Home** (`home.json` unless noted)
-1. Hero: `hero.eyebrow`, H1 `hero.title`, `hero.lead`, `hero.proof`, buttons `hero.ctaPrimary` → `contact/` and `hero.ctaSecondary` → WhatsApp `whatsapp.default`; stats strip from `STATS` + `common.stats`. Suggested hero image: `pasteurizer-cip-recipes/hmi.jpg` (alt `hero.imageAlt`), or the `/media/hero-filling-v3.mp4` loop with its poster (see src/components/hero-media.ts).
+1. Hero: chip `hero.eyebrow` (`hero.eyebrowShort` at 1024–1279 px), H1 `hero.title`, `hero.lead`, buttons `hero.ctaPrimary` → `contact/#quote` and a second action (`hero.ctaSecondary` → WhatsApp `whatsapp.default`; on zh/tr the foreign-manufacturers door `audiences.foreign.cta`); proof strip: projects · case studies (`PROJECTS.length`, `common.stats.caseStudies`) · experience · industries. Media: the `/media/hero-filling-v3` loop (MP4 + AV1 WebM, desktop only) with its `-v4` poster, the LCP image (`src/components/hero-media.ts`).
 2. Platforms strip: `common.platforms` + `SITE.brands` (text or logos) → `technologies/`
 3. Two doors: `audiences.local` → `services/`, `audiences.foreign` → `foreign-manufacturers/`
 4. Services: `services.title/intro`, 8 cards from `services.json items[slug].{title,summary}` in `SERVICE_SLUGS` order
@@ -93,40 +95,44 @@ Projects index: `index.h1/intro` → filters (`common.filters`, by `industries` 
 
 **Technologies**: H1 + `intro` → `brands` (`BRANDS` + `brands.items[slug].text`, product chips with `brands.productsLabel`) → `drives` → `scada` ("Software, SCADA and data": EPLAN Electric P8, WinCC, SQL/OEE) → `networks` → `signals` → `otherBrands` → `choosing` → `common.notes.brands` → `ctaBand.default`.
 
-**About**: H1 + `lead` → `story` → `founder` (`eyebrow`, `title`, `name`, `role`, `bio[]`, `highlights[] {value,label}`; no photo until the founder approves one) → `mission` → stats (`numbers.title` + `STATS`) → `values` → `why` → `common.process` → `location` → `cta`.
+**About**: H1 + `lead` → `story` → `founder` (`eyebrow`, `title`, `name`, `role`, `bio[]`, `highlights[] {value,label}`; the approved photo `src/assets/people/founder.jpg`) → `mission` → stats (`numbers.title` + `STATS`) → `values` → `why` → `common.process` → `location` → `cta`.
 
 **Contact**
-- Two-step form. Step 1 (required): `name`, `company`, `phone`, `need`. Step 2 (optional): `industry`, `location`, `timeline`, `message`, `email`, `contactPreference`. Then `consent` (required, unticked) + Turnstile (`form.security`).
-- Suggested field names for `/api/rfq`: `name, company, phone, email, need, industry, location, timeline, message, contactPreference, consent, locale` (hidden) and `page` (hidden, referring path).
-- Option values are the JSON keys (language-neutral). `location` options = `ZONES` (labels `common.zones.items[slug].name`) + `otherEgypt` + `outsideEgypt`. Preselect `need`/`industry` from `?service=` / `?industry=`.
+- Two-step form with JS (`RfqForm.astro`; without JS one long form). Step 1: `name`, `company`, `phone` (zh: `email` required, phone optional), "what do you need" (`service`, labels `form.fields.need`), preferred reply channel `reply` (WhatsApp / phone call / email; no WhatsApp on zh; Email makes the email required, the others the phone). Step 2 (optional): `message`, up to 3 attachments, `industry`, `location`, `timeline`, `country`, `email`. Then `consent` (required, unticked) + Turnstile (`form.security`).
+- Field names, limits and validation: the contract in `src/lib/rfq-rules.ts` (shared by the form script and the Worker), plus hidden `locale`, `page` and the honeypot `lc_hp`.
+- Option values are the JSON keys (language-neutral). `location` options = `ZONES` (labels `common.zones.items[slug].name`) + `otherEgypt` + `outsideEgypt`. Preselect from `?service=` / `?industry=` / `?location=` / `?timeline=`; `?project=` / `?intent=reference` start the description (`src/lib/context-params.ts`).
 - Consent line: `form.fields.consent.text` with `{link}` → `<a href="privacy/">{linkText}</a>`.
-- Errors: `?error=invalid|verification|send|unknown` → `errors.title` + `errors[code]` (unknown codes → `errors.unknown`) + `errors.fallback` with phone, WhatsApp and email.
+- Errors: `?error=invalid|attachments|verification|send` (the Worker's codes) → `errors.title` + `errors[code]` (unknown codes → `errors.unknown`) + `errors.fallback` with phone, WhatsApp and email.
 - Sidebar: `channels`, `form.whatsappHint` (`whatsapp.drawings`), `nextSteps`.
-- Inputs: phone and email `dir="ltr"`; free text `dir="auto"`. Suggested `messageTooLong` max: 2000.
+- Inputs: phone and email `dir="ltr"`; free text `dir="auto"`. `{max}` in `messageTooLong` comes from `RFQ_MAX.message` (2000).
 - Thanks page: `thanks.*` (noindex; excluded from the sitemap).
 
 **Privacy**: render `sections[]` in order; skip empty `paragraphs`/`items`. Replace `{email}` with `SITE.email` and `{phone}` with `SITE.phone.display`. The notice promises that the `lang` cookie holds only the language code and lasts one year (`Max-Age=31536000`). Keep the cookie code in line with that.
 
 ## 5. Placeholders (never translate the braces)
 
-`{service}`, `{industry}`, `{project}` (WhatsApp messages, use the page's `title`/`cardTitle`), `{count}` (filters), `{current}` / `{total}` (form steps), `{max}` (validation), `{link}` (consent), `{email}` / `{phone}` (privacy).
+`{service}`, `{industry}`, `{project}` (WhatsApp messages, use the page's `title`/`cardTitle`), `{count}` (filters), `{current}` / `{total}` (form steps), `{max}` (validation), `{link}` (consent), `{email}` / `{phone}` (privacy), and others: a translation must keep exactly the placeholders of its English string (`check-i18n` fails otherwise). One allowed addition: the English twin of an English placeholder, `{serviceEn}` next to `{service}` (likewise `{industryEn}`, `{projectEn}`), used by the zh / tr WhatsApp messages for their English line; `pageContact()` in `src/components/contact-cta.ts` always passes both.
 
 ## 6. SEO
 
+- Every page of a locale has its own `<title>` and meta description: `check-i18n` fails when two `seoTitle` / `seo.title` values render to the same title (after the suffix below) or two descriptions are equal. A case study must not repeat its industry page's title (they compete for the same query).
 - Titles: `Seo.astro` appends " | Logic Controls" when the brand is not already in the string. So a `seoTitle` without the brand gets 17 characters added: keep that keyword part to about 43 characters in Latin scripts (about 22 CJK characters in Chinese). Rendered titles stay within about 600 px at 20 px Arial (roughly 60 characters). The only suffix is "| Logic Controls" (never "| Logic Controls Egypt" or "| Logic Controls Mısır"); "Egypt" goes in the keyword part.
 - Lead with the service or machine and Egypt; the brand goes last. The home title and `seo.defaultTitle` follow this too ("Control Panels & PLC Automation in Egypt | Logic Controls"). `seo.siteName` stays "Logic Controls" (the JSON-LD site name).
 - Descriptions: start with the machine or service, Egypt and the key feature within about 110 characters. Cap at about 145 characters in English and Turkish (no wider than about 920 px at 14 px Arial) and about 80 characters in Chinese. No label prefix such as "Case study:", "دراسة حالة:", "案例：" or "Proje:": the breadcrumb already says it.
 - H1s say what the page is ("Automation projects and case studies in Egypt", not "Projects"). Nav labels and breadcrumbs stay short.
 - Near-duplicate case studies (two pasteurizers, two laundry washers, two shampoo fillers) must keep different titles, H1s, descriptions and first sentences that name what differs (platform, scope, features). Arabic titles must differ before the pipe, not only after it.
 - Arabic titles and H1s use the terms Egyptian buyers search for where they read naturally: لوحات كنترول، برمجة PLC، أوتوميشن، سكادا، صيانة (see `GLOSSARY.md`). Once per title or H1, never stuffed.
-- `seo.organizationDescription` → JSON-LD `Organization.description`. Use `SITE` for NAP. Add `alternateName: "لوجيك كنترولز"` only if the client approves the Arabic spelling.
+- `seo.organizationDescription` → JSON-LD `Organization.description`. The company (`#organization`) and founder (`#founder`) nodes use the English values on every page (search engines merge nodes by `@id` and keep one value; the Arabic name is the founder's `alternateName`); localised text belongs on the page nodes. Use `SITE` for NAP. Add `alternateName: "لوجيك كنترولز"` only if the client approves the Arabic spelling.
+- `foreign.seo.serviceName` / `serviceType`: the JSON-LD Service of the foreign-manufacturers page (what is offered, not the H1 slogan; no partner wording).
 - Keep FAQs visible on the page. FAQPage markup gives no rich result any more (optional).
+- Page dates (sitemap `<lastmod>`, case-study `datePublished` / `dateModified`) come from `src/data/content-dates.json`: each page is dated by a hash of its OWN copy subtree, data record and project photos (the `scripts/content-dates.mjs` header lists what counts; a photo rename counts too). After any copy, data or photo change run `node scripts/content-dates.mjs --write` and commit the JSON in the same commit; `--check` lists stale pages (`npm run deploy` refuses to deploy while any are stale); `--bootstrap` rebuilds the file from git history. A forgotten refresh dates the changed pages at build time (with a warning), so a change is never understated. Templates, nav, `common.json`, `ui.json` and `seo.json` edits do not re-date pages. After deploying content changes, run `npm run indexnow`.
 
 ## 7. Images and video
 
 - `src/assets/projects/<slug>/`: chosen photos with clean names. Third-party logos and nameplates are already cropped out or blurred (tablet coater plates and SCADA logo, autoclave door plate, customer logos on the cheese-cooker and pipe-tester HMIs, product brand on the shampoo reel still, OEM nameplate on the printing reel still).
 - Many HMI screenshots are about 800 px wide: use them at card or gallery size, not full-bleed.
-- Videos exist in `/public/media/` (the `-v2` files) and are referenced from `projects.ts`. The product brand on the shampoo bottles and the machine builder's nameplate on the printing machine are blurred in the `-v2` files. The laundry video is vertical (540×960). Each video has a `videoDescription` text alternative. Before adding captions, listen to the shampoo clip: if anyone speaks, it needs WebVTT captions in all four languages; clips with machine noise only can have the audio stripped.
+- Case-study videos are the `-v3` files in `/public/media/` (each with a 480p variant and `-v3` WebP posters), referenced from `projects.ts`: shampoo filling, bottle printing, hotel laundry. The product brand on the shampoo bottles and the machine builder's nameplate on the printing machine are blurred in them. The laundry video is vertical (540×960). Every clip has its audio track stripped, so there is nothing to caption; each has a `videoDescription` text alternative. The home hero loop is `hero-filling-v3` (MP4 + WebM) with a `-v4` poster set (`src/components/hero-media.ts`).
+- `/media/*` is cached as immutable: a changed file gets a new `-vN` name, never the old one (`tests/static/check-budgets.mjs` fails on a media file name without a version).
 
 ## 8. Notes for transcreators
 

@@ -1,11 +1,11 @@
 /**
  * src/lib/text.ts — the line-breaking / bidi / escaping engine (audit round 1, package PK5).
- * Golden cases per locale for html(), plain(), toHtml(), cleanText() and the catalog.ts compatibility shim.
+ * Golden cases per locale for html(), plain(), toHtml(), heading(), cleanText() and the helpers around them.
  */
+import { readFileSync, readdirSync } from "node:fs";
 import { describe, expect, it } from "vitest";
-import { cleanText, emphasize, html, linkLabels, ltr, plain, punct, rich, toHtml, trHyphenate, zhWords } from "~/lib/text";
+import { cleanText, emphasize, heading, html, isSafeHtml, linkLabels, ltr, markup, plain, punct, rich, toHtml, trHyphenate, zhWords } from "~/lib/text";
 import { getMessages } from "~/i18n";
-import { html as catalogHtml, keepCodes } from "~/components/sections/catalog/catalog";
 
 const NBSP = "\u00A0";
 const SHY = "\u00AD";
@@ -48,17 +48,28 @@ describe("Arabic: Latin runs (A11Y-38, I18N-21, I18N-14)", () => {
   });
 });
 
-describe("Turkish soft hyphens (I18N-03, A11Y-08)", () => {
-  it("follows the Turkish syllable rule, never leaving < 2 letters before / < 3 after", () => {
+describe("Turkish soft hyphens (I18N-03, A11Y-08, I18N2-04, I18N2-05)", () => {
+  it("follows the Turkish syllable rule, never leaving < 3 letters on either side of a break", () => {
     expect(trHyphenate("otomatikleştiriyorsunuz")).toBe(["oto", "ma", "tik", "leş", "ti", "ri", "yor", "su", "nuz"].join(SHY));
     expect(trHyphenate("spesifikasyonlarının")).toBe(["spe", "si", "fi", "kas", "yon", "la", "rı", "nın"].join(SHY));
+    // no 2-letter stub at a line end (I18N2-05): "ta-", "iş-", "ge-", "mü-", "do-", "mo-"
+    expect(trHyphenate("tarayıcınızdan")).toBe(["tara", "yı", "cı", "nız", "dan"].join(SHY));
+    for (const w of ["tarayıcınızdan", "işletebileceği", "genişletebileceği", "mühendisleriyle", "dokümantasyonu", "modernizasyonu", "çalışıyorsunuz"]) {
+      const parts = trHyphenate(w).split(SHY);
+      expect(parts.length, w).toBeGreaterThan(1);
+      expect(parts[0]!.length, w).toBeGreaterThanOrEqual(3);
+      expect(parts.at(-1)!.length, w).toBeGreaterThanOrEqual(3);
+    }
   });
-  it("only long, lower-case words; html() adds them for tr only; plain() never", () => {
+  it("only long, lower-case words; heading() adds them for tr only; html() (body text) and plain() never", () => {
     expect(trHyphenate("modernizasyon")).toContain(SHY);
     expect(trHyphenate("prosesini")).toBe("prosesini");
     expect(trHyphenate("WhatsAppMessenger")).toBe("WhatsAppMessenger");
-    expect(html("tr", "Bir ilaç prosesini mi otomatikleştiriyorsunuz?")).toContain(`oto${SHY}ma`);
-    expect(html("en", "internationalization")).not.toContain(SHY);
+    expect(heading("tr", "Bir ilaç prosesini mi otomatikleştiriyorsunuz?")).toContain(`oto${SHY}ma`);
+    expect(heading("en", "internationalization")).not.toContain(SHY);
+    // body text never carries soft hyphens (I18N2-04: WebKit breaks at U+00AD even under hyphens: none)
+    expect(html("tr", "Bir ilaç prosesini mi otomatikleştiriyorsunuz?")).not.toContain(SHY);
+    expect(toHtml("tr", "parametrelerde değişiklikleri kullanabilirsiniz")).not.toContain(SHY);
     expect(plain("tr", html("tr", "otomatikleştiriyorsunuz"))).toBe("otomatikleştiriyorsunuz");
   });
   it("is idempotent through toHtml()", () => {
@@ -163,17 +174,6 @@ describe("set:html contract (CODE-02) and machine text (CODE-09)", () => {
   });
 });
 
-describe("catalog.ts shims (CODE-05)", () => {
-  it("html() accepts both argument orders", () => {
-    expect(catalogHtml("Siemens S7-1200", "en")).toBe(html("en", "Siemens S7-1200"));
-    expect(catalogHtml("zh", "设备自动化")).toBe(html("zh", "设备自动化"));
-    expect(catalogHtml("نظام PLC", "ar")).toBe(html("ar", "نظام PLC"));
-  });
-  it("keepCodes() is plain() with swapped arguments", () => {
-    expect(keepCodes("S7-1200", "en")).toBe(plain("en", "S7-1200"));
-  });
-});
-
 describe("punct()", () => {
   it("full-width forms in Chinese, Arabic comma in Arabic", () => {
     expect(punct("zh").colon).toBe("：");
@@ -209,7 +209,8 @@ describe("link tokens {link:path|label} / {link:ext:https://…|label}", () => {
     expect(html("zh", "（如我们的{link:projects/pasteurizer-cip-recipes|巴氏杀菌机项目}），也可以")).toContain('</a><span class="lc-nw">），</span>');
   });
   it("Turkish: soft hyphens in long label words", () => {
-    expect(html("tr", "{link:services/machine-retrofits|modernizasyonumuzda}")).toContain(SHY);
+    expect(heading("tr", "{link:services/machine-retrofits|modernizasyonumuzda}")).toContain(SHY);
+    expect(html("tr", "{link:services/machine-retrofits|modernizasyonumuzda}")).not.toContain(SHY);
   });
   it("external: https only, new tab, rel noopener noreferrer, hidden localized hint", () => {
     for (const l of ["en", "ar", "zh", "tr"] as const) {
@@ -251,6 +252,172 @@ describe("link tokens {link:path|label} / {link:ext:https://…|label}", () => {
     const out = toHtml("en", "see {link:about|us}");
     expect(out).toBe('see <a href="/en/about/">us</a>');
     expect(toHtml("en", out)).toBe(out);
-    expect(rich("en", "Hi {name}, see {link:about|us} <now>", { name: "<b>x</b>" })).toBe('Hi <b>x</b>, see <a href="/en/about/">us</a> &lt;now&gt;');
+    expect(rich("en", "Hi {name}, see {link:about|us} <now>", { name: markup`<b>x</b>` })).toBe('Hi <b>x</b>, see <a href="/en/about/">us</a> &lt;now&gt;');
+  });
+});
+
+/* ------------------------------------------------------------------ audit round 2 (package Q6) */
+
+describe("Arabic: digit groups and phone numbers are LTR isolates (I18N2-02)", () => {
+  it("isolates a local phone example so it never reads '5678 1234 010'", () => {
+    expect(html("ar", "مثال: 010 1234 5678")).toBe('مثال: <bdi dir="ltr">010 1234 5678</bdi>');
+    expect(html("ar", "مثال: 010 1234 5678 أو +20 10 1234 5678.")).toBe(
+      'مثال: <bdi dir="ltr">010 1234 5678</bdi> أو <bdi dir="ltr">+20 10 1234 5678</bdi>.',
+    );
+  });
+  it("the author's LRI…PDI isolates are replaced by the engine's (same result)", () => {
+    const authored = "مثال: \u2066010 1234 5678\u2069 أو \u2066+20 10 1234 5678\u2069.";
+    expect(html("ar", authored)).toBe(html("ar", "مثال: 010 1234 5678 أو +20 10 1234 5678."));
+    expect(plain("ar", "مثال: 010 1234 5678")).toBe(`مثال: \u2066010${NBSP}1234${NBSP}5678\u2069`);
+  });
+  it("any run of space-separated digit groups is isolated; a single number stays in the Arabic flow", () => {
+    expect(html("ar", "الرقم 0128 4455 667 هنا")).toContain('<bdi dir="ltr">0128 4455 667</bdi>');
+    expect(html("ar", "أكثر من 50 مشروعًا في 2026")).toBe("أكثر من 50 مشروعًا في 2026");
+  });
+  it("the real contact-form help text renders the number in order", () => {
+    const help = getMessages("ar").contact.form.fields.phone.help;
+    const out = html("ar", help);
+    for (const n of help.replace(/[\u2066-\u2069]/g, "").match(/\+?\d+(?:[ \u00A0]\d+)+/g) ?? []) expect(out).toContain(`<bdi dir="ltr">${n}</bdi>`);
+  });
+});
+
+describe("Arabic: word-only names keep the .lc-nws hook (A11Y2-23)", () => {
+  it("'Logic Controls' in an Arabic heading is a bdi.lc-nws (CSS lets a narrow heading wrap it at its space)", () => {
+    expect(html("ar", "عن Logic Controls")).toBe('عن <bdi dir="ltr" lang="en" class="lc-nws">Logic Controls</bdi>');
+    expect(html("ar", "منصة Schneider Electric")).toContain('<bdi dir="ltr" lang="en" class="lc-nws">Schneider Electric</bdi>');
+  });
+  it("codes, brand + model and single words never get it", () => {
+    expect(html("ar", "معيار IEC 60204-1")).toContain('<bdi dir="ltr">IEC 60204-1</bdi>');
+    expect(html("ar", "شاشة Wecon HMI")).toContain('<bdi dir="ltr" lang="en">Wecon HMI</bdi>');
+    expect(html("ar", "من Siemens")).toContain('<bdi dir="ltr" lang="en">Siemens</bdi>');
+    expect(html("ar", "و S7-200 SMART")).toContain('<bdi dir="ltr">S7-200 SMART</bdi>');
+  });
+});
+
+describe("Chinese: '——' never starts a line (I18N2-06)", () => {
+  it("keeps the dash run on one line with the character before it", () => {
+    const out = html("zh", "SCADA 与设备自动化——由我们在埃及的工程师完成");
+    expect(out).toContain('<span class="lc-nw">化——</span>');
+    expect(out).not.toMatch(new RegExp(`[${ZWSP}]<span class="lc-nw">——|${ZWSP}——`));
+  });
+  it("after an atom (markup before the dash) a WORD JOINER prohibits the break", () => {
+    expect(html("zh", "西门子 S7-1200——由我们编程")).toContain(`</span>\u2060——`);
+  });
+  it("the real footer pitch: no break opportunity right before '——'", () => {
+    const zh = JSON.stringify(getMessages("zh"));
+    const pitches = [...zh.matchAll(/"([^"]*——[^"]*)"/g)].map((m) => m[1]!);
+    expect(pitches.length).toBeGreaterThan(0);
+    for (const s of pitches) {
+      const out = html("zh", s);
+      for (const m of out.matchAll(/——/g)) {
+        const before = out.slice(0, m.index);
+        expect(before.endsWith(ZWSP), s).toBe(false);
+        expect(/<span class="lc-nw">[^<>]$/.test(before) || before.endsWith("\u2060") || before.endsWith("——"), s).toBe(true);
+      }
+    }
+  });
+  it("visible text and emphasize() are unaffected", () => {
+    expect(cleanText(html("zh", "西门子 S7-1200——由我们编程"))).toBe("西门子 S7-1200——由我们编程");
+    expect(emphasize(html("zh", "设备自动化——由我们"), "自动化——由")).toContain("<em>");
+  });
+});
+
+describe("set:html contract is enforced at run time (CODE2-03)", () => {
+  const HOSTILE_LOOKALIKES = [
+    "<b>bold</b>",
+    "<2 bar>",
+    "R&amp;D",
+    "&lt;script&gt;",
+    '<span class="lc-nw" onclick="alert(1)">S7</span>',
+    '<bdi dir="ltr">x</bdi><img src=x onerror=alert(1)>',
+    "<a href=\"javascript:alert(1)\">x</a>",
+  ];
+  it("toHtml() / heading() escape every string the engine did not produce, however HTML-like", () => {
+    for (const s of HOSTILE_LOOKALIKES)
+      for (const l of ["en", "ar", "zh", "tr"] as const) {
+        for (const out of [toHtml(l, s), heading(l, s)]) {
+          expect(out.replace(/<\/?(?:span|bdi)[^>]*>|<wbr>/g, ""), `${l}: ${s}`).not.toMatch(/[<>]/);
+          expect(cleanText(out), `${l}: ${s}`).toBe(cleanText(esc2(s)));
+        }
+      }
+    expect(toHtml("en", "<b>bold</b>")).toBe("&lt;b&gt;bold&lt;/b&gt;");
+    expect(toHtml("en", "R&amp;D")).toBe("R&amp;amp;D");
+  });
+  it("engine output passes through unchanged (never double-escaped)", () => {
+    for (const r of [html("en", "a < b"), html("ar", "نظام Siemens S7-1200"), html("zh", "设备自动化"), ltr("+20 10 1234 5678"), emphasize(html("en", "x y"), "y"), markup`<b>${"1"}</b>`]) {
+      expect(isSafeHtml(r)).toBe(true);
+      expect(toHtml("en", r)).toBe(r);
+    }
+    expect(isSafeHtml("<b>never issued</b>")).toBe(false);
+  });
+  it("markup`` escapes values and keeps SafeHtml values", () => {
+    expect(markup`<a href="${"/x/?a=1&b=<2>"}">${'"quoted" <b>'}</a>`).toBe('<a href="/x/?a=1&amp;b=&lt;2&gt;">&quot;quoted&quot; &lt;b&gt;</a>');
+    expect(markup`<b>${html("en", "S7-1200")}</b>${null}${undefined}${false}${[ltr("PLC"), " & "]}`).toBe(
+      '<b><span class="lc-nw">S7-1200</span></b><bdi dir="ltr">PLC</bdi> &amp; ',
+    );
+  });
+  it("rich() placeholders take SafeHtml; any other string is escaped", () => {
+    const vars = { link: "<a href=x>y</a>" } as unknown as Record<string, ReturnType<typeof markup>>;
+    expect(rich("en", "see {link}", vars)).toBe("see &lt;a href=x&gt;y&lt;/a&gt;");
+    expect(rich("en", "see {link}", { link: markup`<a href="/en/privacy/">privacy</a>` })).toBe('see <a href="/en/privacy/">privacy</a>');
+  });
+  it("emphasize() treats a non-engine string as plain text", () => {
+    expect(emphasize("<img src=x onerror=alert(1)> y" as never, "y")).toBe("&lt;img src=x onerror=alert(1)&gt; <em>y</em>");
+  });
+  it("heading() adds Turkish soft hyphens to engine output, never inside atoms, idempotently", () => {
+    const h = html("tr", "Siemens S7-1200 ile otomatikleştiriyorsunuz");
+    const once = heading("tr", h);
+    expect(once).toContain(`oto${SHY}ma`);
+    expect(once).toContain('<span class="lc-nw">Siemens S7-1200</span>');
+    expect(heading("tr", once)).toBe(once);
+    expect(heading("en", html("en", "internationalization"))).toBe(html("en", "internationalization"));
+    const em = emphasize(html("tr", "Bir ilaç prosesini mi otomatikleştiriyorsunuz?"), "prosesini");
+    expect(heading("tr", em)).toContain("<em>prosesini</em>");
+  });
+  it("external link tokens work only for allow-listed official hosts", () => {
+    expect(html("en", "{link:ext:https://www.gafi.gov.eg/|GAFI}")).toContain('<a href="https://www.gafi.gov.eg/"');
+    expect(html("en", "{link:ext:https://example.com/|x}")).not.toContain("<a");
+    expect(html("en", "{link:ext:https://gafi.gov.eg.evil.example/|x}")).not.toContain("<a");
+  });
+  it("no string literal in src/data/*.ts contains markup or an entity (data is plain text too)", () => {
+    const dir = new URL("../../src/data/", import.meta.url);
+    const bad: string[] = [];
+    for (const f of readdirSync(dir).filter((f) => f.endsWith(".ts")))
+      for (const m of readFileSync(new URL(f, dir), "utf8").matchAll(/"((?:[^"\\\n]|\\.)*)"/g))
+        if (/<\/?[a-z][^>]*>|&(?:[a-z]+|#\d+|#x[0-9a-f]+);/i.test(m[1]!)) bad.push(`${f}: ${m[1]}`);
+    expect(bad).toEqual([]);
+  });
+});
+
+/** What a reader sees of a string escaped once (for comparing hostile inputs). */
+function esc2(s: string) {
+  return s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+}
+
+describe("numbers with an inch / prime mark (I18N2-11)", () => {
+  it("is one atom: never wraps between the number and the mark", () => {
+    expect(html("en", "Simulated 10.1″ operator panel")).toContain(`<span class="lc-nw">10.1″</span>`);
+    expect(plain("tr", "simüle 10,1″ operatör")).toContain("10,1″");
+  });
+  it("is an LTR isolate in Arabic, so the mark is drawn after the number", () => {
+    expect(html("ar", "شاشة مقاس 10.1″ مصمّمة")).toContain(`<bdi dir="ltr">10.1″</bdi>`);
+    expect(plain("ar", "شاشة مقاس 10.1″ مصمّمة")).toContain("⁦10.1″⁩");
+  });
+  it("the real HMI caption renders the screen size whole in every locale", () => {
+    for (const l of ["en", "ar", "zh", "tr"] as const) {
+      const out = html(l, getMessages(l).hmi.caption);
+      // "10,1″" (tr) has no break opportunity at all (NU IS NU PO), so it needs no wrapper
+      expect(out, l).toMatch(l === "tr" ? /10,1″/ : /(?:<span class="lc-nw">|<bdi dir="ltr">)10\.1″<\/(?:span|bdi)>/);
+    }
+  });
+});
+
+describe("Chinese: fixed place names stay whole (I18N2-08)", () => {
+  it("no break opportunity inside 十月六日城 / 新十月城", () => {
+    for (const name of ["十月六日城", "新十月城"]) {
+      const out = html("zh", `位于${name}及周边工业区`);
+      expect(out).toContain(name);
+      expect(zhWords(`位于${name}及周边工业区`)).toContain(name);
+    }
   });
 });

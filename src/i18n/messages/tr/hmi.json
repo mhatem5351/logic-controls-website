@@ -19,7 +19,8 @@
       }
     ],
     "ctaQuestion": "Makineniz için böyle bir HMI ister misiniz?",
-    "cta": "Teklif isteyin"
+    "cta": "Teklif isteyin",
+    "project": "Otomasyonunu yaptığımız gerçek pastörizatörü görün"
   },
   "caption": "ISA-101 yüksek performanslı HMI ilkeleri esas alınarak tasarlanmış simüle 10,1″ operatör paneli: her şey normalken gri, renk yalnızca anormal durumlarda, dokunabileceğiniz her şey mavi.",
   "a11y": {
@@ -35,7 +36,8 @@
     "forward": "İleri durumunu bekleyin",
     "fault": "Arıza simüle edin",
     "ack": "Alarmları onaylayın",
-    "done": "tamamlandı"
+    "done": "tamamlandı",
+    "watch": "TT-102 değerini izleyin"
   },
   "status": {
     "unit": "HTST-01 Pastörizatör",
@@ -178,7 +180,12 @@
     "allClear": "Tüm alarmlar onaylandı. Parti {batch} normal çalışıyor.",
     "faultNeedsRun": "Önce üretimi başlatın: arıza, tesis çalışırken buhar beslemesinin kesilmesini simüle eder.",
     "faultInCip": "CIP yıkaması sırasında arıza simülasyonu yapılamaz.",
-    "noAlarms": "Onaylanacak alarm yok."
+    "noAlarms": "Onaylanacak alarm yok.",
+    "sp": "Isıtma set değeri {v} °C.",
+    "spLimit": "Isıtma set değeri sınırında: {v} °C.",
+    "more": "Listede {n} alarm daha var.",
+    "tourDone": "Tamamlandı: bir operatör buhar arızasını böyle yönetir.",
+    "tourCta": "Makineniz için böyle bir HMI isteyin"
   },
   "cip": {
     "title": "CIP programı",

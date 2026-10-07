@@ -3,7 +3,7 @@
  * Everything here is derived from src/data/* so new services, industries or projects flow through
  * without page edits (no hard-coded counts or option lists).
  */
-import { getMessages, isLocale, localePath, type Locale } from "~/i18n";
+import { getMessages, localePath, type Locale } from "~/i18n";
 import { SITE } from "~/data/site";
 import { SERVICES, SERVICE_SLUGS, type ServiceSlug } from "~/data/services";
 import { INDUSTRY_SLUGS, type IndustrySlug } from "~/data/industries";
@@ -14,28 +14,6 @@ import type enIndustries from "~/i18n/messages/en/industries.json";
 import type enProjects from "~/i18n/messages/en/projects.json";
 import { fmt } from "~/components/nav";
 import { contactCta } from "~/components/contact-cta";
-import { html as renderHtml, plain, type SafeHtml } from "~/lib/text";
-
-/* ------------------------------------------------------------------ text (rules live in src/lib/text.ts) */
-
-/**
- * @deprecated Import `html` from "~/lib/text" and call html(locale, text). This shim accepts both argument orders
- * (the catalog pages' legacy (text, locale) and the engine's (locale, text)), so no call site can silently swap them.
- */
-export function html(locale: Locale | undefined, text: string): SafeHtml;
-/** @deprecated Legacy (text, locale) order — use html(locale, text) from "~/lib/text". */
-export function html(text: string, locale: Locale): SafeHtml;
-export function html(a: string | undefined, b: string | undefined): SafeHtml {
-  // (text, locale) when the second argument is a locale; otherwise (locale, text). Message strings are never a bare
-  // locale code, so the two shapes cannot be confused.
-  return isLocale(b) ? renderHtml(b, a ?? "") : renderHtml(isLocale(a) ? a : undefined, b ?? "");
-}
-
-/**
- * @deprecated Use plain(locale, text) from "~/lib/text". Text-only props (attributes): no-break spaces and word
- * joiners inside codes/brand names, LRI…PDI isolates around Latin runs on Arabic pages.
- */
-export const keepCodes = (text: string, locale?: Locale): string => plain(locale, text);
 
 /* ------------------------------------------------------------------ icons (data suggests Lucide names; map to our set) */
 
@@ -158,9 +136,19 @@ export function brandsIn(projects: readonly ProjectData[]): string[] {
 /* ------------------------------------------------------------------ CTAs */
 
 /** Contact page link that preselects the form (`?service=` / `?industry=`) and jumps to the form. */
-export function quoteHref(locale: Locale, query?: Record<string, string>): string {
-  const qs = query ? `?${new URLSearchParams(query).toString()}` : "";
+export function quoteHref(locale: Locale, query?: Record<string, string | undefined>): string {
+  /* Empty values are dropped: the form ignores them anyway, and the link stays short. */
+  const params = new URLSearchParams(Object.entries(query ?? {}).filter((e): e is [string, string] => !!e[1]));
+  const qs = params.size ? `?${params.toString()}` : "";
   return `${localePath(locale, "contact")}${qs}#quote`;
+}
+
+/**
+ * Quote link from a case study (UX2-22): the form preselects the project's first service and industry and names the
+ * case study above the form (`?project=`; rfq-form.ts reads it). Same rule as the chrome (contact-cta.ts pageContact).
+ */
+export function caseStudyQuoteHref(locale: Locale, p: Pick<ProjectData, "slug" | "services" | "industries">): string {
+  return quoteHref(locale, { service: p.services[0], industry: p.industries[0], project: p.slug });
 }
 
 /** Secondary CTA: WhatsApp with a contextual message, or email on /zh/ (WhatsApp is blocked in mainland China). */

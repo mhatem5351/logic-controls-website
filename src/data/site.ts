@@ -26,6 +26,9 @@ export const SITE = {
   brands: ["Siemens", "Schneider Electric", "Delta", "LS Electric", "Wecon"],
 } as const;
 
+/** The phone as a link (one builder for every "call" link, CODE2-09). */
+export const telLink = (): string => `tel:${SITE.phone.tel}`;
+
 export function whatsappLink(message?: string) {
   const base = `https://wa.me/${SITE.whatsapp}`;
   return message ? `${base}?text=${encodeURIComponent(message)}` : base;

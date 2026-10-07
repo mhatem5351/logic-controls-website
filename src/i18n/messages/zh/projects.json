@@ -25,7 +25,7 @@
       "title": "饮料糖浆制备：射流混合系统的整套控制",
       "cardTitle": "基于 Siemens S7-1200 和 SIMATIC HMI 的糖浆射流混合系统",
       "client": "饮料生产企业",
-      "summary": "为一家饮料厂的糖浆制备提供整套控制系统：Siemens S7-1200 PLC、罐旁的 SIMATIC HMI、两台用于泵速控制的 Yaskawa 变频器，以及射流混合罐的自动进料与循环。",
+      "summary": "为一家饮料厂的糖浆制备提供整套控制系统。系统采用 Siemens S7-1200 PLC、罐旁的 SIMATIC HMI 和两台用于泵速控制的 Yaskawa 变频器。射流混合罐的进料与糖浆循环均自动完成。",
       "seoTitle": "埃及饮料糖浆射流混合控制",
       "seoDescription": "埃及一家饮料厂的糖浆射流混合控制：Siemens S7-1200 PLC、SIMATIC HMI、两台 Yaskawa 泵用变频器及 CIP 就绪联锁。",
       "challenge": "一家饮料厂需要为糖浆制备配套整套控制系统。径向射流混合系统（Radial Jet Mixing System）需要向混合罐进料，并以受控的泵速按设定时间循环糖浆。它还需要与工厂的 CIP 就地清洗系统协同运行，所有操作都在罐旁的触摸屏上完成。",
@@ -85,7 +85,7 @@
     },
     "shampoo-filling-ls-wecon": {
       "title": "洗发水灌装线：基于 LS PLC 的控制，从设计到生产投运",
-      "cardTitle": "基于 LS PLC 和 Wecon HMI 的洗发水灌装机",
+      "cardTitle": "基于 LS PLC 的洗发水灌装线（从设计到投运）",
       "client": "个人护理用品制造商",
       "summary": "为一台洗发水灌装机提供完整控制系统：电气与自动化设计、LS PLC 编程、Wecon HMI，并在实际生产条件下完成调试。",
       "seoTitle": "埃及洗发水灌装线：从设计到投运",
@@ -376,6 +376,10 @@
         "panel": "巴氏杀菌机控制柜，内含 Wecon PLC、Schneider Electric 断路器、继电器、接触器和热过载继电器",
         "settingsTimers": "HMI 设置画面：安全温度、回流阀设置、泵延时和 CIP 定时器",
         "settingsControl": "HMI 设置画面：比例温度控制参数与旁通设置"
+      },
+      "imageCaptions": {
+        "settingsTimers": "设置画面：回流、安全温度与 CIP 定时",
+        "settingsControl": "设置画面：温度控制参数与旁通"
       }
     },
     "labeling-machine-delta-wecon": {
@@ -436,6 +440,9 @@
         "hmi": "贴标机 Wecon HMI 主画面，显示标签长度、出标长度、速度、传感器状态以及启动、停止和复位按钮",
         "recipes": "HMI 设置画面：速度、步进与挡瓶门延时，以及带读取和写入按钮的产品表",
         "panel": "贴标机控制柜，内含 Schneider Electric 步进驱动器、Altivar 变频器、Delta PLC 和 MEAN WELL 电源"
+      },
+      "imageCaptions": {
+        "recipes": "产品配方：各产品的速度与延时"
       }
     },
     "olive-autoclave-sterilization": {
@@ -503,7 +510,7 @@
       "cardTitle": "基于 Siemens S7-1200 和 WinCC 的混凝土搅拌站",
       "client": "混凝土生产企业",
       "summary": "基于 Siemens S7-1200 PLC 和 WinCC Professional SCADA 的自动配料与搅拌：水泥、骨料、水和外加剂计量，以及不同配比的配方。",
-      "seoTitle": "埃及混凝土搅拌站自动化",
+      "seoTitle": "埃及混凝土搅拌站 PLC 与 WinCC SCADA 控制",
       "seoDescription": "埃及混凝土搅拌站控制，采用 Siemens S7-1200 与 WinCC SCADA：逐种物料称重计量、配比配方、自动搅拌。",
       "challenge": "搅拌站需要精确计量每种物料，一盘接一盘地保持相同的混凝土质量，并让操作人员能总览整个站区。",
       "solution": [
@@ -614,7 +621,7 @@
     },
     "shampoo-filling-delta-wecon": {
       "title": "四头洗发水灌装机：全新控制柜、Delta PLC 与阿拉伯语 HMI",
-      "cardTitle": "基于 Delta PLC 和 Wecon HMI 的洗发水灌装机",
+      "cardTitle": "基于 Delta PLC 与阿拉伯语 HMI 的四头洗发水灌装机",
       "client": "个人护理用品制造商",
       "summary": "为一台四头洗发水灌装机提供全新控制柜与自动化：Delta PLC、阿拉伯语画面的 Wecon HMI 和 LS Electric 变频器，控制灌装量、速度和流程。",
       "seoTitle": "埃及洗发水灌装机控制柜与阿拉伯语 HMI",
@@ -902,6 +909,9 @@
         "machine": "酒店洗衣房内的不锈钢前开门洗脱两用机",
         "hmi": "洗衣机 HMI 画面，显示化料输入、蒸汽、排水、冷热水、门锁、滚筒转向和步骤计时",
         "programEditor": "HMI 程序编辑器：15 个洗涤步骤，每步可设定时间、水位、进水、温度和化料选择"
+      },
+      "imageCaptions": {
+        "programEditor": "程序编辑器：每个洗涤程序最多 15 步"
       }
     }
   }

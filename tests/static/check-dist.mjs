@@ -10,7 +10,12 @@
 //  - malformed tel: / mailto: / wa.me links
 //  - /lab/ or /styleguide/ pages (or links to them) in the production build
 //  - JSON-LD blocks that do not parse
-//  - sitemap ↔ dist drift (a sitemap URL without a page; an indexable page missing from the sitemap)
+//  - CSP (CODE2-01): every page carries exactly one CSP <meta> right after <meta charset> (before any script, style or
+//    link), its script-src has no 'unsafe-inline', and it lists the sha256 hash of every inline script on the page;
+//    no inline event handlers (on…=) anywhere
+//  - duplicate <title> / meta description among a locale's indexable pages (CS2-02: titles composed in code included)
+//  - sitemap ↔ dist drift (a sitemap URL without a page; an indexable page missing from the sitemap), a sitemap URL
+//    without <lastmod>, a case study whose Article lacks datePublished ≤ dateModified
 //  - leaked local inputs: client-data paths, raw Facebook / Telegram / screenshot file names
 //  - secrets: Cloudflare / GitHub token prefixes, the TURNSTILE_SECRET name, and (when a local .env exists) the value
 //    of any secret in it (reported by key name only)
@@ -18,6 +23,7 @@ import { readFileSync, readdirSync, statSync, existsSync } from "node:fs";
 import { join, relative, extname, sep } from "node:path";
 import { fileURLToPath } from "node:url";
 import { parse } from "node-html-parser";
+import { inlineScriptHashes, parsePolicy } from "../../integrations/csp-inline-hashes.mjs";
 
 const ROOT = fileURLToPath(new URL("../../", import.meta.url));
 const DIST = process.env.DIST_DIR ?? join(ROOT, "dist");
@@ -222,6 +228,58 @@ for (const [path, { root, ids }] of pages) {
   }
 }
 
+/* ------------------------------------------------------------------ CSP: the meta policy covers every inline script */
+
+const CSP_META = /<meta http-equiv="content-security-policy" content="([^"]*)"\s*\/?>/gi;
+let cspPages = 0;
+let cspHashes = 0;
+for (const f of htmlFiles) {
+  const html = readFileSync(f, "utf8");
+  const where = rel(f);
+  const metas = [...html.matchAll(CSP_META)];
+  if (metas.length !== 1) {
+    problem("csp-meta-count", where, `${metas.length} CSP <meta> elements`);
+    continue;
+  }
+  cspPages++;
+  const head = html.slice(0, metas[0].index);
+  if (/<(script|link|style|base)\b/i.test(head) || !/<meta charset="utf-8">$/i.test(head.trimEnd())) problem("csp-meta-position", where, "not directly after <meta charset>");
+  const scriptSrc = parsePolicy(metas[0][1]).get("script-src");
+  if (!scriptSrc) {
+    problem("csp-no-script-src", where);
+    continue;
+  }
+  if (scriptSrc.includes("'unsafe-inline'")) problem("csp-unsafe-inline", where);
+  for (const h of inlineScriptHashes(html)) {
+    cspHashes++;
+    if (!scriptSrc.includes(h)) problem("csp-unhashed-inline-script", where, h);
+  }
+  for (const m of html.matchAll(/<[a-z][^>]*?\s(on[a-z]+)\s*=/gi)) problem("inline-event-handler", where, m[1]);
+}
+
+/* ------------------------------------------------------------------ unique titles / descriptions per locale */
+
+const titles = new Map();
+const descriptions = new Map();
+for (const [p, { root }] of pages) {
+  const loc = p.split("/")[1];
+  const noindex = /noindex/.test(root.querySelector('meta[name="robots"]')?.getAttribute("content") ?? "");
+  if (!LOCALES.includes(loc) || noindex || /\/(art|lab|styleguide)\//.test(p)) continue;
+  const title = root.querySelector("title")?.text.trim() ?? "";
+  const desc = root.querySelector('meta[name="description"]')?.getAttribute("content")?.trim() ?? "";
+  if (!title) problem("missing-title", p);
+  if (!desc) problem("missing-description", p);
+  for (const [map, value, type] of [
+    [titles, title, "duplicate-title"],
+    [descriptions, desc, "duplicate-description"],
+  ]) {
+    if (!value) continue;
+    const key = `${loc}\0${value}`;
+    if (map.has(key)) problem(type, p, `same as ${map.get(key)}: ${value.slice(0, 80)}`);
+    else map.set(key, p);
+  }
+}
+
 /* ------------------------------------------------------------------ internal pages must not ship */
 
 for (const p of fileSet) if (/\/(lab|styleguide)\//.test(p)) problem("internal-page-in-dist", p);
@@ -235,6 +293,34 @@ for (const [p, { root }] of pages) {
   const noindex = /noindex/.test(root.querySelector('meta[name="robots"]')?.getAttribute("content") ?? "");
   if (p === "/" || p === "/404.html" || noindex) continue;
   if (!locs.includes(p)) problem("page-missing-from-sitemap", p);
+}
+// Page dates (CODE2-36): every sitemap URL carries <lastmod> (src/data/content-dates.json, no git needed), and every
+// case study's Article has datePublished ≤ dateModified.
+for (const m of sitemap.matchAll(/<url>([\s\S]*?)<\/url>/g)) {
+  const loc = /<loc>([^<]+)<\/loc>/.exec(m[1])?.[1] ?? "?";
+  const lastmod = /<lastmod>([^<]+)<\/lastmod>/.exec(m[1])?.[1];
+  if (!lastmod || Number.isNaN(Date.parse(lastmod))) problem("sitemap-lastmod", new URL(loc).pathname, lastmod ?? "missing");
+}
+for (const [p, { root }] of pages) {
+  if (!/^\/[a-z]{2}\/projects\/[^/]+\/$/.test(p)) continue;
+  const nodes = root
+    .querySelectorAll('script[type="application/ld+json"]')
+    .flatMap((s) => {
+      try {
+        const o = JSON.parse(s.text);
+        return o["@graph"] ?? [o];
+      } catch {
+        return [];
+      }
+    });
+  const article = nodes.find((n) => n["@type"] === "Article");
+  if (!article) {
+    problem("case-study-article", p, "no Article node");
+    continue;
+  }
+  const { datePublished: pub, dateModified: mod } = article;
+  if (!pub || !mod || Number.isNaN(Date.parse(pub)) || Number.isNaN(Date.parse(mod))) problem("case-study-dates", p, `${pub} / ${mod}`);
+  else if (Date.parse(pub) > Date.parse(mod)) problem("case-study-dates", p, `published ${pub} after modified ${mod}`);
 }
 const robots = readFileSync(join(DIST, "robots.txt"), "utf8");
 const smRef = /Sitemap:\s*(\S+)/.exec(robots)?.[1];
@@ -288,7 +374,8 @@ const byType = {};
 for (const p of problems) byType[p.type] = (byType[p.type] ?? 0) + 1;
 console.log(
   `dist check: ${pages.size} pages, ${linkCount} links, ${assetCount} asset refs, ${locs.length} sitemap URLs, ` +
-    `${scanned} text files scanned for leaks/secrets (${envSecrets.length} local secret values).`,
+    `${scanned} text files scanned for leaks/secrets (${envSecrets.length} local secret values), ` +
+    `CSP meta on ${cspPages} pages covering ${cspHashes} inline scripts.`,
 );
 if (problems.length) {
   for (const type of Object.keys(byType)) {

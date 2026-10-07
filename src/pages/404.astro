@@ -2,11 +2,17 @@
 /**
  * Multilingual 404 (served by Workers static assets for any unknown path). One static page, four languages.
  * Without JS the four language cards show in a fixed order (English first). A tiny inline script picks the visitor's
- * language — the URL's first segment (/zh/…), else the `lang` cookie the language switcher sets, else the browser
- * language — moves that card first at full width (the others become a compact row: title + homepage link), and sets
- * <html lang> and the tab title to match. <html dir> stays ltr: every card carries its own lang/dir (the Arabic card is
- * RTL), and an RTL root would mirror the arrows inside the LTR cards (Tailwind `rtl:` matches any [dir=rtl] ancestor). Every card ends with a direct line to an engineer (phone, WhatsApp —
- * email first on /zh/, where WhatsApp is blocked — and email).
+ * language — the URL's first segment (/zh/…, /zh-tw/…), else the `lang` cookie the language switcher sets, else the
+ * browser language — moves that card first at full width (the others become a compact row: title + homepage link), and
+ * sets <html lang>, the tab title and the H1's hidden page name to match. <html dir> stays ltr: every card carries its
+ * own lang/dir (the Arabic card is RTL), and an RTL root would mirror the arrows inside the LTR cards (Tailwind `rtl:`
+ * matches any [dir=rtl] ancestor). Every card ends with a direct line to an engineer (phone, WhatsApp — email first on
+ * /zh/, where WhatsApp is blocked — and email).
+ * "Did you mean" (UX2-26): the script also matches the broken path against the site's real pages (typo in the section
+ * or slug: Levenshtein ≤ 2, or a unique prefix; a slug without its section; one stray segment such as /fr/ or /zh-tw/)
+ * and, when one fits, adds "Did you mean <page>?" (ui.notFound.didYouMean, the card's data-dym) under the picked card's
+ * message, linking to that page in the card's language (a path without a locale gets the picked language, English when
+ * none was picked). No match → nothing is added. It runs while the page is parsed, before the first paint: no shift.
  */
 import BaseLayout from "~/layouts/BaseLayout.astro";
 import Logo from "~/components/Logo.astro";
@@ -14,8 +20,11 @@ import Icon from "~/components/Icon.astro";
 import CircuitTraces from "~/components/CircuitTraces.astro";
 import { Font } from "astro:assets";
 import { LOCALES, LOCALE_META, getMessages, localePath } from "~/i18n";
-import { SITE, whatsappLink } from "~/data/site";
-import { QUOTE_PATH, href, mailtoLink, prefersEmail } from "~/components/nav";
+import { SITE, whatsappLink, telLink } from "~/data/site";
+import { SERVICE_SLUGS } from "~/data/services";
+import { INDUSTRY_SLUGS } from "~/data/industries";
+import { PROJECT_SLUGS } from "~/data/projects";
+import { FOREIGN_PATH, QUOTE_PATH, href, industryNav, mailtoLink, prefersEmail, serviceNav } from "~/components/nav";
 
 /* Each language block: message, homepage link, the three pages people most often look for (ui.notFound.links) so a
    broken link never ends the visit, then the contact line. */
@@ -37,14 +46,73 @@ const blocks = ORDER.filter((l) => LOCALES.includes(l)).map((l) => {
       { label: nf.links.projects, href: localePath(l, "projects") },
       { label: nf.links.quote, href: href(l, QUOTE_PATH) },
     ],
-    call: { label: m.common.labels.callEngineer, number: SITE.phone.display, href: `tel:${SITE.phone.tel}` },
+    call: { label: m.common.labels.callEngineer, number: SITE.phone.display, href: telLink() },
     channels: prefersEmail(l) ? [email] : [whatsapp, email],
   };
 });
+const enTitle = getMessages("en").ui.notFound.title;
+
+/* "Did you mean": every real page below a locale — section → its slugs, straight from the data modules so it never
+   drifts — and each locale's short page names, in the script's route order (the sections, then each section's
+   pages). Project titles are long (≈ 3.5 KB in four languages), so a project suggestion is labelled with its path;
+   the inline data stays under 3 KB. */
+const ROUTES: Record<string, readonly string[]> = {
+  services: SERVICE_SLUGS,
+  industries: INDUSTRY_SLUGS,
+  projects: PROJECT_SLUGS,
+  technologies: [],
+  about: [],
+  contact: [],
+  [FOREIGN_PATH]: [],
+  privacy: [],
+};
+const routeList = [
+  ...Object.keys(ROUTES),
+  ...Object.entries(ROUTES).flatMap(([section, slugs]) => slugs.map((slug) => `${section}/${slug}`)),
+];
+const names = Object.fromEntries(
+  blocks.map(({ locale }) => {
+    const crumbs = getMessages(locale).common.breadcrumbs as Record<string, string | undefined>;
+    const named = new Map([...serviceNav(locale), ...industryNav(locale)].map((n) => [n.path, n.label]));
+    const list = routeList.map((r) => named.get(r) ?? crumbs[r === FOREIGN_PATH ? "foreign" : r] ?? "");
+    while (list.length && !list.at(-1)) list.pop();
+    return [locale, list];
+  }),
+);
+
 /* Language codes the script may pick, and their direction (kept in sync with LOCALE_META). */
 const dirs = Object.fromEntries(blocks.map((b) => [b.locale, b.meta.dir]));
 const langs = Object.fromEntries(blocks.map((b) => [b.locale, b.meta.htmlLang]));
-const pick = `(()=>{var D=${JSON.stringify(dirs)},H=${JSON.stringify(langs)},s=(location.pathname.split("/")[1]||"").toLowerCase().slice(0,2),c=(document.cookie.match(/(?:^|; )lang=([a-z]{2})/)||[])[1],n=((navigator.languages||[])[0]||navigator.language||"").slice(0,2).toLowerCase(),k=[s,c,n].find(function(x){return x in D}),u=document.getElementById("nf-list"),li=k&&u.querySelector('[data-l="'+k+'"]');if(!li)return;u.prepend(li);u.dataset.picked="";li.dataset.primary="";document.title=li.dataset.title;document.documentElement.lang=H[k]})()`;
+const json = (v: unknown) => JSON.stringify(v).replace(/</g, "\\u003c");
+/* ES2017, no comments inside (the newlines and indentation are stripped). d = Levenshtein distance; m = the best of a
+   list for a word (exact, else distance ≤ 2 and under half the word, else the only list entry that is a prefix of the
+   word or starts with it); f = the route for the path segments [section, slug] (t: may drop one stray first segment).
+   A path-labelled link (project page) is one inline-block, so an RTL line never splits "/ar/projects/milk-" from the
+   rest. The link classes live in this string (Tailwind scans it). */
+const pick = String.raw`(()=>{
+  var D=${json(dirs)},H=${json(langs)},N=${json(ROUTES)},T=${json(names)},
+  L=Object.keys(D),K=Object.keys(N),R=K.slice(),
+  p=location.pathname.toLowerCase(),
+  s=(/^\/([a-z]{2})(?:[-_][^\/]*)?(?:\/|$)/.exec(p)||[])[1],
+  c=(document.cookie.match(/(?:^|; )lang=([a-z]{2})/)||[])[1],
+  n=((navigator.languages||[])[0]||navigator.language||"").slice(0,2).toLowerCase(),
+  k=[s,c,n].find(function(x){return L.indexOf(x)>-1}),
+  u=document.getElementById("nf-list"),
+  li=k&&u.querySelector('[data-l="'+k+'"]'),
+  h=document.getElementById("nf-h"),
+  g=p.replace(/\.html?$/,"").split("/").filter(Boolean),
+  r,b,a,q,i,e;
+  function d(x,y){var w=[],j,t,o,e;for(j=0;j<=y.length;j++)w[j]=j;for(t=1;t<=x.length;t++){o=w[0];w[0]=t;for(j=1;j<=y.length;j++){e=w[j];w[j]=Math.min(e+1,w[j-1]+1,o+(x[t-1]==y[j-1]?0:1));o=e}}return w[y.length]}
+  function m(l,w){var z="",v=3,o=[],j,x,e;for(j=0;j<l.length;j++){x=l[j];if(x==w)return x;e=d(x,w);if(e<v&&e*2<w.length){v=e;z=x}if(w.length>3&&(x.indexOf(w)==0||w.indexOf(x)==0))o.push(x)}return z||(o.length==1?o[0]:"")}
+  function f(g,t){var x=m(K,g[0]),y,j;if(x)return(y=g[1]?m(N[x],g[1]):"")?x+"/"+y:x;for(j=0;j<K.length;j++)if(y=m(N[K[j]],g[0]))return K[j]+"/"+y;return t&&g[1]?f(g.slice(1)):""}
+  if(li){u.prepend(li);u.dataset.picked="";li.dataset.primary="";document.title=li.dataset.title;document.documentElement.lang=h.lang=H[k];h.textContent=" — "+li.querySelector("h2").textContent}
+  else{k="en";li=u.querySelector('[data-l="en"]')}
+  K.forEach(function(x){N[x].forEach(function(y){R.push(x+"/"+y)})});
+  if(L.indexOf(g[0])>-1)g.shift();
+  r=g.length?f(g,1):"";
+  b=li.dataset.dym;
+  if(r&&b){q="/"+k+"/"+r+"/";i=T[k][R.indexOf(r)];a=document.createElement("a");a.href=q;a.textContent=i||q;a.className="font-bold text-white underline decoration-signal-400 underline-offset-4 hover:decoration-white";if(!i){a.dir="ltr";a.className+=" inline-block"}e=document.createElement("p");e.className="mt-3 text-navy-100";e.dataset.suggest="";b=b.split("{page}");e.append(b[0],a,b[1]||"");li.querySelector("p").after(e)}
+})()`.replace(/\n\s*/g, "");
 ---
 
 <BaseLayout locale="en" title="404 — Page not found" path="404" noindex alternates={false} canonical={false} chrome={false}>
@@ -58,12 +126,12 @@ const pick = `(()=>{var D=${JSON.stringify(dirs)},H=${JSON.stringify(langs)},s=(
       </a>
       <div class="my-auto py-12">
         <h1 lang="en" dir="ltr" class="text-[clamp(4.5rem,14vw,10rem)] leading-none font-extrabold tracking-tight text-white/90 italic">
-          4<span class="text-signal-400">0</span>4
+          4<span class="text-signal-400">0</span>4<span id="nf-h" class="sr-only">{` — ${enTitle}`}</span>
         </h1>
         <ul id="nf-list" role="list" class="nf-list mt-10 grid gap-px overflow-hidden border border-white/10 bg-white/10 sm:grid-cols-2">
           {
             blocks.map(({ locale, meta, t, docTitle, linksTitle, links, call, channels }) => (
-              <li lang={meta.htmlLang} dir={meta.dir} data-l={locale} data-title={docTitle} class="nf-card flex flex-col bg-navy-950 p-6 sm:p-8">
+              <li lang={meta.htmlLang} dir={meta.dir} data-l={locale} data-title={docTitle} data-dym={t.didYouMean} class="nf-card flex flex-col bg-navy-950 p-6 sm:p-8">
                 <h2 class="type-h3 text-white">{t.title}</h2>
                 <p class="nf-more mt-2 text-navy-200">{t.body}</p>
                 <a

@@ -13,7 +13,9 @@ import siemens from "~/assets/brand/platforms/siemens.svg?raw";
 import schneider from "~/assets/brand/platforms/schneider-electric.svg?raw";
 import delta from "~/assets/brand/platforms/delta.svg?raw";
 import ls from "~/assets/brand/platforms/ls-electric.svg?raw";
-import { html } from "./rich";
+import wecon from "~/assets/brand/platforms/wecon.svg?raw";
+import { colon, html } from "~/lib/text";
+import { pad2 } from "~/lib/format";
 
 interface Props {
   locale: Locale;
@@ -44,14 +46,13 @@ const logoSvg = logo
       .replace(/\s(role|aria-label)="[^"]*"/g, "")
       .replace("<svg ", `<svg aria-hidden="true" focusable="false" class="block w-auto" style="height:${Math.sqrt(AREA / logo.aspect).toFixed(1)}px" `)
   : undefined;
-const pad = (n: number) => String(n).padStart(2, "0");
-/** Keep model codes ("S7-200", "DVP-12SC") on one line; on Arabic pages html() already isolates them in <bdi>. */
-const body = html(locale, text).replace(/(?<![\w>-])([A-Za-z]+\d*-\d+[A-Za-z0-9]*)/g, '<span class="whitespace-nowrap">$1</span>');
+/** The text engine keeps model codes ("S7-200", "DVP-12SC") and brand names whole; nothing to add here. */
+const body = html(locale, text);
 ---
 
 <article
   class:list={[
-    "lc-reveal group grid gap-6 border-b border-charcoal-200 py-8 sm:grid-cols-[13rem_1fr] sm:gap-8 lg:grid-cols-[14rem_1fr_19rem] lg:gap-10 lg:py-10",
+    "lc-reveal group grid grid-cols-1 gap-6 border-b border-charcoal-200 py-8 sm:grid-cols-[13rem_1fr] sm:gap-8 lg:grid-cols-[14rem_1fr_19rem] lg:gap-10 lg:py-10",
     className,
   ]}
 >
@@ -60,11 +61,19 @@ const body = html(locale, text).replace(/(?<![\w>-])([A-Za-z]+\d*-\d+[A-Za-z0-9]
   >
     <span aria-hidden="true" class="absolute -top-px start-4 h-1 w-14 origin-left scale-x-[0.57] skew-x-[-10deg] bg-royal-600 transition-[scale] duration-(--dur-ui) ease-mech group-hover:scale-x-100 rtl:origin-right rtl:skew-x-[10deg]"></span>
     {index != null && (
-      <span aria-hidden="true" class="absolute end-3 top-2.5 font-mono text-[0.6875rem] text-charcoal-600 ltr" dir="ltr">{pad(index)}</span>
+      <span aria-hidden="true" class="absolute end-3 top-2.5 font-mono text-[0.6875rem] text-charcoal-600 ltr" dir="ltr">{pad2(index)}</span>
     )}
     {
       logoSvg ? (
         <Fragment set:html={logoSvg} />
+      ) : brand.name === "Wecon" ? (
+        /* The outlined WECON wordmark (same glyphs as Montserrat 800, as in LogoWall): no font download for it on
+           Arabic pages (PERF2-12). 1.092rem = 1.5rem × 0.728, Montserrat's cap height, so the mark keeps its size. */
+        <Fragment
+          set:html={wecon
+            .replace(/\s(role|aria-label)="[^"]*"/g, "")
+            .replace("<svg ", '<svg aria-hidden="true" focusable="false" class="block w-auto" style="height:1.092rem" ')}
+        />
       ) : (
         <span aria-hidden="true" lang="en" class="font-sans text-[1.5rem] leading-none font-extrabold tracking-[0.14em] uppercase">
           {brand.name}
@@ -77,7 +86,7 @@ const body = html(locale, text).replace(/(?<![\w>-])([A-Za-z]+\d*-\d+[A-Za-z0-9]
     <H class="type-h3 text-navy-950">
       <span lang="en" dir="ltr" class="ltr">{brand.name}</span>
     </H>
-    <p class="mt-3 max-w-2xl text-charcoal-700 [&_bdi]:whitespace-nowrap" set:html={body} />
+    <p class="mt-3 max-w-2xl text-charcoal-700" set:html={body} />
   </div>
 
   <div class="min-w-0 sm:col-start-2 lg:col-start-auto">
@@ -85,6 +94,6 @@ const body = html(locale, text).replace(/(?<![\w>-])([A-Za-z]+\d*-\d+[A-Za-z0-9]
       <span class="slant-bar w-3 text-royal-600" aria-hidden="true"></span>
       {productsLabel}
     </p>
-    <Chips items={products} label={`${brand.name}: ${productsLabel}`} />
+    <Chips items={products} label={`${brand.name}${colon(locale)}${productsLabel}`} />
   </div>
 </article>

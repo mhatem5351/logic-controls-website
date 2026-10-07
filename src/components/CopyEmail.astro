@@ -2,8 +2,11 @@
 /**
  * "Copy address" button for the main email address (UX: mailto does nothing visible on desktops without a mail
  * client, common with webmail users — the main zh channel). Copies SITE.email to the clipboard and confirms in place
- * ("Address copied", also announced through a polite live region); falls back to selecting the address text when the
- * Clipboard API is unavailable. Rendered only when JavaScript runs (html.js), since it does nothing without it.
+ * ("Address copied" + a check), announced once through a polite live region that exists from page load (a region
+ * created and filled in the same moment is often missed, VoiceOver especially). The button's accessible name stays
+ * "Copy address" throughout (aria-label; the changing visual label is aria-hidden), so screen readers do not hear the
+ * confirmation twice. Falls back to execCommand("copy") when the Clipboard API is unavailable. Rendered only when
+ * JavaScript runs (html.js), since it does nothing without it.
  *
  * tone: "dark" (navy surfaces: footer, drawer, FAB panel) · "light"
  */
@@ -13,7 +16,7 @@ import { SITE } from "~/data/site";
 interface Props {
   locale: Locale;
   tone?: "dark" | "light";
-  /** Show the label next to the icon (default) or icon only (label stays the accessible name). */
+  /** Show the label next to the icon (default) or icon only (the label stays the accessible name). */
   iconOnly?: boolean;
   class?: string;
 }
@@ -30,9 +33,10 @@ const t = getMessages(locale).ui.email;
       : "border-charcoal-300 text-navy-800 hover:border-royal-600 hover:text-royal-700",
     className,
   ]}
+  aria-label={t.copy}
   data-copy={SITE.email}
   data-copied={t.copied}
-  title={iconOnly ? t.copy : undefined}
+  data-label={t.copy}
 >
   <svg class="lc-copy-i" viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false">
     <rect x="8" y="8" width="13" height="13" rx="2"></rect><path d="M4 16a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2"></path>
@@ -40,7 +44,7 @@ const t = getMessages(locale).ui.email;
   <svg class="lc-copy-ok" viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false">
     <path d="M20 6 9 17l-5-5"></path>
   </svg>
-  <span class:list={["lc-copy-label", iconOnly && "sr-only"]}>{t.copy}</span>
+  <span class:list={["lc-copy-label", iconOnly && "sr-only"]} aria-hidden="true">{t.copy}</span>
 </button>
 
 <style>
@@ -67,52 +71,68 @@ const t = getMessages(locale).ui.email;
 </style>
 
 <script>
-  // One delegated handler for every copy button on the page.
-  let live: HTMLElement | null = null;
-  const announce = (msg: string) => {
-    if (!live) {
-      live = document.createElement("p");
-      live.className = "sr-only";
-      live.setAttribute("aria-live", "polite");
-      document.body.append(live);
-    }
-    live.textContent = "";
-    requestAnimationFrame(() => live && (live.textContent = msg));
-  };
-  const legacyCopy = (text: string) => {
-    const ta = document.createElement("textarea");
-    ta.value = text;
-    ta.setAttribute("readonly", "");
-    ta.style.cssText = "position:fixed;inset-inline-start:-9999px;top:0;opacity:0";
-    document.body.append(ta);
-    ta.select();
-    let ok = false;
-    try {
-      ok = document.execCommand("copy");
-    } catch {}
-    ta.remove();
-    return ok;
-  };
-  document.addEventListener("click", async (event) => {
-    const btn = (event.target as Element | null)?.closest<HTMLButtonElement>("button[data-copy]");
-    if (!btn) return;
-    const text = btn.dataset.copy ?? "";
-    let ok: boolean;
-    try {
-      await navigator.clipboard.writeText(text);
-      ok = true;
-    } catch {
-      ok = legacyCopy(text);
-    }
-    if (!ok) return;
-    const label = btn.querySelector<HTMLElement>(".lc-copy-label");
-    const before = label?.textContent ?? "";
-    btn.setAttribute("data-done", "");
-    if (label) label.textContent = btn.dataset.copied ?? before;
-    announce(btn.dataset.copied ?? "");
-    window.setTimeout(() => {
-      btn.removeAttribute("data-done");
-      if (label) label.textContent = before;
-    }, 2400);
-  });
+  /* One delegated handler for every copy button on the page; bound once (idempotent). */
+  const KEY = "lcCopyReady";
+  const root = document.documentElement;
+  if (!root.dataset[KEY]) {
+    root.dataset[KEY] = "1";
+    // The polite live region exists from the start (empty), so its first message is reliably announced.
+    const live = document.createElement("p");
+    live.className = "sr-only";
+    live.setAttribute("aria-live", "polite");
+    live.setAttribute("data-copy-live", "");
+    document.body.append(live);
+    let clearLive = 0;
+    const announce = (msg: string) => {
+      clearTimeout(clearLive);
+      live.textContent = "";
+      // A beat later, so a repeated message is still a change.
+      window.setTimeout(() => {
+        live.textContent = msg;
+        clearLive = window.setTimeout(() => (live.textContent = ""), 5000);
+      }, 60);
+    };
+    const legacyCopy = (text: string) => {
+      const ta = document.createElement("textarea");
+      ta.value = text;
+      ta.setAttribute("readonly", "");
+      ta.style.cssText = "position:fixed;inset-inline-start:-9999px;top:0;opacity:0";
+      document.body.append(ta);
+      ta.select();
+      let ok = false;
+      try {
+        ok = document.execCommand("copy");
+      } catch {}
+      ta.remove();
+      return ok;
+    };
+    // Per button: the reset timer, so a second copy inside the confirmation window restarts it (CODE2-10).
+    const timers = new WeakMap<HTMLElement, number>();
+    document.addEventListener("click", async (event) => {
+      const btn = (event.target as Element | null)?.closest<HTMLButtonElement>("button[data-copy]");
+      if (!btn) return;
+      const text = btn.dataset.copy ?? "";
+      let ok: boolean;
+      try {
+        await navigator.clipboard.writeText(text);
+        ok = true;
+      } catch {
+        ok = legacyCopy(text);
+      }
+      if (!ok) return;
+      const label = btn.querySelector<HTMLElement>(".lc-copy-label");
+      const original = btn.dataset.label ?? label?.textContent ?? "";
+      btn.setAttribute("data-done", "");
+      if (label) label.textContent = btn.dataset.copied ?? original;
+      announce(btn.dataset.copied ?? "");
+      clearTimeout(timers.get(btn));
+      timers.set(
+        btn,
+        window.setTimeout(() => {
+          btn.removeAttribute("data-done");
+          if (label) label.textContent = original;
+        }, 2400),
+      );
+    });
+  }
 </script>

@@ -2,49 +2,63 @@
 /**
  * Floating contact button, bottom inline-end (bottom-left in RTL via logical inset), clear of the notch and the home
  * indicator (env(safe-area-inset-*), viewport-fit=cover). Plus a small "back to top" button above it on long pages.
+ * Both sit in a named complementary landmark ("Quick contact"), so no page content lives outside a landmark.
  *
- * - WhatsApp with a pre-filled message in the page language (opens in a new tab, announced).
- * - zh (WhatsApp is blocked in mainland China): an email button that opens a small panel — the address with
- *   "Copy address", "Open your email app" (subject + body template with the page context) and "Use the quote form",
- *   because mailto does nothing visible on desktops without a mail client (webmail). Native popover; where the Popover
- *   API is missing the button falls back to the mailto link itself.
+ * - WhatsApp with a pre-filled message in the page language and the page's context (opens in a new tab, announced).
+ * - ar, phones and tablets (< 1024px): the sticky header already carries WhatsApp there, so this button calls an
+ *   engineer instead (tel:) — the one channel a stopped line needs that was not one tap away (UX2-25). Without
+ *   JavaScript it stays WhatsApp.
+ * - zh (WhatsApp is blocked in mainland China): an email button that opens a small panel — the full address (it may
+ *   wrap after "@", never truncated), "Copy address", "Open your email app" (subject + body template with the page
+ *   context) and "Use the quote form", because mailto does nothing visible on desktops without a mail client
+ *   (webmail). Native popover (Escape / outside click / focus moving on close it); without the Popover API the
+ *   button falls back to the mailto link itself.
  *
- * Motion: docks in on the first page of a session, one gentle ping ~8 s later (once per session, and only if the
- * button is showing at that moment), persists across page transitions (view-transition-name in motion.css).
+ * Motion: docks in on the first page of a session, one gentle ping later (once per session, ≥ 8 s in and ≥ 3 s after
+ * the dock-in, only while the button is showing), persists across page transitions (view-transition-name in
+ * motion.css; html[data-fab-keep] keeps it shown in the new page's first frame when it was showing on the old one).
  *
- * It never covers what it should not: the button steps aside (fades out) while
+ * It never covers what it should not: at rest, the button steps aside (fades out) while
  *   - an element marked `data-fab-avoid` (hero CTAs, proof figures, form actions…) or a large button in <main>,
  *   - any small control (link, button, FAQ toggle, form field, HMI / filter / zone controls) or
- *   - the element that has keyboard focus
- * sits under it. On phones and tablets (< 1024px) it also waits until the visitor has scrolled past the first
- * screen (the header carries the primary action there), so it never sits on the hero copy. A short hysteresis keeps
- * it from flickering in and out while a band scrolls past.
+ *   - the element that has keyboard focus (at once, even while scrolling)
+ * sits under it. While the page is scrolling it keeps its state (covering a control only matters when the visitor
+ * can tap it), and once it has changed it holds for at least 0.7 s — no blinking in the corner of the eye (MOT2-07).
+ * The page is hit-tested only when scrolling stops, never per frame (PERF2-13). On phones and tablets (< 1024px) it
+ * also waits until the visitor has scrolled past the first screen (the header carries the primary action there).
+ * Back to top: after three screens; on phones only once the visitor has scrolled back up ≥ 120px; on pages with an
+ * "On this page" bar it returns to that bar on phones.
  */
 import { getMessages, type Locale } from "~/i18n";
 import { ltr } from "~/lib/text";
 import { pathWithoutLocale } from "~/i18n";
-import { SITE } from "~/data/site";
+import { SITE, telLink } from "~/data/site";
 import Icon from "./Icon.astro";
+import ChromeIcon from "./ChromeIcon.astro";
 import CopyEmail from "./CopyEmail.astro";
-import { whatsappLink, mailtoLink, prefersEmail, href, QUOTE_PATH } from "./nav";
+import { whatsappLink, mailtoLink, prefersEmail, prefersWhatsapp } from "./nav";
+import { pageContact } from "./contact-cta";
 
 interface Props {
   locale: Locale;
-  /** Override the pre-filled WhatsApp message (e.g. include the page context). */
+  /** Override the pre-filled WhatsApp message (default: the page's context, pageContact). */
   message?: string;
 }
 const { locale, message } = Astro.props;
-const t = getMessages(locale).ui;
+const m = getMessages(locale);
+const t = m.ui;
 const email = prefersEmail(locale);
 const label = email ? t.email.fabLabel : t.whatsapp.fabLabel;
 const path = pathWithoutLocale(Astro.url.pathname);
-const mail = mailtoLink(undefined, { locale, path });
-const wa = whatsappLink(message ?? t.whatsapp.message);
+const ctx = pageContact(locale, path);
+const mail = mailtoLink(undefined, { locale, path, topic: ctx.topic });
+const wa = whatsappLink(message ?? ctx.whatsapp);
+const call = prefersWhatsapp(locale) ? { href: telLink(), label: m.common.labels.callEngineer as string } : undefined;
 const popId = "lc-fab-mail";
-const fabCls = "lc-fab group fixed z-40 grid size-14 place-items-center rounded-full text-white shadow-[0_10px_30px_-8px_rgb(4_14_39/0.55)]";
+const fabCls = "lc-fab group fixed z-40 grid place-items-center rounded-full text-white shadow-[0_10px_30px_-8px_rgb(4_14_39/0.55)]";
 ---
 
-<div class="lc-float">
+<aside class="lc-float" aria-label={t.a11y.quickContact}>
   {
     email ? (
       <>
@@ -58,22 +72,30 @@ const fabCls = "lc-fab group fixed z-40 grid size-14 place-items-center rounded-
           data-hidden
           class:list={[fabCls, "bg-royal-600 hover:bg-royal-700"]}
         >
-          <span aria-hidden="true" class="absolute inset-0 rounded-full" />
-          <Icon name="mail" size={28} />
+          <span aria-hidden="true" class="lc-fab-ring absolute inset-0 rounded-full" />
+          <ChromeIcon name="mail" size={28} />
         </button>
-        <div id={popId} popover class="lc-fab-pop on-dark m-0 w-[min(20rem,calc(100vw-2rem))] border border-white/12 bg-navy-900 p-4 text-navy-100 shadow-header">
-          <p class="type-label text-navy-300">{t.email.fabLabel}</p>
-          <div class="mt-3 flex items-center justify-between gap-3 border border-white/10 bg-white/[0.04] px-3 py-2">
-            <span class="ltr min-w-0 truncate font-semibold text-white" dir="ltr" set:html={ltr(SITE.email)} />
-            <CopyEmail locale={locale} />
+        <div
+          id={popId}
+          popover
+          role="group"
+          aria-labelledby={`${popId}-title`}
+          class="lc-fab-pop on-dark m-0 w-[min(22rem,calc(100vw-2rem))] border border-white/12 bg-navy-900 p-4 text-navy-100 shadow-header"
+        >
+          <p id={`${popId}-title`} class="type-label text-navy-300">
+            {t.email.fabLabel}
+          </p>
+          <div class="mt-3 border border-white/10 bg-white/[0.04] px-3 py-2.5">
+            <p class="lc-fab-addr ltr text-[0.9375rem] leading-snug font-semibold text-white" dir="ltr" set:html={ltr(SITE.email)} />
+            <CopyEmail locale={locale} class="mt-2" />
           </div>
           <p class="mt-2 text-xs text-navy-300">{t.email.hint}</p>
           <div class="mt-4 grid gap-2">
             <a href={mail} class="lc-btn" data-variant="primary" data-size="sm" data-block>
-              <Icon name="mail" size={16} />
+              <ChromeIcon name="mail" size={16} />
               <span class="lc-btn-label">{t.email.openApp}</span>
             </a>
-            <a href={href(locale, QUOTE_PATH)} class="lc-btn" data-variant="on-dark" data-size="sm" data-block>
+            <a href={ctx.quote} class="lc-btn" data-variant="on-dark" data-size="sm" data-block>
               <span class="lc-btn-label">{t.email.useForm}</span>
               <Icon name="arrow" size={16} class="lc-btn-icon-end" />
             </a>
@@ -87,10 +109,14 @@ const fabCls = "lc-fab group fixed z-40 grid size-14 place-items-center rounded-
         rel="noopener"
         aria-label={`${label} (${t.a11y.newTab})`}
         data-hidden
+        data-kind="whatsapp"
+        data-call-href={call?.href}
+        data-call-label={call?.label}
         class:list={[fabCls, "bg-whatsapp-700 hover:bg-whatsapp-800"]}
       >
         <span aria-hidden="true" class="lc-fab-ring absolute inset-0 rounded-full" />
-        <Icon name="whatsapp" size={28} />
+        <ChromeIcon name="whatsapp" size={28} class="lc-fab-i-wa" />
+        {call && <ChromeIcon name="phone" size={26} class="lc-fab-i-call" />}
       </a>
     )
   }
@@ -98,39 +124,50 @@ const fabCls = "lc-fab group fixed z-40 grid size-14 place-items-center rounded-
     <Icon name="chevron-down" size={20} class="rotate-180" />
     <span class="sr-only">{t.a11y.backToTop}</span>
   </a>
-</div>
+</aside>
 
 <style>
   /* Placement: 1rem (1.5rem from 640px) from the inline-end and bottom edges, or the safe-area inset if larger.
-     Insets are physical, so RTL mirrors explicitly. */
-  .lc-fab,
-  .lc-top {
+     Insets are physical, so RTL mirrors explicitly. The variables live on the wrapper so the zh panel (top layer,
+     still inheriting from its DOM parent) lines up with the button (DEV2-17). */
+  .lc-float {
     --fab-gap: 1rem;
+    --fab-size: 3.5rem;
     --fab-b: max(var(--fab-gap), calc(env(safe-area-inset-bottom, 0px) + 0.5rem));
-    right: max(var(--fab-gap), calc(env(safe-area-inset-right, 0px) + 0.5rem));
+    --fab-x: max(var(--fab-gap), calc(env(safe-area-inset-right, 0px) + 0.5rem));
+  }
+  :global([dir="rtl"]) .lc-float {
+    --fab-x: max(var(--fab-gap), calc(env(safe-area-inset-left, 0px) + 0.5rem));
   }
   @media (min-width: 40rem) {
-    .lc-fab,
-    .lc-top {
+    .lc-float {
       --fab-gap: 1.5rem;
     }
   }
-  .lc-fab {
-    bottom: var(--fab-b);
+  /* Landscape phones (≈340px tall): a 56px button is a sixth of the height (DEV2-13). */
+  @media (max-height: 30rem) and (max-width: 63.99rem) {
+    .lc-float {
+      --fab-size: 3rem;
+    }
   }
-  /* Back to top: centred above the button (56px → 44px), 12px apart. */
+  .lc-fab,
   .lc-top {
-    bottom: calc(var(--fab-b) + 3.5rem + 0.75rem);
-    margin-right: 0.375rem;
+    right: var(--fab-x);
   }
   :global([dir="rtl"]) .lc-fab,
   :global([dir="rtl"]) .lc-top {
     right: auto;
-    left: max(var(--fab-gap), calc(env(safe-area-inset-left, 0px) + 0.5rem));
+    left: var(--fab-x);
   }
-  :global([dir="rtl"]) .lc-top {
-    margin-right: 0;
-    margin-left: 0.375rem;
+  .lc-fab {
+    bottom: var(--fab-b);
+    width: var(--fab-size);
+    height: var(--fab-size);
+  }
+  /* Back to top: centred above the button (56px → 44px), 12px apart. */
+  .lc-top {
+    bottom: calc(var(--fab-b) + var(--fab-size) + 0.75rem);
+    margin-inline-end: calc((var(--fab-size) - 2.75rem) / 2);
   }
 
   /* Step aside / come back: opacity + translate only (compositor properties, no layout). */
@@ -154,6 +191,17 @@ const fabCls = "lc-fab group fixed z-40 grid size-14 place-items-center rounded-
     transition-delay: 0s, 0s, var(--dur-micro), 0s;
     transition-timing-function: var(--ease-exit);
   }
+  /* Arriving through a view transition with the button showing on the previous page (set by the head script before
+     the first frame): show it from that frame on, so the persistent button does not blink (MOT2-06). The script
+     then takes over with the real state. Desktop only, where it shows by default. */
+  @media (min-width: 64rem) {
+    :global(:root[data-fab-keep]) .lc-fab[data-hidden] {
+      opacity: 1;
+      translate: 0 0;
+      visibility: visible;
+      pointer-events: auto;
+    }
+  }
   /* Two-tone ring: visible on white pages and on the navy footer alike. */
   .lc-fab:focus-visible,
   .lc-top:focus-visible {
@@ -161,9 +209,34 @@ const fabCls = "lc-fab group fixed z-40 grid size-14 place-items-center rounded-
     outline-offset: 3px;
     box-shadow: 0 0 0 3px var(--color-navy-950);
   }
+  /* Forced colours drop the fill: keep the round button visible as a shape. */
+  @media (forced-colors: active) {
+    .lc-fab,
+    .lc-top {
+      border: 2px solid ButtonText;
+    }
+  }
   .lc-fab-ring {
     box-shadow: 0 0 0 2px rgb(37 211 102 / 0.65);
     opacity: 0;
+  }
+  /* ar < 1024px: the call variant (royal, phone glyph). */
+  .lc-fab :global(.lc-fab-i-call),
+  .lc-fab[data-kind="call"] :global(.lc-fab-i-wa) {
+    display: none;
+  }
+  .lc-fab[data-kind="call"] :global(.lc-fab-i-call) {
+    display: block;
+  }
+  .lc-fab[data-kind="call"] {
+    background-color: var(--color-royal-600);
+  }
+  .lc-fab[data-kind="call"]:hover {
+    background-color: var(--color-royal-700);
+  }
+  .lc-fab[data-kind="call"] .lc-fab-ring,
+  button.lc-fab .lc-fab-ring {
+    box-shadow: 0 0 0 2px rgb(76 141 222 / 0.7);
   }
   /* Without JavaScript nothing decides when to step aside: just show it. */
   :global(html:not(.js)) .lc-fab[data-hidden] {
@@ -173,18 +246,19 @@ const fabCls = "lc-fab group fixed z-40 grid size-14 place-items-center rounded-
     pointer-events: auto;
   }
   /* First page of the session: the button docks in (~2.8 s after first paint, or the first time it is actually
-     visible if later); it then persists across page transitions. Once per session, at least ~8 s in and only while
-     it is visible: a single sonar ping and a small nudge of the glyph. Triggers: script below. Paused motion
-     (:root[data-motion="off"], which reduced motion implies) means neither: the button is simply there. */
+     visible if later); it then persists across page transitions. Once per session, at least ~8 s in, ≥ 3 s after the
+     dock-in and only while it is visible: a single sonar ping and a small nudge of the glyph. Timings are multiples of
+     the motion tokens. Triggers: script below. Paused motion (:root[data-motion="off"], which reduced motion implies)
+     means neither: the button is simply there. */
   @media (prefers-reduced-motion: no-preference) {
     :global(:root:not([data-motion="off"])) .lc-fab[data-dock] {
       animation: lc-fab-in var(--dur-section) var(--ease-emph) backwards;
     }
     :global(:root:not([data-motion="off"])) .lc-fab[data-ping] .lc-fab-ring {
-      animation: lc-fab-ping 1.5s var(--ease-emph);
+      animation: lc-fab-ping calc(var(--dur-section) * 2) var(--ease-emph);
     }
     :global(:root:not([data-motion="off"])) .lc-fab[data-ping] > :global(svg) {
-      animation: lc-fab-nudge 0.6s var(--ease-mech);
+      animation: lc-fab-nudge calc(var(--dur-ui) * 2) var(--ease-mech);
     }
   }
   @keyframes lc-fab-in {
@@ -210,18 +284,24 @@ const fabCls = "lc-fab group fixed z-40 grid size-14 place-items-center rounded-
     }
   }
 
-  /* zh email panel: above the button, aligned to its inline-end edge. */
+  /* zh email panel: above the button, aligned to its inline-end edge (same gap and edge as the button). */
   .lc-fab-pop {
     position: fixed;
     inset: auto;
-    bottom: calc(max(1rem, calc(env(safe-area-inset-bottom, 0px) + 0.5rem)) + 4.25rem);
-    right: max(1rem, calc(env(safe-area-inset-right, 0px) + 0.5rem));
+    bottom: calc(var(--fab-b) + var(--fab-size) + 0.75rem);
+    right: var(--fab-x);
     max-height: calc(100dvh - var(--header-h) - 6rem);
     overflow-y: auto;
+    overscroll-behavior: contain;
   }
   :global([dir="rtl"]) .lc-fab-pop {
     right: auto;
-    left: max(1rem, calc(env(safe-area-inset-left, 0px) + 0.5rem));
+    left: var(--fab-x);
+  }
+  /* The whole address, always: it may break after "@" (the text engine's <wbr>), and anywhere only as a last resort
+     (400% zoom), never with an ellipsis (VIS2-03). */
+  .lc-fab-addr {
+    overflow-wrap: anywhere;
   }
   @supports not selector(:popover-open) {
     .lc-fab-pop {
@@ -242,75 +322,128 @@ const fabCls = "lc-fab group fixed z-40 grid size-14 place-items-center rounded-
 </style>
 
 <script>
-  import { motionOff, onMotionChange } from "~/scripts/motion/motion-pref";
+  import { motionOff, onMotionChange, scrollBehavior } from "~/scripts/motion/motion-pref";
 
-  const fab = document.querySelector<HTMLElement>(".lc-fab");
-  const top = document.querySelector<HTMLElement>(".lc-top");
+  const float = document.querySelector<HTMLElement>(".lc-float");
+  const fab = float?.querySelector<HTMLElement>(".lc-fab");
+  const top = float?.querySelector<HTMLElement>(".lc-top");
+  const root = document.documentElement;
+  const mobile = matchMedia("(max-width: 63.99rem)");
 
-  /* zh email panel: without the Popover API the button simply opens the mail app (mailto). */
-  if (fab instanceof HTMLButtonElement) {
-    const pop = document.getElementById(fab.getAttribute("aria-controls") ?? "");
-    if (!("popover" in HTMLElement.prototype) || !pop) {
-      fab.removeAttribute("popovertarget");
-      fab.addEventListener("click", () => (location.href = fab.dataset.mailto ?? "mailto:"));
-    } else {
-      pop.addEventListener("toggle", (e) => fab.setAttribute("aria-expanded", String((e as ToggleEvent).newState === "open")));
+  /* Idempotent: binds once even if the module is bundled or imported more than once. */
+  if (float && fab && top && !float.hasAttribute("data-ready")) {
+    float.setAttribute("data-ready", "");
+
+    /* zh email panel: without the Popover API the button simply opens the mail app (mailto). */
+    if (fab instanceof HTMLButtonElement) {
+      const pop = document.getElementById(fab.getAttribute("aria-controls") ?? "");
+      if (!("popover" in HTMLElement.prototype) || !pop) {
+        fab.removeAttribute("popovertarget");
+        fab.addEventListener("click", () => (location.href = fab.dataset.mailto ?? "mailto:"));
+      } else {
+        pop.addEventListener("toggle", (e) => fab.setAttribute("aria-expanded", String((e as ToggleEvent).newState === "open")));
+        // Tabbing on past the panel closes it, so it never sits over what keyboard focus moves to (the footer). Its
+        // last link is the page's last tab stop: Tab then leaves the document (no relatedTarget), which counts too;
+        // switching windows (also no relatedTarget, but no Tab) keeps it open.
+        let tabbedAt = -Infinity;
+        pop.addEventListener("keydown", (e) => e.key === "Tab" && (tabbedAt = performance.now()));
+        pop.addEventListener("focusout", (e) => {
+          const to = (e as FocusEvent).relatedTarget as Node | null;
+          const left = to ? to !== fab && !pop.contains(to) : performance.now() - tabbedAt < 500;
+          if (left && pop.matches(":popover-open")) pop.hidePopover();
+        });
+        addEventListener("pageshow", (e) => e.persisted && pop.matches(":popover-open") && pop.hidePopover());
+      }
     }
-  }
 
-  if (fab && top) {
+    /* ar below 1024px: call instead of a second WhatsApp button (the header has one). */
+    const callHref = fab.dataset.callHref;
+    if (callHref && fab instanceof HTMLAnchorElement) {
+      const wa = { href: fab.href, label: fab.getAttribute("aria-label") ?? "" };
+      const setKind = () => {
+        const call = mobile.matches;
+        fab.dataset.kind = call ? "call" : "whatsapp";
+        fab.href = call ? callHref : wa.href;
+        fab.setAttribute("aria-label", call ? (fab.dataset.callLabel ?? "") : wa.label);
+        if (call) {
+          fab.removeAttribute("target");
+          fab.removeAttribute("rel");
+        } else {
+          fab.target = "_blank";
+          fab.rel = "noopener";
+        }
+      };
+      setKind();
+      mobile.addEventListener("change", setKind);
+    }
+
     /* What the buttons must not cover. Small controls by tag/role; big blocks only when marked. A hit counts only
        if the element's own box overlaps the button (a card's stretched-link overlay does not hide it). */
     const AVOID =
       "[data-fab-avoid], main .lc-btn[data-size='lg'], a[href], button, summary, input, select, textarea, label, [role='button'], [role='tab'], [tabindex]:not([tabindex='-1'])";
-    const mobile = matchMedia("(max-width: 63.99rem)");
     const pad = 10;
     const overlapsBox = (a: DOMRect, b: DOMRect) =>
       a.right > b.left - pad && a.left < b.right + pad && a.bottom > b.top - pad && a.top < b.bottom + pad;
 
-    /* The button's resting box: while it is hidden (or moving) it is translated down, so undo the current offset —
-       otherwise it would be measured clear and then slide up onto a control. */
+    /* The buttons' resting boxes (fixed position: they only change with the viewport). While hidden (or moving) a
+       button is translated down, so undo the current offset — otherwise it would be measured clear and then slide up
+       onto a control. Measured at rest only. */
+    const home = new Map<HTMLElement, DOMRect>();
     const homeRect = (btn: HTMLElement): DOMRect => {
-      const r = btn.getBoundingClientRect();
-      const ty = parseFloat(getComputedStyle(btn).translate.split(" ")[1] ?? "0") || 0;
-      return new DOMRect(r.x, r.y - ty, r.width, r.height);
+      let r = home.get(btn);
+      if (!r) {
+        const b = btn.getBoundingClientRect();
+        const ty = parseFloat(getComputedStyle(btn).translate.split(" ")[1] ?? "0") || 0;
+        r = new DOMRect(b.x, b.y - ty, b.width, b.height);
+        if (b.width) home.set(btn, r);
+      }
+      return r;
     };
+    /** Keyboard focus under the button (WCAG 2.4.11). Cheap enough to run while scrolling: one rect, keyboard only. */
+    const focusUnder = (btn: HTMLElement): boolean => {
+      const active = document.activeElement;
+      if (!active || active === document.body || active === btn || btn.contains(active) || !active.matches(":focus-visible")) return false;
+      const r = active.getBoundingClientRect();
+      return r.width > 0 && overlapsBox(r, homeRect(btn));
+    };
+    /** At rest: a 3×3 grid over the button's box grown by `pad` (catches a control that only clips its edge). */
     const blocked = (btn: HTMLElement): boolean => {
       const f = homeRect(btn);
       if (!f.width) return false;
-      // Keyboard focus under the button (WCAG 2.4.11): step aside.
-      const active = document.activeElement;
-      if (active && active !== document.body && active !== btn && !btn.contains(active)) {
-        const r = active.getBoundingClientRect();
-        if (r.width && overlapsBox(r, f)) return true;
-      }
-      // A 3×3 grid over the button's box grown by `pad` (catches a control that only clips its edge).
+      if (focusUnder(btn)) return true;
       const xs = [f.left - pad + 1, f.left + f.width / 2, f.right + pad - 1];
       const ys = [f.top - pad + 1, f.top + f.height / 2, f.bottom + pad - 1];
-      const pts = xs.flatMap((x) => ys.map((y) => [x, y] as [number, number]));
-      for (const [x, y] of pts) {
-        for (const el of document.elementsFromPoint(x, y)) {
-          if (el === btn || btn.contains(el) || el.closest(".lc-float, .lc-header, dialog[open]")) continue;
-          const hit = el.closest<HTMLElement>(AVOID);
-          if (hit && overlapsBox(hit.getBoundingClientRect(), f)) return true;
-        }
-      }
+      for (const x of xs)
+        for (const y of ys)
+          for (const el of document.elementsFromPoint(x, y)) {
+            if (el === btn || btn.contains(el) || el.closest(".lc-float, .lc-header, dialog[open]")) continue;
+            const hit = el.closest<HTMLElement>(AVOID);
+            if (hit && overlapsBox(hit.getBoundingClientRect(), f)) return true;
+          }
       return false;
     };
 
-    /* Motion (PK4a spec): dock-in at ~2.8 s after first paint on the session's first page, deferred until the
-       button is first actually visible; the once-per-session ping (≥ 8 s in) likewise waits until it is visible and
-       is marked done on its animationend. Nothing plays while motion is paused. */
-    const root = document.documentElement;
-    const t0 = 0; // performance.now() counts from this page's navigation start (≈ first paint)
+    /* Motion (PK4a spec): dock-in ~2.8 s after first paint on the session's first page, deferred until the button is
+       first actually visible; the once-per-session ping at ≥ 8 s, ≥ 3 s after the dock-in has finished and only while
+       the button shows (never in the same moment as the dock-in, MOT2-09), marked done on its animationend. Nothing
+       plays while motion is paused; switching motion back on does not replay either (they count as played). */
+    const DOCK_MS = 2800;
+    const PING_MS = 8000;
+    const PING_GAP = 3000;
     let docked = !root.hasAttribute("data-intro");
+    let dockedAt = docked ? 0 : Infinity;
     let pingWanted = false;
     try {
       pingWanted = !sessionStorage.getItem("lcPing");
     } catch {}
+    const markPinged = () => {
+      try {
+        sessionStorage.setItem("lcPing", "1");
+      } catch {}
+    };
     const play = (attr: "data-dock" | "data-ping", done?: () => void) => {
       if (motionOff()) return done?.();
-      const target = attr === "data-ping" ? fab.querySelector(".lc-fab-ring") ?? fab : fab;
+      const target = attr === "data-ping" ? (fab.querySelector(".lc-fab-ring") ?? fab) : fab;
       fab.setAttribute(attr, "");
       target.addEventListener(
         "animationend",
@@ -321,97 +454,200 @@ const fabCls = "lc-fab group fixed z-40 grid size-14 place-items-center rounded-
         { once: true },
       );
     };
-    const markPinged = () => {
-      try {
-        sessionStorage.setItem("lcPing", "1");
-      } catch {}
+
+    /* State: hidden or not, when each last changed (dwell), whether the page is scrolling. */
+    const DWELL = 700;
+    const REST_MS = 150;
+    const state = { fab: true, top: true };
+    const changedAt = { fab: -Infinity, top: -Infinity };
+    let moving = false;
+    let lastY = window.scrollY;
+    let upTravel = 0;
+    let downTravel = 0;
+    let goingUp = false;
+    let longPage = false;
+    let restTimer = 0;
+    let wakeAt = Infinity;
+    let wakeTimer = 0;
+
+    const maybePing = () => {
+      if (!pingWanted || state.fab || moving || fab.hasAttribute("data-dock")) return;
+      const due = Math.max(PING_MS, dockedAt + PING_GAP) - performance.now();
+      if (due > 0) return wake(due + 20);
+      pingWanted = false;
+      play("data-ping", markPinged);
     };
     const onShown = () => {
       if (!docked) {
         docked = true;
-        play("data-dock");
-      } else if (pingWanted && performance.now() - t0 > 8000) {
-        pingWanted = false;
-        play("data-ping", markPinged);
+        play("data-dock", () => {
+          dockedAt = performance.now();
+          wake(PING_GAP + 20);
+        });
+      } else wake(DWELL); // a ping, if one is due, waits until the button has settled in view
+    };
+    /** Never hide a button that has focus, or the email button while its panel is open. */
+    const keep = (el: HTMLElement, want: boolean) => want || document.activeElement === el || el.getAttribute("aria-expanded") === "true";
+    /** Apply a wanted state, holding the previous one for at least DWELL ms (unless `now` must win: focus). */
+    const apply = (key: "fab" | "top", el: HTMLElement, hidden: boolean, now: number, urgent = false): boolean => {
+      if (state[key] === hidden) return false;
+      const wait = DWELL - (now - changedAt[key]);
+      if (wait > 0 && !urgent) {
+        wake(wait + 10);
+        return false;
       }
+      state[key] = hidden;
+      changedAt[key] = now;
+      el.toggleAttribute("data-hidden", hidden);
+      return true;
+    };
+    /* MOT2-06: the head script showed the button in this page's first frame (it was showing on the page we came from):
+       adopt that as the current state, then go on with the normal rules (no show delay, no dock-in replay). */
+    const adoptKept = () => {
+      if (!root.hasAttribute("data-fab-keep")) return;
+      root.removeAttribute("data-fab-keep");
+      if (state.fab && !mobile.matches) {
+        state.fab = false;
+        fab.removeAttribute("data-hidden");
+        docked = true;
+        dockedAt = Math.min(dockedAt, performance.now());
+      }
+    };
+    const measure = () => {
+      home.clear();
+      longPage = root.scrollHeight > innerHeight * 4;
     };
 
-    /* Hysteresis: hide after 120 ms blocked, show after 200 ms clear (no flicker while a band scrolls past). */
-    const HIDE_MS = 120;
-    const SHOW_MS = 200;
-    const DOCK_MS = 2800;
-    const state = { fab: true, top: true };
-    const since = { block: 0, clear: 0 };
-    let lastY = window.scrollY;
-    let goingUp = false;
-    const visibleNow = (el: HTMLElement, want: boolean) => {
-      // Never hide a button that has focus, or the email button while its panel is open.
-      if (!want && (document.activeElement === el || el.getAttribute("aria-expanded") === "true")) return true;
-      return want;
-    };
     const update = () => {
+      adoptKept();
       const now = performance.now();
-      const vh = window.innerHeight;
+      const vh = innerHeight;
       const y = window.scrollY;
       const pastHero = !mobile.matches || y > vh * 0.6;
-      const longPage = document.documentElement.scrollHeight > vh * 4;
-      const waitDock = !docked && !motionOff() && now - t0 < DOCK_MS;
-      const want = visibleNow(fab, pastHero && !waitDock && !blocked(fab));
-      if (want) {
-        since.block = 0;
-        if (state.fab) {
-          if (!since.clear) since.clear = now;
-          if (now - since.clear >= SHOW_MS) state.fab = false;
-          else schedule(SHOW_MS - (now - since.clear) + 10);
-        }
-      } else {
-        since.clear = 0;
-        if (!state.fab) {
-          if (!since.block) since.block = now;
-          if (now - since.block >= HIDE_MS) state.fab = true;
-          else schedule(HIDE_MS - (now - since.block) + 10);
-        }
-      }
-      const wasHidden = fab.hasAttribute("data-hidden");
-      fab.toggleAttribute("data-hidden", state.fab);
-      if (wasHidden && !state.fab) onShown();
-      else if (!state.fab && pingWanted && now - t0 > 8000) onShown();
-      // Back to top: after three screens; on phones / tablets only while the visitor is heading back up (scrolling up),
-      // so a second floating button does not sit on the copy they are reading.
-      if (y < lastY - 4) goingUp = true;
-      else if (y > lastY + 4) goingUp = false;
-      lastY = y;
-      const wantTop = visibleNow(top, longPage && y > vh * 3 && (!mobile.matches || goingUp) && !state.fab && !blocked(top));
-      state.top = !wantTop;
-      top.toggleAttribute("data-hidden", state.top);
+      const waitDock = !docked && !motionOff() && now < DOCK_MS;
+      // wake() keeps one timer (the earliest): an earlier wake-up (a <details open> 'toggle' at load, WebKit) would
+      // otherwise drop the dock-in one, and the button would wait for the first scroll.
+      if (waitDock) wake(DOCK_MS - now + 20);
+      const focusHit = focusUnder(fab);
+      // At rest: hit-test. Scrolling: keep the current state (only keyboard focus under it makes it step aside now).
+      const wantFab = keep(fab, pastHero && !waitDock && !focusHit && (moving ? !state.fab : !blocked(fab)));
+      if (apply("fab", fab, !wantFab, now, focusHit) && !state.fab) onShown();
+      if (!moving) maybePing();
+      // Back to top: after three screens, above a showing contact button; on phones / tablets only once the visitor is
+      // heading back up (so a second floating button does not sit on the copy they are reading).
+      const topFocus = focusUnder(top);
+      const wantTop = keep(top, longPage && y > vh * 3 && (!mobile.matches || goingUp) && !state.fab && !topFocus && (moving || !blocked(top)));
+      apply("top", top, !wantTop, now, topFocus);
     };
+
     let raf = 0;
-    let timer = 0;
     const tick = () => {
       if (!raf) raf = requestAnimationFrame(() => ((raf = 0), update()));
     };
-    function schedule(ms: number) {
-      clearTimeout(timer);
-      timer = window.setTimeout(tick, ms);
+    /** One timer for every deferred re-check (dwell, ping, dock); the earliest wins. */
+    function wake(ms: number) {
+      const at = performance.now() + ms;
+      if (at >= wakeAt) return;
+      clearTimeout(wakeTimer);
+      wakeAt = at;
+      wakeTimer = window.setTimeout(() => {
+        wakeAt = Infinity;
+        tick();
+      }, ms);
     }
-    addEventListener("scroll", () => (tick(), schedule(180)), { passive: true });
-    addEventListener("resize", () => schedule(150));
+    let lastScrollAt = 0;
+    const settle = () => {
+      clearTimeout(restTimer);
+      if (!moving) return;
+      moving = false;
+      tick();
+    };
+    addEventListener(
+      "scroll",
+      () => {
+        // Per event: one scroll offset read, no layout. Direction for back-to-top (≥ 120px up, ≥ 40px down to reset).
+        const y = window.scrollY;
+        const dy = y - lastY;
+        lastY = y;
+        if (dy < 0) {
+          upTravel -= dy;
+          downTravel = 0;
+          if (upTravel >= 120) goingUp = true;
+        } else if (dy > 0) {
+          downTravel += dy;
+          if (downTravel >= 40) {
+            upTravel = 0;
+            goingUp = false;
+          }
+        }
+        moving = true;
+        lastScrollAt = performance.now();
+        clearTimeout(restTimer);
+        restTimer = window.setTimeout(settle, REST_MS);
+        tick();
+      },
+      { passive: true },
+    );
+    // scrollend can also fire between the steps of one long scroll (each programmatic or keyboard step): trust it only
+    // after a short quiet moment; the REST_MS timer covers the rest.
+    addEventListener("scrollend", () => performance.now() - lastScrollAt >= 80 && settle());
+    addEventListener("resize", () => {
+      measure();
+      tick();
+    });
+    addEventListener("load", () => {
+      measure();
+      tick();
+    });
+    addEventListener("pagereveal", tick);
     document.addEventListener("focusin", tick);
-    document.addEventListener("toggle", () => schedule(60), true); // FAQ / details open-close moves content
-    onMotionChange(() => schedule(0));
-    // Wake-ups for the dock-in moment and the ping (their own timers: they must not cancel the hysteresis timer).
-    if (!docked) window.setTimeout(tick, DOCK_MS + 20);
-    if (pingWanted) window.setTimeout(tick, 8020);
-    mobile.addEventListener("change", tick);
-    addEventListener("load", tick);
+    // FAQ / details open-close moves content (and changes the page length).
+    document.addEventListener(
+      "toggle",
+      () => {
+        measure();
+        wake(60);
+      },
+      true,
+    );
+    onMotionChange(() => {
+      // Switching motion back on must not replay the dock-in or the ping (they count as played).
+      docked = true;
+      dockedAt = Math.min(dockedAt, performance.now());
+      if (pingWanted) {
+        pingWanted = false;
+        markPinged();
+      }
+      tick();
+    });
+    mobile.addEventListener("change", () => {
+      measure();
+      tick();
+    });
+    // Wake-ups for the dock-in moment and the ping.
+    if (!docked) wake(DOCK_MS + 20);
+    // Persistence across page transitions (MOT2-06): tell the next page whether the button was showing.
+    addEventListener("pageswap", (e) => {
+      try {
+        if ((e as PageSwapEvent).viewTransition) sessionStorage.setItem("lcFab", state.fab ? "" : "1");
+      } catch {}
+    });
+    measure();
     update();
 
-    // Back to top: scroll smoothly (instantly with reduced motion) and move focus to the main content.
+    // Back to top: scroll (instantly while motion is paused) and move focus to the main content. On phones, pages with
+    // an "On this page" bar return to that bar, one tap from every section (UX2-13).
     top.addEventListener("click", (e) => {
       e.preventDefault();
-      const reduce = matchMedia("(prefers-reduced-motion: reduce)").matches;
-      window.scrollTo({ top: 0, behavior: reduce ? "auto" : "smooth" });
-      document.getElementById("main")?.focus({ preventScroll: true });
+      const toc = mobile.matches ? document.querySelector<HTMLElement>("[data-page-toc]") : null;
+      if (toc && toc.getBoundingClientRect().top < 0) {
+        toc.scrollIntoView({ block: "start", behavior: scrollBehavior() });
+        if (!toc.hasAttribute("tabindex")) toc.tabIndex = -1;
+        toc.focus({ preventScroll: true });
+      } else {
+        window.scrollTo({ top: 0, behavior: scrollBehavior() });
+        document.getElementById("main")?.focus({ preventScroll: true });
+      }
     });
   }
 </script>

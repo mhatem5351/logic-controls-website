@@ -19,7 +19,8 @@
       }
     ],
     "ctaQuestion": "Want an HMI like this for your machine?",
-    "cta": "Request a quote"
+    "cta": "Request a quote",
+    "project": "See the real pasteurizer we automated"
   },
   "caption": "Simulated 10.1″ operator panel designed following ISA-101 high-performance HMI principles: gray when all is normal, color only for abnormal states, blue for what you can touch.",
   "a11y": {
@@ -35,7 +36,8 @@
     "forward": "Wait for Forward",
     "fault": "Simulate a fault",
     "ack": "Acknowledge the alarms",
-    "done": "done"
+    "done": "done",
+    "watch": "watch TT-102"
   },
   "status": {
     "unit": "HTST-01 Pasteurizer",
@@ -178,7 +180,12 @@
     "allClear": "All alarms acknowledged. Batch {batch} is running normally.",
     "faultNeedsRun": "Start production first: the fault simulates a steam supply failure while the plant runs.",
     "faultInCip": "The fault simulation is not available during CIP cleaning.",
-    "noAlarms": "No alarms to acknowledge."
+    "noAlarms": "No alarms to acknowledge.",
+    "sp": "Heating setpoint {v} °C.",
+    "spLimit": "Heating setpoint at its limit: {v} °C.",
+    "more": "{n} more alarms in the list.",
+    "tourDone": "Done: that is how an operator handles a steam failure.",
+    "tourCta": "Get an HMI like this for your machine"
   },
   "cip": {
     "title": "CIP program",

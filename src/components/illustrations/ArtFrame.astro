@@ -17,6 +17,14 @@ interface Props extends ArtProps {
 }
 
 const { uid: u, name, variant, size, label, class: cls, viewBox = "0 0 400 300", floor = 258 } = Astro.props;
+/* Rest frame (s into the master loop) of each piece: where a turn starts and ends (play-when-visible.ts). The tape is
+   stopped there instead of swapping to the still pose, so nothing snaps when a loop starts, ends, is replayed or
+   evicted (MOT2-03). Chosen per piece as the loop frame closest to its authored still pose (lit outputs, filled
+   screens): a frame-diff search over every 100 ms of the loop. A piece without an entry rests on frame 0. */
+const REST_AT: Record<string, number> = {
+  cp: 3.1, ph: 4.5, ma: 1.2, rf: 6, pc: 0, sc: 6.8, tc: 6.9, mt: 6.4,
+  fb: 8.4, rx: 7.2, cs: 2, lb: 0, bm: 3.6, wx: 1.9, te: 5.9, fl: 0,
+};
 const [, , w = 400, h = 300] = viewBox.split(/\s+/).map(Number);
 const style =
   [
@@ -28,7 +36,7 @@ const style =
 const a11y = label ? { role: "img" as const, "aria-label": label } : { "aria-hidden": "true" as const };
 ---
 
-<svg class:list={["lca", `lca-${name}`, cls]} viewBox={viewBox} data-lca data-play="rest" data-uid={u} data-variant={variant} style={style} {...a11y}>
+<svg class:list={["lca", `lca-${name}`, cls]} viewBox={viewBox} data-lca data-play="rest" data-rest-at={REST_AT[name] ?? 0} data-uid={u} data-variant={variant} style={style} focusable="false" {...a11y}>
   <defs>
     <pattern id={`${u}_g`} width="100" height="100" patternUnits="userSpaceOnUse">
       <path class="lca-g1" d="M20 0V100M40 0V100M60 0V100M80 0V100M0 20H100M0 40H100M0 60H100M0 80H100"></path>
@@ -46,6 +54,11 @@ const a11y = label ? { role: "img" as const, "aria-label": label } : { "aria-hid
   </g>
   <slot />
 </svg>
+{/* Inline art (detail heroes, labelled art) is in the first screen: park it on its rest frame before it is painted, so
+    the scheduler's first turn starts from the frame on screen (lazy art is parked by lazy-art.ts the same way).
+    rAF: after HeroArt's parse-time move into the phone slot (a move restarts CSS animations). Same text everywhere,
+    so the CSP needs one hash. */}
+<script is:inline>(()=>{const e=document.currentScript.previousElementSibling,d=document.documentElement;if(d.dataset.motion==="off"||!e)return;requestAnimationFrame(()=>{if(d.dataset.motion==="off"||e.dataset.play!=="rest")return;e.dataset.play="0";const t=1e3*e.dataset.restAt;for(const a of e.getAnimations({subtree:!0}))if(a.effect.target!==e)a.currentTime=t})})()</script>
 
 <style is:global>
   /* ---- palette (light = default). Tokens come from global.css @theme; hex fallbacks keep the art
@@ -175,10 +188,13 @@ const a11y = label ? { role: "img" as const, "aria-label": label } : { "aria-hid
   @keyframes lca-sp { to { transform: rotate(1turn); } }
   @keyframes lca-fw { to { stroke-dashoffset: -10; } }
 
-  /* Play state (src/scripts/motion/play-when-visible.ts): "1" plays, "0" paused (hidden tab), "rest" (also the
-     server-rendered state) is the still pose below — so is "Pause animations" (html[data-motion="off"]).
-     Loops play two cycles (one in a card grid), at most two pieces at once, and replay on hover / focus. */
+  /* Play state (src/scripts/motion/play-when-visible.ts): "1" plays; "0" pauses the loops on a frame (transient, hidden
+     tab); "hold" parks the piece on a frame of its loop — its rest frame (data-rest-at) between turns — held in inline
+     styles with the loops removed (no per-frame cost); "rest" (the server-rendered state, no JS, reduced motion,
+     "Pause animations" = html[data-motion="off"]) is the still pose below. Loops play two cycles (one in a card grid),
+     at most two pieces at once, ease in and out of each turn, and replay on hover / card focus. */
   .lca[data-play="0"] * { animation-play-state: paused !important; }
+  .lca[data-play="hold"] * { animation: none !important; }
 
   /* Still pose: no animation, the most informative frame (outputs on, pulses mid-trace, nodes lit). Reduced motion
      shows the same pose. Each piece adds its own still rules next to its reduced-motion ones. */

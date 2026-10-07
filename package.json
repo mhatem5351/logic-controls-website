@@ -15,7 +15,7 @@
     "lint": "eslint .",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
-    "deploy": "node scripts/predeploy.mjs && npm run build && wrangler deploy",
+    "deploy": "node scripts/predeploy.mjs && npm run build && node tests/static/check-dist.mjs && npm run test:budget && wrangler deploy",
     "qa:html": "html-validate \"dist/**/*.html\"",
     "indexnow": "node --env-file=.env scripts/indexnow.mjs",
     "test": "npm run test:unit && npm run test:static",

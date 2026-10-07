@@ -13,7 +13,7 @@
  */
 import { readFileSync, readdirSync } from "node:fs";
 import { describe, expect, it } from "vitest";
-import { colon, emphasize, esc, html, isCode, ltr, num, plain, rich, techLabel, zhWords } from "~/lib/text";
+import { colon, emphasize, esc, html, isCode, ltr, markup, num, plain, rich, techLabel, zhWords } from "~/lib/text";
 import type { Locale } from "~/i18n";
 
 const LOCALES: Locale[] = ["en", "ar", "zh", "tr"];
@@ -27,14 +27,14 @@ const ZW = "\u200B";
 
 /** The only markup html() may emit. Links: internal href = /<locale>/path/ only; external = https with fixed attributes. */
 const SAFE_TAG =
-  /<bdi dir="ltr"(?: lang="en")?(?: class="lc-wrap")?>|<\/bdi>|<span class="(?:lc-nw|lc-nw lc-nws|break-keep|sr-only)">|<\/span>|<wbr>|<em>|<\/em>|<a href="\/(?:en|ar|zh|tr)\/(?:[a-z0-9-]+\/)+">|<a href="https:\/\/[^"<>\s]+" target="_blank" rel="noopener noreferrer">|<\/a>/g;
+  /<bdi dir="ltr"(?: lang="en")?(?: class="(?:lc-wrap|lc-nws)")?>|<\/bdi>|<span class="(?:lc-nw|lc-nw lc-nws|break-keep|sr-only)">|<\/span>|<wbr>|<em>|<\/em>|<a href="\/(?:en|ar|zh|tr)\/(?:[a-z0-9-]+\/)+">|<a href="https:\/\/[^"<>\s]+" target="_blank" rel="noopener noreferrer">|<\/a>/g;
 /** The visually hidden "(opens in a new tab)" hint of an external link (not part of the copy). */
 const HINT = /<span class="sr-only">[^<]*<\/span>/g;
 const ENTITY = /&(?:amp|lt|gt|quot|#39|nbsp);/g;
 const decode = (s: string) =>
   s.replace(ENTITY, (e) => ({ "&amp;": "&", "&lt;": "<", "&gt;": ">", "&quot;": '"', "&#39;": "'", "&nbsp;": NBSP })[e]!);
 /** Visible text of an html() result: tags dropped, entities decoded, no-break spaces as spaces. */
-const textOf = (h: string) => decode(h.replace(HINT, "").replace(SAFE_TAG, "")).replaceAll(NBSP, " ").replace(/[\u200B\u00AD]/g, "");
+const textOf = (h: string) => decode(h.replace(HINT, "").replace(SAFE_TAG, "")).replaceAll(NBSP, " ").replace(/[\u200B\u00AD\u2060]/g, "");
 /** Visible text of a plain() result: joiners and isolates dropped, no-break spaces as spaces. */
 const plainText = (p: string) => p.replaceAll(WJ, "").replaceAll(LRI, "").replaceAll(PDI, "").replaceAll(NBSP, " ");
 /** Comparable text: html()/plain() drop isolates a caller already inserted (and add their own), use NBSP, never U+2011. */
@@ -102,7 +102,9 @@ describe("html() escapes hostile input in every locale", () => {
   }
 
   it("rich() escapes the template text but keeps the provided HTML snippets; unknown placeholders stay visible", () => {
-    expect(rich("en", "Read {link} <now>", { link: '<a href="/x/">x</a>' })).toBe('Read <a href="/x/">x</a> &lt;now&gt;');
+    expect(rich("en", "Read {link} <now>", { link: markup`<a href="/x/">x</a>` })).toBe('Read <a href="/x/">x</a> &lt;now&gt;');
+    // a placeholder value that is not SafeHtml (built in code without markup``) is escaped, never injected
+    expect(rich("en", "Read {link}", { link: '<a href="/y/" onclick="x">y</a>' } as never)).toBe("Read &lt;a href=&quot;/y/&quot; onclick=&quot;x&quot;&gt;y&lt;/a&gt;");
     expect(rich("en", "{unknown} & more", {})).toBe("{unknown} &amp; more");
   });
 

@@ -6,7 +6,7 @@
  * address card with a self-drawn map + "Open in maps" (OpenStreetMap link, no embed, no third-party request).
  */
 import { getMessages, type Locale } from "~/i18n";
-import { SITE } from "~/data/site";
+import { SITE, telLink } from "~/data/site";
 import Icon from "~/components/Icon.astro";
 import Button from "~/components/Button.astro";
 import ZoneMap from "./ZoneMap.astro";
@@ -68,12 +68,14 @@ const iconCls = "grid size-10 shrink-0 place-items-center border border-charcoal
   }
 
   <div class="border border-charcoal-200 bg-white px-5 sm:px-6">
-    <h2 class="border-b border-charcoal-200 py-4 type-label text-charcoal-600">{ch.title}</h2>
+    {/* lc-caps: capitals drawn with small caps, not text-transform, so the heading's name stays sentence case ("US" is
+        not read as "U.S."; A11Y2-17) and its text is there once (no screen-reader twin) */}
+    <h2 class="lc-caps border-b border-charcoal-200 py-4 type-label text-charcoal-600">{ch.title}</h2>
     <ul role="list">
       <li class={rowCls}>
         <span class={iconCls}><Icon name="phone" size={20} /></span>
         <div class="min-w-0">
-          <a href={`tel:${SITE.phone.tel}`} class="font-bold text-navy-950 after:absolute after:inset-0 after:content-[''] hover:text-royal-700">
+          <a href={telLink()} class="font-bold text-navy-950 after:absolute after:inset-0 after:content-[''] hover:text-royal-700">
             <span class="sr-only">{ch.phone.label}{colon(locale)}</span><span class="ltr" dir="ltr">{SITE.phone.display}</span>
           </a>
           <p class="mt-0.5 text-sm text-charcoal-600" set:html={html(locale, ch.phone.text)} />
@@ -118,7 +120,7 @@ const iconCls = "grid size-10 shrink-0 place-items-center border border-charcoal
     <div class="flex items-start gap-4 p-5 sm:p-6">
       <span class="grid size-10 shrink-0 place-items-center bg-signal-400 text-navy-950"><Icon name="map-pin" size={20} /></span>
       <div class="min-w-0 flex-1">
-        <h2 class="type-label text-charcoal-600">{ch.location.label}</h2>
+        <h2 class="lc-caps type-label text-charcoal-600">{ch.location.label}</h2>
         <address class="mt-1 not-italic">
           <span class="block font-bold text-navy-950">{SITE.name}</span>
           <span class="block text-charcoal-700">{ch.location.text}</span>
@@ -133,3 +135,16 @@ const iconCls = "grid size-10 shrink-0 place-items-center border border-charcoal
     </div>
   </div>
 </div>
+
+<style>
+  /* English: all-small-caps instead of type-label's text-transform, so the accessibility tree keeps the sentence-case
+     text ("Other ways to reach us", not "… US" read as "U.S."). Turkish keeps text-transform (WebKit's synthesized
+     small caps miss İ / Ğ); Arabic and Chinese have no case. */
+  .lc-caps:where(:lang(en)) {
+    text-transform: none;
+    font-variant-caps: all-small-caps;
+    font-synthesis-small-caps: auto; /* the mono face has no small caps: let the browser draw them */
+    font-size: 0.9375rem;
+    line-height: 1.2;
+  }
+</style>

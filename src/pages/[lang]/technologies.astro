@@ -4,6 +4,10 @@
  * Hero (intro[0]) → "On this page" bar → PLC/HMI brand data sheet (intro[1] as its lead) + honest note → drives / SCADA /
  * communication / signals → control loop → live HMI (compact; a one-screen teaser on phones) → other equipment + how we
  * choose a platform → closing CTA. Order: CONTENT.md §4.
+ * Each brand row has an anchor (#siemens, #schneider-electric, #delta, #ls-electric, #wecon: case-study facts link here)
+ * and, under it, the case studies built on that platform plus "All <brand> projects" → /projects/?platform=<slug>
+ * (derived from projects.ts, catalog/platforms.ts). Structured data: CollectionPage about the brands, with the brand
+ * rows as an ItemList.
  */
 import BaseLayout from "~/layouts/BaseLayout.astro";
 import Hero from "~/components/Hero.astro";
@@ -11,8 +15,6 @@ import Section from "~/components/Section.astro";
 import SectionHeading from "~/components/SectionHeading.astro";
 import Breadcrumbs from "~/components/Breadcrumbs.astro";
 import Button from "~/components/Button.astro";
-import Chips from "~/components/Chips.astro";
-import { techLabel } from "~/lib/text";
 import CtaBand from "~/components/CtaBand.astro";
 import Icon, { type IconName } from "~/components/Icon.astro";
 import ControlLoop from "~/components/motion/ControlLoop.astro";
@@ -20,10 +22,14 @@ import HmiDemo from "~/components/motion/HmiDemo.astro";
 import BrandPanel from "~/components/sections/main/BrandPanel.astro";
 import PageToc from "~/components/sections/main/PageToc.astro";
 import DemoTeaser from "~/components/sections/main/DemoTeaser.astro";
-import { html } from "~/components/sections/main/rich";
+import { html, heading } from "~/lib/text";
 import { href, QUOTE_PATH, whatsappLink, prefersEmail, mailtoLink } from "~/components/nav";
-import { getMessages, localeStaticPaths, type Locale } from "~/i18n";
-import { BRANDS, PROTOCOLS } from "~/data/technologies";
+import { getMessages, localePath, localeStaticPaths, type Locale } from "~/i18n";
+import { BRANDS } from "~/data/technologies";
+import { projectCopy, projectsFor } from "~/components/sections/catalog/catalog";
+import { projectsOnPlatform } from "~/components/sections/catalog/platforms";
+import { fmt } from "~/components/nav";
+import { absUrl, graph, itemList, webPage } from "~/lib/jsonld";
 import panelPhoto from "~/assets/projects/pasteurizer-cip-recipes/panel.jpg";
 
 export const getStaticPaths = localeStaticPaths;
@@ -34,24 +40,41 @@ const c = t.common;
 const email = prefersEmail(locale);
 const panelAlt = (t.projects.items["pasteurizer-cip-recipes"]?.imageAlts as Record<string, string> | undefined)?.panel ?? "";
 
-const categories: { key: "drives" | "scada" | "networks" | "signals"; icon: IconName; title: string; text?: string; items: string[]; chips?: readonly string[] }[] = [
+const categories: { key: "drives" | "scada" | "networks" | "signals"; icon: IconName; title: string; text?: string; items: string[] }[] = [
   { key: "drives", icon: "gear", title: tt.drives.title, text: tt.drives.text, items: tt.drives.items },
   { key: "scada", icon: "hmi", title: tt.scada.title, text: tt.scada.text, items: tt.scada.items },
-  { key: "networks", icon: "traces", title: tt.networks.title, text: tt.networks.text, items: tt.networks.items, chips: PROTOCOLS.map((p) => techLabel(locale, p)) },
+  { key: "networks", icon: "traces", title: tt.networks.title, text: tt.networks.text, items: tt.networks.items },
   { key: "signals", icon: "gauge", title: tt.signals.title, items: tt.signals.items },
 ];
+/* Case studies per platform (newest first): up to 3 linked by title, then "All <brand> projects (n)". */
+const portfolio = projectsFor(locale);
+const onPlatform = Object.fromEntries(BRANDS.map((b) => [b.slug, projectsOnPlatform(b.slug, portfolio)]));
+const SHOWN = 3;
+const pagePath = localePath(locale, "technologies");
+
+/* Structured data (src/lib/jsonld.ts): the page is about the platform brands; the brand rows as an ItemList. */
+const jsonLd = graph(
+  webPage(locale, {
+    type: "CollectionPage",
+    path: "technologies",
+    name: tt.seo.title,
+    description: tt.seo.description,
+    about: BRANDS.map((b) => ({ "@type": "Brand", name: b.name })),
+    mainEntity: itemList(tt.brands.title, BRANDS.map((b) => ({ name: b.name, url: `${absUrl(pagePath)}#${b.slug}` }))),
+  }),
+);
 const choosingIcons: IconName[] = ["box", "layers", "users", "factory"];
 const pad = (n: number) => String(n).padStart(2, "0");
 const toc = [
   { id: "platforms", label: "PLC · HMI" },
-  { id: "categories", label: tt.categories.eyebrow },
+  { id: "categories", label: tt.categories.tocLabel ?? tt.categories.eyebrow },
   { id: "control-loop", label: t.hmi.loop.eyebrow },
   { id: "hmi-demo", label: t.hmi.intro.eyebrow },
-  { id: "choosing", label: tt.choosing.eyebrow },
+  { id: "choosing", label: tt.choosing.tocLabel ?? tt.choosing.eyebrow },
 ];
 ---
 
-<BaseLayout locale={locale} title={tt.seo.title} description={tt.seo.description} path="technologies" heroDark>
+<BaseLayout locale={locale} title={tt.seo.title} description={tt.seo.description} path="technologies" heroDark jsonLd={jsonLd}>
   <Hero
     locale={locale}
     size="page"
@@ -78,7 +101,42 @@ const toc = [
     <div class="mt-10 border-t border-charcoal-200">
       {
         BRANDS.map((b, i) => (
-          <BrandPanel locale={locale} brand={b} text={tt.brands.items[b.slug].text} productsLabel={tt.brands.productsLabel} index={i + 1} />
+          <div id={b.slug} class="border-b border-charcoal-200 pb-8 lg:pb-10">
+            <BrandPanel locale={locale} brand={b} text={tt.brands.items[b.slug].text} productsLabel={tt.brands.productsLabel} index={i + 1} class="border-b-0! pb-6! lg:pb-7!" />
+            {onPlatform[b.slug]!.length > 0 && (
+              <div class="sm:ps-[15rem] lg:ps-[16.5rem]">
+                <p class="mb-3 flex items-center gap-2 type-label text-charcoal-600">
+                  <span class="slant-bar w-3 text-royal-600" aria-hidden="true" />
+                  {tt.brands.projectsTitle}
+                </p>
+                <ul role="list" class="flex flex-col gap-2 sm:flex-row sm:flex-wrap sm:gap-x-6">
+                  {onPlatform[b.slug]!.slice(0, SHOWN).map((p) => (
+                    <li>
+                      <a
+                        href={localePath(locale, `projects/${p.slug}`)}
+                        class="font-semibold text-royal-700 underline decoration-royal-200 underline-offset-4 hover:decoration-royal-600"
+                        set:html={html(locale, projectCopy(locale, p.slug)!.cardTitle)}
+                      />
+                    </li>
+                  ))}
+                  <li>
+                    <a
+                      href={`${localePath(locale, "projects")}?platform=${b.slug}`}
+                      class="group inline-flex items-center gap-2 font-bold text-navy-950 hover:text-royal-700"
+                    >
+                      {fmt(tt.brands.allOnPlatform, { brand: b.name })}
+                      <span class="sr-only"> (</span>
+                      <span class="inline-grid min-w-7 place-items-center bg-royal-50 px-1.5 py-0.5 font-mono text-xs text-royal-700 ltr" dir="ltr">
+                        {onPlatform[b.slug]!.length}
+                      </span>
+                      <span class="sr-only">)</span>
+                      <Icon name="arrow" size={16} class="text-royal-600 transition-transform group-hover:translate-x-1 rtl:group-hover:-translate-x-1" />
+                    </a>
+                  </li>
+                </ul>
+              </div>
+            )}
+          </div>
         ))
       }
     </div>
@@ -98,7 +156,7 @@ const toc = [
       title={html(locale, tt.categories.title)}
       lead={html(locale, tt.categories.intro)}
     />
-    <div class="mt-12 grid gap-5 md:grid-cols-2 lg:gap-6">
+    <div class="mt-12 grid grid-cols-1 gap-5 md:grid-cols-2 lg:gap-6">
       {
         categories.map((cat, i) => (
           <article id={cat.key} class="relative flex flex-col border border-charcoal-200 bg-white p-6 sm:p-8" aria-labelledby={`${cat.key}-title`}>
@@ -111,14 +169,8 @@ const toc = [
                 02.{i + 1}
               </span>
             </div>
-            <h3 id={`${cat.key}-title`} class="mt-6 type-h3 text-navy-950" set:html={html(locale, cat.title)} />
+            <h3 id={`${cat.key}-title`} class="mt-6 type-h3 text-navy-950" set:html={heading(locale, cat.title)} />
             {cat.text && <p class="mt-3 text-charcoal-600" set:html={html(locale, cat.text)} />}
-            {/* Summary of the bullet list below: decorative for assistive tech (the list carries the content). */}
-            {cat.chips && (
-              <div aria-hidden="true">
-                <Chips items={[...cat.chips]} size="sm" class="mt-5" />
-              </div>
-            )}
             <ul role="list" class="mt-6 space-y-2.5 border-t border-charcoal-200 pt-5 text-[0.9375rem] text-charcoal-700">
               {cat.items.map((item) => (
                 <li
@@ -156,7 +208,7 @@ const toc = [
             <span class="chamfer inline-grid size-12 place-items-center bg-royal-600 text-white [--chamfer:10px]">
               <Icon name="plus" size={24} />
             </span>
-            <h2 id="other-title" class="mt-6 type-h3 text-navy-950" set:html={html(locale, tt.otherBrands.title)} />
+            <h2 id="other-title" class="mt-6 type-h3 text-navy-950" set:html={heading(locale, tt.otherBrands.title)} />
             <p class="mt-3 text-charcoal-700" set:html={html(locale, tt.otherBrands.text)} />
             <div class="mt-6 flex flex-wrap gap-3">
               <Button href={href(locale, QUOTE_PATH)} iconEnd="arrow">{t.ui.cta.quote}</Button>
@@ -188,7 +240,7 @@ const toc = [
                   </span>
                   <span aria-hidden="true" class="font-mono text-xs text-charcoal-600 ltr" dir="ltr">{pad(i + 1)}</span>
                 </div>
-                <h3 class="mt-5 type-h4 text-navy-950" set:html={html(locale, item.title)} />
+                <h3 class="mt-5 type-h4 text-navy-950" set:html={heading(locale, item.title)} />
                 <p class="mt-2 text-[0.9375rem] text-charcoal-600" set:html={html(locale, item.text)} />
               </li>
             ))

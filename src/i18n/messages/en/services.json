@@ -48,8 +48,8 @@
           "a": "Drawings are part of every delivery. Program files, passwords and ownership are written into the quote, so you know before you order what you will receive."
         },
         {
-          "q": "What does the price of a control system depend on?",
-          "a": "On the number of inputs and outputs, the PLC and HMI platform, the panel size and components, how much programming and testing is needed, and where the site is. Send a short description and photos, and an engineer replies with questions, a site visit or a quote."
+          "q": "Why do two quotes for the same machine differ?",
+          "a": "Usually because they do not cover the same scope. Compare what each quote includes: panel components and brands, how much programming and testing, drawings and program files, commissioning on site and support after start-up. Send us the other quote or a short description, and we will tell you what ours covers."
         },
         {
           "q": "Do you hold certifications such as UL or CE?",
@@ -66,6 +66,8 @@
       "seoTitle": "Control Panel Design & Assembly in Egypt | Logic Controls",
       "seoDescription": "PLC control panels for machines and process lines in Egypt, designed in EPLAN, wired, labeled and tested before delivery. Drawings included.",
       "h1": "Electrical design and PLC control panels",
+      "capabilitiesTitle": "What our control-panel work covers",
+      "situationsTitle": "When you need a new control panel",
       "intro": [
         "A control panel is only as good as its drawings. We start with the electrical design: power distribution, motor circuits, safety circuits and the full I/O list. Then we assemble, wire and label the panel and test it before it reaches your site.",
         "We build panels for new machines, for upgrades of existing machines and for process equipment. Components are chosen for your budget and for spare parts you can buy in Egypt."
@@ -139,6 +141,8 @@
       "seoTitle": "PLC & HMI Programming in Egypt | Logic Controls",
       "seoDescription": "PLC programming and HMI design in Egypt for Siemens, Delta, LS Electric, Schneider Electric and Wecon: sequences, interlocks, Arabic screens.",
       "h1": "PLC programming and HMI design",
+      "capabilitiesTitle": "What our PLC and HMI work covers",
+      "situationsTitle": "When to call us for programming",
       "intro": [
         "Good PLC code can be read by the next engineer. We write structured logic for machine sequences, interlocks, alarms and recipes, and comment it so your maintenance team can follow it.",
         "On the HMI we design screens that operators understand at a glance: a process overview, manual and automatic modes, settings, recipes and an alarm page. Screens can be in Arabic, English or both."
@@ -212,6 +216,8 @@
       "seoTitle": "Machine Automation & Motion Control in Egypt | Logic Controls",
       "seoDescription": "Control systems for filling, labeling, printing and washing machines in Egypt: PLC, HMI, drives and motion control, for plants and machine builders.",
       "h1": "Machine automation, drives and motion control",
+      "capabilitiesTitle": "What our machine automation covers",
+      "situationsTitle": "When a machine needs automating",
       "intro": [
         "We automate single machines: fillers, labelers, bottle printers, washers and test rigs. One team handles the control design, the drives and the program, so the machine works as one system.",
         "We work for factories that want to automate a machine they own, and for machine builders who need a control partner for the machines they make."
@@ -281,6 +287,8 @@
       "seoTitle": "Machine Retrofit & PLC Upgrade in Egypt | Logic Controls",
       "seoDescription": "Keep the machine, replace the controls: new PLC, HMI, drives and motion control, tested before the shutdown. Machine retrofits across Egypt.",
       "h1": "Machine retrofits and control-system upgrades",
+      "capabilitiesTitle": "What a retrofit covers",
+      "situationsTitle": "When a retrofit makes sense",
       "intro": [
         "Many machines are mechanically sound but their controls are not: obsolete PLCs, missing programs, relay logic, worn wiring or spare parts that are no longer sold. Replacing the whole machine is expensive. Replacing the controls usually costs far less.",
         "We survey the machine, document what is there and design a new control system around the existing mechanics. We test the new logic before the shutdown, so the changeover on site is as short as possible."
@@ -350,6 +358,8 @@
       "seoTitle": "Process Control & Batching Systems in Egypt | Logic Controls",
       "seoDescription": "PLC process control for pasteurizers, autoclaves, cookers, CIP, batching and dosing in Egypt. Temperature, pressure, time and recipe control.",
       "h1": "Process control for thermal, CIP and batching systems",
+      "capabilitiesTitle": "What our process control covers",
+      "situationsTitle": "When to call us for process control",
       "intro": [
         "In food, dairy and pharma processes the product depends on the numbers: temperature, pressure, time, flow and dose. We build control systems that hold those numbers, stop the process when they are not met, and record what happened.",
         "Our process work includes pasteurizers with CIP, an olive sterilization autoclave, a cheese cooker, a tablet coating machine, a concrete batching plant, laundry dosing and a beverage syrup mixing system. Our engineers have also recommissioned purified-water utility systems in a pharmaceutical plant."
@@ -419,6 +429,8 @@
       "seoTitle": "SCADA & Data Logging Systems in Egypt | Logic Controls",
       "seoDescription": "SCADA with Siemens WinCC Professional, HMI data logging, alarm history, recipes and automatic test reports for traceability. For factories in Egypt.",
       "h1": "SCADA, monitoring and data logging",
+      "capabilitiesTitle": "What our SCADA work covers",
+      "situationsTitle": "When you need SCADA or data logging",
       "intro": [
         "When a batch goes wrong, the first question is what happened. SCADA and data logging answer it. We build monitoring screens that show the whole process, alarm lists with time stamps, and records that link each batch to its settings.",
         "For larger systems we use Siemens WinCC Professional with S7-1200 PLCs, with an SQL database for reports and OEE dashboards where needed. For single machines the HMI itself can log data, store recipes and produce test reports. Our engineers' experience also includes environmental monitoring (EMS) for sterile production areas, and BMS and EMS recommissioning in pharmaceutical plants."
@@ -488,6 +500,8 @@
       "seoTitle": "Testing & Commissioning Services in Egypt | Logic Controls",
       "seoDescription": "I/O testing, loop checks, interlock tests, FAT/SAT support and start-up for new machines and imported lines in Egypt, through to punch-list closure.",
       "h1": "Testing and commissioning",
+      "capabilitiesTitle": "What commissioning covers",
+      "situationsTitle": "When to bring us in",
       "intro": [
         "Commissioning decides whether a line starts on time. We test every signal, every interlock and every sequence before production depends on them, and we close the punch list before handover.",
         "We commission the systems we build, and we commission equipment supplied by others: imported lines, packaged units and process systems whose supplier needs a local team."
@@ -534,7 +548,7 @@
       "faq": [
         {
           "q": "Can you commission equipment you did not build?",
-          "a": "Yes. Our {link:projects/anaerobic-waste-treatment-commissioning|waste treatment project} at a food and beverage plant was commissioning only: instrument checks, I/O tests, logic validation, start-up and punch-list closure."
+          "a": "Yes, including {link:foreign-manufacturers|imported lines}. Our {link:projects/anaerobic-waste-treatment-commissioning|waste treatment project} at a food and beverage plant was commissioning only: instrument checks, I/O tests, logic validation, start-up and punch-list closure."
         },
         {
           "q": "Do you work with the machine builder's engineers?",
@@ -557,6 +571,8 @@
       "seoTitle": "Automation Maintenance & Support in Egypt | Logic Controls",
       "seoDescription": "PLC, HMI and drive troubleshooting, preventive maintenance, program changes, training and spare-parts sourcing for plants in Egypt.",
       "h1": "Troubleshooting, maintenance and support",
+      "capabilitiesTitle": "What our support covers",
+      "situationsTitle": "When to call us",
       "intro": [
         "A stopped machine costs money every hour. We find control faults methodically, using PLC diagnostics, I/O status, drive fault codes and wiring checks, and we fix the cause, not only the symptom.",
         "After start-up we stay available for program changes, new features and planned maintenance visits. Support terms are agreed in writing, so you know what to expect."

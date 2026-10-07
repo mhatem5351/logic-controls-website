@@ -5,7 +5,7 @@
  * Motion (motion.css): the block rises into place on scroll, the eyebrow's slant bar draws, the swoosh wipes in.
  */
 import type { Locale } from "~/i18n";
-import { toHtml } from "~/lib/text";
+import { heading, toHtml } from "~/lib/text";
 import Swoosh from "./Swoosh.astro";
 interface Props {
   title: string;
@@ -38,8 +38,8 @@ const locale = (Astro.props.locale ?? Astro.currentLocale) as Locale | undefined
       </p>
     )
   }
-  <Tag id={id} class:list={[`type-${size}`, "text-navy-950 on-dark:text-white"]} set:html={toHtml(locale, title)} />
+  <Tag id={id} class:list={[`type-${size}`, "text-navy-950 on-dark:text-white"]} set:html={heading(locale, title)} />
   {swoosh && <Swoosh class:list={["mt-4 w-36 sm:w-44", center && "mx-auto"]} />}
-  {lead && <p class="mt-5 type-lead text-charcoal-600 on-dark:text-navy-200" set:html={toHtml(locale, lead)} />}
+  {lead && <p class="mt-5 type-lead text-charcoal-700 on-dark:text-navy-200" set:html={toHtml(locale, lead)} />}
   <slot />
 </header>

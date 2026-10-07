@@ -100,6 +100,15 @@ export function prefersWhatsapp(locale: Locale) {
   return locale === "ar";
 }
 
+/** zh / tr visitors are mostly foreign investors and machine builders: their home page leads with the "setting up in
+ *  Egypt" path (hero secondary action, foreign door first), and the header does not repeat it there. */
+export function investorFirst(locale: Locale) {
+  return locale === "zh" || locale === "tr";
+}
+
+/** The machine-builder (OEM) block of the foreign-manufacturers page. */
+export const OEM_PATH = `${FOREIGN_PATH}#oem`;
+
 /** Page context for an email link: what the visitor was reading, so the team knows what the email is about. */
 export interface MailContext {
   locale: Locale;
@@ -126,7 +135,11 @@ export function mailtoLink(subject?: string, context?: MailContext): string {
   const finalSubject = topic ? fmt(m.subjectTopic, { subject: base, topic }) : base;
   const params = [`subject=${encodeURIComponent(finalSubject)}`];
   if (context.body !== false) {
-    const page = context.path !== undefined ? new URL(localePath(context.locale, context.path), SITE.url).href : undefined;
+    /* RTL bodies ("الصفحة: https://…/ar/…/"): the line is an RTL paragraph, so the URL's trailing "/" (neutral, before
+       the paragraph end) would be drawn at the URL's visual start. A LEFT-TO-RIGHT MARK after it keeps it in place. */
+    const lrm = LOCALE_META[context.locale].dir === "rtl" ? "‎" : "";
+    const url = context.path !== undefined ? new URL(localePath(context.locale, context.path), SITE.url).href : undefined;
+    const page = url === undefined ? undefined : url + lrm;
     const body = m.body
       .split("\n")
       .filter((line) => page !== undefined || !line.includes("{page}"))

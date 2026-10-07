@@ -29,7 +29,7 @@ import {
 } from "~/components/sections/catalog/catalog";
 import { html } from "~/lib/text";
 import { absUrl, orgRef, graph, itemList, webPage } from "~/lib/jsonld";
-import { fmt } from "~/components/nav";
+import { pageContact } from "~/components/contact-cta";
 import { LOCALES, getMessages, localePath, type Locale } from "~/i18n";
 import { INDUSTRIES, INDUSTRY_SLUGS, type IndustrySlug } from "~/data/industries";
 
@@ -54,7 +54,8 @@ const allLink =
     : { href: localePath(locale, "projects"), label: L.allProjects, count: projectsFor(locale).length };
 const services = data.services.filter((s) => serviceCopy(locale, s));
 const brands = brandsIn(related);
-const wa = fmt(m.common.whatsapp.industry, { industry: item.title });
+/* Same message as the chrome's WhatsApp actions (contact-cta.ts pageContact; tr / zh name the industry in English too). */
+const wa = pageContact(locale, `industries/${slug}`).whatsapp;
 const quote = quoteHref(locale, { industry: slug });
 
 const order = ["needs", "applications", related.length > 0 && "projects", "services", "faq"].filter(Boolean) as string[];
@@ -96,7 +97,7 @@ const jsonLd = graph({
     <div class="grid gap-12 lg:grid-cols-[minmax(0,5fr)_minmax(0,8fr)] lg:gap-20">
       <SectionHeading
         id="needs-title"
-        title={html(locale, L.needs)}
+        title={html(locale, item.needsTitle ?? L.needs)}
         lead={item.intro.length > 1 ? html(locale, item.intro.slice(1).join(" ")) : undefined}
         class="self-start lg:sticky lg:top-[calc(var(--header-h)+2rem)]"
       />
@@ -107,7 +108,7 @@ const jsonLd = graph({
   {/* Machines and processes we automate */}
   <Section variant={bg("applications")} id="applications" aria-labelledby="applications-title">
     <div class="grid gap-10 lg:grid-cols-[minmax(0,5fr)_minmax(0,8fr)] lg:gap-20">
-      <SectionHeading id="applications-title" title={html(locale, L.applications)} class="self-start" />
+      <SectionHeading id="applications-title" title={html(locale, item.applicationsTitle ?? L.applications)} class="self-start" />
       <SpecList items={item.applications} locale={locale} marker="index" columns={2} ruled class="border-t border-charcoal-200" />
     </div>
   </Section>

@@ -1,0 +1,140 @@
+---
+/**
+ * Case-study hero media for covers that must not be stretched (catalog/media.ts → heroTreatment()). Rendered into
+ * <Hero>'s `media` slot, so it fills the desktop panel (≥1024px) only; the page passes `bandWithMedia` so phones keep
+ * the plain photo band.
+ *  - kind="screen": the screen capture inside an HMI device bezel (the build of the live HMI demo, without a brand),
+ *    at no more than its natural size: a 797px capture is never drawn wider than 797 CSS px.
+ *  - kind="photo": a photo too small for the panel, as a mounted print (chamfered, hairline), at no more than its
+ *    natural size and never taller than the hero's copy column.
+ * It sits above the panel's photo scrims (z-index inside the media stacking context), clear of the slanted edge and
+ * the header, on a faint blueprint grid. Desktop-only download: the real files are offered to ≥1024px, every other
+ * viewport matches a 1×1 data-URI source (same rule as the Hero's own panel).
+ */
+import type { ImageMetadata } from "astro";
+import { getImage } from "astro:assets";
+import { BLANK_IMAGE } from "~/components/hero-media";
+
+interface Props {
+  image: ImageMetadata;
+  alt: string;
+  kind: "screen" | "photo";
+  /** fetchpriority="high" (the panel image is the desktop LCP candidate). */
+  priority?: boolean;
+}
+const { image, alt, kind, priority = true } = Astro.props;
+
+const WIDE = "(min-width: 1024px)";
+const { width: w, height: h } = image;
+/* Tallest the framed image may be: the page hero's copy column is ~34–48rem tall below the header. */
+const MAX_H = kind === "photo" ? 34 : 30; /* rem */
+/* Rendered width = min(natural, panel content box, 40rem device). The panel is 44vw; the slant (~0.55 × 132px), the
+   paddings and the bezel take ~11rem of it. */
+const cap = Math.min(w, 616);
+const bp = Math.ceil((cap + 176) / 0.44);
+const sizes = `(min-width: ${bp}px) ${cap}px, calc(44vw - 11rem)`;
+const widths = [...new Set([480, 640, w].filter((x) => x <= w))];
+const set = async (format: "avif" | "webp") =>
+  (await Promise.all(widths.map(async (x) => `${(await getImage({ src: image, width: x, format })).src} ${x}w`))).join(", ");
+const [avif, webp] = await Promise.all([set("avif"), set("webp")]);
+const src = (await getImage({ src: image, width: w, format: "webp" })).src;
+const imgStyle = `max-width:min(100%,${w}px);max-height:min(${h}px,${MAX_H}rem)`;
+---
+
+<div
+  class="absolute inset-0 z-[1] hidden items-center justify-center ps-[calc(var(--slant-x)*0.55+1.5rem)] pe-[max(var(--spacing-gutter),3rem)] pt-[calc(var(--header-h)+var(--utility-h)+1.5rem)] pb-14 lg:flex"
+  data-framed={kind}
+>
+  <div aria-hidden="true" class="pointer-events-none absolute inset-0 -z-10 bg-blueprint opacity-70 [mask-image:radial-gradient(ellipse_70%_60%_at_55%_55%,#000,transparent)]"></div>
+  <div aria-hidden="true" class="pointer-events-none absolute inset-0 -z-10 bg-[radial-gradient(ellipse_45%_40%_at_55%_55%,rgb(5_86_173/0.28),transparent)]"></div>
+  {
+    kind === "screen" ? (
+      <div class="lc-fh-dev">
+        <div class="lc-fh-screen">
+          <picture>
+            <source media={WIDE} type="image/avif" srcset={avif} sizes={sizes} />
+            <source media={WIDE} srcset={webp} sizes={sizes} />
+            <source srcset={BLANK_IMAGE} />
+            <img src={src} alt={alt} width={w} height={h} loading="eager" decoding="async" fetchpriority={priority ? "high" : "auto"} style={imgStyle} />
+          </picture>
+          <span class="lc-fh-glass" aria-hidden="true" />
+        </div>
+        <span class="lc-fh-chin" aria-hidden="true">
+          <i data-on />
+          <i />
+          <i />
+        </span>
+      </div>
+    ) : (
+      <div class="lc-fh-print">
+        <div class="chamfer-lg overflow-hidden bg-navy-900 p-2 ring-1 ring-white/10 [--chamfer:22px]">
+          <picture>
+            <source media={WIDE} type="image/avif" srcset={avif} sizes={sizes} />
+            <source media={WIDE} srcset={webp} sizes={sizes} />
+            <source srcset={BLANK_IMAGE} />
+            <img src={src} alt={alt} width={w} height={h} loading="eager" decoding="async" fetchpriority={priority ? "high" : "auto"} class="chamfer [--chamfer:16px]" style={imgStyle} />
+          </picture>
+        </div>
+      </div>
+    )
+  }
+</div>
+
+<style>
+  img {
+    display: block;
+    width: auto;
+    height: auto;
+  }
+  /* HMI device: the live demo's bezel (hmi-demo.css .lc-hmi-dev), scaled down, no logo. */
+  .lc-fh-dev {
+    position: relative;
+    display: inline-block;
+    max-width: min(100%, 40rem);
+    padding: 12px 12px 26px;
+    border-radius: 18px;
+    background: linear-gradient(170deg, #34353d 0%, #1d1e24 45%, #141519 100%);
+    box-shadow:
+      inset 0 1px 0 rgb(255 255 255 / 0.14),
+      inset 0 0 0 1px rgb(0 0 0 / 0.7),
+      0 0 0 1px rgb(95 164 250 / 0.12),
+      0 40px 70px -30px rgb(0 0 0 / 0.75);
+  }
+  .lc-fh-screen {
+    position: relative;
+    overflow: hidden;
+    border-radius: 4px;
+    background: #0b0c10;
+  }
+  .lc-fh-glass {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    background:
+      linear-gradient(118deg, rgb(255 255 255 / 0.1) 0%, rgb(255 255 255 / 0.04) 26%, rgb(255 255 255 / 0) 26.2%),
+      radial-gradient(120% 80% at 50% 0%, rgb(255 255 255 / 0.04), transparent 60%);
+    box-shadow: inset 0 0 0 1px rgb(255 255 255 / 0.06), inset 0 0 24px rgb(0 0 0 / 0.18);
+  }
+  .lc-fh-chin {
+    position: absolute;
+    inset-inline-end: 22px;
+    bottom: 10px;
+    display: flex;
+    gap: 7px;
+  }
+  .lc-fh-chin i {
+    width: 5px;
+    height: 5px;
+    border-radius: 50%;
+    background: #4a4b52;
+  }
+  .lc-fh-chin i[data-on] {
+    background: #3ddc84;
+    box-shadow: 0 0 6px #3ddc84;
+  }
+  .lc-fh-print {
+    display: inline-block;
+    max-width: 100%;
+    filter: drop-shadow(0 30px 40px rgb(0 0 0 / 0.55));
+  }
+</style>

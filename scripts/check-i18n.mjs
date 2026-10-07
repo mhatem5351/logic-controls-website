@@ -9,7 +9,10 @@
 // Link tokens in copy ({link:services/machine-retrofits|label}, {link:ext:https://…|label}; src/lib/text.ts): every
 // internal target must be a real route, every external one an https URL on an allow-listed official host, no token may
 // be malformed, and every locale of a key must link to the same targets as English.
-// Warnings (never fail): a single Latin word of 19+ letters in a heading string (no hyphenation outside Turkish).
+// SEO: no two pages of a locale may share a rendered <title> ("<seoTitle> | Logic Controls") or a meta description
+// (Google picks one of them and rewrites the other's title).
+// Warnings (never fail): a single Latin word of 19+ letters in a heading string (no hyphenation outside Turkish); bidi
+// isolate controls (U+2066–2069) in copy (src/lib/text.ts drops them and isolates Latin runs and digit groups itself).
 import { readFileSync, readdirSync, existsSync } from "node:fs";
 
 /** Locales from src/i18n/config.ts (one list for the whole site); English is the reference. */
@@ -40,6 +43,13 @@ const report = (msg) => (problems++, console.error(`  ✗ ${msg}`));
 const warn = (msg) => (warnings++, console.warn(`  ! ${msg}`));
 const bad = (v) => v === "" || /\bTODO\b/.test(String(v));
 const placeholders = (v) => [...new Set(String(v).match(/\{\w+\}/g) ?? [])].sort().join(" ");
+/**
+ * A translation may also use the English twin of a placeholder ({service} → {serviceEn}): the tr / zh WhatsApp
+ * messages add an English line for the team in Egypt that names the page in English (UX2-24). Callers always pass both
+ * (contact-cta.ts pageContact). Any other extra or missing placeholder is still an error.
+ */
+const withoutEnglishTwins = (v, en) =>
+  String(v).replace(/\{(\w+)En\}/g, (m, base) => (String(en).includes(`{${base}}`) ? "" : m));
 
 /* ------------------------------------------------------------------ plain-text contract (per value, every locale) */
 const MARKUP = /<\/?[a-z][^>]*>|&(?:[a-z]+|#\d+|#x[0-9a-f]+);/i;
@@ -77,8 +87,11 @@ const ROUTES = new Set([
   ...SLUGS.industries.map((s) => `industries/${s}`),
   ...SLUGS.projects.map((s) => `projects/${s}`),
 ]);
-/** Official sources copy may link to (opened in a new tab). Add a host only for an official, authoritative source. */
-const EXTERNAL_HOSTS = new Set(["www.gafi.gov.eg", "gafi.gov.eg", "sczone.eg", "www.sczone.eg"]);
+/** Official sources copy may link to (opened in a new tab): the one list in src/lib/link-policy.mjs, which the text
+ * engine also enforces at render time. Without it (fixture trees) no external host is allowed. */
+const EXTERNAL_HOSTS = new Set(
+  (await import(new URL("../src/lib/link-policy.mjs", import.meta.url).href).catch(() => ({ EXTERNAL_HOSTS: [] }))).EXTERNAL_HOSTS,
+);
 function checkLinks(l, ns, k, v) {
   if (typeof v !== "string" || !v.includes("{link:")) return;
   const found = linkTokens(v);
@@ -108,6 +121,7 @@ function checkValue(l, ns, k, v) {
     if (chain.includes(NBSP) && chain.length > MAX_ATOM && /[A-Za-z0-9][^\u00A0]*\u00A0[^\u00A0]*[A-Za-z]/.test(chain))
       report(`${l}/${ns}: ${k} has a ${chain.length}-character no-break run "${chain.replaceAll(NBSP, "⍽")}" (max ${MAX_ATOM}); let it break between its parts`);
   checkLinks(l, ns, k, v);
+  if (/[\u2066-\u2069]/.test(v)) warn(`${l}/${ns}: ${k} contains bidi isolate controls (U+2066–2069); the text engine drops them and isolates Latin runs / digit groups itself, so they can go`);
   if (l !== "tr" && HEADING_KEY.test(k))
     for (const w of v.match(/[\p{Script=Latin}]+/gu) ?? []) if (w.length >= LONG_WORD) warn(`${l}/${ns}: ${k} has a ${w.length}-letter word "${w}" in a heading (no hyphenation in this locale)`);
 }
@@ -127,7 +141,7 @@ for (const ns of namespaces) {
       if (!other.has(k)) report(`${l}/${ns}: missing ${k}`);
       else if (k.endsWith("[]") && other.get(k) !== v) report(`${l}/${ns}: ${k} has ${other.get(k)} items, en has ${v}`);
       else if (bad(other.get(k))) report(`${l}/${ns}: ${k} is empty/TODO`);
-      else if (typeof v === "string" && placeholders(v) !== placeholders(other.get(k)))
+      else if (typeof v === "string" && placeholders(v) !== placeholders(withoutEnglishTwins(other.get(k), v)))
         report(`${l}/${ns}: ${k} has placeholders [${placeholders(other.get(k))}], en has [${placeholders(v)}]`);
       else if (typeof v === "string" && targetsOf(v) !== targetsOf(other.get(k)))
         report(`${l}/${ns}: ${k} links to [${targetsOf(other.get(k))}], en links to [${targetsOf(v)}]`);
@@ -173,6 +187,29 @@ if (projectsSrc) {
   const products = messages("en", "technologies")?.brands?.productNames ?? {};
   const named = new Set([...projectsSrc.matchAll(/technologies: \[([^\]]*)\]/g)].flatMap((m) => [...m[1].matchAll(/"([^"]+)"/g)].map((x) => x[1])));
   for (const t of named) if (!(t in tech) && !(t in products)) report(`en/tech.json: items has no label for "${t}" (src/data/projects.ts technologies)`);
+}
+
+/* ------------------------------------------------------------------ SEO: unique titles / descriptions per locale */
+// What src/components/Seo.astro renders: the page title + " | <seo.siteName>" unless the title already names the brand.
+const TITLE_KEY = /(?:^|\.)(?:seo\.title|seoTitle)$/;
+const DESC_KEY = /(?:^|\.)(?:seo\.description|seoDescription)$/;
+for (const l of ["en", ...LOCALES]) {
+  const brand = messages(l, "seo")?.siteName ?? "Logic Controls";
+  const seen = { title: new Map(), description: new Map() };
+  for (const ns of namespaces) {
+    const file = new URL(`${l}/${ns}`, root);
+    if (!existsSync(file)) continue;
+    for (const [k, v] of flatten(JSON.parse(readFileSync(file, "utf8")))) {
+      if (typeof v !== "string" || !v) continue;
+      const kind = TITLE_KEY.test(k) ? "title" : DESC_KEY.test(k) ? "description" : undefined;
+      if (!kind) continue;
+      const rendered = (kind === "title" && !v.includes(brand) ? `${v} | ${brand}` : v).trim();
+      const where = `${ns.replace(/\.json$/, "")}.${k}`;
+      const first = seen[kind].get(rendered);
+      if (first) report(`${l}: ${where} has the same ${kind} as ${first} (${JSON.stringify(rendered.slice(0, 70))}); every page needs its own`);
+      else seen[kind].set(rendered, where);
+    }
+  }
 }
 
 if (problems) {
