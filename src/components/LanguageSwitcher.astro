@@ -161,12 +161,23 @@ const target = links.find((l) => l.locale === (locale === "en" ? "ar" : "en"));
     overflow-y: auto;
     overscroll-behavior: contain;
   }
+  .lc-lang-pop {
+    max-inline-size: calc(100vw - 2 * var(--spacing-gutter));
+  }
   @supports (position-anchor: --a) {
     .lc-lang-pop {
       top: anchor(bottom);
       inset-inline-end: anchor(end);
       margin-top: 0.5rem;
+      /* Anchored to the button's end edge it can leave the screen (RTL phones, 320px). Try the mirrored side, then
+         pin to the viewport gutter. */
+      position-try-fallbacks: flip-inline, --lc-lang-edge;
     }
+  }
+  @position-try --lc-lang-edge {
+    top: anchor(bottom);
+    inset-inline-start: auto;
+    inset-inline-end: var(--spacing-gutter);
   }
   /* No Popover API (Safari ≤ 16, Firefox ≤ 124, Chrome ≤ 113): the [popover] attribute means nothing there, so the
      panel would be displayed permanently. Keep it hidden until the fallback script opens it. */

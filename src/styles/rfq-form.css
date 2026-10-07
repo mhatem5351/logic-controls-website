@@ -297,6 +297,14 @@ html:not(.js) .lc-rfq .lc-file-input {
 .lc-rfq .lc-file-input[aria-invalid="true"] + .lc-file-btn {
   border-color: var(--color-danger-700);
 }
+/* Grid/flex children default to min-width:auto, so one long file name stretched the field (and the page) sideways
+   on phones. Let fields shrink and long names wrap. */
+.lc-rfq .lc-field,
+.lc-rfq .lc-file,
+.lc-rfq .lc-file-list,
+.lc-rfq .lc-file-item {
+  min-inline-size: 0;
+}
 .lc-rfq .lc-file-list:empty {
   display: none;
 }
