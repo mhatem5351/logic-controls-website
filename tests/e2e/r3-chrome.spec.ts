@@ -3,11 +3,11 @@
  * logo, copy buttons and the page-transition head script.
  *
  *  - UX3-01 menu aim: a pointer on its way from "Services" to the right-hand column of its panel crosses
- *    "Industries"; that must not swap the menus. Paced moves (12 steps, 25 ms apart), recorded in the page.
+ *    "Industries"; that must not swap the menus. Paced moves (12 steps, 50 ms apart on the page's clock).
  *  - MOT3-01: a same-site arrival with the HTML at hand waits for the whole document (<link rel=expect> to #lc-end,
  *    the last element on every page, the 404 included), so the floating button is there to keep and never dims.
- *    Round 4: never for more than 200 ms (a prefetch still downloading, MOT4-01), only in Chromium, only from 64rem
- *    where the button is kept (PSC4-04).
+ *    Round 4: only in Chromium, only from 64rem where the button is kept (PSC4-04); a prefetch (which may still be
+ *    downloading) waits at most 600 ms (MOT4-01), an arrival from the HTTP cache (only parsing left) is not capped.
  *  - MOT3-04: leaving through the open phone drawer lifts only the drawer's own bar into the transition.
  *  - A11Y3-01 (DOM side; the accessibility-tree side is r3-guards (d)), A11Y3-05 (1366 / 1440; r3-guards (c) does 1280),
  *    PERF3-03 logo candidates, UX3-04 floating button over a wrapped link, VIS3-06 drawer labels, VIS3-07 footer
@@ -24,76 +24,94 @@ const TEXT_SPACING_CSS =
 
 /* ------------------------------------------------------------------ UX3-01 menu aim */
 
-/** Counts every time Industries opens, and the longest pause between pointer moves (a stalled run is retried). */
+/** Counts every time Industries opens, and keeps where the page last saw the pointer (window, capture phase). */
 async function recordMenus(page: Page) {
   await page.evaluate(() => {
-    const w = window as unknown as { __lcSwaps: number; __lcGap: number; __lcLast: number };
+    const w = window as unknown as { __lcSwaps: number; __lcAt: [number, number] };
     w.__lcSwaps = 0;
-    w.__lcGap = 0;
-    w.__lcLast = 0;
+    w.__lcAt = [-1, -1];
     const ind = document.querySelector('button[aria-controls="lc-dd-industries"]')!;
     new MutationObserver(() => ind.getAttribute("aria-expanded") === "true" && w.__lcSwaps++).observe(ind, { attributes: true });
-    addEventListener("pointermove", () => {
-      const now = performance.now();
-      if (w.__lcLast) w.__lcGap = Math.max(w.__lcGap, now - w.__lcLast);
-      w.__lcLast = now;
-    });
+    addEventListener("pointermove", (e) => (w.__lcAt = [e.clientX, e.clientY]), true);
   });
 }
-const resetRecord = (page: Page) =>
-  page.evaluate(() => {
-    const w = window as unknown as { __lcSwaps: number; __lcGap: number; __lcLast: number };
-    w.__lcSwaps = 0;
-    w.__lcGap = 0;
-    w.__lcLast = 0;
-  });
-const record = (page: Page) => page.evaluate(() => ({ swaps: (window as unknown as { __lcSwaps: number }).__lcSwaps, gap: (window as unknown as { __lcGap: number }).__lcGap }));
+/** Moves the mouse and waits until the page has handled the move: a busy browser delivers moves late (at its next
+ *  frame), and the page's clock must not run ahead of them. */
+async function moveTo(page: Page, x: number, y: number, steps = 1) {
+  await page.mouse.move(x, y, { steps });
+  await expect
+    .poll(() => page.evaluate(([x, y]) => {
+      const [px, py] = (window as unknown as { __lcAt: [number, number] }).__lcAt;
+      return Math.abs(px - x) <= 1 && Math.abs(py - y) <= 1;
+    }, [x, y]), { intervals: [10, 25, 50, 100] })
+    .toBe(true);
+}
+const swaps = (page: Page) => page.evaluate(() => (window as unknown as { __lcSwaps: number }).__lcSwaps);
+const resetSwaps = (page: Page) => page.evaluate(() => ((window as unknown as { __lcSwaps: number }).__lcSwaps = 0));
+
+/* The page runs on the test's clock (page.clock), and each move is handled before the clock goes on: the path's 12
+   moves are 50 ms apart for the page however slowly a busy runner delivers them, so a stalled runner can never look
+   like a pointer resting on Industries (the hover delay is 140 ms; on real time a slow CI runner did exactly that). 50 ms is a slow, human diagonal: without the aim logic
+   the paths that cross Industries the longest do swap the menus (checked at the end, so the test cannot go vacuous). */
+const STEP_MS = 50;
 
 for (const locale of ["en", "ar"] as const)
   for (const width of [1440, 1024])
     test(`[${locale} ${width}px] Services menu: a diagonal path from the label (or chevron) to any item keeps it open (UX3-01)`, async ({ page }) => {
       test.skip(isNarrow(page), "desktop navigation is ≥ 1024px");
-      test.setTimeout(60_000);
+      test.setTimeout(120_000); // 13 paths of 12 moves, each one handled before the clock goes on
       await page.setViewportSize({ width, height: 900 });
+      await page.clock.install();
       await page.goto(`/${locale}/about/`);
+      // from here the page's time only moves with runFor (an installed clock otherwise follows real time)
+      await page.clock.pauseAt((await page.evaluate(() => Date.now())) + 1000);
       const services = page.locator('header nav button[aria-controls="lc-dd-services"]');
       const industries = page.locator('header nav button[aria-controls="lc-dd-industries"]');
       const label = page.locator("header nav [data-dd]").first().locator("a").first();
       await recordMenus(page);
       const items = page.locator("#lc-dd-services .lc-dd-link");
       const n = await items.count();
-      // every item from the label; the right-hand column (odd items) also from the chevron, the closest start
-      const paths = [...Array(n).keys()].map((i) => ({ i, from: label })).concat([...Array(n).keys()].filter((i) => i % 2).map((i) => ({ i, from: services })));
-      for (const { i, from } of paths) {
-        let result = { swaps: 0, gap: 0 };
-        for (let attempt = 0; attempt < 3; attempt++) {
-          await page.mouse.move(width / 2, 860);
-          await expect(services).toHaveAttribute("aria-expanded", "false");
-          const o = (await from.boundingBox())!;
-          await page.mouse.move(o.x + o.width / 2, o.y + o.height / 2, { steps: 3 });
-          await expect(services).toHaveAttribute("aria-expanded", "true");
-          const t = (await items.nth(i).boundingBox())!;
-          const [sx, sy, tx, ty] = [o.x + o.width / 2, o.y + o.height / 2, t.x + t.width / 2, t.y + t.height / 2];
-          await resetRecord(page);
-          for (let s = 1; s <= 12; s++) {
-            await page.mouse.move(sx + ((tx - sx) * s) / 12, sy + ((ty - sy) * s) / 12);
-            await page.waitForTimeout(25);
-          }
-          await page.waitForTimeout(250);
-          result = await record(page);
-          // a pause of > 120 ms between two moves is a resting pointer (the swap is then right): a stalled run, retry
-          if (!result.swaps || result.gap < 120) break;
+      /** From the start (label or chevron) to item i in 12 paced moves; how often Industries opened on the way. */
+      const walk = async (i: number, from: typeof label) => {
+        await moveTo(page, width / 2, 860);
+        await page.clock.runFor(400); // a menu that hover opened closes once the pointer has left it
+        await expect(services).toHaveAttribute("aria-expanded", "false");
+        await expect(industries).toHaveAttribute("aria-expanded", "false");
+        const o = (await from.boundingBox())!;
+        await moveTo(page, o.x + o.width / 2, o.y + o.height / 2, 3);
+        await page.clock.runFor(200); // hover intent
+        await expect(services).toHaveAttribute("aria-expanded", "true");
+        await expect(items.nth(i)).toBeVisible();
+        const t = (await items.nth(i).boundingBox())!;
+        const [sx, sy, tx, ty] = [o.x + o.width / 2, o.y + o.height / 2, t.x + t.width / 2, t.y + t.height / 2];
+        await resetSwaps(page);
+        for (let s = 1; s <= 12; s++) {
+          await moveTo(page, sx + ((tx - sx) * s) / 12, sy + ((ty - sy) * s) / 12);
+          await page.clock.runFor(STEP_MS);
         }
+        await page.clock.runFor(250);
+        return swaps(page);
+      };
+      // every item from the label; the right-hand column (odd items) also from the chevron, the closest start
+      const fromChevron = [...Array(n).keys()].filter((i) => i % 2);
+      const paths = [...Array(n).keys()].map((i) => ({ i, from: label })).concat(fromChevron.map((i) => ({ i, from: services })));
+      for (const { i, from } of paths) {
+        const opened = await walk(i, from);
         const what = `item ${i + 1} (${(await items.nth(i).innerText()).trim()}) from the ${from === label ? "label" : "chevron"}`;
-        expect(result.swaps, `${what}: Industries opened on the way`).toBe(0);
+        expect(opened, `${what}: Industries opened on the way`).toBe(0);
         await expect(services, `${what}: Services closed`).toHaveAttribute("aria-expanded", "true");
         await expect(industries).toHaveAttribute("aria-expanded", "false");
       }
       // a deliberate move to Industries still swaps the menus once the pointer rests there
       const ind = (await page.locator("header nav [data-dd]").nth(1).locator("a").first().boundingBox())!;
-      await page.mouse.move(ind.x + ind.width / 2, ind.y + ind.height / 2, { steps: 4 });
+      await moveTo(page, ind.x + ind.width / 2, ind.y + ind.height / 2, 4);
+      await page.clock.runFor(300);
       await expect(industries).toHaveAttribute("aria-expanded", "true");
       await expect(services).toHaveAttribute("aria-expanded", "false");
+      // control: the chevron path that crosses Industries the longest, with the menu aim switched off (the header never
+      // sees the moves), does swap the menus at this pace: the test is not vacuous
+      await page.evaluate(() => addEventListener("pointermove", (e) => e.stopPropagation(), true));
+      expect(await walk(fromChevron[0]!, services), "without the menu aim, Industries opens on the way").toBeGreaterThan(0);
     });
 
 /* ------------------------------------------------------------------ MOT3-01 render blocking + kept button */
@@ -125,31 +143,44 @@ test.describe("404", () => {
   });
 });
 
+/** Records when the head script adds the render-blocking link (with what the navigation entry said then) and when
+ *  it is taken out again (sessionStorage.__r3expect, MOT4-01). Runs before the page's scripts. */
+function watchExpect() {
+  const life = { added: -1, removed: -1, responseEnd: -1, deliveryType: "" };
+  (window as unknown as { __life: typeof life }).__life = life;
+  const isExpect = (n: Node) => n instanceof HTMLLinkElement && n.rel === "expect";
+  const save = () => (sessionStorage.__r3expect = JSON.stringify(life));
+  new MutationObserver((ms) => {
+    for (const m of ms) {
+      if ([...m.addedNodes].some(isExpect)) {
+        const n = performance.getEntriesByType("navigation")[0] as PerformanceNavigationTiming & { deliveryType?: string };
+        Object.assign(life, { added: performance.now(), responseEnd: n.responseEnd, deliveryType: n.deliveryType ?? "" });
+        save();
+      }
+      if ([...m.removedNodes].some(isExpect)) {
+        life.removed = performance.now();
+        save();
+      }
+    }
+  }).observe(document, { childList: true, subtree: true });
+}
+type Life = { added: number; removed: number; responseEnd: number; deliveryType: string };
+
 test("same-site navigation (desktop): the floating button exists at the reveal and stays fully shown through the transition (MOT3-01)", async ({ page }) => {
   test.skip(isNarrow(page), "the button is carried across pages from 1024px");
+  await page.addInitScript(watchExpect);
   await page.addInitScript(() => {
     try {
       sessionStorage.lcIntro = 1;
       sessionStorage.lcPing = 1;
     } catch {}
-    // when the head script adds the render-blocking link, and when it is taken out again (MOT4-01: capped at 200 ms)
-    const life = { added: -1, removed: -1 };
-    const isExpect = (n: Node) => n instanceof HTMLLinkElement && n.rel === "expect";
-    new MutationObserver((ms) => {
-      for (const m of ms) {
-        if ([...m.addedNodes].some(isExpect)) life.added = performance.now();
-        if ([...m.removedNodes].some(isExpect)) {
-          life.removed = performance.now();
-          sessionStorage.__r3expect = JSON.stringify(life);
-        }
-      }
-    }).observe(document, { childList: true, subtree: true });
     addEventListener("pagereveal", (e) => {
       const t = (e as Event & { viewTransition?: ViewTransition | null }).viewTransition;
+      const life = (window as unknown as { __life: Life }).__life;
       const J = {
         vt: !!t,
         expect: life.added >= 0,
-        // the 200 ms cap lifted the block before the end of the document was parsed (a slow machine)
+        // the cap lifted the block before the end of the document was parsed (a slow machine)
         capped: life.removed >= 0,
         parsed: !!document.getElementById("lc-end"),
         fabAtReveal: !!document.querySelector(".lc-fab"),
@@ -193,11 +224,36 @@ test("same-site navigation (desktop): the floating button exists at the reveal a
     expect(J.fabAtReveal, "the floating button exists when the transition starts").toBe(true);
     expect(Math.min(...J.fab), "the kept button never dims or disappears during the transition").toBeGreaterThan(0.99);
   }
-  // the wait is capped (MOT4-01): the link is taken out 200 ms after it was added, whether or not the HTML is all here
-  await expect.poll(() => page.evaluate(() => sessionStorage.__r3expect ?? ""), { timeout: 2_000 }).not.toBe("");
-  const life = JSON.parse(await page.evaluate(() => sessionStorage.__r3expect!)) as { added: number; removed: number };
-  expect(life.removed - life.added, "the render-blocking link's lifetime (ms)").toBeLessThanOrEqual(300);
+  /* A prefetch reports no responseEnd (finished or still downloading), so the wait is capped (MOT4-01): the link is
+     taken out 600 ms after it was added. Never sooner (a 200 ms cap showed half-parsed heroes on slow machines); the
+     upper bound only proves there is a cap (a timer runs late while a slow machine parses). */
+  const life = JSON.parse(await page.evaluate(() => sessionStorage.__r3expect!)) as Life;
+  test.skip(life.deliveryType !== "navigational-prefetch", "the HTML came from the cache in this run: no cap there (next test)");
+  expect(life.responseEnd).toBe(0);
+  await expect
+    .poll(async () => (JSON.parse(await page.evaluate(() => sessionStorage.__r3expect!)) as Life).removed, { timeout: 10_000 })
+    .toBeGreaterThan(0);
+  const done = JSON.parse(await page.evaluate(() => sessionStorage.__r3expect!)) as Life;
+  expect(done.removed - done.added, "the render-blocking link's lifetime (ms)").toBeGreaterThanOrEqual(580);
+  expect(done.removed - done.added, "the render-blocking link's lifetime (ms)").toBeLessThan(5_000);
   expect(await page.locator('link[rel="expect"]').count()).toBe(0);
+});
+
+test("an arrival from the HTTP cache (only parsing left) waits for the whole document, with no cap (MOT3-01 / MOT4-01)", async ({ page }) => {
+  test.skip(isNarrow(page), "render blocking is only used from 64rem");
+  await page.addInitScript(watchExpect);
+  await page.addInitScript(() =>
+    addEventListener("pagereveal", () => (sessionStorage.__r3parsed = String(!!document.getElementById("lc-end")))),
+  );
+  await page.goto("/ar/");
+  await page.evaluate(() => (delete sessionStorage.__r3expect, delete sessionStorage.__r3parsed));
+  await page.goto("/ar/"); // same-site, the HTML from the HTTP cache (revalidated)
+  const life = JSON.parse((await page.evaluate(() => sessionStorage.__r3expect)) ?? "null") as Life | null;
+  test.skip(!life || life.deliveryType !== "cache", "the HTML did not come from the cache in this run: no render blocking (by design)");
+  expect(life!.responseEnd, "the whole response was here when the head script ran").toBeGreaterThan(0);
+  expect(await page.evaluate(() => sessionStorage.__r3parsed), "the first frame waited for the end of the document").toBe("true");
+  await page.waitForTimeout(800); // past where a cap would have fired
+  expect((JSON.parse(await page.evaluate(() => sessionStorage.__r3expect!)) as Life).removed, "not taken out by a timer").toBe(-1);
 });
 
 test("phones: a same-site arrival never waits for the whole document (no render-blocking link below 64rem, PSC4-04)", { tag: "@phone" }, async ({

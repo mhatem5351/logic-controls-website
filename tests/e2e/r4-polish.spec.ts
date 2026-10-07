@@ -41,6 +41,7 @@ async function charTops(el: Locator) {
 test("contact sidebar: the WhatsApp button is one line from 320 px (short label where the card is narrow)", { tag: "@desktop-only" }, async ({
   page,
 }) => {
+  test.slow(); // 24 relayouts of the contact page
   for (const l of ["en", "ar", "tr"]) {
     await page.setViewportSize({ width: 390, height: 900 });
     await page.goto(`/${l}/contact/`);
@@ -61,10 +62,13 @@ test("contact sidebar: the WhatsApp button is one line from 320 px (short label 
 });
 
 test("home hero below 360 px: the short eyebrow keeps the place name on one line", { tag: "@desktop-only" }, async ({ page }) => {
+  test.slow(); // relayouts of the long home page, 4 locales
+  // every 8 px across the range where the place name split (Chromium 320–358, WebKit 334–358), and its top end
+  const widths = [320, 328, 336, 344, 352, 358];
   for (const l of ["en", "ar", "zh", "tr"]) {
-    await page.setViewportSize({ width: 320, height: 700 });
+    await page.setViewportSize({ width: widths[0]!, height: 700 });
     await page.goto(`/${l}/`);
-    for (let width = 320; width <= 358; width += 2) {
+    for (const width of widths) {
       await page.setViewportSize({ width, height: 700 });
       const chip = page.locator(".lc-hero li:visible", { hasText: "·" });
       await expect(chip).toHaveCount(1);

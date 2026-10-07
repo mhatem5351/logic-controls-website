@@ -147,8 +147,9 @@ test("desktop mega-menu: moving from Services to Industries swaps the panels (ne
   expect(await watch).toBe(1);
   await expect(page.locator("#lc-dd-industries")).toBeVisible();
   await expect(page.locator("#lc-dd-services")).toBeHidden();
-  // the open item's chevron points up
-  expect(await page.locator('button[aria-controls="lc-dd-industries"] svg').evaluate((s) => getComputedStyle(s).rotate)).toBe("180deg");
+  // the open item's chevron points up (once its turn has ended: a slow machine is still mid-transition here)
+  const chevron = page.locator('button[aria-controls="lc-dd-industries"] svg');
+  await expect.poll(() => chevron.evaluate((s) => getComputedStyle(s).rotate)).toBe("180deg");
 });
 
 test("header actions carry the page context (service preselection; WhatsApp-first Arabic gets the page's message)", async ({ page }) => {
