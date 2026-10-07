@@ -3,7 +3,7 @@
  * Foreign manufacturers (investor landing page; the key page for /zh/ and /tr/ visitors).
  * Hero → "On this page" bar → what a new plant needs (need → how we close the gap) → services → for machine builders
  * (OEMs who need a local commissioning / service team) → when to involve us → standards & documentation → experience
- * with imported lines (+ founder strip) → languages → zones → FAQ → CTA. Section indices follow what is rendered.
+ * with imported lines (+ team strip) → languages → zones → FAQ → CTA. Section indices follow what is rendered.
  * Hero CTAs: quote + "Email an engineer" (documents and formal requests travel by email for foreign teams; Arabic
  * pages: WhatsApp, the channel Gulf/Egyptian investors use); WhatsApp stays in the closing band. A quiet link under
  * the CTAs jumps to the machine-builder block.
@@ -23,7 +23,7 @@ import LogoWall from "~/components/LogoWall.astro";
 import FAQ from "~/components/FAQ.astro";
 import CtaBand from "~/components/CtaBand.astro";
 import ZonesBlock from "~/components/sections/main/ZonesBlock.astro";
-import FounderStrip from "~/components/sections/main/FounderStrip.astro";
+import TeamStrip from "~/components/sections/main/TeamStrip.astro";
 import PageToc from "~/components/sections/main/PageToc.astro";
 import { projectsOnPlatform } from "~/components/sections/catalog/platforms";
 import { projectsFor } from "~/components/sections/catalog/catalog";
@@ -395,7 +395,7 @@ const jsonLd = graph(
       </div>
     </div>
     <LogoWall locale={locale} class="mt-14 sm:mt-20 [&_li]:text-charcoal-600" />
-    <FounderStrip locale={locale} class="mt-10 sm:mt-14 lg:mt-16" />
+    <TeamStrip locale={locale} class="mt-10 sm:mt-14 lg:mt-16" />
   </Section>
 
   {/* ---------- 06 languages ---------- */}

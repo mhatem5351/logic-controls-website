@@ -284,7 +284,7 @@ project photos, plus the shared body blocks it renders (the `scripts/content-dat
 Templates, nav, footer, `ui.json`, `seo.json` and `common.json` chrome (labels, breadcrumbs, CTA bands, notes) never
 re-date a page. The shared body blocks a page shows do: the proof figures (`common.stats` + `SITE.projectsCount` /
 `experienceYears` / `brands` + the industry count) on home, about and foreign-manufacturers; `common.zones` +
-`src/data/zones.ts` on the same three; `common.process` on home, about and the services listing; the founder strip on
+`src/data/zones.ts` on the same three; `common.process` on home, about and the services listing; the team strip on
 home and foreign-manufacturers; `common.quoteChecklist` on contact. Data modules are compared as a token stream, so a
 Prettier pass or a hand reflow never re-dates a page.
 
@@ -382,7 +382,8 @@ The site makes only claims the client can back up. In short (the full rules are 
   are not in the English source. Use Western digits in every locale, including Arabic. Show **no founding year**
   anywhere. Projects delivered before the company existed say "delivered by our engineers before the company was
   established".
-- The founder's past employers are described, never named. Sub-sectors from the team's past jobs are "our engineers'
+- The founder is not featured anywhere on the site (no name, portrait, bio or Person structured data), at his
+  request (October 2026); the team strip speaks for the team. Past employers are never named either. Sub-sectors from the team's past jobs are "our engineers'
   experience", not Logic Controls case studies.
 - The zones list is a coverage statement ("we work across…"), not a list of past project sites. Map distances are
   labelled straight-line.

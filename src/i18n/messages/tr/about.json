@@ -13,30 +13,6 @@
       "Logic Controls'u, Mısır'daki fabrikalara tüm kontrol sistemi için tek bir mühendislik ekibi sunmak amacıyla kurduk: tasarım, pano, programlama, devreye alma ve destek."
     ]
   },
-  "founder": {
-    "eyebrow": "Kurucumuz",
-    "title": "Logic Controls'un arkasındaki mühendis",
-    "name": "Mohammed Tarek Aboalsafa",
-    "role": "Kurucu ve Otomasyon Mühendisi",
-    "bio": [
-      "Mohammed Tarek Aboalsafa, dört yılı aşkın deneyime sahip bir endüstriyel otomasyon mühendisidir. Gıda ve içecek, ilaç ve diğer sektörlerdeki tesisler için PLC, HMI ve SCADA sistemlerini tasarlar, programlar, devreye alır ve bakımını yapar. Helwan Üniversitesi'nden Elektrik Gücü ve Makineleri alanında lisans derecesi (B.Sc., 2020) almıştır.",
-      "Logic Controls'tan önce Kahire'de çok uluslu bir ilaç şirketinin fabrikasında, GMP ortamında otomasyon mühendisi olarak çalıştı. Ayrıca mühendislik eğitim ekipmanları üreten bir Mısır şirketinde Ar-Ge alanında ve bir makine otomasyonu firmasında görev yaptı."
-    ],
-    "highlights": [
-      {
-        "value": "4+",
-        "label": "yıllık endüstriyel otomasyon deneyimi"
-      },
-      {
-        "value": "B.Sc.",
-        "label": "Elektrik Gücü ve Makineleri"
-      },
-      {
-        "value": "GMP",
-        "label": "ilaç tesisi deneyimi"
-      }
-    ]
-  },
   "mission": {
     "title": "Misyonumuz",
     "text": "Mısır'daki fabrikaların işletebileceği, bakımını yapabileceği ve genişletebileceği kontrol sistemleri sunmak: güvenilir, belgelenmiş ve yerel desteği olan platformlar üzerine kurulu."

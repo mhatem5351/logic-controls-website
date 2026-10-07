@@ -1,7 +1,7 @@
 ---
 /**
  * Home — dual-path entry (factories in Egypt / setting up in Egypt). Section order: src/i18n/CONTENT.md §4.
- * Hero → platforms → two doors → recent work → services → industries → live HMI demo → why us (+ founder strip) →
+ * Hero → platforms → two doors → recent work → services → industries → live HMI demo → why us (+ team strip) →
  * how we work → commissioning case for foreign manufacturers → zones → FAQ → closing CTA with the quote checklist.
  * Services and industries sit next to each other (a buyer scanning the offer is not interrupted by the demo); light
  * and tinted bands alternate. Phones and tablets (< 1024px) get compact service rows, industry tiles, a one-screen
@@ -32,7 +32,7 @@ import ProjectCard from "~/components/sections/catalog/ProjectCard.astro";
 import CopyEmail from "~/components/CopyEmail.astro";
 import ZonesBlock from "~/components/sections/main/ZonesBlock.astro";
 import QuoteCta from "~/components/sections/main/QuoteCta.astro";
-import FounderStrip from "~/components/sections/main/FounderStrip.astro";
+import TeamStrip from "~/components/sections/main/TeamStrip.astro";
 import Chips from "~/components/Chips.astro";
 import { serviceIcon, industryIcon } from "~/components/sections/catalog/catalog";
 import { html, heading, emphasize } from "~/lib/text";
@@ -332,7 +332,7 @@ const jsonLd = graph(
     </DemoTeaser>
   </Section>
 
-  {/* ---------- why us + founder ---------- */}
+  {/* ---------- why us + team ---------- */}
   <Section id="why">
     <div class="grid grid-cols-1 gap-10 lg:grid-cols-12 lg:gap-14">
       <div class="lg:col-span-5">
@@ -377,7 +377,7 @@ const jsonLd = graph(
         }
       </ol>
     </div>
-    <FounderStrip locale={locale} class="mt-10 lg:mt-14" />
+    <TeamStrip locale={locale} class="mt-10 lg:mt-14" />
   </Section>
 
   {/* ---------- how we work ---------- */}

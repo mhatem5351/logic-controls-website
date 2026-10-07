@@ -3,12 +3,12 @@
  * result to <BaseLayout jsonLd>; <Breadcrumbs> uses breadcrumbList().
  *
  * One company entity: a single ProfessionalService node (a subtype of Organization) with @id …/#organization, emitted
- * in full on home, about and contact; every other page refers to it with orgRef(). The founder is a Person
- * (…/#founder), in full on /about/ (AboutPage.mainEntity). Facts come from src/data/site.ts and the messages, never
- * typed in here. Entity nodes (#organization, #founder) are identical on every page and in every locale (English
+ * in full on home, about and contact; every other page refers to it with orgRef(). No Person nodes: the founder asked
+ * not to be featured on the site (October 2026). Facts come from src/data/site.ts and the messages, never typed in
+ * here. The entity node (#organization) is identical on every page and in every locale (English
  * values, the Arabic name as alternateName): search engines merge nodes by @id and keep one value, so per-locale
  * variants would only compete (CS2-07). Localised text lives on the page nodes (WebPage, Service, Article). Not claimed until the client approves / provides it:
- * the Arabic brand spelling (CS-20), the founder's LinkedIn (sameAs), a street address and geo point (CS-05).
+ * the Arabic brand spelling (CS-20), a street address and geo point (CS-05).
  *
  * Every text value goes through cleanText(): JSON-LD gets the words, never the display controls html()/plain() add
  * (NBSP, WORD JOINER, LRI…PDI, soft hyphens, U+200B).
@@ -28,7 +28,6 @@ export type JsonLdNode = Record<string, unknown>;
 
 export const ORG_ID = `${SITE.url}/#organization`;
 export const WEBSITE_ID = `${SITE.url}/#website`;
-export const FOUNDER_ID = `${SITE.url}/#founder`;
 /** schema.org type of the company node (ProfessionalService ⊂ LocalBusiness ⊂ Organization). Same everywhere. */
 const ORG_TYPE = "ProfessionalService";
 
@@ -47,7 +46,14 @@ export function graph(...nodes: Array<JsonLdNode | undefined | false | null>): J
 
 /* ------------------------------------------------------------------ the company */
 
-const LOGO = { "@type": "ImageObject", "@id": `${SITE.url}/#logo`, url: absUrl("/logo-512.png"), width: 512, height: 512, caption: SITE.name };
+const LOGO = {
+  "@type": "ImageObject",
+  "@id": `${SITE.url}/#logo`,
+  url: absUrl("/logo-512.png"),
+  width: 512,
+  height: 512,
+  caption: SITE.name,
+};
 
 /** Reference to the company: @id plus the name / url / logo Google needs where the full node is not on the page. */
 export const orgRef = () => ({ "@type": ORG_TYPE, "@id": ORG_ID, name: SITE.name, url: `${SITE.url}/`, logo: LOGO });
@@ -58,12 +64,15 @@ const address = () => ({
   addressRegion: SITE.address.region,
   addressCountry: SITE.address.country,
 });
-const egypt = (locale: Locale) => ({ "@type": "Country", name: txt((getMessages(locale).common.locations as Record<string, string>).egypt) ?? "Egypt" });
-/** Locale of the entity nodes (#organization, #founder): one set of values everywhere. */
+const egypt = (locale: Locale) => ({
+  "@type": "Country",
+  name: txt((getMessages(locale).common.locations as Record<string, string>).egypt) ?? "Egypt",
+});
+/** Locale of the entity node (#organization): one set of values everywhere. */
 const ENTITY_LOCALE: Locale = "en";
 
 /**
- * The single company node (CS-07): ProfessionalService + founder + services offered + areas served. The same values on
+ * The single company node (CS-07): ProfessionalService + services offered + areas served. The same values on
  * every page and in every locale (CS2-07); `locale` is accepted for call-site compatibility only.
  */
 export function organization(_locale?: Locale): JsonLdNode {
@@ -71,7 +80,6 @@ export function organization(_locale?: Locale): JsonLdNode {
   const t = getMessages(locale);
   const zones = t.common.zones.items as Record<string, { name: string }>;
   const services = t.services.items as Record<string, { title: string; navTitle?: string }>;
-  const f = founderCopy(locale);
   return compact({
     "@type": ORG_TYPE,
     "@id": ORG_ID,
@@ -85,7 +93,6 @@ export function organization(_locale?: Locale): JsonLdNode {
     telephone: SITE.phone.tel,
     address: address(),
     areaServed: [egypt(locale), ...ZONES.map((z) => ({ "@type": "Place", name: txt(zones[z.slug]?.name) })).filter((p) => p.name)],
-    founder: f ? { "@type": "Person", "@id": FOUNDER_ID, name: f.name } : undefined,
     knowsAbout: SERVICE_SLUGS.map((s) => txt(services[s]?.title)).filter(Boolean),
     hasOfferCatalog: {
       "@type": "OfferCatalog",
@@ -118,45 +125,6 @@ export function website(): JsonLdNode {
     inLanguage: LOCALES.map(lang),
     publisher: { "@id": ORG_ID },
   };
-}
-
-/* ------------------------------------------------------------------ the founder */
-
-interface FounderCopy {
-  name: string;
-  role?: string;
-}
-const founderCopy = (locale: Locale) => {
-  const f = (getMessages(locale).about as { founder?: FounderCopy }).founder;
-  return f?.name ? { name: cleanText(f.name), role: txt(f.role) } : undefined;
-};
-
-/**
- * Founder Person (CS-07), for AboutPage.mainEntity. Facts from about.founder (name, role) and the founder bio
- * (B.Sc., Helwan University). One node in every locale (CS2-07): the Latin name, the Arabic spelling as alternateName,
- * the English role, the English about page as url. No LinkedIn sameAs (its dates and employer names are not cleared
- * for the site).
- */
-export async function founder(_locale?: Locale): Promise<JsonLdNode | undefined> {
-  const locale = ENTITY_LOCALE;
-  const f = founderCopy(locale);
-  if (!f) return undefined;
-  const other = founderCopy("ar")?.name;
-  // lazy: keeps this module importable outside Astro (unit tests import catalog.ts, which re-exports orgRef)
-  const [{ getImage }, { default: photoSrc }] = await Promise.all([import("astro:assets"), import("~/assets/people/founder.jpg")]);
-  const photo = await getImage({ src: photoSrc, width: 600, format: "jpg", quality: 80 });
-  return compact({
-    "@type": "Person",
-    "@id": FOUNDER_ID,
-    name: f.name,
-    alternateName: other && other !== f.name ? other : undefined,
-    jobTitle: f.role,
-    image: absUrl(photo.src),
-    url: `${pageUrl(locale, "about")}#founder`,
-    worksFor: { "@id": ORG_ID },
-    alumniOf: { "@type": "CollegeOrUniversity", name: "Helwan University", sameAs: "https://en.wikipedia.org/wiki/Helwan_University" },
-    knowsAbout: ["PLC programming", "HMI", "SCADA", "GMP environments"],
-  });
 }
 
 /* ------------------------------------------------------------------ platform brands */
@@ -250,7 +218,12 @@ export function breadcrumbList(locale: Locale, trail: Array<{ label: string; pat
     "@context": "https://schema.org",
     "@type": "BreadcrumbList",
     itemListElement: trail.map((c, i) =>
-      compact({ "@type": "ListItem", position: i + 1, name: cleanText(c.label), item: c.path !== undefined ? pageUrl(locale, c.path) : undefined }),
+      compact({
+        "@type": "ListItem",
+        position: i + 1,
+        name: cleanText(c.label),
+        item: c.path !== undefined ? pageUrl(locale, c.path) : undefined,
+      }),
     ),
   };
 }
@@ -271,7 +244,7 @@ function mp4Duration(publicPath: string): string | undefined {
     };
     // walk boxes: top level → moov → mvhd
     const find = (start: number, end: number, type: string): [number, number] | undefined => {
-      for (let pos = start; pos + 8 <= end; ) {
+      for (let pos = start; pos + 8 <= end;) {
         const h = read(pos, 16);
         let len = h.readUInt32BE(0);
         const hdr = len === 1 ? 16 : 8;
@@ -314,7 +287,9 @@ interface CaseStudyCopy {
 function withCairoOffset(date: string | undefined): string | undefined {
   if (!date || !/^\d{4}-\d{2}-\d{2}$/.test(date)) return date;
   const noonUtc = new Date(`${date}T12:00:00Z`);
-  const name = new Intl.DateTimeFormat("en", { timeZone: "Africa/Cairo", timeZoneName: "longOffset" }).formatToParts(noonUtc).find((p) => p.type === "timeZoneName")?.value;
+  const name = new Intl.DateTimeFormat("en", { timeZone: "Africa/Cairo", timeZoneName: "longOffset" })
+    .formatToParts(noonUtc)
+    .find((p) => p.type === "timeZoneName")?.value;
   const offset = /GMT([+-]\d{2}:\d{2})/.exec(name ?? "")?.[1] ?? "+02:00";
   return `${date}T00:00:00${offset}`;
 }

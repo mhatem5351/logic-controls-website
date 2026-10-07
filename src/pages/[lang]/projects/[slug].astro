@@ -260,9 +260,9 @@ const jsonLd = graph(
             <Icon name="clock" size={16} class="mt-0.5 shrink-0 text-royal-600" />
             <span set:html={html(locale, m.common.notes.preFounding)} />
           </span>
-          {/* who those engineers are (CS2-11) */}
-          <a href={`${localePath(locale, "about")}#founder`} class="group inline-flex items-center gap-1.5 font-semibold text-royal-700 underline decoration-royal-200 underline-offset-4 hover:decoration-royal-600">
-            {m.common.founderStrip.cta}
+          {/* who those engineers are (CS2-11): the About page */}
+          <a href={localePath(locale, "about")} class="group inline-flex items-center gap-1.5 font-semibold text-royal-700 underline decoration-royal-200 underline-offset-4 hover:decoration-royal-600">
+            {m.common.teamStrip.cta}
             <Icon name="arrow" size={14} class="transition-transform group-hover:translate-x-0.5 rtl:group-hover:-translate-x-0.5" />
           </a>
         </p>

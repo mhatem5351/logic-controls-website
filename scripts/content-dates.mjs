@@ -15,7 +15,7 @@
 //   src/i18n/messages/L/<ns>.json; "*" = the slugs in the module's *_SLUGS list that have copy (all items without one):
 //     /L/                           home.json (whole) + services.items[*].{title,summary} + industries.items[*].{title,summary}
 //                                   + projects.items[f].{cardTitle,client,summary} for f in FEATURED_PROJECT_SLUGS, in order
-//                                   + PROOF (with the case-study count) + PLATFORMS + FOUNDER + PROCESS + ZONES
+//                                   + PROOF (with the case-study count) + PLATFORMS + TEAM + PROCESS + ZONES
 //     /L/services/                  services.index + services.items[*].{title,summary} + PROCESS
 //     /L/services/<slug>/           services.items[slug] + the slug's object literal in src/data/services.ts
 //     /L/industries/                industries.index + industries.items[*].{title,summary}
@@ -24,7 +24,7 @@
 //     /L/projects/<slug>/           projects.items[slug] + the slug's object literal in src/data/projects.ts
 //                                   + git blob ids of every file under src/assets/projects/<slug>/
 //     /L/about/                     about.json + PROOF + PROCESS + ZONES + common.company.addressLine (hero chip)
-//     /L/foreign-manufacturers/     foreign.json + PROOF + FOUNDER + ZONES
+//     /L/foreign-manufacturers/     foreign.json + PROOF + TEAM + ZONES
 //     /L/contact/                   contact.json + common.quoteChecklist (the "What we need to quote" panel)
 //     /L/technologies/              technologies.json + tech.json + src/data/technologies.ts (whole file)
 //     /L/privacy/                   privacy.json
@@ -33,7 +33,7 @@
 //                SITE.brands (also the LogoWall names) from src/data/site.ts, the INDUSTRY_SLUGS count; on the home
 //                page also the PROJECT_SLUGS count (its "case studies" figure)
 //     PLATFORMS  common.platforms          PROCESS  common.process ("How we work")
-//     FOUNDER    common.founderStrip + about.founder.{name,role}
+//     TEAM       common.teamStrip
 //     ZONES      common.zones + src/data/zones.ts (whole file: slugs, regions, order, home base)
 //   Object literal = the `{…}` enclosing `slug: "<slug>"` (brace matcher that skips strings, template literals and
 //   comments; regex literals are not parsed — data modules have none). Source from .ts files is compared as a
@@ -128,7 +128,7 @@ const STATE_KEY = Symbol.for("logic-controls.content-dates");
 /** @type {{ now: string, warned: boolean, contexts: Map<string, Context> }} */
 const state =
   /** @type {any} */ (globalThis)[STATE_KEY] ??
-  (/** @type {any} */ (globalThis)[STATE_KEY] = { now: isoLocal(), warned: false, contexts: new Map() });
+  /** @type {any} */ ((globalThis)[STATE_KEY] = { now: isoLocal(), warned: false, contexts: new Map() });
 
 /* ------------------------------------------------------------------------------------------------ hashing */
 
@@ -604,11 +604,8 @@ function sharedBlocks(r, l) {
     zones: () => ({ copy: common()?.zones, data: r.code(ZONES_FILE) }),
     /** "How we work": common.process. */
     process: () => common()?.process,
-    /** Founder strip: common.founderStrip + the founder's name and role (about.founder, the photo's alt text). */
-    founder: () => {
-      const f = r.json(MSG(l, "about"))?.founder;
-      return { strip: common()?.founderStrip, name: f?.name, role: f?.role };
-    },
+    /** Team strip ("who you will work with"): common.teamStrip. */
+    team: () => ({ strip: common()?.teamStrip }),
     /** "What we need to quote": common.quoteChecklist. */
     checklist: () => common()?.quoteChecklist,
     /** Platforms section heading: common.platforms. */
@@ -643,7 +640,7 @@ function pageParts(r, path) {
       featured: featured.map((s) => ({ slug: s, ...pick(projects?.[s], COLLECTIONS.projects.card) })),
       proof: shared.proof({ caseStudies: true }),
       platforms: shared.platforms(),
-      founder: shared.founder(),
+      team: shared.team(),
       process: shared.process(),
       zones: shared.zones(),
     };
@@ -672,7 +669,7 @@ function pageParts(r, path) {
   if (section === "about")
     return { page: section, copy, proof: shared.proof(), process: shared.process(), zones: shared.zones(), address: shared.address() };
   if (section === "foreign-manufacturers")
-    return { page: section, copy, proof: shared.proof(), founder: shared.founder(), zones: shared.zones() };
+    return { page: section, copy, proof: shared.proof(), team: shared.team(), zones: shared.zones() };
   if (section === "contact") return { page: section, copy, checklist: shared.checklist() };
   return { page: section, copy };
 }

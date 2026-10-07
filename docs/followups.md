@@ -18,9 +18,10 @@ Send as one questionnaire:
 5. Per project: I/O count, commissioning days on site, what the machine had before, one result they stand behind,
    zone, bottle-printer PLC / motion brand, olive-autoclave HMI brand.
 6. Exact post times of the three reels (VideoObject `uploadDate` is the post date at 00:00 Cairo time today).
-7. Founder's LinkedIn (JSON-LD `sameAs`; not linked until its dates and employer names are cleared).
+7. ~~Founder's LinkedIn~~ — dropped: the founder asked not to be featured on the site (October 2026); his section,
+   portrait, name and Person structured data were removed.
 8. Certificates (training, vendor) the team holds and may show. None are claimed today.
-9. Team size and roles; can we name them / show photos?
+9. Team size and roles; can we name them / show photos? (Not the founder — see 7.)
 10. Commercial register no., tax card no., legal form: publishable?
 11. 1–2 testimonials (by role / sector) and willingness to arrange reference calls (the "Talk to a past client" block
     on case studies promises references on request).

@@ -166,11 +166,11 @@
       "text": "Hat listenizi veya makine dokümanlarınızı ve iş takviminizi bize gönderin."
     }
   },
-  "founderStrip": {
+  "teamStrip": {
     "eyebrow": "Kimlerle çalışacaksınız",
     "title": "Bayi değil, mühendisiz",
-    "text": "Kurucumuz ve otomasyon mühendisimiz Mohammed Tarek Aboalsafa, gıda ve içecek, ilaç ve diğer sektörlerdeki tesisler için PLC, HMI ve SCADA sistemlerinin tasarımı, programlanması ve devreye alınmasında dört yılı aşkın deneyime sahiptir.",
-    "cta": "Kurucumuzla tanışın"
+    "text": "Sisteminiz üzerinde çalışan otomasyon mühendisleriyle doğrudan görüşürsünüz; arada bir satış aracısı yoktur. Ekibimiz, gıda ve içecek, ilaç ve diğer sektörlerdeki tesisler için PLC, HMI ve SCADA sistemlerinin tasarımı, programlanması ve devreye alınmasında dört yılı aşkın deneyime sahiptir.",
+    "cta": "Hakkımızda"
   },
   "whatsapp": {
     "default": "Merhaba Logic Controls, bir otomasyon projesi hakkında bir mühendisle görüşmek istiyorum.\nHello Logic Controls, I would like to talk to an engineer about an automation project.",

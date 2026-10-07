@@ -1,7 +1,7 @@
 ---
 /**
  * About — section order from src/i18n/CONTENT.md §4:
- * hero → story + mission → numbers → founder (only when about.founder exists) → values & why (one section:
+ * hero → story + mission → numbers → values & why (one section:
  * value cards + the "why choose us" points the home page does not already make) + platforms → how we work →
  * where we are (zones) → closing CTA.
  */
@@ -19,11 +19,10 @@ import Button from "~/components/Button.astro";
 import Icon, { type IconName } from "~/components/Icon.astro";
 import FactoryLine from "~/components/illustrations/FactoryLine.astro";
 import ZonesBlock from "~/components/sections/main/ZonesBlock.astro";
-import FounderBlock, { type Founder } from "~/components/sections/main/FounderBlock.astro";
 import { html, heading, emphasize } from "~/lib/text";
 import { getMessages, localeStaticPaths, type Locale } from "~/i18n";
 import { SITE } from "~/data/site";
-import { FOUNDER_ID, ORG_ID, founder as founderNode, graph, organization, webPage } from "~/lib/jsonld";
+import { ORG_ID, graph, organization, webPage } from "~/lib/jsonld";
 import { STATS } from "~/data/stats";
 import { href, whatsappLink, prefersEmail } from "~/components/nav";
 import heroImage from "~/assets/projects/shampoo-filling-delta-wecon/panel.jpg";
@@ -35,14 +34,11 @@ const a = t.about;
 const c = t.common;
 const email = prefersEmail(locale);
 
-const founder: Founder = a.founder;
-const hasFounder = !!founder.name;
 // Section indices follow what is actually rendered.
 let n = 0;
 const idx = () => String(++n).padStart(2, "0");
 const I = {
   story: idx(),
-  founder: hasFounder ? idx() : undefined,
   values: idx(),
   process: idx(),
   location: idx(),
@@ -56,23 +52,30 @@ const valueIcons: IconName[] = ["check", "file", "shield", "map-pin"];
 const whyPoints = a.why.items.slice(0, 4);
 const processIcons: IconName[] = ["map-pin", "file", "panel", "check", "gauge", "users"];
 
-/* Structured data (src/lib/jsonld.ts): AboutPage about the company, with the founder (Person) as its main entity. */
-const founderLd = await founderNode(locale);
+/* Structured data (src/lib/jsonld.ts): AboutPage about (and mainly about) the company. No Person node: the founder
+   asked not to be featured on the site (October 2026). */
 const jsonLd = graph(
   organization(locale),
-  founderLd,
   webPage(locale, {
     type: "AboutPage",
     path: "about",
     name: a.seo.title,
     description: a.seo.description,
     about: { "@id": ORG_ID },
-    mainEntity: founderLd ? { "@id": FOUNDER_ID } : { "@id": ORG_ID },
+    mainEntity: { "@id": ORG_ID },
   }),
 );
 ---
 
-<BaseLayout locale={locale} title={a.seo.title} description={a.seo.description} path="about" heroDark jsonLd={jsonLd} whatsappMessage={c.whatsapp.default}>
+<BaseLayout
+  locale={locale}
+  title={a.seo.title}
+  description={a.seo.description}
+  path="about"
+  heroDark
+  jsonLd={jsonLd}
+  whatsappMessage={c.whatsapp.default}
+>
   <Hero
     locale={locale}
     size="page"
@@ -92,7 +95,9 @@ const jsonLd = graph(
       <div class="lg:col-span-7">
         <SectionHeading id="story-title" index={I.story} eyebrow={a.eyebrows.story} title={html(locale, a.story.title)} />
         <div class="prose-lc mt-8 text-[1.0625rem] text-charcoal-700">
-          {a.story.paragraphs.map((p) => <p set:html={html(locale, p)} />)}
+          {a.story.paragraphs.map((p) => (
+            <p set:html={html(locale, p)} />
+          ))}
         </div>
       </div>
       <div class="lg:col-span-5 lg:pt-14">
@@ -106,7 +111,10 @@ const jsonLd = graph(
             <p class="lc-mission type-h3 text-white" set:html={heading(locale, a.mission.text)} />
           </blockquote>
           <div aria-hidden="true" class="pointer-events-none absolute inset-0 -z-10 bg-blueprint mask-fade-edges"></div>
-          <div aria-hidden="true" class="pointer-events-none absolute inset-0 -z-20 bg-[radial-gradient(ellipse_80%_70%_at_0%_100%,rgb(5_86_173/0.45),transparent_70%)] rtl:bg-[radial-gradient(ellipse_80%_70%_at_100%_100%,rgb(5_86_173/0.45),transparent_70%)]"></div>
+          <div
+            aria-hidden="true"
+            class="pointer-events-none absolute inset-0 -z-20 bg-[radial-gradient(ellipse_80%_70%_at_0%_100%,rgb(5_86_173/0.45),transparent_70%)] rtl:bg-[radial-gradient(ellipse_80%_70%_at_100%_100%,rgb(5_86_173/0.45),transparent_70%)]"
+          ></div>
           <BrandMark tone="mono" class="pointer-events-none absolute -end-12 -top-8 -z-10 h-64 w-auto text-white/[0.04]" />
         </figure>
       </div>
@@ -127,9 +135,6 @@ const jsonLd = graph(
     </div>
   </Section>
 
-  {/* ---------- founder (optional copy) ---------- */}
-  {hasFounder && <FounderBlock locale={locale} founder={founder} index={I.founder} />}
-
   {/* ---------- values + why (one section) ---------- */}
   <Section variant="muted" aria-labelledby="values-title">
     <div class="grid grid-cols-1 gap-10 lg:grid-cols-12 lg:gap-14">
@@ -137,53 +142,70 @@ const jsonLd = graph(
         <SectionHeading id="values-title" index={I.values} eyebrow={a.eyebrows.values} title={html(locale, a.values.title)} />
         <h3 class="mt-8 type-label text-charcoal-600">{a.why.title}</h3>
         <ul role="list" class="mt-3 border-t border-charcoal-200">
-          {
-            whyPoints.map((item) => (
-              <li class="flex items-start gap-3.5 border-b border-charcoal-200 py-3.5">
-                <span class="mt-0.5 grid size-6 shrink-0 place-items-center bg-royal-600 text-white" aria-hidden="true">
-                  <Icon name="check" size={14} strokeWidth={2.5} />
-                </span>
-                <span class="font-semibold text-navy-950" set:html={html(locale, item)} />
-              </li>
-            ))
-          }
+          {whyPoints.map((item) => (
+            <li class="flex items-start gap-3.5 border-b border-charcoal-200 py-3.5">
+              <span class="mt-0.5 grid size-6 shrink-0 place-items-center bg-royal-600 text-white" aria-hidden="true">
+                <Icon name="check" size={14} strokeWidth={2.5} />
+              </span>
+              <span class="font-semibold text-navy-950" set:html={html(locale, item)} />
+            </li>
+          ))}
         </ul>
-        <Button href={href(locale, "contact/#quote")} class="mt-8" iconEnd="arrow">{t.ui.cta.quote}</Button>
+        <Button href={href(locale, "contact/#quote")} class="mt-8" iconEnd="arrow">
+          {t.ui.cta.quote}
+        </Button>
       </div>
       <ul role="list" class="grid grid-cols-1 content-start gap-4 sm:grid-cols-2 sm:gap-5 lg:col-span-7">
-        {
-          a.values.items.map((v, i) => (
-            <li class="lc-reveal group relative flex flex-col border border-charcoal-200 bg-white p-6 transition duration-(--dur-ui) ease-mech hover:-translate-y-0.5 hover:border-royal-300 hover:shadow-lift sm:p-7">
-              <span aria-hidden="true" class="absolute -top-px start-6 h-1 w-10 skew-x-[-10deg] bg-royal-600 transition-[width] duration-(--dur-ui) ease-mech group-hover:w-20 sm:start-7 rtl:skew-x-[10deg]" />
-              <div class="flex items-center justify-between">
-                <span class="chamfer inline-grid size-11 place-items-center bg-navy-950 text-royal-300 [--chamfer:9px]">
-                  <Icon name={valueIcons[i] ?? "check"} size={22} />
-                </span>
-                <span aria-hidden="true" class="font-mono text-xs text-charcoal-600 ltr" dir="ltr">{String(i + 1).padStart(2, "0")}</span>
-              </div>
-              <h3 class="mt-5 type-h3 text-navy-950">{v.title}</h3>
-              <p class="mt-2.5 text-charcoal-600" set:html={html(locale, v.text)} />
-            </li>
-          ))
-        }
+        {a.values.items.map((v, i) => (
+          <li class="lc-reveal group relative flex flex-col border border-charcoal-200 bg-white p-6 transition duration-(--dur-ui) ease-mech hover:-translate-y-0.5 hover:border-royal-300 hover:shadow-lift sm:p-7">
+            <span
+              aria-hidden="true"
+              class="absolute -top-px start-6 h-1 w-10 skew-x-[-10deg] bg-royal-600 transition-[width] duration-(--dur-ui) ease-mech group-hover:w-20 sm:start-7 rtl:skew-x-[10deg]"
+            />
+            <div class="flex items-center justify-between">
+              <span class="chamfer inline-grid size-11 place-items-center bg-navy-950 text-royal-300 [--chamfer:9px]">
+                <Icon name={valueIcons[i] ?? "check"} size={22} />
+              </span>
+              <span aria-hidden="true" class="font-mono text-xs text-charcoal-600 ltr" dir="ltr">
+                {String(i + 1).padStart(2, "0")}
+              </span>
+            </div>
+            <h3 class="mt-5 type-h3 text-navy-950">{v.title}</h3>
+            <p class="mt-2.5 text-charcoal-600" set:html={html(locale, v.text)} />
+          </li>
+        ))}
       </ul>
     </div>
     <div class="mt-12 border-t border-charcoal-200 pt-10 sm:mt-16 sm:pt-12">
       <LogoWall locale={locale} class="[&_li]:text-charcoal-600" />
-      <Button href={href(locale, "technologies")} variant="ghost" class="mt-3 -ms-1">{c.platforms.cta}</Button>
+      <Button href={href(locale, "technologies")} variant="ghost" class="mt-3 -ms-1">
+        {c.platforms.cta}
+      </Button>
     </div>
   </Section>
 
   {/* ---------- how we work ---------- */}
   <Section aria-labelledby="process-title">
-    <SectionHeading id="process-title" index={I.process} eyebrow={a.eyebrows.process} title={html(locale, c.process.title)} lead={html(locale, c.process.intro)} />
+    <SectionHeading
+      id="process-title"
+      index={I.process}
+      eyebrow={a.eyebrows.process}
+      title={html(locale, c.process.title)}
+      lead={html(locale, c.process.intro)}
+    />
     <ProcessSteps class="mt-14" locale={locale} steps={c.process.steps.map((s, i) => ({ ...s, icon: processIcons[i] }))} />
   </Section>
 
   {/* ---------- where we are ---------- */}
   <Section variant="muted" aria-labelledby="location-title">
     <div class="flex flex-wrap items-end justify-between gap-6">
-      <SectionHeading id="location-title" index={I.location} eyebrow={c.labels.location} title={html(locale, a.location.title)} lead={html(locale, a.location.text)} />
+      <SectionHeading
+        id="location-title"
+        index={I.location}
+        eyebrow={c.labels.location}
+        title={html(locale, a.location.title)}
+        lead={html(locale, a.location.text)}
+      />
       <p class="flex max-w-sm items-start gap-3 border-s-2 border-signal-400 ps-4 text-sm text-charcoal-700">
         <Icon name="calendar" size={18} class="mt-0.5 shrink-0 text-royal-600" />
         <span>{a.location.note}</span>

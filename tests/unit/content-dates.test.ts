@@ -85,7 +85,7 @@ function fixture(): Tree {
       items: l === "ar" ? { a: project("a", l) } : { a: project("a", l), b: project("b", l) },
     });
     for (const ns of ["contact", "technologies", "tech", "foreign", "privacy", "ui"]) m(ns, { title: `${l} ${ns}` });
-    m("about", { title: `${l} about`, founder: { name: `${l} founder`, role: `${l} engineer`, bio: [`${l} bio`] } });
+    m("about", { title: `${l} about` });
     m("common", {
       title: `${l} common`,
       labels: { learnMore: `${l} learn more` },
@@ -97,7 +97,7 @@ function fixture(): Tree {
       platforms: { title: `${l} platforms` },
       process: { title: `${l} process`, steps: [{ title: `${l} visit`, text: `${l} we visit` }] },
       quoteChecklist: { title: `${l} checklist`, items: [`${l} photos`] },
-      founderStrip: { title: `${l} engineers` },
+      teamStrip: { title: `${l} engineers` },
       zones: { title: `${l} zones`, items: { z1: { name: `${l} z1` }, z2: { name: `${l} z2` } } },
       company: { tagline: `${l} tagline`, addressLine: `${l} address` },
     });
@@ -302,9 +302,8 @@ describe("shared blocks re-date exactly the pages that show them", () => {
     expect(changedBy((t) => (msg(t, "en", "common").company.addressLine = "new"))).toEqual(["/en/about/"]);
   });
 
-  it("founder strip → home and foreign-manufacturers; the founder's role (strip photo alt) also its about page", () => {
-    expect(changedBy((t) => (msg(t, "en", "common").founderStrip.title = "new"))).toEqual(["/en/", "/en/foreign-manufacturers/"]);
-    expect(changedBy((t) => (msg(t, "en", "about").founder.role = "new"))).toEqual(["/en/", "/en/about/", "/en/foreign-manufacturers/"]);
+  it("team strip → home and foreign-manufacturers only", () => {
+    expect(changedBy((t) => (msg(t, "en", "common").teamStrip.title = "new"))).toEqual(["/en/", "/en/foreign-manufacturers/"]);
   });
 });
 

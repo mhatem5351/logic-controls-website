@@ -13,30 +13,6 @@
       "We built Logic Controls to give factories in Egypt one engineering team for the whole control system: design, panel, programming, commissioning and support."
     ]
   },
-  "founder": {
-    "eyebrow": "Our founder",
-    "title": "The engineer behind Logic Controls",
-    "name": "Mohammed Tarek Aboalsafa",
-    "role": "Founder & Automation Engineer",
-    "bio": [
-      "Mohammed Tarek Aboalsafa is an industrial automation engineer with more than four years of experience. He designs, programs, commissions and maintains PLC, HMI and SCADA systems for food and beverage, pharmaceutical and other plants. He holds a B.Sc. in Electrical Power and Machines from Helwan University (2020).",
-      "Before Logic Controls, he worked as an automation engineer at a multinational pharmaceutical plant in Cairo, in a GMP environment. He also worked in R&D at an Egyptian manufacturer of engineering training equipment, and at a machine-automation company."
-    ],
-    "highlights": [
-      {
-        "value": "4+",
-        "label": "years in industrial automation"
-      },
-      {
-        "value": "B.Sc.",
-        "label": "Electrical Power & Machines"
-      },
-      {
-        "value": "GMP",
-        "label": "pharma plant experience"
-      }
-    ]
-  },
   "mission": {
     "title": "Our mission",
     "text": "To deliver control systems that Egyptian factories can run, maintain and extend: reliable, documented and built on platforms with local support."

@@ -166,11 +166,11 @@
       "text": "Send us your line list or machine documents and your schedule."
     }
   },
-  "founderStrip": {
+  "teamStrip": {
     "eyebrow": "Who you will work with",
     "title": "Engineers, not resellers",
-    "text": "Mohammed Tarek Aboalsafa, our founder and automation engineer, has more than four years of experience designing, programming and commissioning PLC, HMI and SCADA systems for food and beverage, pharmaceutical and other plants.",
-    "cta": "Meet our founder"
+    "text": "You talk directly to the automation engineers who work on your system, not to a sales middleman. Our team has more than four years of experience designing, programming and commissioning PLC, HMI and SCADA systems for food and beverage, pharmaceutical and other plants.",
+    "cta": "About us"
   },
   "whatsapp": {
     "default": "Hello Logic Controls, I would like to talk to an engineer about an automation project.",

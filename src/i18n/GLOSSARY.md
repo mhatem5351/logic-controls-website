@@ -273,7 +273,7 @@ error messages, the thanks page and the privacy notice.
 | ISA-88 principles | 参照 ISA-88 原则 | Never 符合 / 认证 |
 | Chocolate cooker / bakery line | 巧克力熬煮锅 / 烘焙生产线 | Edible-oil and liquid-egg fillers = 食用油与液蛋灌装机 |
 | Wax filling and capping | 蜡类产品灌装旋盖机 | |
-| Founder | 创始人 | Name stays Latin: Mohammed Tarek Aboalsafa |
+| Founder | 创始人 | Not used on the site since October 2026 (the founder asked not to be featured) |
 | Scan cycle / scan time (PLC) | 扫描周期 | ControlLoop chip: `PID · 扫描周期 10 ms` |
 | Forward / divert (FDV, HMI) | 出料 / 回流 | Tour step "Wait for Forward" = 等待进入“出料” |
 | Quote (short CTA) / quote form | 询价 / 询价表单 | The visitor's action is 询价; 报价 is what we send (the long CTA 获取报价 stays) |
@@ -372,7 +372,7 @@ error messages, the thanks page and the privacy notice.
 | ISA-88 principles | ISA-88 prensipleri esas alınarak | Never "uyumlu" / "sertifikalı" |
 | Chocolate cooker / bakery line | çikolata pişirme kazanı / unlu mamul hattı | Edible-oil and liquid-egg fillers = sıvı yağ ve sıvı yumurta dolum makineleri |
 | Wax filling and capping (cosmetics) | ağda (wax) dolum ve kapak kapatma | Cosmetic wax = ağda, not "mum" (candle) |
-| Founder | kurucu | Name stays Latin: Mohammed Tarek Aboalsafa |
+| Founder | kurucu | Not used on the site since October 2026 (the founder asked not to be featured) |
 | Scan time (PLC) | tarama süresi | ControlLoop chip "PID · 10 ms tarama süresi". Not bare "tarama" |
 | Safety temperature (pasteurizer FDV) | emniyet sıcaklığı | Not "güvenlik sıcaklığı" (alt, solution, facts and caption agree) |
 | Plant interface (facts label) | tesis arayüzü | Not "tesis bağlantısı" (reads as a physical connection) |
