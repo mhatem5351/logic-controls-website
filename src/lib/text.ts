@@ -257,25 +257,41 @@ const TR_WORD = new RegExp(`[A-Za-zÇĞİÖŞÜçğıöşüâîû]{${TR_MIN_WORD
 const trWords = (s: string) => s.replace(TR_WORD, trHyphenate);
 
 /**
- * Soft hyphens added to rendered Turkish HTML (heading() on an html() result): text between tags only, never inside
- * an atom (`.lc-nw`: codes and names) or the hidden new-tab hint. Entities are never 13+ letters, so they are safe.
+ * English display text: a soft hyphen in the few long words the browsers cannot hyphenate in card and tile titles.
+ * Chromium builds without an English dictionary and WebKit under the titles' limits (global.css: 5 letters before,
+ * 6 after) find no break in "troubleshooting", and a narrow tile then fell back to an emergency break before the
+ * comma: "Troubleshooting / , maintenance" (VI4-01, 640 px). The value is where the break goes.
  */
-function hyphenateHtml(h: string): string {
+const EN_BREAKS: Record<string, number> = { troubleshooting: 7 };
+const EN_WORD = new RegExp(`\\b(?:${Object.keys(EN_BREAKS).join("|")})\\b`, "gi");
+const enWords = (s: string) =>
+  s.replace(EN_WORD, (w) => {
+    const at = EN_BREAKS[w.toLowerCase()];
+    return w.slice(0, at) + SHY + w.slice(at);
+  });
+/** Display-text soft hyphens per locale (heading()). */
+const SHY_WORDS: Partial<Record<Locale, (s: string) => string>> = { tr: trWords, en: enWords };
+
+/**
+ * Soft hyphens added to rendered HTML (heading() on an html() result, Turkish and English): text between tags only,
+ * never inside an atom (`.lc-nw`: codes and names) or the hidden new-tab hint. Entities are never words, so they are safe.
+ */
+function hyphenateHtml(h: string, words: (s: string) => string): string {
   const skip: boolean[] = [];
   return h
     .split(/(<[^>]*>)/)
     .map((part) => {
       if (part.startsWith("</span")) skip.pop();
       else if (part.startsWith("<span")) skip.push(/class="(?:lc-nw|sr-only)/.test(part));
-      else if (!part.startsWith("<") && !skip.includes(true)) return trWords(part);
+      else if (!part.startsWith("<") && !skip.includes(true)) return words(part);
       return part;
     })
     .join("");
 }
 
 /** Escape + keep atoms on one line (Latin-script text: en, tr, and Latin runs elsewhere). */
-function latinHtml(text: string, hyphenate = false): string {
-  const seg = (s: string) => esc(hyphenate ? trWords(s) : s);
+function latinHtml(text: string, words?: (s: string) => string): string {
+  const seg = (s: string) => esc(words ? words(s) : s);
   let out = "";
   let last = 0;
   for (const a of atomsOf(text)) {
@@ -319,12 +335,22 @@ const isAtomic = (run: string) => run.length <= MAX_ATOM && (!/\s/.test(run) || 
 /** Runs with an ordinary word (a lower-case letter) are English for screen readers; codes and acronyms are not. */
 const langOf = (run: string) => (/[a-z]/.test(run) ? ` lang="en"` : "");
 
-/** "S7-1200⍽و⍽WinCC" → "S7-1200 و⍽WinCC": a conjunction / preposition after a Latin run glues forward only. */
+/**
+ * "S7-1200⍽و⍽WinCC" → "S7-1200 و⍽WinCC": a conjunction / preposition after a Latin run glues forward only.
+ * A lone "و" (written apart only before a Latin name, a code or a number: "PLC و HMI و SCADA") never ends a line: it
+ * glues to what follows (VI4-04: a body line ended "…أنظمة PLC و HMI و"). In display text (`display`: heading()) the
+ * negation "لا" also keeps the word it negates: "مهندسون، لا⍽تجّار معدات", never "Engineers, not" with the claim on the
+ * next line.
+ */
 const AR_LINK = "و|مع|في|من|ثم|أو|على|إلى|عن";
-function arGlue(t: string): string {
-  return t
+const AR_LONE_WAW = /(?<=^|[\s(])و (?=\S)/g;
+const AR_NEGATION = /(?<=^|[\s،؛(])لا (?=[\u0621-\u064A])/g;
+function arGlue(t: string, display = false): string {
+  const out = t
     .replace(new RegExp(`([A-Za-z0-9)\\]%°″])${NBSP}(?=(?:${AR_LINK})(?:[ ${NBSP}]|$))`, "g"), "$1 ")
-    .replace(new RegExp(`([A-Za-z][A-Za-z0-9\\-/]*)${NBSP}(?=و[\\u0621-\\u064A])`, "g"), "$1 ");
+    .replace(new RegExp(`([A-Za-z][A-Za-z0-9\\-/]*)${NBSP}(?=و[\\u0621-\\u064A])`, "g"), "$1 ")
+    .replace(AR_LONE_WAW, `و${NBSP}`);
+  return display ? out.replace(AR_NEGATION, `لا${NBSP}`) : out;
 }
 
 /**
@@ -622,9 +648,9 @@ function wrapLink(locale: Locale | undefined, seg: LinkSeg, inner: string): stri
 /** One run of text (no link tokens) → HTML with the locale's rules. */
 function render(locale: Locale | undefined, text: string, hyphenate: boolean): string {
   const t = normalize(text);
-  if (locale === "ar") return arHtml(arGlue(t));
+  if (locale === "ar") return arHtml(arGlue(t, hyphenate));
   if (locale === "zh") return zhHtml(t);
-  return latinHtml(t, hyphenate && locale === "tr");
+  return latinHtml(t, hyphenate && locale ? SHY_WORDS[locale] : undefined);
 }
 
 /** Chinese: a line may break at a link edge between two words, never before closing / after opening punctuation. */
@@ -632,7 +658,8 @@ const ZH_NO_BREAK_BEFORE = /^[、，。：；！？）」』】》”’%,.:;!?)
 const ZH_NO_BREAK_AFTER = /[（「『【《“‘(]$/;
 
 export interface HtmlOptions {
-  /** Display text (headings, titles): Turkish words of 13+ letters get soft hyphens. Prefer heading(). */
+  /** Display text (headings, titles): Turkish words of 13+ letters and a few long English ones get soft hyphens, an
+   *  Arabic negation keeps its word. Prefer heading(). */
   hyphenate?: boolean;
 }
 
@@ -700,7 +727,8 @@ export function heading(locale: Locale | undefined, value: string | SafeHtml | n
     flagUnrendered(value);
     return html(locale, value, { hyphenate: true });
   }
-  return locale === "tr" ? safe(hyphenateHtml(value)) : value;
+  const words = locale && SHY_WORDS[locale];
+  return words ? safe(hyphenateHtml(value, words)) : value;
 }
 
 /**

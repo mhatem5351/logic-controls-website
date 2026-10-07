@@ -167,6 +167,21 @@ describe("phone", () => {
     ["12", "SA", null],
   ] as const)("networkPhone(%j, %j) → %j", (raw, cc, out) => expect(networkPhone(raw, cc)).toBe(out));
 
+  // PSC4-05: never a guess against the country the visitor typed (Saudi 05x mobiles are UAE formats too)
+  it.each([
+    ["0501234567", "AE", "Saudi Arabia", null],
+    ["0501234567", "SA", "Germany", null],
+    ["0501234567", "SA", "Riyadh", null], // not a country name we know: their answer is not the network's
+    ["0501234567", "SA", "Saudi Arabia", "966501234567"],
+    ["0501234567", "SA", "KSA", "966501234567"],
+    ["0501234567", "SA", "المملكة العربية السعودية", "966501234567"],
+    ["055 123 4567", "AE", "UAE", "971551234567"],
+    ["055 123 4567", "AE", "Dubai, United Arab Emirates", "971551234567"],
+    ["055 123 4567", "AE", "الإمارات", "971551234567"],
+    ["0532 123 45 67", "TR", "Türkiye", "905321234567"],
+    ["0501234567", "SA", "  ", "966501234567"], // empty: the network may guess
+  ] as const)("networkPhone(%j, %j, typed %j) → %j", (raw, cc, typed, out) => expect(networkPhone(raw, cc, typed)).toBe(out));
+
   it("isNetworkCountry: ISO codes only", () => {
     expect(["SA", "EG", "DE"].every(isNetworkCountry)).toBe(true);
     expect([undefined, "", "XX", "T1", "sa", "SAU", 1].some(isNetworkCountry)).toBe(false);

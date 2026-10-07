@@ -275,7 +275,8 @@ async function handleRfq(req: Request, env: Env): Promise<Response> {
   // number (labelled) for a local phone number the rules above could not complete.
   const cc = (req as Request & { cf?: { country?: unknown } }).cf?.country;
   const network = isNetworkCountry(cc) ? cc : null;
-  const guess = data.phone && !wa ? networkPhone(data.phone, network) : null;
+  // (never against the country the visitor typed: PSC4-05)
+  const guess = data.phone && !wa ? networkPhone(data.phone, network, data.country) : null;
   // DEV3-01: files the visitor left out because the upload was too slow on their connection
   const dropped = oneLine(String(form.get(RFQ_FILES.dropped) ?? "")).slice(0, RFQ_FILES.droppedMax);
   const dirOf = (key: string) => {

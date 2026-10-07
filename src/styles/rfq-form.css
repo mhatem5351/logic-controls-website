@@ -179,6 +179,18 @@
 .lc-rfq .lc-error[hidden] {
   display: none;
 }
+/* Messages that name files: a drawing export or phone photo is often one long name without spaces
+   ("Panel_Wiring_Diagram_Line2_Rev07_final.docx"), and a refused one must not widen the page on a phone (AUD4-01,
+   WCAG 1.4.10). Like the file list's names, it may break anywhere, and only where nothing else fits: words still
+   break at spaces. `anywhere` (not break-word) also shrinks the flex item's minimum width. */
+.lc-rfq :is(.lc-error, .lc-alert li, .lc-alert-list a, [data-files-live]) {
+  overflow-wrap: anywhere;
+}
+/* WebKit leaves `anywhere` out of a flex item's minimum width in right-to-left text (the Arabic error stayed one line,
+   ~110 px wider than a 320 px phone); the legacy `break-word` keyword gives the same breaks and it honours that. */
+.lc-rfq .lc-error {
+  word-break: break-word;
+}
 .lc-rfq .lc-count {
   margin-block-start: 0.25rem;
   font-size: 0.75rem;

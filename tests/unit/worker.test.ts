@@ -697,6 +697,24 @@ describe("/api/rfq", () => {
       else if (cc === "SA") expect(text).toContain("Visitor's network country: Saudi Arabia (SA).");
       else expect(text).not.toContain("network country"); // "XX" / "T1" are not countries
     });
+
+    // PSC4-05: the visitor's own answer wins; a network that disagrees with it offers no guess
+    it.each([
+      ["0501234567", "Saudi Arabia", "AE", "United Arab Emirates (AE)"],
+      ["0501234567", "Germany", "SA", "Saudi Arabia (SA)"],
+    ])("%s, country typed %j, from a %s network → no guess", async (phone, country, cc, name) => {
+      const { env, send } = makeEnv();
+      await call(withCountry(rfq({ ...VALID, phone, country, locale: "en" }), cc), env);
+      const { text, html } = send.mock.calls[0]![0];
+      expect(text).not.toContain("wa.me");
+      expect(html).not.toContain('href="tel:');
+      expect(text).toContain(`Phone ${phone}: No recognisable country code: check the number before calling or messaging (no WhatsApp / call link). Visitor's network country: ${name}.`);
+    });
+    it("a typed country that names the network country keeps the guess", async () => {
+      const { env, send } = makeEnv();
+      await call(withCountry(rfq({ ...VALID, phone: "0501234567", country: "Saudi Arabia", locale: "en" }), "SA"), env);
+      expect(send.mock.calls[0]![0].text).toContain("If so, WhatsApp: https://wa.me/966501234567");
+    });
   });
 
   describe("attachments", () => {

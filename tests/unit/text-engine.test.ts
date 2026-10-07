@@ -468,6 +468,49 @@ describe("Arabic: a conjunction glued to a word-only name never ends a line alon
   });
 });
 
+describe("Arabic: a lone 'و' and a heading's 'لا' keep the word after them (VI4-04)", () => {
+  it("a lone 'و' written apart (before a code or name) glues forward, in body text too", () => {
+    const out = html("ar", "أنظمة PLC و HMI و SCADA وبرمجتها");
+    expect(out).toBe(`أنظمة <bdi dir="ltr">PLC</bdi> و${NBSP}<bdi dir="ltr">HMI</bdi> و${NBSP}<bdi dir="ltr">SCADA</bdi> وبرمجتها`);
+    expect(plain("ar", "PLC و HMI")).toContain(`و${NBSP}⁦HMI`);
+    // never backward, never inside a word ("مهندسو" ends in و), and a written ⍽ stays as it is
+    expect(html("ar", "S7-1200 و WinCC")).toContain(`</bdi> و${NBSP}<bdi`);
+    expect(html("ar", "مهندسو PLC")).toBe('مهندسو <bdi dir="ltr">PLC</bdi>');
+    expect(html("ar", `و${NBSP}SCADA`)).toBe(`و${NBSP}<bdi dir="ltr">SCADA</bdi>`);
+    // a word-only name after it still gets the one no-wrap unit of I18N3-03
+    expect(heading("ar", "باستخدام S7-1200 و SIMATIC HMI")).toContain(`<span class="lc-nw">و${NBSP}<bdi dir="ltr" class="lc-nws">SIMATIC HMI</bdi></span>`);
+  });
+  it("display text: 'لا' keeps the word it negates ('مهندسون، لا تجّار معدات'); body text is left as written", () => {
+    expect(heading("ar", "مهندسون، لا تجّار معدات")).toBe(`مهندسون، لا${NBSP}تجّار معدات`);
+    expect(html("ar", "مهندسون، لا تجّار معدات")).toBe("مهندسون، لا تجّار معدات");
+    // only the whole word: "إلا" / "ولا" are other words
+    expect(heading("ar", "ليس إلا كلامًا")).toBe("ليس إلا كلامًا");
+    expect(cleanText(heading("ar", "مهندسون، لا تجّار معدات"))).toBe("مهندسون، لا تجّار معدات");
+  });
+  it("the team strip renders both (common.teamStrip)", () => {
+    const strip = getMessages("ar").common.teamStrip;
+    expect(heading("ar", strip.title)).toContain(`لا${NBSP}`);
+    expect(html("ar", strip.text)).not.toMatch(/(^|\s)و (?=\S)/);
+  });
+});
+
+describe("English display text: soft hyphens where the browsers find no break (VI4-01)", () => {
+  it("'Troubleshooting' gets one at 'Trouble|shooting' in headings, whatever the case; body text gets none", () => {
+    expect(heading("en", "Troubleshooting, maintenance and support")).toBe(`Trouble${SHY}shooting, maintenance and support`);
+    expect(heading("en", "Breakdown troubleshooting")).toBe(`Breakdown trouble${SHY}shooting`);
+    expect(heading("en", html("en", "Troubleshooting for Siemens S7-1200 PLCs"))).toContain(`Trouble${SHY}shooting`);
+    expect(html("en", "Troubleshooting, maintenance and support")).not.toContain(SHY);
+    expect(plain("en", heading("en", "Troubleshooting"))).toBe("Troubleshooting");
+    expect(cleanText(heading("en", "Troubleshooting"))).toBe("Troubleshooting");
+  });
+  it("idempotent, and other locales are untouched", () => {
+    const once = heading("en", "Troubleshooting");
+    expect(heading("en", once)).toBe(once);
+    expect(heading("tr", "Troubleshooting")).not.toContain(`Trouble${SHY}`);
+    expect(heading("ar", "Troubleshooting")).not.toContain(SHY);
+  });
+});
+
 describe("Chinese: no unbreakable run wider than a phone heading line (I18N3-03)", () => {
   const HAN_RUN = /[\u3400-\u9FFF\uF900-\uFAFF]{7,}/;
   it("'四头洗发水灌装机：' breaks between its words; '：' stays on the line of the word before it", () => {

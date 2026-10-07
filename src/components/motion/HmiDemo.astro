@@ -589,9 +589,85 @@ const STEPS = ["start", "forward", "fault", "ack"] as const;
 
 <style is:global>
   /* Until hmi-demo.css (requested by the bootstrap below) has loaded and the mimic is fitted to it, the demo keeps its
-     place unseen: it is far below the first screen, and an unstyled or unfitted mimic would be worse than a blank. */
+     place unseen: it is far below the first screen, and an unstyled or unfitted mimic would be worse than a blank.
+     Only while the bootstrap can still show it (AUD4-03): if the site module never runs (a failed or stale chunk, a
+     blocked script, an error before the bootstrap), nothing sets data-styled, and the section, heading and copy
+     included, would stay a blank band of several screens. The bootstrap claims the section (data-styling) as soon as
+     it runs; unclaimed after 4 s, it is shown as it is. A timer, not motion: !important keeps the motion-off
+     catch-all (animation-delay: 0s) from showing it at once. */
   html.js .lc-hmi-wrap:not([data-styled]) {
     visibility: hidden;
+    animation: lc-hmi-unclaimed 0s 4s forwards !important;
+  }
+  html.js .lc-hmi-wrap[data-styling]:not([data-styled]) {
+    animation: none !important;
+  }
+  @keyframes lc-hmi-unclaimed {
+    to {
+      visibility: visible;
+    }
+  }
+  /* Claimed and waiting for the sheet: the place it keeps is about the styled size, not the unstyled block's 4–5×
+     (PSC4-03: a visitor already there saw a blank stretch of screens, then a jump). Styled heights measured on the
+     built demo (both variants, 4 locales, Chromium and WebKit), per viewport range of the demo's own steps (its
+     container breakpoints 560 / 860 / 1020 px and the mimic's full view from 600 px): within about 10%. Arabic text
+     runs ~5% taller, Chinese ~6% shorter. */
+  html.js .lc-hmi-wrap[data-styling]:not([data-styled]) {
+    contain: size;
+    overflow: clip;
+    contain-intrinsic-block-size: calc(var(--lc-hmi-h) * var(--lc-hmi-k, 1));
+  }
+  html:lang(ar) .lc-hmi-wrap {
+    --lc-hmi-k: 1.05;
+  }
+  html:lang(zh-Hans) .lc-hmi-wrap {
+    --lc-hmi-k: 0.94;
+  }
+  .lc-hmi-wrap {
+    --lc-hmi-h: 1880px;
+  }
+  .lc-hmi-wrap[data-variant="full"] {
+    --lc-hmi-h: 2245px;
+  }
+  @media (min-width: 24.375rem) {
+    .lc-hmi-wrap {
+      --lc-hmi-h: 1750px;
+    }
+    .lc-hmi-wrap[data-variant="full"] {
+      --lc-hmi-h: 2050px;
+    }
+  }
+  @media (min-width: 37.625rem) {
+    .lc-hmi-wrap {
+      --lc-hmi-h: 1450px;
+    }
+    .lc-hmi-wrap[data-variant="full"] {
+      --lc-hmi-h: 1710px;
+    }
+  }
+  @media (min-width: 43.75rem) {
+    .lc-hmi-wrap {
+      --lc-hmi-h: 1280px;
+    }
+    .lc-hmi-wrap[data-variant="full"] {
+      --lc-hmi-h: 1515px;
+    }
+  }
+  @media (min-width: 57.1875rem) {
+    .lc-hmi-wrap {
+      --lc-hmi-h: 1100px;
+    }
+    .lc-hmi-wrap[data-variant="full"] {
+      --lc-hmi-h: 1405px;
+    }
+  }
+  @media (min-width: 67.5625rem) {
+    .lc-hmi-wrap {
+      --lc-hmi-h: 1015px;
+    }
+    .lc-hmi-wrap[data-variant="full"] {
+      --lc-hmi-h: 1370px;
+    }
   }
 </style>
 
@@ -621,6 +697,8 @@ const STEPS = ["start", "forward", "fault", "ack"] as const;
     const boot = (fig: HTMLElement) => css.then(load).then((m) => m.initHmi(fig));
 
     for (const fig of figs) {
+      // claimed: it stays unseen until the sheet below settles, never shown unstyled by the stylesheet's timer (AUD4-03)
+      fig.closest(".lc-hmi-wrap")?.setAttribute("data-styling", "");
       /* fitted in the same task the sheet's load event runs in, then shown: no frame of an unfitted mimic. Shown also
          if the sheet failed (a tab left open across a deploy asks for a file that is gone): the copy and links stay
          readable rather than an invisible block. */

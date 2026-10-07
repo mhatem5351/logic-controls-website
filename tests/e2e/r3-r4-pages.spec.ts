@@ -5,6 +5,8 @@
  *      (en H1, 320), "：" leading a zh H1 line (320), "Pharmaceuti|cal" (home tiles, 640–704). A break inside a word is
  *      only allowed at a soft hyphen (Turkish, text engine) or where the browser hyphenates (`hyphens: auto` on card /
  *      tile titles). Phone widths run in the phone projects, the 1024 / 1100 checks in the desktop project.
+ *      Round 4 (VI4-01): the industry pages' service tiles, every 2 px from 640 to 700 (the 4-column switch), where
+ *      "Troubleshooting / , maintenance" started a line with the comma in WebKit.
  *  (b) Service pages with 3 or 4 platforms show one row of equal logo cells on tablets (VIS3-02).
  *  (c) Touch screens: the closing band's phone / email links are 44px tall (DEV2-07).
  *  (d) The zone card's CTA is one line on phones (VIS3-06).
@@ -85,6 +87,20 @@ test.describe("(a) display headings break between words only", () => {
       await page.setViewportSize({ width, height: 800 });
       await page.goto(path, { waitUntil: "load" });
       expect(await badHeadingBreaks(page)).toEqual([]);
+    });
+
+  for (const path of ["/en/industries/cosmetics-personal-care/", "/en/industries/packaging-labeling/", "/en/industries/building-materials/", "/en/industries/commercial-laundry/"])
+    test(`${path} from 640 to 700px (every 2px)`, { tag: "@phone" }, async ({ page, isMobile }) => {
+      test.skip(!isMobile, "phone widths run in the phone projects (touch emulation)");
+      test.slow();
+      await page.setViewportSize({ width: 640, height: 800 });
+      await page.goto(path, { waitUntil: "load" });
+      const bad: string[] = [];
+      for (let width = 640; width <= 700; width += 2) {
+        await page.setViewportSize({ width, height: 800 });
+        bad.push(...(await badHeadingBreaks(page)).map((b) => `${width}px: ${b}`));
+      }
+      expect(bad).toEqual([]);
     });
 
   for (const width of [1024, 1100])

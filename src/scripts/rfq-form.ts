@@ -769,8 +769,9 @@ export function enhance(form: HTMLFormElement) {
     alertBox.focus({ preventScroll: true });
     alertBox.scrollIntoView({ behavior: scrollBehavior(), block: "center" });
   }
-  /** `detail`: another errors.* key for the text (verificationBlocked, timeout). */
-  function serverError(code: string, detail?: string) {
+  /** `detail`: another errors.* key for the text (verificationBlocked, timeout). `bare`: the files did not get through
+   *  (a stalled upload), so offer "Send without the files". */
+  function serverError(code: string, detail?: string, bare = false) {
     const c = (["invalid", "attachments", "verification", "send", "unknown"].includes(code) ? code : "unknown") as Code;
     alertShow({
       title: i18n.errors.title!,
@@ -778,7 +779,7 @@ export function enhance(form: HTMLFormElement) {
       fallback: true,
       retry: c === "verification" || c === "send" || c === "unknown",
       // a slow connection that cannot carry the files can still carry the request (DEV3-01)
-      bare: detail === "timeout" && items.length > 0,
+      bare: bare && items.length > 0,
     });
     focusAlert();
   }
@@ -997,8 +998,8 @@ export function enhance(form: HTMLFormElement) {
   };
 
   type Answer = { status: number; json: { ok?: boolean; error?: string; ref?: string; skipped?: string[]; problem?: FileProblem; files?: string[] } | null };
-  /** POST with upload progress and a watchdog (UX2-04, DEV3-01): a stalled upload, or no answer after it, rejects
-   *  with "timeout"; an upload that keeps moving is never cut short. */
+  /** POST with upload progress and a watchdog (UX2-04, DEV3-01): a stalled upload rejects with "timeout", no answer
+   *  after the whole body was sent with "noanswer" (AUD4-02); an upload that keeps moving is never cut short. */
   function post(data: FormData, withFiles: boolean): Promise<Answer> {
     return new Promise((resolve, reject) => {
       const xhr = new XMLHttpRequest();
@@ -1030,7 +1031,7 @@ export function enhance(form: HTMLFormElement) {
         resolve({ status: xhr.status, json });
       });
       xhr.addEventListener("error", () => (end(), reject(new Error("network"))));
-      xhr.addEventListener("abort", () => (end(), reject(new Error("timeout"))));
+      xhr.addEventListener("abort", () => (end(), reject(new Error(uploaded ? "noanswer" : "timeout"))));
       xhr.send(data);
     });
   }
@@ -1076,7 +1077,11 @@ export function enhance(form: HTMLFormElement) {
     } catch (err) {
       setSending(false);
       resetTurnstile();
-      serverError("send", (err as Error).message === "timeout" ? "timeout" : undefined);
+      /* Same text for both, but "Send without the files" only when the files did not get through: after a lost answer
+         they were all sent (the first request may already have arrived with them), and a second request would tell
+         the owner they were too slow (AUD4-02). "Try again" stays for both. */
+      const why = (err as Error).message;
+      serverError("send", why === "timeout" || why === "noanswer" ? "timeout" : undefined, why === "timeout");
       return;
     }
     const json = answer.json;

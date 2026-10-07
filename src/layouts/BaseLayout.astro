@@ -199,14 +199,19 @@ const beaconHost = `/^(www\\.)?${new URL(SITE.url).hostname.replace(/\./g, "\\."
         /* Arriving from a page of this site with the HTML already here (prefetched or cached): the first frame waits
            until the document is parsed (#lc-end, the last element of <body>, on every page), so the transition starts
            with the whole page: the floating button exists to keep, and the rest of the page is not parsed and laid
-           out inside the animation (MOT3-01). Never on a first visit, an arrival from another site, a reload, or
-           HTML still coming over the network; the browser lifts it at the end of parsing in any case. */
+           out inside the animation (MOT3-01). Never on a first visit, an arrival from another site or a reload. Only
+           where the button is kept (≥ 64rem, as fabKeep above): on phones the wait cost a mid-range CPU 0.1–0.25 s
+           per tap for nothing it keeps (PSC4-04). A prefetch can still be downloading when the visitor taps (it is
+           adopted as it is), so the wait is capped at 200 ms: removing the link lifts the block, and lc-fab-hold
+           keeps the button (MOT4-01: a slow body held the first frame ~1 s). Chromium only (userAgentData): WebKit
+           paid 60–300 ms for it with no smoother transition. The browser lifts it at the end of parsing anyway. */
         try {
           const a = window.navigation?.activation, n = performance.getEntriesByType("navigation")[0];
-          if (!off && a?.from && a.navigationType !== "reload" && /^(navigational-prefetch|cache)$/.test(n?.deliveryType) && "onpagereveal" in window) {
+          if (!off && navigator.userAgentData && matchMedia("(min-width: 64rem)").matches && a?.from && a.navigationType !== "reload" && /^(navigational-prefetch|cache)$/.test(n?.deliveryType) && "onpagereveal" in window) {
             const l = document.createElement("link");
             l.rel = "expect"; l.href = "#lc-end"; l.setAttribute("blocking", "render");
             document.head.append(l);
+            setTimeout(() => l.remove(), 200);
           }
         } catch {}
         const path = (u) => new URL(u, location.href).pathname;

@@ -199,7 +199,8 @@ describe("Arabic bidi isolates", () => {
   });
   it("keeps multi-word atoms whole", () => {
     expect(html("ar", "معيار IEC 60204-1 للوحات")).toBe('معيار <bdi dir="ltr">IEC 60204-1</bdi> للوحات');
-    expect(html("ar", "LS PLC و S7-200 SMART")).toBe('<bdi dir="ltr">LS PLC</bdi> و <bdi dir="ltr">S7-200 SMART</bdi>');
+    // a lone "و" glues forward (VI4-04): it never ends a line
+    expect(html("ar", "LS PLC و S7-200 SMART")).toBe(`<bdi dir="ltr">LS PLC</bdi> و${NBSP}<bdi dir="ltr">S7-200 SMART</bdi>`);
   });
   it("a run of several tokens may wrap between tokens (lc-wrap) but keeps its atoms", () => {
     expect(html("ar", "Siemens WinCC Professional SCADA مع شاشة")).toBe(
@@ -216,7 +217,7 @@ describe("Arabic bidi isolates", () => {
     expect(html("ar", "التنظيف (CIP) اليومي")).toBe('التنظيف <bdi dir="ltr">(CIP)</bdi> اليومي');
   });
   it("brackets around numbers stay in the Arabic flow; only digit ranges are isolated", () => {
-    expect(html("ar", "اختبار (2025) و (4-20)")).toBe('اختبار (2025) و (<bdi dir="ltr">4-20</bdi>)');
+    expect(html("ar", "اختبار (2025) و (4-20)")).toBe(`اختبار (2025) و${NBSP}(<bdi dir="ltr">4-20</bdi>)`);
   });
   it("plain digits are not isolated (Western digits read correctly in RTL)", () => {
     expect(html("ar", "أكثر من 50 مشروعا")).toBe("أكثر من 50 مشروعا");

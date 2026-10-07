@@ -571,9 +571,15 @@ const oemLabel = m.foreign.oem?.eyebrow as string | undefined;
     const hoverable = matchMedia("(hover: hover) and (pointer: fine)");
     const OPEN_MS = 140;
     const CLOSE_MS = 260;
+    /** Keyboard focus is inside another item's open panel: a resting pointer must not swap that menu away (its panel
+     *  would hide with the focus in it, and focus would drop to <body>). */
+    const focusElsewhere = (it: Item) => items.some((o) => o !== it && isOpen(o) && o.panel.contains(document.activeElement));
     const armOpen = (it: Item) => {
       clearTimeout(it.openTimer);
-      it.openTimer = window.setTimeout(() => setOpen(it, true, "hover"), OPEN_MS);
+      it.openTimer = window.setTimeout(() => {
+        if (focusElsewhere(it)) return void (it.openTimer = 0);
+        setOpen(it, true, "hover");
+      }, OPEN_MS);
     };
     const armClose = (it: Item) => {
       clearTimeout(it.closeTimer);

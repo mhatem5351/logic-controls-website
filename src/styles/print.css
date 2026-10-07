@@ -199,6 +199,11 @@
   img {
     max-width: 100% !important;
   }
+  /* Card photos: without background graphics (the print default) the shade and hover bar laid over the photo printed
+     it as an empty white frame. */
+  .lc-card-photo > span[aria-hidden] {
+    display: none !important;
+  }
 
   /* ---------- 6. Links: the address of in-text links is written out ---------- */
   a {

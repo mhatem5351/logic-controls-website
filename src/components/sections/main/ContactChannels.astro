@@ -24,48 +24,76 @@ const email = prefersEmail(locale);
 const mail = mailtoLink(t.ui.email.subject, { locale, path: "contact" });
 const osm = `https://www.openstreetmap.org/?mlat=${SITE.geo.lat}&mlon=${SITE.geo.lng}#map=12/${SITE.geo.lat}/${SITE.geo.lng}`;
 const rowCls = "group relative flex items-start gap-4 border-b border-charcoal-200 py-4 last:border-b-0";
-const iconCls = "grid size-10 shrink-0 place-items-center border border-charcoal-200 bg-white text-royal-600 transition-colors group-hover:border-royal-600";
+const iconCls =
+  "grid size-10 shrink-0 place-items-center border border-charcoal-200 bg-white text-royal-600 transition-colors group-hover:border-royal-600";
+/** The thanks page's short "Send on WhatsApp" where the card is narrow (VI4-02: phones, and 1024 px in Turkish), so
+ *  the button stays one line. Both are rendered and a container query shows one: the accessible name is the visible text. */
+const waLong = t.contact.form.whatsappHint.cta;
+const waShort = t.contact.thanks.more.ctaShort !== waLong ? t.contact.thanks.more.ctaShort : undefined;
 ---
 
 <div class:list={["space-y-6", className]}>
   {/* primary alternative: WhatsApp drawings (email on zh) */}
-  {
-    email ? (
-      <div class="on-dark chamfer-lg relative isolate overflow-hidden bg-navy-950 p-6 text-navy-100 sm:p-7">
-        <div aria-hidden="true" class="pointer-events-none absolute inset-0 -z-10 bg-blueprint mask-fade-edges" />
-        <p class="flex items-center gap-3 type-label text-navy-200">
-          <Icon name="mail" size={18} class="text-royal-300" />
-          <Fragment set:html={html(locale, ch.email.label)} />
-        </p>
-        <p class="mt-3 text-navy-100" set:html={html(locale, ch.email.text)} />
-        <a href={mail} class="mt-4 inline-flex min-h-11 items-center text-lg font-bold text-white underline decoration-royal-400 underline-offset-4 hover:decoration-white">
-          <Fragment set:html={ltr(SITE.email)} />
-        </a>
-      </div>
-    ) : (
-      <div class="on-dark chamfer-lg relative isolate overflow-hidden bg-navy-950 p-6 text-navy-100 sm:p-7">
-        <div aria-hidden="true" class="pointer-events-none absolute inset-0 -z-10 bg-blueprint mask-fade-edges" />
-        <div aria-hidden="true" class="pointer-events-none absolute inset-0 -z-20 bg-[radial-gradient(ellipse_70%_80%_at_100%_0%,rgb(18_140_74/0.28),transparent_70%)] rtl:bg-[radial-gradient(ellipse_70%_80%_at_0%_0%,rgb(18_140_74/0.28),transparent_70%)]" />
-        <p class="flex items-center gap-3 type-label text-navy-200">
-          <Icon name="whatsapp" size={18} class="text-whatsapp-500" />
-          <Fragment set:html={html(locale, ch.whatsapp.label)} />
-        </p>
-        <p class="mt-3 font-semibold text-white" set:html={html(locale, t.contact.form.whatsappHint.text)} />
-        <Button href={whatsappLink(t.common.whatsapp.drawings)} variant="on-dark" icon="whatsapp" iconClass="text-whatsapp-500" external block class="mt-5">
-          {t.contact.form.whatsappHint.cta}
+  {email ? (
+    <div class="on-dark chamfer-lg relative isolate overflow-hidden bg-navy-950 p-6 text-navy-100 sm:p-7">
+      <div aria-hidden="true" class="pointer-events-none absolute inset-0 -z-10 bg-blueprint mask-fade-edges" />
+      <p class="flex items-center gap-3 type-label text-navy-200">
+        <Icon name="mail" size={18} class="text-royal-300" />
+        <Fragment set:html={html(locale, ch.email.label)} />
+      </p>
+      <p class="mt-3 text-navy-100" set:html={html(locale, ch.email.text)} />
+      <a
+        href={mail}
+        class="mt-4 inline-flex min-h-11 items-center text-lg font-bold text-white underline decoration-royal-400 underline-offset-4 hover:decoration-white"
+      >
+        <Fragment set:html={ltr(SITE.email)} />
+      </a>
+    </div>
+  ) : (
+    <div class="on-dark chamfer-lg relative isolate overflow-hidden bg-navy-950 p-6 text-navy-100 sm:p-7">
+      <div aria-hidden="true" class="pointer-events-none absolute inset-0 -z-10 bg-blueprint mask-fade-edges" />
+      <div
+        aria-hidden="true"
+        class="pointer-events-none absolute inset-0 -z-20 bg-[radial-gradient(ellipse_70%_80%_at_100%_0%,rgb(18_140_74/0.28),transparent_70%)] rtl:bg-[radial-gradient(ellipse_70%_80%_at_0%_0%,rgb(18_140_74/0.28),transparent_70%)]"
+      />
+      <p class="flex items-center gap-3 type-label text-navy-200">
+        <Icon name="whatsapp" size={18} class="text-whatsapp-500" />
+        <Fragment set:html={html(locale, ch.whatsapp.label)} />
+      </p>
+      <p class="mt-3 font-semibold text-white" set:html={html(locale, t.contact.form.whatsappHint.text)} />
+      <div class="@container mt-5">
+        <Button
+          href={whatsappLink(t.common.whatsapp.drawings)}
+          variant="on-dark"
+          icon="whatsapp"
+          iconClass="text-whatsapp-500"
+          external
+          block
+        >
+          {waShort ? (
+            <>
+              <span class="@max-[22rem]:hidden">{waLong}</span>
+              <span class="@min-[22rem]:hidden">{waShort}</span>
+            </>
+          ) : (
+            waLong
+          )}
         </Button>
-        <p class="mt-3 text-sm text-navy-300" set:html={html(locale, ch.whatsapp.text)} />
-        {/* desktop: drawing packages (PDF/DWG) usually live on the computer, so offer email right in this card */}
-        <a href={mail} class="mt-5 hidden min-h-11 items-start gap-3 border-t border-white/10 pt-4 text-sm text-navy-200 hover:text-white lg:flex">
-          <Icon name="mail" size={18} class="mt-0.5 shrink-0 text-royal-300" />
-          <span>
-            <span class="ltr block font-semibold text-white" dir="ltr" set:html={ltr(SITE.email)} />
-            <Fragment set:html={html(locale, ch.email.text)} />
-          </span>
-        </a>
       </div>
-    )
-  }
+      <p class="mt-3 text-sm text-navy-300" set:html={html(locale, ch.whatsapp.text)} />
+      {/* desktop: drawing packages (PDF/DWG) usually live on the computer, so offer email right in this card */}
+      <a
+        href={mail}
+        class="mt-5 hidden min-h-11 items-start gap-3 border-t border-white/10 pt-4 text-sm text-navy-200 hover:text-white lg:flex"
+      >
+        <Icon name="mail" size={18} class="mt-0.5 shrink-0 text-royal-300" />
+        <span>
+          <span class="ltr block font-semibold text-white" dir="ltr" set:html={ltr(SITE.email)} />
+          <Fragment set:html={html(locale, ch.email.text)} />
+        </span>
+      </a>
+    </div>
+  )}
 
   <div class="border border-charcoal-200 bg-white px-5 sm:px-6">
     {/* lc-caps: capitals drawn with small caps, not text-transform, so the heading's name stays sentence case ("US" is
@@ -73,41 +101,63 @@ const iconCls = "grid size-10 shrink-0 place-items-center border border-charcoal
     <h2 class="lc-caps border-b border-charcoal-200 py-4 type-label text-charcoal-600">{ch.title}</h2>
     <ul role="list">
       <li class={rowCls}>
-        <span class={iconCls}><Icon name="phone" size={20} /></span>
+        <span class={iconCls}>
+          <Icon name="phone" size={20} />
+        </span>
         <div class="min-w-0">
           <a href={telLink()} class="font-bold text-navy-950 after:absolute after:inset-0 after:content-[''] hover:text-royal-700">
-            <span class="sr-only">{ch.phone.label}{colon(locale)}</span><span class="ltr" dir="ltr">{SITE.phone.display}</span>
+            <span class="sr-only">
+              {ch.phone.label}
+              {colon(locale)}
+            </span>
+            <span class="ltr" dir="ltr">
+              {SITE.phone.display}
+            </span>
           </a>
           <p class="mt-0.5 text-sm text-charcoal-600" set:html={html(locale, ch.phone.text)} />
         </div>
       </li>
-      {
-        !email && (
-          <li class={rowCls}>
-            <span class={iconCls}><Icon name="mail" size={20} /></span>
-            <div class="min-w-0">
-              <a href={mail} class="font-bold break-all text-navy-950 after:absolute after:inset-0 after:content-[''] hover:text-royal-700">
-                <span class="sr-only">{ch.email.label}{colon(locale)}</span><Fragment set:html={ltr(SITE.email)} />
-              </a>
-              <p class="mt-0.5 text-sm text-charcoal-600" set:html={html(locale, ch.email.text)} />
-            </div>
-          </li>
-        )
-      }
-      {
-        email && (
-          <li class={rowCls}>
-            <span class={iconCls}><Icon name="whatsapp" size={20} class="text-whatsapp-700" /></span>
-            <div class="min-w-0">
-              <a href={whatsappLink(t.common.whatsapp.quote)} target="_blank" rel="noopener" class="font-bold text-navy-950 after:absolute after:inset-0 after:content-[''] hover:text-royal-700">
-                {t.ui.cta.inEgyptWhatsapp}
-                <span class="sr-only"> ({t.ui.a11y.newTab})</span>
-              </a>
-              <p class="mt-0.5 text-sm text-charcoal-600" set:html={html(locale, ch.whatsapp.text)} />
-            </div>
-          </li>
-        )
-      }
+      {!email && (
+        <li class={rowCls}>
+          <span class={iconCls}>
+            <Icon name="mail" size={20} />
+          </span>
+          <div class="min-w-0">
+            {/* below 360px a slightly smaller size keeps the address on one line: WebKit ignores the <wbr> after "@" inside the
+                 RTL isolate, and the unbroken address ran ~30px past the card on 320px Arabic phones */}
+            <a
+              href={mail}
+              class="font-bold break-all text-navy-950 max-[359px]:text-[0.8125rem] after:absolute after:inset-0 after:content-[''] hover:text-royal-700"
+            >
+              <span class="sr-only">
+                {ch.email.label}
+                {colon(locale)}
+              </span>
+              <Fragment set:html={ltr(SITE.email)} />
+            </a>
+            <p class="mt-0.5 text-sm text-charcoal-600" set:html={html(locale, ch.email.text)} />
+          </div>
+        </li>
+      )}
+      {email && (
+        <li class={rowCls}>
+          <span class={iconCls}>
+            <Icon name="whatsapp" size={20} class="text-whatsapp-700" />
+          </span>
+          <div class="min-w-0">
+            <a
+              href={whatsappLink(t.common.whatsapp.quote)}
+              target="_blank"
+              rel="noopener"
+              class="font-bold text-navy-950 after:absolute after:inset-0 after:content-[''] hover:text-royal-700"
+            >
+              {t.ui.cta.inEgyptWhatsapp}
+              <span class="sr-only"> ({t.ui.a11y.newTab})</span>
+            </a>
+            <p class="mt-0.5 text-sm text-charcoal-600" set:html={html(locale, ch.whatsapp.text)} />
+          </div>
+        </li>
+      )}
     </ul>
   </div>
 
@@ -118,7 +168,9 @@ const iconCls = "grid size-10 shrink-0 place-items-center border border-charcoal
       <ZoneMap only="home" />
     </div>
     <div class="flex items-start gap-4 p-5 sm:p-6">
-      <span class="grid size-10 shrink-0 place-items-center bg-signal-400 text-navy-950"><Icon name="map-pin" size={20} /></span>
+      <span class="grid size-10 shrink-0 place-items-center bg-signal-400 text-navy-950">
+        <Icon name="map-pin" size={20} />
+      </span>
       <div class="min-w-0 flex-1">
         <h2 class="lc-caps type-label text-charcoal-600">{ch.location.label}</h2>
         <address class="mt-1 not-italic">
@@ -126,7 +178,12 @@ const iconCls = "grid size-10 shrink-0 place-items-center border border-charcoal
           <span class="block text-charcoal-700">{ch.location.text}</span>
         </address>
         <p class="mt-1 text-sm text-charcoal-600">{ch.location.note}</p>
-        <a href={osm} target="_blank" rel="noopener" class="mt-3 inline-flex min-h-10 items-center gap-2 text-sm font-bold text-royal-600 hover:text-royal-800 hover:underline">
+        <a
+          href={osm}
+          target="_blank"
+          rel="noopener"
+          class="mt-3 inline-flex min-h-10 items-center gap-2 text-sm font-bold text-royal-600 hover:text-royal-800 hover:underline"
+        >
           {t.common.labels.openInMaps}
           <Icon name="external" size={16} />
           <span class="sr-only">({t.ui.a11y.newTab})</span>

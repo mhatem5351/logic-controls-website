@@ -11,6 +11,9 @@
  *   DEV2-07  the call-now panel's buttons are 44 px tall on touch screens
  *   VIS3-06  the thanks cards' WhatsApp buttons stay on one line at desktop widths
  *   CODE3-02 what the browser's click counter sends is what the Worker counts (and the per-view limits hold)
+ * Round 4:
+ *   AUD4-01  a refused file with a long name without spaces never widens the page; the thanks lines keep such names
+ *   AUD4-02  files all sent, answer lost: "Try again" only (no "Send without the files", which would send a duplicate)
  */
 import { readFileSync } from "node:fs";
 import { join } from "node:path";
@@ -244,6 +247,40 @@ test.describe("upload timeout", () => {
     await expect(page.locator("[data-dropped]")).toHaveText(EN.thanks.dropped.replace("{files}", iso("panel-photo.pdf")));
   });
 
+  test("the files were all sent and only the answer is missing: 'Try again', never 'Send without the files'", async ({ page }) => {
+    test.slow();
+    let posts = 0;
+    // the request arrives; no answer ever comes
+    await page.route("**/api/rfq", () => void posts++);
+    /* …after the whole body went out. An intercepted request never uploads (the browser reports only "loadstart"), so
+       the upload's progress and end are reported here, right after the real send. */
+    await page.addInitScript(() => {
+      const send = XMLHttpRequest.prototype.send;
+      XMLHttpRequest.prototype.send = function (this: XMLHttpRequest, body?: Document | XMLHttpRequestBodyInit | null) {
+        send.call(this, body);
+        if (body instanceof FormData)
+          for (const type of ["progress", "load"]) this.upload.dispatchEvent(new ProgressEvent(type, { lengthComputable: true, loaded: 1, total: 1 }));
+      };
+    });
+    await page.clock.install();
+    await openForm(page, "/en/contact/");
+    await fillStep1(page);
+    await page.locator("[data-next]").click();
+    await page.locator("#rfq-files").setInputFiles([{ name: "panel-photo.pdf", mimeType: "application/pdf", buffer: Buffer.concat([Buffer.from("%PDF-1.7\n"), Buffer.alloc(20_000)]) }]);
+    await page.locator("#rfq-consent").check();
+    await page.clock.runFor(5000); // let Turnstile's test key settle
+    await turnstileToken(page);
+    await page.locator('[data-actions="2"] [data-submit]').click();
+    await expect(page.locator("form[data-rfq]")).toHaveAttribute("data-sending", "");
+    await expect(page.locator("[data-progress] [role='progressbar']")).toHaveAttribute("aria-valuenow", "100");
+    await page.clock.runFor(60_000);
+    await expect(page.locator("[data-alert-text]")).toHaveText(EN.errors.timeout!); // the same text as a stalled upload
+    await expect(page.locator("[data-retry]")).toBeVisible();
+    await expect(page.locator("[data-send-bare]")).toBeHidden();
+    await expect(page.locator("[data-send-bare-note]")).toBeHidden();
+    expect(posts).toBe(1);
+  });
+
   test("a slow upload that keeps moving is not cut off after 150 s", { tag: "@desktop-only" }, async ({ page, browserName }) => {
     test.skip(browserName !== "chromium", "upload throttling needs the Chrome DevTools Protocol");
     test.slow();
@@ -297,6 +334,69 @@ test("320 px: the security check renders compact, so it never widens the form", 
     await page.locator("#rfq-name").focus();
     await expect.poll(() => page.evaluate(() => (window as unknown as { __size?: string }).__size)).toBe("compact");
     expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBeLessThanOrEqual(320);
+  }
+});
+
+test("320 px: a refused file whose long name has no spaces never widens the page, after the pick and after Send", async ({ page }) => {
+  await page.setViewportSize({ width: 320, height: 700 });
+  const name = "Panel_Wiring_Diagram_Line2_Rev07_final.docx";
+  const docx = { name, mimeType: "application/vnd.openxmlformats-officedocument.wordprocessingml.document", buffer: Buffer.from("PK\u0003\u0004") };
+  /** Page overflow, horizontal scroll, and whether every line naming the file stays on screen. */
+  const fits = () =>
+    page.evaluate(() => {
+      const w = document.documentElement.clientWidth;
+      const inside = (sel: string) =>
+        [...document.querySelectorAll<HTMLElement>(sel)].filter((e) => e.getClientRects().length).every((e) => {
+          const r = e.getBoundingClientRect();
+          return r.left >= -0.5 && r.right <= w + 0.5;
+        });
+      return { overflow: document.documentElement.scrollWidth - w, scrollX: Math.round(scrollX), error: inside("#rfq-files-error"), alert: inside("[data-alert-list] li") };
+    });
+  const ok = { overflow: 0, scrollX: 0, error: true, alert: true };
+  for (const l of ["en", "ar"]) {
+    await openForm(page, `/${l}/contact/`);
+    await fillStep1(page);
+    await page.locator("[data-next]").click();
+    await page.locator("#rfq-files").setInputFiles([docx]);
+    await expect(page.locator("#rfq-files-error")).toContainText(name);
+    expect(await fits(), `${l}: after the pick`).toEqual(ok);
+    await page.locator("#rfq-consent").check();
+    await page.locator('[data-actions="2"] [data-submit]').click();
+    await expect(page.locator("[data-alert-list] li").first()).toContainText(name);
+    expect(await fits(), `${l}: after Send (the alert repeats the message)`).toEqual(ok);
+  }
+});
+
+test("thanks, 320 px: long file names without spaces wrap inside the reference box, nothing cut off", async ({ page }) => {
+  await page.setViewportSize({ width: 320, height: 700 });
+  const photo = "IMG_20261007_141502_HDR_panel_front_view.jpg";
+  for (const l of ["en", "ar"]) {
+    await openThanks(page, l, {
+      name: "QA",
+      company: "QA",
+      need: "Panels",
+      files: [photo],
+      skipped: ["Panel_Wiring_Diagram_Line2_Rev07_final.docx"],
+      dropped: [photo.replace("front", "rear")],
+      reply: "",
+      urgent: "",
+    });
+    const lines = ["[data-received]", "[data-skipped]", "[data-dropped]"];
+    for (const sel of lines) await expect(page.locator(sel)).toBeVisible();
+    const out = await page.evaluate((lines) => {
+      const w = document.documentElement.clientWidth;
+      const box = document.querySelector("[data-ref-box]")!.getBoundingClientRect();
+      return {
+        box: box.left >= -0.5 && box.right <= w + 0.5,
+        lines: lines.map((sel) => {
+          const r = document.createRange();
+          r.selectNodeContents(document.querySelector(sel)!);
+          const t = r.getBoundingClientRect();
+          return t.left >= box.left - 0.5 && t.right <= box.right + 0.5;
+        }),
+      };
+    }, lines);
+    expect(out, l).toEqual({ box: true, lines: [true, true, true] });
   }
 });
 

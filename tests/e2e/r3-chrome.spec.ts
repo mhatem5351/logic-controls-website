@@ -6,6 +6,8 @@
  *    "Industries"; that must not swap the menus. Paced moves (12 steps, 25 ms apart), recorded in the page.
  *  - MOT3-01: a same-site arrival with the HTML at hand waits for the whole document (<link rel=expect> to #lc-end,
  *    the last element on every page, the 404 included), so the floating button is there to keep and never dims.
+ *    Round 4: never for more than 200 ms (a prefetch still downloading, MOT4-01), only in Chromium, only from 64rem
+ *    where the button is kept (PSC4-04).
  *  - MOT3-04: leaving through the open phone drawer lifts only the drawer's own bar into the transition.
  *  - A11Y3-01 (DOM side; the accessibility-tree side is r3-guards (d)), A11Y3-05 (1366 / 1440; r3-guards (c) does 1280),
  *    PERF3-03 logo candidates, UX3-04 floating button over a wrapped link, VIS3-06 drawer labels, VIS3-07 footer
@@ -130,11 +132,25 @@ test("same-site navigation (desktop): the floating button exists at the reveal a
       sessionStorage.lcIntro = 1;
       sessionStorage.lcPing = 1;
     } catch {}
+    // when the head script adds the render-blocking link, and when it is taken out again (MOT4-01: capped at 200 ms)
+    const life = { added: -1, removed: -1 };
+    const isExpect = (n: Node) => n instanceof HTMLLinkElement && n.rel === "expect";
+    new MutationObserver((ms) => {
+      for (const m of ms) {
+        if ([...m.addedNodes].some(isExpect)) life.added = performance.now();
+        if ([...m.removedNodes].some(isExpect)) {
+          life.removed = performance.now();
+          sessionStorage.__r3expect = JSON.stringify(life);
+        }
+      }
+    }).observe(document, { childList: true, subtree: true });
     addEventListener("pagereveal", (e) => {
       const t = (e as Event & { viewTransition?: ViewTransition | null }).viewTransition;
       const J = {
         vt: !!t,
-        expect: !!document.querySelector('link[rel="expect"][href="#lc-end"]'),
+        expect: life.added >= 0,
+        // the 200 ms cap lifted the block before the end of the document was parsed (a slow machine)
+        capped: life.removed >= 0,
         parsed: !!document.getElementById("lc-end"),
         fabAtReveal: !!document.querySelector(".lc-fab"),
         fab: [] as number[],
@@ -158,16 +174,49 @@ test("same-site navigation (desktop): the floating button exists at the reveal a
   const home = page.locator('header a[href="/en/"]').first();
   await home.hover();
   await page.waitForTimeout(700);
-  await page.evaluate(() => delete sessionStorage.__r3mot); // this page's own (first) reveal
+  await page.evaluate(() => (delete sessionStorage.__r3mot, delete sessionStorage.__r3expect)); // this page's own (first) reveal
   await home.click();
   await page.waitForURL("**/en/");
   await expect.poll(() => page.evaluate(() => sessionStorage.__r3mot ?? ""), { timeout: 5_000 }).not.toBe("");
-  const J = JSON.parse(await page.evaluate(() => sessionStorage.__r3mot!)) as { vt: boolean; expect: boolean; parsed: boolean; fabAtReveal: boolean; fab: number[] };
+  const J = JSON.parse(await page.evaluate(() => sessionStorage.__r3mot!)) as {
+    vt: boolean;
+    expect: boolean;
+    capped: boolean;
+    parsed: boolean;
+    fabAtReveal: boolean;
+    fab: number[];
+  };
   test.skip(!J.vt, "no cross-document view transition in this engine");
-  test.skip(!J.expect, "the HTML was not prefetched in this run: no render blocking (by design)");
-  expect(J.parsed, "the first frame waited for the end of the document").toBe(true);
-  expect(J.fabAtReveal, "the floating button exists when the transition starts").toBe(true);
-  expect(Math.min(...J.fab), "the kept button never dims or disappears during the transition").toBeGreaterThan(0.99);
+  test.skip(!J.expect, "the HTML was not prefetched in this run, or not Chromium: no render blocking (by design)");
+  if (!J.capped) {
+    expect(J.parsed, "the first frame waited for the end of the document").toBe(true);
+    expect(J.fabAtReveal, "the floating button exists when the transition starts").toBe(true);
+    expect(Math.min(...J.fab), "the kept button never dims or disappears during the transition").toBeGreaterThan(0.99);
+  }
+  // the wait is capped (MOT4-01): the link is taken out 200 ms after it was added, whether or not the HTML is all here
+  await expect.poll(() => page.evaluate(() => sessionStorage.__r3expect ?? ""), { timeout: 2_000 }).not.toBe("");
+  const life = JSON.parse(await page.evaluate(() => sessionStorage.__r3expect!)) as { added: number; removed: number };
+  expect(life.removed - life.added, "the render-blocking link's lifetime (ms)").toBeLessThanOrEqual(300);
+  expect(await page.locator('link[rel="expect"]').count()).toBe(0);
+});
+
+test("phones: a same-site arrival never waits for the whole document (no render-blocking link below 64rem, PSC4-04)", { tag: "@phone" }, async ({
+  page,
+}) => {
+  test.skip(!isNarrow(page), "phone widths");
+  await page.addInitScript(() => {
+    new MutationObserver((ms) => {
+      if (ms.some((m) => [...m.addedNodes].some((n) => n instanceof HTMLLinkElement && n.rel === "expect"))) sessionStorage.__r4expect = "added";
+    }).observe(document, { childList: true, subtree: true });
+  });
+  await page.goto("/en/about/");
+  await page.evaluate(() => delete sessionStorage.__r4expect);
+  const home = page.locator('main a[href="/en/"], footer a[href="/en/"]').first();
+  await home.scrollIntoViewIfNeeded();
+  await home.tap();
+  await page.waitForURL("**/en/");
+  await page.waitForLoadState("load");
+  expect(await page.evaluate(() => sessionStorage.__r4expect ?? "")).toBe("");
 });
 
 /* ------------------------------------------------------------------ MOT3-04 drawer → page */

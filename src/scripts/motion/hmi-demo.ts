@@ -839,8 +839,11 @@ export function initHmi(fig: HTMLElement): void {
      needlessly tall. */
   const reserveHtml = (): string[] => {
     const a = { limit: f1(72), hold: f1(15.6), s: 5, batch: "B-1042", t: f1(71.4), v: f1(78) };
-    const keys = ["heating", "forward", "fault", "faultEta", "recovering", "recoveredAck", "allClear", "acked", "stopped", "cipDone", "faultNeedsRun", "faultInCip", "noAlarms", "spLimit"];
-    return [PRESS, doneHtml(), ...keys.map((k) => esc(iso(fill(T.msg[k] || "", a))))];
+    const keys = ["heating", "forward", "fault", "recovering", "recoveredAck", "allClear", "acked", "stopped", "cipDone", "faultNeedsRun", "faultInCip", "noAlarms", "spLimit"];
+    /* The fault countdown with every value it can show: digits are proportional, so "4 s" can wrap a word that "5 s"
+       does not (seen on Linux at 390 px in Turkish) — and the line would grow under the Acknowledge key. */
+    const eta = Array.from({ length: 20 }, (_, i) => esc(iso(fill(T.msg.faultEta || "", { ...a, s: i + 1 }))));
+    return [PRESS, doneHtml(), ...keys.map((k) => esc(iso(fill(T.msg[k] || "", a)))), ...eta];
   };
   let msgW = 0;
   function reserveMsg(): void {

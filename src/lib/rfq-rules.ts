@@ -239,21 +239,27 @@ const NATIONAL: Record<PhoneCountry, { mobile: RegExp[]; other: RegExp[] }> = {
 const BARE_INTL = [/^20(1[0125]\d{8})$/, /^90(5\d{9})$/, /^86(1[3-9]\d{9})$/];
 
 /** Country names as visitors write them (accents folded, lower case): whole words, plus CJK names anywhere. */
-const COUNTRY_WORDS: Record<PhoneCountry, { words: string[]; cjk: string[] }> = {
+interface CountryWords {
+  words: string[];
+  cjk: string[];
+}
+const COUNTRY_WORDS: Record<PhoneCountry, CountryWords> = {
   EG: { words: ["egypt", "egyptian", "misir", "mısır", "eg", "egy", "مصر"], cjk: ["埃及"] },
   TR: { words: ["turkey", "turkiye", "turkei", "tr", "tur", "تركيا"], cjk: ["土耳其"] },
   CN: { words: ["china", "chinese", "prc", "cin", "cn", "chn", "الصين"], cjk: ["中国", "中國", "中华人民共和国"] },
+};
+const fold = (s: string) => s.normalize("NFKD").replace(/\p{M}/gu, "").toLowerCase();
+/** Does the text name this country (one of its words, accents folded; or a CJK name anywhere)? */
+const names = (text: string, c: CountryWords) => {
+  const words = new Set(fold(text).split(/[^\p{L}\p{N}]+/u).filter(Boolean));
+  return c.words.some((w) => words.has(fold(w))) || c.cjk.some((w) => text.includes(w));
 };
 
 /** The country the free-text country field names, "other" for any other non-empty text, null when empty. */
 export function countryOf(text: string | undefined): PhoneCountry | "other" | null {
   const s = (text ?? "").trim();
   if (!s) return null;
-  const folded = s.normalize("NFKD").replace(/\p{M}/gu, "").toLowerCase();
-  const words = new Set(folded.split(/[^\p{L}\p{N}]+/u).filter(Boolean));
-  const hits = (Object.keys(COUNTRY_WORDS) as PhoneCountry[]).filter(
-    (c) => COUNTRY_WORDS[c].words.some((w) => words.has(w)) || COUNTRY_WORDS[c].cjk.some((w) => s.includes(w)),
-  );
+  const hits = (Object.keys(COUNTRY_WORDS) as PhoneCountry[]).filter((c) => names(s, COUNTRY_WORDS[c]));
   return hits.length === 1 ? hits[0]! : "other";
 }
 
@@ -298,11 +304,20 @@ export function intlPhone(raw: string, ctx: PhoneContext = {}): string | null {
   }
 }
 
-/** Mobile formats a visitor types without the country code, by the country their connection comes from. */
-const NETWORK_MOBILE: Record<string, { dial: string; mobile: RegExp[] }> = {
-  ...Object.fromEntries((Object.keys(DIAL) as PhoneCountry[]).map((c) => [c, { dial: DIAL[c], mobile: NATIONAL[c].mobile }])),
-  SA: { dial: "966", mobile: [/^0?(5\d{8})$/] }, // 05x xxx xxxx
-  AE: { dial: "971", mobile: [/^0?(5[024568]\d{7})$/] }, // 050 / 052 / 054 / 055 / 056 / 058 + 7 digits
+/** Mobile formats a visitor types without the country code, by the country their connection comes from, with the
+ *  country's names as visitors write them (a typed country must be this one for a guess, PSC4-05). */
+const NETWORK_MOBILE: Record<string, { dial: string; mobile: RegExp[]; names: CountryWords }> = {
+  ...Object.fromEntries(
+    (Object.keys(DIAL) as PhoneCountry[]).map((c) => [c, { dial: DIAL[c], mobile: NATIONAL[c].mobile, names: COUNTRY_WORDS[c] }]),
+  ),
+  // 05x xxx xxxx
+  SA: { dial: "966", mobile: [/^0?(5\d{8})$/], names: { words: ["saudi", "ksa", "السعودية", "السعوديه"], cjk: ["沙特"] } },
+  // 050 / 052 / 054 / 055 / 056 / 058 + 7 digits
+  AE: {
+    dial: "971",
+    mobile: [/^0?(5[024568]\d{7})$/],
+    names: { words: ["uae", "emirates", "dubai", "sharjah", "ajman", "الإمارات", "دبي", "الشارقة"], cjk: ["阿联酋", "迪拜"] },
+  },
 };
 /** "SA", "AE"…: a real ISO country, not Cloudflare's "XX" (unknown) or "T1" (Tor). */
 export const isNetworkCountry = (cc: unknown): cc is string => typeof cc === "string" && /^[A-Z]{2}$/.test(cc) && cc !== "XX";
@@ -311,12 +326,17 @@ export const isNetworkCountry = (cc: unknown): cc is string => typeof cc === "st
  * UX3-03: a GUESS for the owner, never applied silently. When intlPhone() cannot tell the country, a local mobile
  * number that matches the format of the country the visitor's connection comes from (the Worker's
  * request.cf.country) may be from there: the owner's email offers it labelled "guessed from the network: confirm".
- * Null when that country is unknown, not covered, or the number is not one of its mobile formats.
+ * Null when that country is unknown, not covered, or the number is not one of its mobile formats — and when the
+ * visitor's own answer in the country field names something else (PSC4-05: "Saudi Arabia" typed on a UAE network
+ * must not become a link to +971: Saudi 050 / 054 / 055 / 056 / 058 mobiles are also UAE formats). Their answer wins:
+ * no guess against it.
  */
-export function networkPhone(raw: string, network: string | null | undefined): string | null {
+export function networkPhone(raw: string, network: string | null | undefined, typedCountry?: string): string | null {
   const c = compactPhone(raw);
   const country = isNetworkCountry(network) ? NETWORK_MOBILE[network] : undefined;
   if (!country || !PHONE_RE.test(c) || /^(\+|00)/.test(c)) return null;
+  const typed = (typedCountry ?? "").trim();
+  if (typed && !names(typed, country.names)) return null;
   for (const re of country.mobile) {
     const m = re.exec(c);
     if (m) return country.dial + m[1]!;

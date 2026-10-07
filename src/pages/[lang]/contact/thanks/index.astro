@@ -115,10 +115,11 @@ const narrow = {
         </button>
       </p>
       <p class="mt-1 text-navy-300">{th.ref.hint}</p>
-      <p class="mt-2 text-navy-100" data-received data-tpl={th.received} hidden></p>
+      {/* lines that name files: a long name without spaces wraps anywhere rather than run off the screen (AUD4-01) */}
+      <p class="mt-2 wrap-anywhere text-navy-100" data-received data-tpl={th.received} hidden></p>
       <p class="mt-2 text-navy-100" data-reply-by data-tpl={th.replyBy} hidden></p>
-      <p class="mt-2 border-s-2 border-signal-400 ps-3 text-signal-100" data-skipped data-tpl={th.skipped} data-some={th.skippedSome} hidden></p>
-      <p class="mt-2 border-s-2 border-signal-400 ps-3 text-signal-100" data-dropped data-tpl={th.dropped} hidden></p>
+      <p class="mt-2 wrap-anywhere border-s-2 border-signal-400 ps-3 text-signal-100" data-skipped data-tpl={th.skipped} data-some={th.skippedSome} hidden></p>
+      <p class="mt-2 wrap-anywhere border-s-2 border-signal-400 ps-3 text-signal-100" data-dropped data-tpl={th.dropped} hidden></p>
       <p class="sr-only" aria-live="polite" data-ref-live></p>
     </div>
     <div class="lc-rise mt-8 flex flex-wrap gap-3" style="--i:2" data-default-actions>

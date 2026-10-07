@@ -10,6 +10,8 @@
  *  - Hero video and pause control (MOT3-06 / MOT3-07), Arabic case-study titles (VIS3-05), the home CTA at 320 px
  *    (DEV2-09), the HMI's keys at the fault / recovery beats (MOT3-05), the control loop's first state (MOT3-08) and
  *    the KPI line's number + unit (I18N3-06).
+ *  - Round 4: the HMI section is hidden until styled only once the site module has claimed it; if the module never
+ *    runs, a stylesheet timer shows it (AUD4-03). The hero clip rests at its end without an 'ended' event (MOT4-02).
  * A route on any request disables cross-document view transitions in Chromium: the morph test watches requests through
  * CDP instead.
  */
@@ -265,12 +267,19 @@ test.describe("MOT3-05: the HMI keys stay put through the Try-it story", () => {
         await page.setViewportSize({ width, height: 800 });
         const fig = await openHomeHmi(page, locale);
         const scr = fig.locator(".lc-hmi-screen");
+        /* The keys' offset from the top of the demo, every frame: what the finger sees. Measured inside the demo, so
+           only the demo's own layout counts (the message line above the keys, the Try-it list), not the page around
+           it or the scroll position's rounding. Each distinct offset keeps the first message-line height seen with
+           it, so a failure says what grew. */
         await fig.evaluate((f) => {
           const keys = ["start", "fault", "ack"].map((c) => f.querySelector<HTMLElement>(`button[data-c="${c}"]`)!);
-          const w = window as unknown as { __keys: Set<string>; __stop: boolean };
-          w.__keys = new Set();
+          const msg = f.querySelector<HTMLElement>(".hs-msg")!;
+          const w = window as unknown as { __keys: Map<string, string>; __stop: boolean };
+          w.__keys = new Map();
           const tick = () => {
-            w.__keys.add(keys.map((k) => Math.round((k.getBoundingClientRect().top + scrollY) * 2) / 2).join(","));
+            const top = f.getBoundingClientRect().top;
+            const at = keys.map((k) => Math.round((k.getBoundingClientRect().top - top) * 2) / 2).join(",");
+            if (!w.__keys.has(at)) w.__keys.set(at, `message ${msg.getBoundingClientRect().height.toFixed(1)}px "${msg.textContent!.trim().slice(0, 60)}"`);
             if (!w.__stop) requestAnimationFrame(tick);
           };
           requestAnimationFrame(tick);
@@ -287,11 +296,11 @@ test.describe("MOT3-05: the HMI keys stay put through the Try-it story", () => {
         await btn("ack").click();
         await expect(fig.locator("[data-step][data-done]")).toHaveCount(4);
         const positions = await page.evaluate(() => {
-          const w = window as unknown as { __keys: Set<string>; __stop: boolean };
+          const w = window as unknown as { __keys: Map<string, string>; __stop: boolean };
           w.__stop = true;
-          return [...w.__keys];
+          return [...w.__keys].map(([at, seen]) => `keys at ${at} (${seen})`);
         });
-        expect(positions).toHaveLength(1);
+        expect(positions, positions.join("\n")).toHaveLength(1);
       },
     );
   }
@@ -385,6 +394,80 @@ test.describe("PERF3-04: the HMI stylesheet never holds the parser", () => {
       // hmi-demo.css applied: the Try-it list is its flex row, not a bare block
       expect(await page.locator(".lc-hmi-tour").evaluate((t) => getComputedStyle(t).display)).toBe("flex");
     });
+  });
+});
+
+test.describe("AUD4-03: the HMI section is hidden only while the site module can still show it", () => {
+  test.use({ allowConsole: [/Failed to load resource|ERR_FAILED|net::|Load failed|error loading/i] });
+
+  test("the site module never runs (a failed or stale chunk): heading and copy are shown within seconds", async ({ page }) => {
+    // the page's one module script: <script type="module" src="/_astro/…"> in <head>
+    const html = await (await page.request.get("/en/")).text();
+    const src = /<script type="module" src="([^"]+)"/.exec(html.slice(0, html.indexOf("</head>")))?.[1];
+    expect(src, "the site module in <head>").toBeTruthy();
+    await page.route((url) => url.pathname === src, (route) => route.abort());
+    await page.goto("/en/");
+    const wrap = page.locator(".lc-hmi-wrap");
+    await expect(wrap).not.toHaveAttribute("data-styling"); // nothing claimed it
+    const h2 = wrap.locator("h2");
+    await h2.scrollIntoViewIfNeeded();
+    await expect(h2).toBeVisible({ timeout: 10_000 });
+    expect(await wrap.evaluate((w) => getComputedStyle(w).visibility)).toBe("visible");
+  });
+
+  test("while the module waits for the demo's stylesheet, the section stays unseen past that timer, then shows styled", { tag: "@desktop-only" }, async ({ page }) => {
+    let release!: () => void;
+    const gate = new Promise<void>((r) => (release = r));
+    await page.route(/\/hmi-demo\.[\w-]+\.css(?:\?.*)?$/, async (route) => {
+      await gate;
+      await route.continue();
+    });
+    await page.goto("/en/technologies/", { waitUntil: "domcontentloaded" });
+    const wrap = page.locator(".lc-hmi-wrap");
+    await expect(wrap).toHaveAttribute("data-styling", "");
+    await page.waitForTimeout(5000); // longer than the unclaimed-section timer (4 s)
+    expect(await wrap.evaluate((w) => getComputedStyle(w).visibility)).toBe("hidden");
+    release();
+    await expect(wrap).toHaveAttribute("data-styled", "");
+    expect(await wrap.evaluate((w) => getComputedStyle(w).visibility)).toBe("visible");
+  });
+});
+
+test.describe("PSC4-03: while its stylesheet loads, the HMI demo keeps about its styled size", () => {
+  test("held sheet: the reserved box is within 8% of the styled height, and as wide (both variants, en / ar, 390 / 1440 px)", { tag: "@desktop-only" }, async ({
+    page,
+  }) => {
+    test.slow();
+    let open = () => {};
+    let gate = Promise.resolve();
+    await page.route(/\/hmi-demo\.[\w-]+\.css(?:\?.*)?$/, async (route) => {
+      await gate;
+      await route.continue();
+    });
+    const box = () => page.locator(".lc-hmi-wrap").evaluate((w) => ({ h: w.getBoundingClientRect().height, w: w.getBoundingClientRect().width }));
+    for (const [path, width] of [
+      ["/en/", 1440],
+      ["/en/technologies/", 1440],
+      ["/ar/", 1440],
+      ["/ar/services/plc-hmi-programming/", 1440],
+      ["/en/", 390],
+      ["/en/technologies/", 390],
+      ["/ar/", 390],
+      ["/ar/technologies/", 390],
+    ] as const) {
+      gate = new Promise<void>((r) => (open = r));
+      await page.setViewportSize({ width, height: 900 });
+      await page.goto(path, { waitUntil: "domcontentloaded" });
+      const wrap = page.locator(".lc-hmi-wrap");
+      await expect(wrap).toHaveAttribute("data-styling", "");
+      const held = await box();
+      open();
+      await expect(wrap).toHaveAttribute("data-styled", "");
+      const styled = await box();
+      const off = Math.abs(held.h - styled.h) / styled.h;
+      expect(off, `${path} at ${width}px: ${Math.round(held.h)} px kept, ${Math.round(styled.h)} px styled`).toBeLessThan(0.08);
+      expect(Math.round(held.w)).toBe(Math.round(styled.w));
+    }
   });
 });
 
@@ -515,6 +598,23 @@ test.describe("hero video (desktop)", { tag: "@desktop-only" }, () => {
     await page.mouse.move(400, 400, { steps: 4 });
     await expect(video).toHaveAttribute("data-playing", "", { timeout: 10_000 });
     expect(await video.evaluate((v: HTMLVideoElement) => v.paused)).toBe(false);
+  });
+
+  test("rests at its end even when the browser fires no 'ended' (WebKit, AV1 WebM, second play: MOT4-02)", async ({ page }) => {
+    await page.emulateMedia({ reducedMotion: "no-preference" });
+    // the engine bug, played here: 'ended' never reaches the page's handler (capture listeners at the target run first)
+    await page.addInitScript(() =>
+      document.addEventListener("DOMContentLoaded", () =>
+        document.querySelector("video.lc-hero-video")?.addEventListener("ended", (e) => e.stopImmediatePropagation(), true),
+      ),
+    );
+    await page.goto("/en/");
+    const video = page.locator("video.lc-hero-video");
+    await expect(video).toHaveAttribute("data-playing", "", { timeout: 15_000 });
+    await video.evaluate((v: HTMLVideoElement) => (v.playbackRate = 16));
+    await expect(video).not.toHaveAttribute("data-playing", { timeout: 15_000 });
+    expect(await video.evaluate((v: HTMLVideoElement) => ({ at: v.currentTime, paused: v.paused }))).toEqual({ at: 0, paused: true });
+    await expect(page.locator("[data-hero-pause]")).toBeHidden();
   });
 
   for (const lang of ["en", "ar"]) {

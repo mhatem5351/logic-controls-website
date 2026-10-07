@@ -613,8 +613,13 @@ if (image) {
         }
       }
     };
-    video.addEventListener("ended", () => {
+    /* The end of a play-through, once each. Also from 'timeupdate': WebKit with the AV1 WebM fires no 'ended' (and
+       stays unpaused) at the end of a second play-through (MOT4-02), which left the last frame and a dead pause button
+       on screen; 'timeupdate' still comes with `ended` true. */
+    const finish = () => {
+      if (resting) return;
       resting = true;
+      video.pause(); // a no-op after a real 'ended'; WebKit's unpaused end would otherwise play on from frame 0
       video.currentTime = 0;
       // Hand over once frame 0 is on screen (rVFC also fires for a seek while paused; 'seeked' + two frames where it
       // doesn't). Not if a hover replay has started meanwhile.
@@ -625,7 +630,9 @@ if (image) {
       };
       if ("requestVideoFrameCallback" in video) video.requestVideoFrameCallback(handBack);
       video.addEventListener("seeked", () => requestAnimationFrame(() => requestAnimationFrame(handBack)), { once: true });
-    });
+    };
+    video.addEventListener("ended", finish);
+    video.addEventListener("timeupdate", () => video.ended && finish());
     const begin = () => {
       new IntersectionObserver(([entry]) => {
         visible = !!entry?.isIntersecting;

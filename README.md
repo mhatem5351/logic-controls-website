@@ -256,7 +256,7 @@ destination must be a verified Email Routing address. A Cloudflare redirect rule
 
 `/`, `/api/rfq` and `/api/evt` run the Worker, and all three share the Workers Free quota of 100,000 requests a day.
 Once it is used up, Cloudflare answers 429 instead of running the Worker until 00:00 UTC: the quote form fails and
-nobody is told. One anonymous loop could get there. The zone's one free WAF rate-limiting rule blocks such a loop at
+nobody is told. One anonymous loop could get there. The zone's one free WAF rate-limiting rule limits each address at
 the edge, before the Worker runs, so blocked requests do not count against the quota:
 
 | Setting | Value |
@@ -264,10 +264,22 @@ the edge, before the Worker runs, so blocked requests do not count against the q
 | Rule | "Protect Worker routes (free-plan 100k/day): /api/* and / per IP" (zone ruleset, phase `http_ratelimit`) |
 | Matches | `starts_with(http.request.uri.path, "/api/") or http.request.uri.path eq "/"` |
 | Counted per | IP address + Cloudflare data centre (`ip.src`, `cf.colo.id`: the characteristics the Free plan allows) |
-| Limit | 30 requests in 10 s, then block (HTTP 429) for 10 s (the Free plan's fixed period and mitigation time) |
+| Limit | 10 requests in 10 s, then block (HTTP 429) for 10 s (the Free plan's fixed period and mitigation time) |
 
-A real visitor sends at most 8 click beacons per page view plus one form post, far below the limit. The E2E suite runs
-against local `wrangler dev`, which the rule never sees.
+What it does and does not stop:
+
+- A fast loop from one address is blocked within seconds. At 30 in 10 s (until October 2026) a loop paced just under
+  3 requests a second was never limited and used up the day's quota by mid-morning UTC.
+- A loop paced at 1 request a second or slower is never limited: up to ~86,400 requests a day from one address. That
+  stays under the quota on its own, but two such loops (two addresses) use it up. The Free plan has no longer window
+  than 10 s and no per-day limit, so nothing on it stops a slow or distributed loop; only a paid Workers plan removes
+  the daily cap (not used: the site stays on the free plans). Watch Workers & Pages → logic-controls-site → Metrics
+  if the form ever answers 429.
+- A real visitor sends at most 8 click beacons per page view plus one form post (and one request to `/` for the
+  language redirect), far below the limit. Visitors behind one shared address (a carrier's NAT) share the budget,
+  which at this site's traffic is far off.
+
+The E2E suite runs against local `wrangler dev`, which the rule never sees.
 
 - View or edit: Cloudflare dashboard → logic-controls.com → Security → Security rules → Rate limiting rules. Through
   the API, with a token that has zone WAF permissions:
