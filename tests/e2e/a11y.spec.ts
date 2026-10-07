@@ -41,34 +41,43 @@ test.describe("404", () => {
   });
 });
 
-test("axe: open states (phone drawer / zone card / form errors / lightbox)", async ({ page }) => {
-  await page.goto("/en/contact/");
-  await page.locator("[data-next]").click();
-  await expect(page.locator("[data-alert]")).toBeVisible();
-  expect(await scan(page), "form with validation errors").toEqual([]);
+// One scan per open state: each axe pass on WebKit mobile takes several seconds on a 2-vCPU CI runner, so four
+// scans in one test exceeded the 30 s budget there.
+test.describe("axe: open states", () => {
+  test("form with validation errors", async ({ page }) => {
+    await page.goto("/en/contact/");
+    await page.locator("[data-next]").click();
+    await expect(page.locator("[data-alert]")).toBeVisible();
+    expect(await scan(page), "form with validation errors").toEqual([]);
+  });
 
-  await page.goto("/ar/");
-  const zones = page.locator("[data-zones]").first();
-  await zones.scrollIntoViewIfNeeded();
-  await zones.locator('button.lc-zm-pin[data-zone="obour"]').click();
-  await expect(zones.locator('[data-card="obour"]')).toBeVisible();
-  expect(await scan(page), "zone card open").toEqual([]);
+  test("zone card open", async ({ page }) => {
+    await page.goto("/ar/");
+    const zones = page.locator("[data-zones]").first();
+    await zones.scrollIntoViewIfNeeded();
+    await zones.locator('button.lc-zm-pin[data-zone="obour"]').click();
+    await expect(zones.locator('[data-card="obour"]')).toBeVisible();
+    expect(await scan(page), "zone card open").toEqual([]);
+  });
 
-  if ((page.viewportSize()?.width ?? 1440) < 1024) {
+  test("phone drawer open", async ({ page }) => {
+    test.skip((page.viewportSize()?.width ?? 1440) >= 1024, "the drawer only exists below 1024px");
+    await page.goto("/ar/");
     await page.locator(".lc-menu-open").click();
     await expect(page.locator("#lc-drawer")).toBeVisible();
     expect(await scan(page), "drawer open").toEqual([]);
-    await page.keyboard.press("Escape");
-  }
+  });
 
-  await page.goto("/zh/projects/pasteurizer-cip-recipes/");
-  await page.locator("[data-gallery] a[data-full]").first().click();
-  const lightbox = page.locator(".lc-lightbox");
-  await expect(lightbox).toBeVisible();
-  // axe cannot see ::backdrop: the full-size dialog is transparent over a navy-950/95 backdrop, so paint that
-  // same colour on the dialog itself for the scan (otherwise axe measures the text against the white page behind).
-  await lightbox.evaluate((d) => (d.style.backgroundColor = getComputedStyle(d, "::backdrop").backgroundColor));
-  expect(await scan(page), "lightbox open").toEqual([]);
+  test("lightbox open", async ({ page }) => {
+    await page.goto("/zh/projects/pasteurizer-cip-recipes/");
+    await page.locator("[data-gallery] a[data-full]").first().click();
+    const lightbox = page.locator(".lc-lightbox");
+    await expect(lightbox).toBeVisible();
+    // axe cannot see ::backdrop: the full-size dialog is transparent over a navy-950/95 backdrop, so paint that
+    // same colour on the dialog itself for the scan (otherwise axe measures the text against the white page behind).
+    await lightbox.evaluate((d) => (d.style.backgroundColor = getComputedStyle(d, "::backdrop").backgroundColor));
+    expect(await scan(page), "lightbox open").toEqual([]);
+  });
 });
 
 test("axe self-check: an injected violation is reported (the scan is really running)", { tag: "@desktop-only" }, async ({ page }) => {
