@@ -79,11 +79,12 @@ const urgent = slug === "maintenance-support";
 const wa = urgent ? m.common.whatsapp.stopped : fmt(m.common.whatsapp.service, { service: item.title });
 const primary = urgent ? { label: L.callEngineer, href: `tel:${SITE.phone.tel}` } : { label: m.ui.cta.quote, href: quote };
 
-/* Control panels: real panel photos from the case studies (featured for this service first), linked to each case. */
+/* Control panels: photos of panels WE built — only case studies whose recorded scope includes control-panel
+   building (services include "control-panels"). Programming-only or commissioning-only jobs must never appear here. */
 const panels =
   slug === "control-panels"
-    ? [...new Set([...projectsForService(slug), ...projectsFor(locale)])]
-        .filter((pr) => projectCopy(locale, pr.slug))
+    ? projectsForService(slug)
+        .filter((pr) => pr.services.includes("control-panels") && projectCopy(locale, pr.slug))
         .map((pr) => ({ pr, img: [pr.cover, ...pr.gallery].find((im) => im.key === "panel") }))
         .filter((x): x is { pr: (typeof x)["pr"]; img: NonNullable<(typeof x)["img"]> } => !!x.img)
         .slice(0, 6)
