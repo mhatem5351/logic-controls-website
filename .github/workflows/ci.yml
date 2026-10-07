@@ -31,7 +31,8 @@ jobs:
   test:
     name: Build, checks and E2E
     runs-on: ubuntu-24.04
-    timeout-minutes: 20
+    # First run on a cold image cache takes ~12 min to build; warm runs are much faster.
+    timeout-minutes: 35
     steps:
       - uses: actions/checkout@v7
 
@@ -51,7 +52,8 @@ jobs:
       # Astro's image + font cache (node_modules/.astro): ~800 AVIF/WebP/JPEG variants take minutes to encode cold.
       # Astro keys entries by content, so any older cache is a safe starting point (restore-keys).
       - name: Restore Astro asset cache
-        uses: actions/cache@v6
+        id: astro-cache
+        uses: actions/cache/restore@v6
         with:
           path: node_modules/.astro
           key: astro-${{ runner.os }}-${{ hashFiles('package-lock.json', 'astro.config.mjs') }}-${{ hashFiles('src/assets/**', 'public/**') }}
@@ -60,7 +62,17 @@ jobs:
             astro-${{ runner.os }}-
 
       - name: Build
+        id: build
         run: npm run build
+
+      # Save the encoded images right after the build (not in a post step), so a later failure or
+      # cancellation can't leave the next run cold again.
+      - name: Save Astro asset cache
+        if: always() && steps.build.outcome == 'success' && steps.astro-cache.outputs.cache-hit != 'true'
+        uses: actions/cache/save@v6
+        with:
+          path: node_modules/.astro
+          key: astro-${{ runner.os }}-${{ hashFiles('package-lock.json', 'astro.config.mjs') }}-${{ hashFiles('src/assets/**', 'public/**') }}
 
       - name: Unit + static checks (vitest, i18n, astro check, html-validate, dist crawl)
         run: npm run test
