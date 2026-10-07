@@ -1,7 +1,7 @@
 {
   "seo": {
     "title": "PLC, HMI ve SCADA Platformları | Logic Controls",
-    "description": "Siemens, Schneider Electric, Delta, LS Electric ve Wecon PLC, HMI ve sürücülerini, WinCC SCADA'yı ve Modbus'ı programlıyor, entegre ediyoruz."
+    "description": "Siemens, Schneider Electric, Delta, LS Electric ve Wecon PLC, HMI ve sürücülerini, WinCC SCADA'yı ve Modbus ağlarını programlıyor, entegre ediyoruz."
   },
   "h1": "Programladığımız ve entegre ettiğimiz PLC, HMI ve SCADA platformları",
   "intro": [
@@ -11,7 +11,7 @@
   "brands": {
     "title": "Programladığımız ve entegre ettiğimiz PLC ve HMI platformları",
     "productsLabel": "Projelerimizde kullanılanlar",
-    "projectsTitle": "Bu platformdaki projelerimiz",
+    "projectsTitle": "Bu platformla yaptığımız projeler",
     "allOnPlatform": "Tüm {brand} projeleri",
     "productNames": {
       "S7-1200": "S7-1200",

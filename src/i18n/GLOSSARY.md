@@ -35,7 +35,8 @@ Use this to keep the four languages consistent. "Keep" = write the term in Latin
 | Load cell | Weighing sensor | Gloss | خلية وزن (Load cell) |
 | Contactor, overload relay, relay, circuit breaker | Panel components | Gloss | كونتاكتور · أوفرلود · ريلاي · قاطع (Circuit breaker) |
 | PID / proportional control | Closed-loop control methods | Keep "PID" | تحكم PID · تحكم تناسبي |
-| Scan cycle / scan time (PLC) | One pass of the PLC program: read inputs, run the logic, write outputs | — | دورة المسح · زمن دورة المسح (never the English "scan" in Arabic copy) |
+| Scan cycle / scan time (PLC) | One pass of the PLC program: read inputs, run the logic, write outputs | — | دورة المسح · زمن دورة المسح (never the English "scan" in Arabic copy). ControlLoop spec chip: "PID · دورة المسح 10 ms", with no-break spaces inside "دورة المسح 10 ms" so a narrow card breaks only after "PID ·" ("زمن دورة المسح" wraps the chip at 360) |
+| HMI event source (alarm/event list) | Source column of the HMI demo's event list: SEQ / MODE / RCP | — | التسلسل / الوضع / الوصفة, always with the article (bare "وضع" is ambiguous without diacritics) |
 
 ## Project and service terms
 
@@ -60,6 +61,8 @@ Use this to keep the four languages consistent. "Keep" = write the term in Latin
 | Machine builder (OEM) | Company that manufactures the machine | Keep "OEM" | مُصنِّع الماكينات (OEM) |
 | Platforms we program and integrate | Our relationship to brands (not a partnership) | — | منصات نبرمجها وندمجها (never وكلاء / شركاء معتمدون) |
 | Designed following … practice | Our standards wording (not certification) | — | مصممة وفق ممارسات المعيار … (never مطابقة / معتمدة) |
+| Case study | One published project write-up | — | دراسة حالة · دراسات الحالة on the projects pages (card CTA "اقرأ دراسة الحالة", filters, projects H1) and in the case-study WhatsApp message; مشروع / مشروعكم in the contact-form context lines (see "Contact form (quote request) terms") |
+| Did you mean … (404) | Suggestion of the page the visitor probably wanted | — | هل تقصد صفحة {page}؟ ({page} is a page title or a bare path, so "صفحة" is needed) |
 
 ## Machines and processes
 
@@ -146,6 +149,16 @@ Review the Search Console queries 6 to 8 weeks after a change and adjust.
 | Records / Reports | السجلات / التقارير | 记录 / 报告 | Kayıtlar / Raporlar |
 | Controlled | نطاق التحكم | 控制对象 | Kontrol edilenler |
 | Handover | التسليم | 移交 | Teslim |
+| Commissioning | الاختبار والتشغيل | 调试 | Devreye alma |
+| Plant interface | الربط مع المصنع | 工厂接口 | Tesis arayüzü (not "Tesis bağlantısı", which reads as a physical connection) |
+| Materials dosed | جرعات المواد | 计量物料 | Dozajlanan malzemeler |
+| Label checks | فحص الليبل | 标签检测 | Etiket kontrolü |
+| Panel (components in the cabinet) | مكونات اللوحة | 柜内元件 (not 电控柜) | Pano |
+| Access and records | الصلاحيات والسجلات | 权限与记录 | Erişim ve kayıtlar |
+| Measured values | القيم المقاسة | 测量值 | Ölçülen değerler |
+| Product safety | سلامة المنتج | 产品安全 | Ürün güvenliği |
+| Motion / Network / Pumps | الحركة / الشبكة / المضخات | 运动控制 / 网络 / 泵 | Hareket kontrolü / Ağ / Pompalar |
+| Chemical inputs / Wash programs | مداخل الكيماويات / برامج الغسيل | 化料输入 / 洗涤程序 | Kimyasal girişler / Yıkama programları |
 
 ## Machine builders (OEM) path
 
@@ -258,6 +271,17 @@ error messages, the thanks page and the privacy notice.
 | Chocolate cooker / bakery line | 巧克力熬煮锅 / 烘焙生产线 | Edible-oil and liquid-egg fillers = 食用油与液蛋灌装机 |
 | Wax filling and capping | 蜡类产品灌装旋盖机 | |
 | Founder | 创始人 | Name stays Latin: Mohammed Tarek Aboalsafa |
+| Scan cycle / scan time (PLC) | 扫描周期 | ControlLoop chip: `PID · 扫描周期 10 ms` |
+| Forward / divert (FDV, HMI) | 出料 / 回流 | Tour step "Wait for Forward" = 等待进入“出料” |
+| Quote (short CTA) / quote form | 询价 / 询价表单 | The visitor's action is 询价; 报价 is what we send (the long CTA 获取报价 stays) |
+| Panel (facts label, tech group) | 柜内元件 · 柜内元件与网络 | Not 电控柜; the cabinet itself stays 控制柜 / 电气控制柜 |
+| Front-loading washer-extractor | 前开门式洗脱两用机 | |
+| Checked on the bench (before installation) | 台架检查 · 在台架上运行 | |
+| From the site (gallery eyebrow) | 现场实拍 | The gallery title is 项目照片, so the eyebrow avoids repeating 照片 |
+| Did you mean {page}? (404) | 您是不是要找：{page} | Colon form: {page} may be a zh name, a name starting with Latin, or a bare path |
+| Image {n} of {total} (viewer) | 第 {n} 张，共 {total} 张 | The short visible counter stays `{n} / {total}` |
+| Try the live demo | 体验实时演示 | Matches the HMI eyebrow HMI 实时演示 |
+| Submit button named in running text | “提交需求” | Name the button exactly as rendered (privacy notice); photos made smaller = 压缩 |
 
 **Places.** Sources: Xinhua, China Daily, MOFCOM country guide. Names marked * have no single Chinese-media spelling, so the Latin name follows in brackets.
 
@@ -279,7 +303,7 @@ error messages, the thanks page and the privacy notice.
 
 ## Turkish (tr): conventions and decisions used in `messages/tr/`
 
-**Register and typography.** Polite "siz" address, short plain business sentences. Turkish characters everywhere (ç, ğ, ı, İ, ö, ş, ü); capital İ for "İlaç", "İskenderiye", "İsmailiye". Suffixes on abbreviations and names follow pronunciation, after an apostrophe: PLC'ler / PLC'yi / PLC'den, HMI'lar / HMI'da / HMI'yı, SCADA'yı, VFD'ler, Wecon'u, Siemens'in, Logic Controls'un / 'tan, Mısır'da, Türkiye'den, 2025'te, 50'den / 50'yi. Multi-word place names take the apostrophe on the last word (6 Ekim Şehri'nde, Büyük Kahire'de). Where a suffix would sit on CIP, I/O, FAT, SAT, GAFI or a model number, rephrase instead (CIP çevrimleri, I/O noktaları).
+**Register and typography.** Polite "siz" address, short plain business sentences. Turkish characters everywhere (ç, ğ, ı, İ, ö, ş, ü); capital İ for "İlaç", "İskenderiye", "İsmailiye". Suffixes on abbreviations and names follow pronunciation, after an apostrophe: PLC'ler / PLC'yi / PLC'den, HMI'lar / HMI'da / HMI'yı, SCADA'yı, VFD'ler, Wecon'u, Siemens'in, Logic Controls'un / 'tan, Mısır'da, Türkiye'den, 2025'te, 50'den / 50'yi. Multi-word place names take the apostrophe on the last word (6 Ekim Şehri'nde, Büyük Kahire'de). Where a suffix would sit on CIP, I/O, FAT, SAT, GAFI or a model number, rephrase instead (CIP çevrimleri, I/O noktaları). Modbus also gets no suffix ("Modbus ağları", "Modbus haberleşmesi"); Turkish engineers read it with a u, so if a suffix is unavoidable write Modbus'u / Modbus'a. In short labels (hero chips, eyebrows) write "6 Ekim Şehri", never a bare "6 Ekim", which reads as the date 6 October.
 
 **Claims.** "Designed following IEC … practice" = "IEC 60204-1 ve IEC 61439 uygulamaları esas alınarak tasarlanır". Never "uygun", "uyumlu", "sertifikalı", "yetkili", "partner/iş ortağı" for brands. "We do not issue UL listing / CE marking" = "UL listelemesi veya CE işaretlemesi yapmıyoruz". "On request" = "talep halinde". Never claim Turkish-speaking staff: engineers work in Arabic and English ("Arapça ve İngilizce çalışır"); visitors can write in Turkish through the site; Turkish versions of key documents are "talep halinde". Where the English tells local readers our engineers "speak your language", the Turkish says "operatörlerinizle Arapça konuşan" / "Arapça iletişim kuran", so a Turkish reader does not read it as Turkish. CTAs use the aorist ("size dönüş yaparız", "öneririz"), matching the English "we will".
 
@@ -346,6 +370,16 @@ error messages, the thanks page and the privacy notice.
 | Chocolate cooker / bakery line | çikolata pişirme kazanı / unlu mamul hattı | Edible-oil and liquid-egg fillers = sıvı yağ ve sıvı yumurta dolum makineleri |
 | Wax filling and capping (cosmetics) | ağda (wax) dolum ve kapak kapatma | Cosmetic wax = ağda, not "mum" (candle) |
 | Founder | kurucu | Name stays Latin: Mohammed Tarek Aboalsafa |
+| Scan time (PLC) | tarama süresi | ControlLoop chip "PID · 10 ms tarama süresi". Not bare "tarama" |
+| Safety temperature (pasteurizer FDV) | emniyet sıcaklığı | Not "güvenlik sıcaklığı" (alt, solution, facts and caption agree) |
+| Plant interface (facts label) | tesis arayüzü | Not "tesis bağlantısı" (reads as a physical connection) |
+| Checked on the bench (before installation) | test tezgâhında | Never "atölyede": it implies a company workshop, which the client does not have |
+| Call an engineer (button) | Mühendisimizi arayın | Not "Bir mühendisi arayın". In running text: "hemen mühendisimizi arayın". The dative CTAs stay: "Bir mühendise WhatsApp'tan yazın" / "e-posta gönderin" |
+| Case studies (filter results heading) | Projeler | Not "Proje incelemeleri" (calque) |
+| Did you mean {page}? (404) | {page} sayfasını mı arıyordunuz? | {page} is a page-name link or a bare path, so nothing is suffixed to it. Not the search-engine "Bunu mu demek istediniz:" |
+| Image {n} of {total} (gallery, screen readers) | Görsel {n}, toplam {total} · "(görsel {n}, toplam {total}; tam boyutta açılır)" | Not "{n} / {total}" (read aloud as "bölü") and not "{total} görselden {n}." (ordinal dot). The visible counter stays "{n} / {total}" |
+| "Video." at the end of a meta description | Video içerir. | Not "Videolu." |
+| Submit button named in running text | Talebi gönder düğmesi | Name the button exactly as rendered (privacy notice) |
 
 **Places.** Sources: Turkish Wikipedia (governorates, 6 Ekim Şehri), Ekonomi Gazetesi and Dünya (10. Ramazan Şehri, Sadat, Sokhna, Qantara Batı). Turkish press has no settled form for Ain Sokhna ("Sokhna", "Ain Sokhna"); "Ayn Suhna" is not in use, so the Latin name is kept.
 

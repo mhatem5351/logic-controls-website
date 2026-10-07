@@ -27,3 +27,13 @@ describe.skipIf(!built)("panels strip only shows panels we built", () => {
     });
   }
 });
+
+describe("platform attribution counts only control-platform entries", () => {
+  it("passive panel parts (e.g. circuit breakers) never make a project a <brand> project", async () => {
+    const { platformsOf } = await import("~/components/sections/catalog/platforms");
+    const pasteurizer = PROJECTS.find((p) => p.slug === "pasteurizer-cip-recipes")!;
+    expect(platformsOf(pasteurizer)).not.toContain("schneider-electric");
+    const labeler = PROJECTS.find((p) => p.slug === "labeling-machine-delta-wecon")!;
+    expect(platformsOf(labeler)).toContain("schneider-electric");
+  });
+});

@@ -11,7 +11,7 @@
   "brands": {
     "title": "我们编程与集成的 PLC 和 HMI 平台",
     "productsLabel": "项目中用过",
-    "projectsTitle": "该平台上的项目案例",
+    "projectsTitle": "采用该平台的项目案例",
     "allOnPlatform": "全部 {brand} 项目",
     "productNames": {
       "S7-1200": "S7-1200",

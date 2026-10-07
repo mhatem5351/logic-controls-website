@@ -1,7 +1,7 @@
 {
   "/ar/": {
-    "hash": "ea46d9960233a876",
-    "modified": "2026-10-07T09:22:20+03:00",
+    "hash": "0881aa6fbfe7ca08",
+    "modified": "2026-10-07T10:09:37+03:00",
     "published": "2026-10-06T15:10:10+03:00"
   },
   "/ar/about/": {
@@ -10,8 +10,8 @@
     "published": "2026-10-06T15:10:10+03:00"
   },
   "/ar/contact/": {
-    "hash": "ac343a8b651b2fb9",
-    "modified": "2026-10-07T09:22:20+03:00",
+    "hash": "68e0d718b3e712e6",
+    "modified": "2026-10-07T10:09:37+03:00",
     "published": "2026-10-06T15:10:10+03:00"
   },
   "/ar/foreign-manufacturers/": {
@@ -65,8 +65,8 @@
     "published": "2026-10-06T15:10:10+03:00"
   },
   "/ar/projects/": {
-    "hash": "fa1891e893e03bf4",
-    "modified": "2026-10-07T06:47:56+03:00",
+    "hash": "fe10c643e087ea91",
+    "modified": "2026-10-07T10:09:37+03:00",
     "published": "2026-10-06T15:10:10+03:00"
   },
   "/ar/projects/anaerobic-waste-treatment-commissioning/": {
@@ -80,8 +80,8 @@
     "published": "2026-10-06T15:57:46+03:00"
   },
   "/ar/projects/bottle-printing-motion-retrofit/": {
-    "hash": "598573c1a8f4b57e",
-    "modified": "2026-10-07T04:45:03+03:00",
+    "hash": "62c7685b58a8a789",
+    "modified": "2026-10-07T10:09:37+03:00",
     "published": "2026-10-06T15:10:10+03:00"
   },
   "/ar/projects/cheese-cooker-recipes/": {
@@ -120,8 +120,8 @@
     "published": "2026-10-06T15:10:10+03:00"
   },
   "/ar/projects/pasteurizer-cip-recipes/": {
-    "hash": "7849a85969b19223",
-    "modified": "2026-10-07T06:47:56+03:00",
+    "hash": "6d6ad355c556c14f",
+    "modified": "2026-10-07T10:09:37+03:00",
     "published": "2026-10-06T15:10:10+03:00"
   },
   "/ar/projects/pipe-make-break-test-rig/": {
@@ -135,13 +135,13 @@
     "published": "2026-10-06T15:10:10+03:00"
   },
   "/ar/projects/shampoo-filling-ls-wecon/": {
-    "hash": "32907d1ee4363431",
-    "modified": "2026-10-07T06:47:56+03:00",
+    "hash": "c4906cc3fc218f09",
+    "modified": "2026-10-07T10:09:37+03:00",
     "published": "2026-10-06T15:10:10+03:00"
   },
   "/ar/projects/tablet-coating-scada/": {
-    "hash": "ef3a4762eefef283",
-    "modified": "2026-10-07T04:45:03+03:00",
+    "hash": "cb36f3d410f422f0",
+    "modified": "2026-10-07T10:09:37+03:00",
     "published": "2026-10-06T15:10:10+03:00"
   },
   "/ar/services/": {
@@ -390,8 +390,8 @@
     "published": "2026-10-06T15:10:10+03:00"
   },
   "/tr/": {
-    "hash": "d042b5e8502b758c",
-    "modified": "2026-10-07T09:22:20+03:00",
+    "hash": "be05a1f67123da63",
+    "modified": "2026-10-07T10:09:37+03:00",
     "published": "2026-10-06T15:10:10+03:00"
   },
   "/tr/about/": {
@@ -400,13 +400,13 @@
     "published": "2026-10-06T15:10:10+03:00"
   },
   "/tr/contact/": {
-    "hash": "9e15e09b514a55c1",
-    "modified": "2026-10-07T09:22:20+03:00",
+    "hash": "0239c4f5561426c7",
+    "modified": "2026-10-07T10:09:37+03:00",
     "published": "2026-10-06T15:10:10+03:00"
   },
   "/tr/foreign-manufacturers/": {
-    "hash": "97edadc8620711da",
-    "modified": "2026-10-07T06:47:56+03:00",
+    "hash": "1249d4479a9fe6de",
+    "modified": "2026-10-07T10:09:37+03:00",
     "published": "2026-10-06T15:10:10+03:00"
   },
   "/tr/industries/": {
@@ -440,8 +440,8 @@
     "published": "2026-10-06T15:10:10+03:00"
   },
   "/tr/industries/pharmaceutical/": {
-    "hash": "543a8d8f92d8d258",
-    "modified": "2026-10-07T06:47:56+03:00",
+    "hash": "1e4b00eb493788c3",
+    "modified": "2026-10-07T10:09:37+03:00",
     "published": "2026-10-06T15:10:10+03:00"
   },
   "/tr/industries/test-equipment/": {
@@ -450,8 +450,8 @@
     "published": "2026-10-06T15:10:10+03:00"
   },
   "/tr/privacy/": {
-    "hash": "45b2c18f2f68a206",
-    "modified": "2026-10-07T06:47:56+03:00",
+    "hash": "36455c76abc44374",
+    "modified": "2026-10-07T10:09:37+03:00",
     "published": "2026-10-06T15:10:10+03:00"
   },
   "/tr/projects/": {
@@ -465,13 +465,13 @@
     "published": "2026-10-06T15:10:10+03:00"
   },
   "/tr/projects/beverage-syrup-jet-mixing/": {
-    "hash": "9a32fb4791943cd6",
-    "modified": "2026-10-07T06:47:56+03:00",
+    "hash": "66941b2b77fe914a",
+    "modified": "2026-10-07T10:09:37+03:00",
     "published": "2026-10-06T15:57:46+03:00"
   },
   "/tr/projects/bottle-printing-motion-retrofit/": {
-    "hash": "a0c34d2de16a7511",
-    "modified": "2026-10-07T04:45:03+03:00",
+    "hash": "6ee27fce86b00f6d",
+    "modified": "2026-10-07T10:09:37+03:00",
     "published": "2026-10-06T15:10:10+03:00"
   },
   "/tr/projects/cheese-cooker-recipes/": {
@@ -480,13 +480,13 @@
     "published": "2026-10-06T15:10:10+03:00"
   },
   "/tr/projects/commercial-laundry-washer-control/": {
-    "hash": "c3289bfee8ee7e45",
-    "modified": "2026-10-07T04:45:03+03:00",
+    "hash": "2b74f7ed6892f944",
+    "modified": "2026-10-07T10:09:37+03:00",
     "published": "2026-10-06T15:10:10+03:00"
   },
   "/tr/projects/concrete-batching-plant-scada/": {
-    "hash": "37d79d0c480dd08f",
-    "modified": "2026-10-07T06:47:56+03:00",
+    "hash": "fb7296cbce53d2fb",
+    "modified": "2026-10-07T10:09:37+03:00",
     "published": "2026-10-06T15:10:10+03:00"
   },
   "/tr/projects/hotel-washer-extractor-control/": {
@@ -500,8 +500,8 @@
     "published": "2026-10-06T15:10:10+03:00"
   },
   "/tr/projects/milk-pasteurizer/": {
-    "hash": "4b20a8667d5ad1c4",
-    "modified": "2026-10-07T04:45:03+03:00",
+    "hash": "a5e118b97a444c8b",
+    "modified": "2026-10-07T10:09:37+03:00",
     "published": "2026-10-06T15:10:10+03:00"
   },
   "/tr/projects/olive-autoclave-sterilization/": {
@@ -510,8 +510,8 @@
     "published": "2026-10-06T15:10:10+03:00"
   },
   "/tr/projects/pasteurizer-cip-recipes/": {
-    "hash": "a55132d1b003ea5c",
-    "modified": "2026-10-07T06:47:56+03:00",
+    "hash": "8797233202a5c11c",
+    "modified": "2026-10-07T10:09:37+03:00",
     "published": "2026-10-06T15:10:10+03:00"
   },
   "/tr/projects/pipe-make-break-test-rig/": {
@@ -525,8 +525,8 @@
     "published": "2026-10-06T15:10:10+03:00"
   },
   "/tr/projects/shampoo-filling-ls-wecon/": {
-    "hash": "7a30adc2602310e6",
-    "modified": "2026-10-07T06:47:56+03:00",
+    "hash": "e5ac846c6b7eebc9",
+    "modified": "2026-10-07T10:09:37+03:00",
     "published": "2026-10-06T15:10:10+03:00"
   },
   "/tr/projects/tablet-coating-scada/": {
@@ -540,8 +540,8 @@
     "published": "2026-10-06T15:10:10+03:00"
   },
   "/tr/services/control-panels/": {
-    "hash": "cdeedf3107c9cad4",
-    "modified": "2026-10-07T06:47:56+03:00",
+    "hash": "202933df1651fce8",
+    "modified": "2026-10-07T10:09:37+03:00",
     "published": "2026-10-06T15:10:10+03:00"
   },
   "/tr/services/machine-automation/": {
@@ -550,8 +550,8 @@
     "published": "2026-10-06T15:10:10+03:00"
   },
   "/tr/services/machine-retrofits/": {
-    "hash": "5720e7b371f1921f",
-    "modified": "2026-10-07T06:47:56+03:00",
+    "hash": "ace8459f46b74605",
+    "modified": "2026-10-07T10:09:37+03:00",
     "published": "2026-10-06T15:10:10+03:00"
   },
   "/tr/services/maintenance-support/": {
@@ -580,8 +580,8 @@
     "published": "2026-10-06T15:10:10+03:00"
   },
   "/tr/technologies/": {
-    "hash": "658200bcfabb111f",
-    "modified": "2026-10-07T06:47:56+03:00",
+    "hash": "d4aa0c42c83df717",
+    "modified": "2026-10-07T10:09:37+03:00",
     "published": "2026-10-06T15:10:10+03:00"
   },
   "/zh/": {
@@ -595,18 +595,18 @@
     "published": "2026-10-06T15:10:10+03:00"
   },
   "/zh/contact/": {
-    "hash": "9e3919e6d40daf72",
-    "modified": "2026-10-07T09:22:20+03:00",
+    "hash": "ea639cc34c100278",
+    "modified": "2026-10-07T10:09:37+03:00",
     "published": "2026-10-06T15:10:10+03:00"
   },
   "/zh/foreign-manufacturers/": {
-    "hash": "fb5c1d513f8b32d5",
-    "modified": "2026-10-07T06:47:56+03:00",
+    "hash": "ed9acc63e77a7a42",
+    "modified": "2026-10-07T10:09:37+03:00",
     "published": "2026-10-06T15:10:10+03:00"
   },
   "/zh/industries/": {
-    "hash": "59786ec832eedf2b",
-    "modified": "2026-10-07T06:47:56+03:00",
+    "hash": "3df3b2f530d3f790",
+    "modified": "2026-10-07T10:09:37+03:00",
     "published": "2026-10-06T15:10:10+03:00"
   },
   "/zh/industries/building-materials/": {
@@ -615,8 +615,8 @@
     "published": "2026-10-06T15:10:10+03:00"
   },
   "/zh/industries/commercial-laundry/": {
-    "hash": "ec39d951bd145cd0",
-    "modified": "2026-10-07T06:47:56+03:00",
+    "hash": "122bf327a354704f",
+    "modified": "2026-10-07T10:09:37+03:00",
     "published": "2026-10-06T15:10:10+03:00"
   },
   "/zh/industries/cosmetics-personal-care/": {
@@ -645,8 +645,8 @@
     "published": "2026-10-06T15:10:10+03:00"
   },
   "/zh/privacy/": {
-    "hash": "d081a6428d8f2925",
-    "modified": "2026-10-07T06:47:56+03:00",
+    "hash": "b55ba43f92466e73",
+    "modified": "2026-10-07T10:09:37+03:00",
     "published": "2026-10-06T15:10:10+03:00"
   },
   "/zh/projects/": {
@@ -685,13 +685,13 @@
     "published": "2026-10-06T15:10:10+03:00"
   },
   "/zh/projects/hotel-washer-extractor-control/": {
-    "hash": "0bf801940c1ba212",
-    "modified": "2026-10-07T06:47:56+03:00",
+    "hash": "a077e179fab1387f",
+    "modified": "2026-10-07T10:09:37+03:00",
     "published": "2026-10-06T15:10:10+03:00"
   },
   "/zh/projects/labeling-machine-delta-wecon/": {
-    "hash": "1d4f0d20ea65cc1b",
-    "modified": "2026-10-07T06:47:56+03:00",
+    "hash": "01eb68d433c9d4bb",
+    "modified": "2026-10-07T10:09:37+03:00",
     "published": "2026-10-06T15:10:10+03:00"
   },
   "/zh/projects/milk-pasteurizer/": {
@@ -700,13 +700,13 @@
     "published": "2026-10-06T15:10:10+03:00"
   },
   "/zh/projects/olive-autoclave-sterilization/": {
-    "hash": "90e05307133fc61b",
-    "modified": "2026-10-07T04:45:03+03:00",
+    "hash": "70a45ce3bc327e19",
+    "modified": "2026-10-07T10:09:37+03:00",
     "published": "2026-10-06T15:10:10+03:00"
   },
   "/zh/projects/pasteurizer-cip-recipes/": {
-    "hash": "862756864a798df9",
-    "modified": "2026-10-07T06:47:56+03:00",
+    "hash": "82ed99352e82048b",
+    "modified": "2026-10-07T10:09:37+03:00",
     "published": "2026-10-06T15:10:10+03:00"
   },
   "/zh/projects/pipe-make-break-test-rig/": {
@@ -725,8 +725,8 @@
     "published": "2026-10-06T15:10:10+03:00"
   },
   "/zh/projects/tablet-coating-scada/": {
-    "hash": "d3422e55b6008d96",
-    "modified": "2026-10-07T04:45:03+03:00",
+    "hash": "c8b80eaceb3ea9cc",
+    "modified": "2026-10-07T10:09:37+03:00",
     "published": "2026-10-06T15:10:10+03:00"
   },
   "/zh/services/": {
@@ -750,8 +750,8 @@
     "published": "2026-10-06T15:10:10+03:00"
   },
   "/zh/services/maintenance-support/": {
-    "hash": "c691adc7828e9d55",
-    "modified": "2026-10-07T06:47:56+03:00",
+    "hash": "e7b05885867e98e6",
+    "modified": "2026-10-07T10:09:37+03:00",
     "published": "2026-10-06T15:10:10+03:00"
   },
   "/zh/services/plc-hmi-programming/": {
@@ -775,8 +775,8 @@
     "published": "2026-10-06T15:10:10+03:00"
   },
   "/zh/technologies/": {
-    "hash": "b65869f4aa200e4c",
-    "modified": "2026-10-07T06:47:56+03:00",
+    "hash": "6b69cb80bfb04a9e",
+    "modified": "2026-10-07T10:09:37+03:00",
     "published": "2026-10-06T15:10:10+03:00"
   }
 }

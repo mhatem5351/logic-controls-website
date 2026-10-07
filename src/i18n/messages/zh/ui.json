@@ -32,7 +32,7 @@
     "viewProject": "查看项目",
     "viewAll": "查看全部",
     "inEgyptWhatsapp": "已在埃及？可通过 WhatsApp 联系我们",
-    "quoteShort": "报价",
+    "quoteShort": "询价",
     "whatsappShort": "WhatsApp",
     "whatsappNarrow": "WhatsApp 联系工程师"
   },
@@ -62,11 +62,11 @@
     "copy": "复制邮箱地址",
     "copied": "邮箱地址已复制",
     "openApp": "打开邮件应用",
-    "useForm": "使用报价表单",
-    "hint": "使用网页邮箱（如 QQ 邮箱、163 邮箱）？复制地址后即可发送。"
+    "useForm": "使用询价表单",
+    "hint": "使用网页邮箱（如 QQ 邮箱、163 邮箱）？请复制地址，在常用邮箱中给我们写信。"
   },
   "demo": {
-    "open": "打开实时演示"
+    "open": "体验实时演示"
   },
   "contact": {
     "phone": "电话",
@@ -108,7 +108,7 @@
     "title": "设备已停机？",
     "text": "无需等待表单回复：请立即致电或通过 WhatsApp 联系工程师。",
     "textEmail": "无需等待表单回复：请立即致电工程师。",
-    "whatsapp": "立即 WhatsApp"
+    "whatsapp": "立即通过 WhatsApp 联系"
   },
   "faq": {
     "title": "常见问题",
@@ -126,7 +126,7 @@
     "title": "页面未找到",
     "body": "您访问的页面不存在或已被移动。",
     "home": "返回首页",
-    "didYouMean": "您要找的是不是{page}？",
+    "didYouMean": "您是不是要找：{page}",
     "links": {
       "title": "常用页面",
       "services": "服务",

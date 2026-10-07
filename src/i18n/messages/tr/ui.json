@@ -97,8 +97,8 @@
     "prev": "Önceki görsel",
     "next": "Sonraki görsel",
     "counter": "{n} / {total}",
-    "counterLong": "Görsel {n} / {total}",
-    "openSuffix": "({total} görselden {n}., tam boyutta açılır)"
+    "counterLong": "Görsel {n}, toplam {total}",
+    "openSuffix": "(görsel {n}, toplam {total}; tam boyutta açılır)"
   },
   "video": {
     "playNamed": "Videoyu oynat: {title}",
@@ -106,8 +106,8 @@
   },
   "urgent": {
     "title": "Makine mi durdu?",
-    "text": "Formun yanıtını beklemeyin: hemen bir mühendisi arayın veya WhatsApp'tan yazın.",
-    "textEmail": "Formun yanıtını beklemeyin: hemen bir mühendisi arayın.",
+    "text": "Formun yanıtını beklemeyin: hemen mühendisimizi arayın veya WhatsApp'tan yazın.",
+    "textEmail": "Formun yanıtını beklemeyin: hemen mühendisimizi arayın.",
     "whatsapp": "Hemen WhatsApp'tan yazın"
   },
   "faq": {
@@ -126,7 +126,7 @@
     "title": "Sayfa bulunamadı",
     "body": "Aradığınız sayfa mevcut değil veya taşınmış.",
     "home": "Ana sayfaya git",
-    "didYouMean": "Bunu mu demek istediniz: {page}",
+    "didYouMean": "{page} sayfasını mı arıyordunuz?",
     "links": {
       "title": "Sık ziyaret edilen sayfalar",
       "services": "Hizmetler",

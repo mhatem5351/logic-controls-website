@@ -137,7 +137,7 @@
     "context": {
       "project": "İlgili proje: {title}",
       "projectMessage": "“{title}” projenize benzer bir projem var.",
-      "reference": "Referans görüşmesi: sektörünüzü ve makine türünü yazın; benzer bir projesini yaptığımız ve sizinle görüşmeyi kabul eden bir müşterimizi ararız.",
+      "reference": "Referans görüşmesi: sektörünüzü ve makine türünü yazın; benzer bir projesini yaptığımız ve sizinle görüşmeyi kabul eden bir müşterimizi bulmaya çalışırız.",
       "referenceMessage": "Önceki müşterilerinizden biriyle referans görüşmesi yapmak istiyorum."
     },
     "privacyNote": "Bilgilerinizi yalnızca bu talebe yanıt vermek için kullanırız. Sizi herhangi bir e-posta listesine eklemeyiz.",
@@ -234,7 +234,7 @@
       "cta": "Bir mühendise WhatsApp'tan yazın"
     },
     "urgentNow": {
-      "title": "Makineniz mi durdu? Hemen bir mühendisi arayın.",
+      "title": "Makineniz mi durdu? Hemen mühendisimizi arayın.",
       "text": "Görüşmede {ref} numaralı talebinizi belirtin."
     },
     "received": "Alınan dosyalar: {files}",

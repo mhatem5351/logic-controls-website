@@ -23,8 +23,16 @@ export function firstBrandIn(text: string): BrandData | undefined {
   return best?.brand;
 }
 
-/** Platform slugs of a project (its technologies name the brand). */
-export const platformsOf = (p: Pick<ProjectData, "technologies">): BrandSlug[] => brandsInText(p.technologies.join(" | ")).map((b) => b.slug);
+/**
+ * Only control-platform entries count (PLC, HMI, SCADA, drives). Passive parts that merely sit in a panel — circuit
+ * breakers, power supplies, contactors — must not make a case study "a <brand> project": that would claim platform
+ * work the company did not do (e.g. Schneider C60N breakers in a Wecon PLC/HMI job).
+ */
+const CONTROL_PLATFORM = /\b(PLC|HMI|SCADA|WinCC|VFD|drives?|servo|I\/O|expansion)\b/i;
+
+/** Platform slugs of a project (its control-platform technologies name the brand). */
+export const platformsOf = (p: Pick<ProjectData, "technologies">): BrandSlug[] =>
+  brandsInText(p.technologies.filter((t) => CONTROL_PLATFORM.test(t)).join(" | ")).map((b) => b.slug);
 
 /** Projects (in the given order) that use a platform. */
 export const projectsOnPlatform = <T extends Pick<ProjectData, "technologies">>(slug: BrandSlug, list: readonly T[]): T[] =>

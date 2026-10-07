@@ -211,7 +211,7 @@
       "plc": {
         "label": "PLC",
         "text": "Ölçülen değeri set değeriyle karşılaştırır ve lojiği yürütür: PID, kilitlemeler, sekanslar.",
-        "spec": "PID · 10 ms tarama"
+        "spec": "PID · 10 ms tarama süresi"
       },
       "hmi": {
         "label": "HMI / SCADA",
