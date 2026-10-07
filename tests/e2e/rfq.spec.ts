@@ -231,7 +231,7 @@ test.describe("without JavaScript", () => {
   test("honeypot: a filled hidden field gets the thanks page and no email is sent", { tag: "@desktop-only" }, async ({ page }) => {
     const stamp = stampOf("hp");
     await page.goto("/tr/contact/");
-    await page.locator("#rfq-company-website").fill("https://spam.example", { force: true });
+    await page.locator("#rfq-hp").fill("https://spam.example", { force: true });
     await page.locator("#rfq-name").fill(`Bot ${stamp}`);
     await page.locator("#rfq-company").fill("Bot");
     await page.locator("#rfq-phone").fill("+20 100 000 0000");

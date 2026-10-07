@@ -51,6 +51,7 @@ test("the drawer's language grid switches too (phones)", async ({ page }) => {
 });
 
 test("every language link on every page type points to the same page in that language", { tag: "@desktop-only" }, async ({ page }) => {
+  test.slow(); // visits every page type × 4 locales; >30 s on a 2-vCPU CI runner
   for (const rest of Object.values(PAGE_TYPES)) {
     for (const from of LOCALES) {
       await page.goto(`/${from}/${rest}`);

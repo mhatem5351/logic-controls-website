@@ -52,6 +52,7 @@ test.describe("axe: open states", () => {
   });
 
   test("zone card open", async ({ page }) => {
+    test.slow(); // full-page axe on the long Arabic home page is slow on WebKit mobile in CI
     await page.goto("/ar/");
     const zones = page.locator("[data-zones]").first();
     await zones.scrollIntoViewIfNeeded();

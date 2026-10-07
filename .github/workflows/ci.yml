@@ -1,8 +1,9 @@
 # CI: build + unit / static / budget checks + Playwright E2E against the real Workers runtime (wrangler dev).
 # No deploy and no Cloudflare secrets: the E2E run uses Cloudflare's PUBLIC Turnstile test keys and wrangler's local
 # simulation of every binding (send_email writes to .wrangler/tmp/email).
-# Cost: GitHub Free includes 2,000 Actions minutes / month for private repos; one run is ≈ 8–10 min on the 2-vCPU
-# runner (cached), superseded runs are cancelled, and docs-only changes do not run at all.
+# Cost: GitHub Free includes 2,000 Actions minutes / month for private repos. A push run (desktop Chromium E2E,
+# warm caches) is ≈ 12 min on the 2-vCPU runner; the weekly full cross-browser run ≈ 25 min. Superseded runs are
+# cancelled and docs-only changes do not run at all.
 name: CI
 
 on:
@@ -12,6 +13,9 @@ on:
   pull_request:
     paths-ignore: ["**/*.md", "docs/**", "research/**", "client-data/**", ".github/ISSUE_TEMPLATE/**", "LICENSE"]
   workflow_dispatch:
+  # Weekly full cross-browser run (pushes run the desktop Chromium project only, to stay within free CI minutes).
+  schedule:
+    - cron: "0 3 * * 1"
 
 concurrency:
   group: ci-${{ github.ref }}
@@ -107,8 +111,12 @@ jobs:
             'TURNSTILE_SECRET=1x0000000000000000000000000000000AA' \
             'ALLOWED_HOSTNAMES=logic-controls.com,www.logic-controls.com,example.com,localhost,127.0.0.1' > .dev.vars
 
-      - name: E2E (chromium desktop + mobile, webkit mobile)
-        run: npm run test:e2e
+      # Pushes/PRs: desktop Chromium (the full spec set, ~half the time). Weekly schedule and manual runs: all three
+      # projects (desktop Chromium, Pixel 7, iPhone 15 WebKit). Run `npm run test:e2e` locally before deploying.
+      - name: E2E
+        env:
+          E2E_ARGS: ${{ (github.event_name == 'schedule' || github.event_name == 'workflow_dispatch') && ' ' || '--project=chromium-desktop' }}
+        run: npm run test:e2e -- $E2E_ARGS
 
       - name: Upload Playwright report
         if: failure()
