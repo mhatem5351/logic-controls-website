@@ -44,7 +44,14 @@ for (const path of paths) {
     expect(head.h1, "exactly one <h1>").toBe(1);
     expect(head.h1Text).not.toBe("");
     expect(head.title).toMatch(/\S/);
-    expect(titleWidth(head.title), `title "${head.title}" (CJK counts double)`).toBeLessThanOrEqual(60);
+    // Search results cut titles by rendered width (~600px of 20px Arial), not by characters: the content rules
+    // (src/i18n/CONTENT.md) size titles that way, so a 62-character Arabic title can fit where a CJK one cannot.
+    const titlePx = await page.evaluate((t) => {
+      const c = document.createElement("canvas").getContext("2d")!;
+      c.font = "20px Arial";
+      return Math.round(c.measureText(t).width);
+    }, head.title);
+    expect(titlePx, `title "${head.title}" rendered width (20px Arial)`).toBeLessThanOrEqual(600);
     expect(head.description.trim()).not.toBe("");
     expect(titleWidth(head.description), "meta description width").toBeLessThanOrEqual(160);
     expect(head.robots).not.toMatch(/noindex/);

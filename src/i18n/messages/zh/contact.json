@@ -13,14 +13,16 @@
       "one": "您的信息",
       "two": "项目信息",
       "counter": "第 {current} 步，共 {total} 步",
-      "twoNote": "选填，但有助于我们更快报价。"
+      "twoNote": "选填，但有助于我们更快报价。",
+      "done": "已完成"
     },
     "buttons": {
       "next": "继续",
       "back": "返回",
       "submit": "提交需求",
       "sending": "正在发送……",
-      "sendNow": "跳过并立即提交"
+      "sendNow": "跳过并立即提交",
+      "retry": "重试"
     },
     "fields": {
       "name": {
@@ -32,7 +34,7 @@
       },
       "phone": {
         "label": "电话 / WhatsApp 号码",
-        "help": "请包含国家或地区代码，例如 +20 10 1234 5678。"
+        "help": "例如 +86 138 0000 0000，或埃及号码 +20 10 1234 5678。"
       },
       "email": {
         "label": "电子邮箱",
@@ -51,6 +53,7 @@
           "testing-commissioning": "测试与调试",
           "maintenance-support": "故障排查或维护",
           "new-factory": "埃及新建工厂：全套自动化服务",
+          "oem-partner": "设备制造商：为我方设备提供本地调试与服务",
           "other": "其他需求"
         }
       },
@@ -93,6 +96,17 @@
         "label": "请描述设备或项目",
         "help": "设备类型、需要实现的功能、目前存在的问题，以及 PLC 或 HMI 品牌（如已知）。"
       },
+      "phoneOptional": {
+        "label": "电话",
+        "help": "请包含国家或地区代码，例如 +86 138 0013 8000。"
+      },
+      "files": {
+        "label": "图纸、照片或文件",
+        "help": "最多 {count} 个文件，总大小不超过 {size}：PDF、JPG、PNG、WebP、ZIP、DWG 或 DXF。",
+        "choose": "选择文件",
+        "remove": "移除 {name}",
+        "summary": "{count}/{max} 个文件 · {size}/{maxSize}"
+      },
       "contactPreference": {
         "label": "希望我们如何联系您？",
         "options": {
@@ -113,9 +127,15 @@
     "privacyNote": "您的信息仅用于回复本次需求，我们不会将您加入任何邮件列表。",
     "sent": "需求已发送，正在打开确认页面……",
     "noscript": "安全验证需要启用 JavaScript。如果表单无法提交，请直接通过电话、电子邮件或 WhatsApp 联系我们。",
+    "prefill": {
+      "intro": "您好，Logic Controls：我尝试通过贵司网站表单发送以下需求：",
+      "subject": "网站报价需求",
+      "files": "待发送的文件：{files}"
+    },
     "security": {
       "label": "安全验证",
-      "help": "此项验证用于确认提交表单的是真人，而非自动程序。"
+      "help": "此项验证用于确认提交表单的是真人，而非自动程序。",
+      "waiting": "安全验证耗时比平时长。请稍候，或通过其他方式发送同一需求："
     }
   },
   "validation": {
@@ -126,7 +146,12 @@
     "select": "请选择一项。",
     "consent": "请确认同意我们使用您的信息进行回复。",
     "messageTooLong": "描述请控制在 {max} 个字符以内。",
-    "summary": "请检查已标出的项目。"
+    "summary": "请检查已标出的项目。",
+    "summaryCount": "请检查以下项目（{count} 项）：",
+    "filesType": "部分文件的格式无法接收。请使用 PDF、JPG、PNG、WebP、ZIP、DWG 或 DXF。",
+    "filesCount": "最多选择 {max} 个文件，其余文件可在提交后发送。",
+    "filesSize": "文件总大小超过 {max}。请在此移除部分文件，提交后再通过邮件发送：确认页面会提供需求编号，发送时请注明。",
+    "emailForReply": "请填写电子邮箱，以便我们通过邮件回复您。"
   },
   "errors": {
     "title": "您的需求未能发送",
@@ -134,7 +159,10 @@
     "verification": "安全验证未完成。请重试，或通过电子邮件、WhatsApp 联系我们。",
     "send": "由于技术问题，您的需求未能发送。请几分钟后重试，或通过电子邮件、WhatsApp 联系我们。",
     "unknown": "出现错误。请重试，或通过电子邮件、WhatsApp 联系我们。",
-    "fallback": "您也可以直接联系我们："
+    "fallback": "您也可以直接联系我们：",
+    "attachments": "文件无法附加。最多可附加 3 个文件，总大小不超过 4 MB（PDF、JPG、PNG、WebP、ZIP、DWG 或 DXF）。请移除文件后提交需求，再通过邮件发送文件。",
+    "verificationBlocked": "安全验证无法加载，可能被浏览器插件、防火墙或网络拦截。",
+    "handover": "您填写的信息已复制到消息中，无需重新输入。"
   },
   "channels": {
     "title": "其他联系方式",
@@ -144,8 +172,7 @@
     },
     "whatsapp": {
       "label": "WhatsApp",
-      "text": "身在埃及时，可直接用手机发送照片、视频和图纸。",
-      "cta": "通过 WhatsApp 发送图纸"
+      "text": "身在埃及时，可直接用手机发送照片、视频和图纸。"
     },
     "email": {
       "label": "电子邮箱",
@@ -192,6 +219,13 @@
       "cta": "通过 WhatsApp 发送图纸"
     },
     "backHome": "返回首页",
-    "seeProjects": "查看项目案例"
+    "seeProjects": "查看项目案例",
+    "ref": {
+      "label": "需求编号",
+      "hint": "致电或补充发送文件时请注明此编号。",
+      "whatsapp": "您好，Logic Controls：关于我在网站提交的需求 {ref}，我补充发送文件。",
+      "emailSubject": "网站需求 {ref}：补充文件"
+    },
+    "handoff": "您好，Logic Controls：我是 {company} 的 {name}，刚在贵司网站提交了需求 {ref}（{need}）。现补充发送图纸和照片。"
   }
 }

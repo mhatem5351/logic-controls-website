@@ -105,3 +105,24 @@
 - [ ] LinkTiles.astro:36 `{it.title}` (and :40 `{it.text}`) plain → zh 390px "设备自动化、驱⏎动与运动控制": render through html(locale, …) like Card (locale via prop or Astro.currentLocale).
 - [ ] Font swap: metric-matched fallbacks + preloads give CLS 0 on load (all locales, 1440/390). Only when fonts land after first paint can the 390px TR / AR hero H1 re-wrap by one line (stress test, fonts delayed 600 ms: /tr/ 0.036, /ar/industries/food-beverage/ 0.032; desktop ≤ 0.001). If field data shows it, set `display: "optional"` on both families in astro.config.mjs.
 - [ ] Android has no Arial/Tahoma: the fallback faces resolve to nothing and the stack falls through to system-ui (unadjusted). Add Roboto / Noto Sans Arabic faces once measured on a device.
+
+## Client confirmations from round-1 iteration (2026-10-07)
+- [ ] "Talk to a past client" reference block now appears on case studies (based on existing copy "references can be arranged on request, with the client's permission") — confirm the client can actually provide references.
+- [ ] Reply-time promise, working hours, street address (UX-03, CS-05) — needed for contact page, footer, LocalBusiness JSON-LD and Google Business Profile.
+- [ ] Are the paired projects (2 shampoo, 2 pasteurizer, 2 laundry) separate jobs? (CS-02)
+- [ ] Gallery image captions (projects.items[slug].imageCaptions) — client can describe photos.
+- [ ] Cloudflare dashboard: Web Analytics auto-injects a second beacon (token 1f3d2a95…) not visible via API — turn off "automatic setup / JS snippet injection" (PERF-05); our manual beacon (8a235c8b…) stays.
+
+## Client questionnaire (from PK6, 2026-10-07) — send to client
+1. Reply-time commitment + working days/hours (Sun–Thu?) to show on contact/thanks/footer.
+2. Street address (or industrial zone); can it be public; do customers visit?
+3. Google Business Profile (address hidden?) — who owns the Google account; service areas.
+4. Team size and roles; can we name them / show photos?
+5. Commercial register no., tax card no., legal form — publishable?
+6. 1–2 testimonials (by role/sector) + willingness to arrange reference calls.
+7. Are the pairs separate jobs: milk pasteurizer vs pasteurizer-with-CIP; laundry washer 2026 vs hotel washer-extractor 2024 (same HMI design?); shampoo LS vs shampoo Delta.
+8. Per project: I/O count, commissioning days on site, what the machine had before, one result they stand behind, zone shown, bottle-printer PLC/motion brand, olive-autoclave HMI brand, assumed years (concrete plant, Delta shampoo, milk pasteurizer).
+9. Does anyone speak in the shampoo video (captions)? OK to strip audio from printing + laundry videos?
+10. Real photos for laundry washer, concrete plant, pipe tester; sharper cheese-cooker panel photo.
+11. Any publishable typical price range? (default: none)
+12. Native Egyptian check of "لوحات كنترول" / "أوتوميشن" in titles.

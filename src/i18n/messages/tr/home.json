@@ -1,16 +1,14 @@
 {
   "seo": {
-    "title": "Logic Controls | Mısır'da PLC ve Makine Otomasyonu",
-    "description": "Mısır'da gıda, süt ürünleri, ilaç, kozmetik ve ambalaj tesisleri için otomasyon panoları, PLC/HMI programlama, SCADA ve devreye alma. 50+ tamamlanan proje."
+    "title": "Mısır'da Otomasyon Panosu ve PLC Programlama | Logic Controls",
+    "description": "Mısır'da gıda, süt ürünleri, ilaç, kozmetik ve ambalaj tesisleri için otomasyon panoları, PLC/HMI programlama, SCADA ve devreye alma. 50+ proje."
   },
   "hero": {
     "eyebrow": "6 Ekim Şehri, Mısır merkezli endüstriyel otomasyon mühendisleri",
     "title": "Mısır'daki fabrikalar için otomasyon panoları, PLC programlama ve makine otomasyonu",
     "lead": "Kontrol sistemini tasarlıyor; PLC, HMI ve SCADA'yı programlıyor ve makineyi tesisinizde devreye alıyoruz. Gıda, süt ürünleri, ilaç, kozmetik ve ambalaj hatları için.",
-    "proof": "Endüstriyel otomasyonda 4+ yıllık deneyime sahip ekibimizle 50+ tamamlanmış proje",
     "ctaPrimary": "Teklif isteyin",
-    "ctaSecondary": "Bir mühendise WhatsApp'tan yazın",
-    "imageAlt": "Paslanmaz çelik pastörizatör kumanda panosundaki Wecon dokunmatik ekran; proses, Manuel, Otomatik, CIP, Ayarlar, Reçeteler ve Alarmlar sekmeleriyle görüntüleniyor"
+    "ctaSecondary": "Bir mühendise WhatsApp'tan yazın"
   },
   "audiences": {
     "title": "Kimlerle çalışıyoruz",
@@ -83,11 +81,15 @@
       },
       {
         "q": "HMI ekranları Arapça olabilir mi?",
-        "a": "Evet. HMI ekranlarını Arapça, İngilizce veya iki dilli olarak tasarlıyoruz. Otomasyonunu yaptığımız şampuan dolum makinelerinden biri, yerel operatörleri için Arapça ekranlarla çalışıyor."
+        "a": "Evet. HMI ekranlarını Arapça, İngilizce veya iki dilli olarak tasarlıyoruz. Otomasyonunu yaptığımız {link:projects/shampoo-filling-delta-wecon|şampuan dolum makinelerinden} biri, yerel operatörleri için Arapça ekranlarla çalışıyor."
       },
       {
         "q": "Büyük Kahire dışında da çalışıyor musunuz?",
         "a": "Evet. Merkezimiz 6 Ekim Şehri'nde; 10. Ramazan Şehri, Sadat Şehri, Burg El Arab ve Süveyş Kanalı Ekonomik Bölgesi dahil Mısır'ın sanayi bölgelerinde çalışıyoruz."
+      },
+      {
+        "q": "Bir kontrol sisteminin fiyatı neye bağlıdır?",
+        "a": "Giriş ve çıkış (I/O) sayısına, PLC ve HMI platformuna, panonun boyutuna ve bileşenlerine, programlama ve test iş yüküne ve sahanın konumuna. Kısa bir açıklama ve fotoğraflar gönderin; bir mühendisimiz sorularla, saha ziyareti önerisiyle veya teklifle size dönüş yapar."
       },
       {
         "q": "Nasıl teklif alabilirim?",

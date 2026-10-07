@@ -41,12 +41,17 @@
     "phone": "Telefon",
     "whatsapp": "WhatsApp",
     "email": "E-posta",
-    "address": "Adres",
-    "openInMaps": "Haritada aç"
+    "openInMaps": "Haritada aç",
+    "projectFacts": "Proje bilgileri",
+    "allRelatedProjects": "Tüm ilgili projeler",
+    "fromSite": "Sahadan",
+    "callEngineer": "Bir mühendisi arayın",
+    "panelsBuilt": "Ürettiğimiz panolar",
+    "referenceTitle": "Önceki bir müşterimizle görüşün",
+    "referenceText": "Müşterimizin izniyle, birlikte çalıştığımız bir tesisle sizin için referans görüşmesi ayarlayabiliriz.",
+    "referenceCta": "Referans görüşmesi isteyin"
   },
   "breadcrumbs": {
-    "label": "Sayfa yolu",
-    "home": "Ana sayfa",
     "services": "Hizmetler",
     "industries": "Sektörler",
     "projects": "Projeler",
@@ -138,10 +143,6 @@
       "title": "Makinenizi veya hattınızı anlatın",
       "text": "Kısa bir açıklama ve birkaç fotoğraf gönderin. Bir mühendisimiz inceleyip sorularıyla ya da teklifle size dönüş yapar."
     },
-    "service": {
-      "title": "Bu hizmete tesisinizde ihtiyacınız mı var?",
-      "text": "Makineyi veya prosesi anlatın ve fotoğraf ekleyin. Teklif hazırlamak için neye ihtiyacımız olduğunu size bildiririz."
-    },
     "industry": {
       "title": "Benzer bir tesis mi işletiyorsunuz?",
       "text": "Hangi makineyi veya prosesi otomatikleştirmek, modernize etmek ya da onarmak istediğinizi bize yazın. Büyük Kahire'de ve Mısır'ın sanayi bölgelerinde çalışıyoruz."
@@ -159,7 +160,7 @@
     "eyebrow": "Kimlerle çalışacaksınız",
     "title": "Bayi değil, mühendisiz",
     "text": "Kurucumuz ve otomasyon mühendisimiz Mohammed Tarek Aboalsafa, gıda ve içecek, ilaç ve diğer sektörlerdeki tesisler için PLC, HMI ve SCADA sistemlerinin tasarımı, programlanması ve devreye alınmasında dört yılı aşkın deneyime sahiptir.",
-    "cta": "Ekibimizle tanışın"
+    "cta": "Kurucumuzla tanışın"
   },
   "whatsapp": {
     "default": "Merhaba Logic Controls, bir otomasyon projesi hakkında bir mühendisle görüşmek istiyorum.\nHello Logic Controls, I would like to talk to an engineer about an automation project.",
@@ -168,7 +169,9 @@
     "industry": "Merhaba Logic Controls, bir otomasyon projesi için \"{industry}\" sayfanızdan ulaşıyorum.\nHello Logic Controls, I am contacting you from the industry page named above about an automation project.",
     "project": "Merhaba Logic Controls, \"{project}\" projenizi inceledim; benzer bir makinem var.\nHello Logic Controls, I saw the case study named above and have a similar machine.",
     "foreign": "Merhaba Logic Controls, Mısır'da fabrika kuruyoruz ve yerel bir otomasyon iş ortağına ihtiyacımız var.\nHello Logic Controls, we are setting up a factory in Egypt and need a local automation partner.",
-    "drawings": "Merhaba Logic Controls, teklif için çizim ve fotoğraf gönderiyorum.\nHello Logic Controls, I am sending drawings and photos for a quote."
+    "oem": "Merhaba Logic Controls, Mısır'a makine ihraç eden bir makine üreticisiyiz ve yerel devreye alma ve servis desteğine ihtiyacımız var.\nHello Logic Controls, we are a machine builder exporting machines to Egypt and need local commissioning and service support.",
+    "drawings": "Merhaba Logic Controls, teklif için çizim ve fotoğraf gönderiyorum.\nHello Logic Controls, I am sending drawings and photos for a quote.",
+    "stopped": "Merhaba Logic Controls, makinem durdu, arıza tespiti ve giderme desteğine ihtiyacım var. Makine ve marka:\nHello Logic Controls, my machine is stopped and I need troubleshooting help. Machine and brand:"
   },
   "zones": {
     "title": "Çalıştığımız bölgeler",
@@ -226,8 +229,9 @@
       "distance": "Merkezimize kuş uçuşu yaklaşık {km} km",
       "cta": "{zone} için proje planlayın",
       "homeCta": "Ekibimize ulaşın",
-      "close": "Kapat",
-      "selected": "{zone} seçildi",
+      "selectedPin": "{zone} seçildi. Ayrıntılar haritanın altında.",
+      "closeDetails": "Bölge ayrıntılarını kapat",
+      "keys": "Bölgeler arasında ok tuşlarıyla gezinebilirsiniz.",
       "short": {
         "obour": "Obour Şehri",
         "badr": "Badr Şehri",
@@ -245,8 +249,7 @@
   },
   "company": {
     "tagline": "Mısır'daki fabrikalar için PLC kontrol sistemleri ve makine otomasyonu",
-    "addressLine": "6 Ekim Şehri, Gize, Mısır",
-    "footerAbout": "6 Ekim Şehri'nde endüstriyel otomasyon mühendisleriyiz. Otomasyon panoları tasarlıyor; PLC, HMI ve SCADA programlıyor; Mısır genelinde makineleri ve proses hatlarını devreye alıyoruz."
+    "addressLine": "6 Ekim Şehri, Gize, Mısır"
   },
   "notes": {
     "brands": "Marka adları ve ticari markalar sahiplerine aittir. Bir markanın listelenmesi, o markanın ürünlerini programlayıp entegre ettiğimiz anlamına gelir; bir iş ortaklığı anlamına gelmez.",

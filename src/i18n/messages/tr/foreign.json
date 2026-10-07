@@ -1,7 +1,7 @@
 {
   "seo": {
     "title": "Mısır'da Yeni Fabrikalara Otomasyon Desteği",
-    "description": "Mısır'da fabrika kuranlar için yerel otomasyon mühendisleri: ithal hatların devreye alınması, I/O testleri, FAT/SAT desteği, Arapça HMI, yerel yedek parça."
+    "description": "Mısır'da yeni fabrikalar için yerel otomasyon mühendisleri: ithal hatların devreye alınması, I/O testleri, FAT/SAT, Arapça HMI, yerel yedek parça."
   },
   "hero": {
     "eyebrow": "Mısır'da fabrika kuran veya üretimini Mısır'a taşıyan üreticiler için",
@@ -143,6 +143,30 @@
       "tr": "Talep halinde temel dokümanlar"
     }
   },
+  "oem": {
+    "eyebrow": "Makine üreticileri için",
+    "title": "Makinenin üreticisi siz misiniz?",
+    "intro": "Çin'de, Türkiye'de veya Avrupa'da makine üretip Mısır'daki tesislere gönderiyorsanız, sahada sizin mühendisleriniz olarak çalışabiliriz. Çizimlerinize, programlarınıza ve prosedürlerinize göre çalışır; size ve müşterinize rapor veririz.",
+    "items": [
+      {
+        "title": "Sizin adınıza devreye alma",
+        "text": "Müşterinizin tesisinde, prosedürlerinize uygun olarak enerji verme, I/O ve loop testleri, ilk çalıştırma ve ince ayar."
+      },
+      {
+        "title": "Mühendislerinizle I/O testleri ve SAT",
+        "text": "Testleri ve saha kabul testini biz yürütürken mühendisleriniz sahada veya uzaktan katılır."
+      },
+      {
+        "title": "Proje dosyanızdan Arapça HMI",
+        "text": "Ekranları, alarmları ve mesajları Arapçaya çevirip makinede test ediyoruz; değişiklikleri önce siz onaylarsınız."
+      },
+      {
+        "title": "Teslimden sonra destek",
+        "text": "Mısır'da arıza giderme ve program değişiklikleri; böylece mühendisleriniz her arıza için Mısır'a gelmek zorunda kalmaz."
+      }
+    ],
+    "cta": "Makineleriniz hakkında bizimle görüşün"
+  },
   "faq": {
     "title": "Mısır'da fabrika kuran üreticilerin soruları",
     "items": [
@@ -172,11 +196,11 @@
       },
       {
         "q": "İlk çalıştırmadan sonra tesise destek veriyor musunuz?",
-        "a": "Evet. Teknik destek sözleşmesi kapsamında arıza giderme, program değişiklikleri, önleyici bakım ve eğitim sunuyoruz; müdahale süreleri yazılı olarak belirlenir."
+        "a": "Evet. {link:services/maintenance-support|Teknik destek sözleşmesi} kapsamında arıza giderme, program değişiklikleri, önleyici bakım ve eğitim sunuyoruz; müdahale süreleri yazılı olarak belirlenir."
       },
       {
         "q": "Lisans, gümrük veya şirket kuruluşu konularında yardımcı olabilir misiniz?",
-        "a": "Hayır. Otomasyona odaklanan bir mühendislik şirketiyiz. Yatırım işlemleri için Mısır Yatırım ve Serbest Bölgeler Genel Kurumu (GAFI), SCZONE tek durak ofisi veya bir hukuk danışmanıyla görüşün."
+        "a": "Hayır. Otomasyona odaklanan bir mühendislik şirketiyiz. Yatırım işlemleri için {link:ext:https://www.gafi.gov.eg/|Mısır Yatırım ve Serbest Bölgeler Genel Kurumu (GAFI)}, {link:ext:https://sczone.eg/|SCZONE tek durak ofisi} veya bir hukuk danışmanıyla görüşün."
       }
     ]
   },

@@ -31,7 +31,9 @@
     "learnMore": "Daha fazla bilgi",
     "viewProject": "Projeyi inceleyin",
     "viewAll": "Tümünü görüntüle",
-    "inEgyptWhatsapp": "Mısır'da mısınız? Bize WhatsApp'tan yazın"
+    "inEgyptWhatsapp": "Mısır'da mısınız? Bize WhatsApp'tan yazın",
+    "quoteShort": "Teklif",
+    "whatsappShort": "WhatsApp"
   },
   "a11y": {
     "skip": "İçeriğe geç",
@@ -43,7 +45,8 @@
     "breadcrumbs": "Sayfa yolu",
     "homeLink": "Logic Controls — ana sayfa",
     "newTab": "yeni sekmede açılır",
-    "currentLanguage": "geçerli dil"
+    "submenu": "{label} alt menüsü",
+    "backToTop": "Başa dön"
   },
   "whatsapp": {
     "fabLabel": "WhatsApp'ta bir mühendisle görüşün",
@@ -51,13 +54,22 @@
   },
   "email": {
     "fabLabel": "Bir mühendise e-posta gönderin",
-    "subject": "Otomasyon projesi hakkında bilgi talebi"
+    "subject": "Otomasyon projesi hakkında bilgi talebi",
+    "subjectTopic": "{subject}: {topic}",
+    "body": "Merhaba Logic Controls,\n\nMakine veya hat:\nİhtiyacımız:\nTesisin konumu (şehir veya sanayi bölgesi):\nHedef tarih:\n\n[Varsa makinenin ve cihaz etiketlerinin fotoğraflarını ya da çizimleri ekleyin.]\n\nSayfa: {page}",
+    "copy": "Adresi kopyala",
+    "copied": "Adres kopyalandı",
+    "openApp": "E-posta uygulamanızı açın",
+    "useForm": "Teklif formunu kullanın",
+    "hint": "Web tabanlı e-posta mı kullanıyorsunuz? Adresi kopyalayıp her zamanki gelen kutunuzdan yazın."
+  },
+  "demo": {
+    "open": "Canlı demoyu deneyin"
   },
   "contact": {
     "phone": "Telefon",
     "email": "E-posta",
     "whatsapp": "WhatsApp",
-    "address": "Adres",
     "addressValue": "6 Ekim Şehri, Gize, Mısır"
   },
   "footer": {
@@ -79,21 +91,34 @@
   },
   "gallery": {
     "label": "Görsel görüntüleyici",
-    "open": "{total} görselden {n}. görseli aç",
     "close": "Görsel görüntüleyiciyi kapat",
     "prev": "Önceki görsel",
     "next": "Sonraki görsel",
-    "counter": "{n} / {total}"
+    "counter": "{n} / {total}",
+    "counterLong": "{total} görselden {n}.",
+    "openSuffix": "({total} görselden {n}., tam boyutta açılır)"
   },
   "video": {
-    "play": "Videoyu oynat",
-    "playNamed": "Videoyu oynat: {title}"
+    "playNamed": "Videoyu oynat: {title}",
+    "pauseLoop": "Arka plan videosunu duraklat"
+  },
+  "urgent": {
+    "title": "Makine mi durdu?",
+    "text": "Formun yanıtını beklemeyin: hemen bir mühendisi arayın veya WhatsApp'tan yazın.",
+    "textEmail": "Formun yanıtını beklemeyin: hemen bir mühendisi arayın.",
+    "whatsapp": "Hemen WhatsApp'tan yazın"
   },
   "faq": {
-    "title": "Sıkça sorulan sorular"
+    "title": "Sıkça sorulan sorular",
+    "more": "Tüm soruları göster ({count})"
   },
   "process": {
-    "step": "Adım"
+    "step": "Adım",
+    "more": "Tüm adımları göster ({count})"
+  },
+  "motion": {
+    "pause": "Animasyonları duraklat",
+    "systemReduced": "Cihazınız hareketi azaltacak şekilde ayarlı olduğu için animasyonlar kapalı."
   },
   "notFound": {
     "title": "Sayfa bulunamadı",

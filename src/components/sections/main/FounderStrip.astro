@@ -2,7 +2,7 @@
 /**
  * Compact founder strip ("who you will work with") for the home page and the foreign-manufacturers page:
  * small chamfered photo, eyebrow, title, one paragraph and a link to the founder block on the About page.
- * Copy: common.founderStrip { eyebrow, title, text, cta } — renders nothing until it exists.
+ * Copy: common.founderStrip { eyebrow, title, text, cta }.
  * Photo alt text: about.founder name + role. Layout: photo + heading side by side on phones, text below;
  * from 640px one row (photo | heading + text | link).
  */
@@ -11,14 +11,10 @@ import { getMessages, type Locale } from "~/i18n";
 import Button from "~/components/Button.astro";
 import { href } from "~/components/nav";
 import { html } from "./rich";
-import founderPhoto from "~/assets/people/founder.jpg";
+/* Head-and-shoulders crop of founder.jpg (640 px square, cut with sharp: left 80, top 51) — the strip shows it at
+   72–104 px, so the face is cropped in the file instead of being CSS-scaled (which upscaled the decoded image). */
+import founderPhoto from "~/assets/people/founder-face.jpg";
 
-interface Strip {
-  eyebrow?: string;
-  title?: string;
-  text?: string;
-  cta?: string;
-}
 interface Props {
   locale: Locale;
   headingLevel?: "h2" | "h3";
@@ -26,13 +22,13 @@ interface Props {
 }
 const { locale, headingLevel: H = "h3", class: className } = Astro.props;
 const t = getMessages(locale);
-const strip = (t.common as Record<string, unknown>).founderStrip as Strip | undefined;
-const founder = (t.about as Record<string, unknown>).founder as { name?: string; role?: string } | undefined;
-const alt = [founder?.name, founder?.role].filter(Boolean).join(", ");
+const strip = t.common.founderStrip;
+const founder = t.about.founder;
+const alt = [founder.name, founder.role].filter(Boolean).join(", ");
 ---
 
 {
-  strip?.title && (
+  strip.title && (
     <div
       class:list={[
         "lc-reveal relative grid grid-cols-[4.5rem_minmax(0,1fr)] items-center gap-x-4 gap-y-4 border border-charcoal-200 bg-white p-5",
@@ -41,17 +37,17 @@ const alt = [founder?.name, founder?.role].filter(Boolean).join(", ");
       ]}
     >
       <span aria-hidden="true" class="absolute -top-px start-5 h-1 w-14 skew-x-[-10deg] bg-royal-600 sm:start-6 lg:start-7 rtl:skew-x-[10deg]" />
-      {/* navy hairline frame with the logo's 45° cut (the photo's light-grey wall would hide a bare chamfer) */}
-      <div class="chamfer col-start-1 row-start-1 bg-navy-950 p-[3px] [--chamfer:13px] sm:row-span-2 sm:self-center sm:[--chamfer:17px]">
-      <div class="chamfer relative aspect-square overflow-hidden bg-charcoal-100 [--chamfer:11px] sm:[--chamfer:15px]">
+      {/* royal hairline frame with the logo's 45° cut (the photo's light-grey wall would hide a bare chamfer) */}
+      <div class="chamfer col-start-1 row-start-1 bg-royal-300/60 p-px [--chamfer:13px] sm:row-span-2 sm:self-center sm:[--chamfer:17px]">
+      <div class="chamfer relative aspect-square overflow-hidden bg-charcoal-100 [--chamfer:12px] sm:[--chamfer:16px]">
         <Picture
           src={founderPhoto}
           alt={alt}
           formats={["avif", "webp"]}
-          widths={[104, 208]}
+          widths={[104, 160, 208, 320]}
           sizes="(min-width: 640px) 104px, 72px"
           layout="full-width"
-          class="size-full origin-[50%_32%] scale-[1.25] object-cover"
+          class="size-full object-cover"
         />
       </div>
       </div>

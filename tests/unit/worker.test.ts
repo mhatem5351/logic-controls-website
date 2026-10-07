@@ -9,11 +9,21 @@
  */
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import worker from "../../worker/index";
+import { REF_RE, RFQ_FILES, RFQ_MAX_BODY } from "../../src/lib/rfq-rules";
 
 const ORIGIN = "https://logic-controls.com";
 const SITEVERIFY = "https://challenges.cloudflare.com/turnstile/v0/siteverify";
 
-type Mail = { from: { email: string; name?: string }; to: string; subject: string; text: string; html: string; replyTo?: { email: string; name?: string } };
+type Attachment = { disposition: string; filename: string; type: string; content: ArrayBuffer };
+type Mail = {
+  from: { email: string; name?: string };
+  to: string;
+  subject: string;
+  text: string;
+  html: string;
+  replyTo?: { email: string; name?: string };
+  attachments?: Attachment[];
+};
 
 function makeEnv(over: Record<string, unknown> = {}) {
   const send = vi.fn(async (_m: Mail) => ({ messageId: "test" }));
@@ -45,9 +55,10 @@ function get(path: string, headers: Record<string, string> = {}, method = "GET")
   return new Request(ORIGIN + path, { method, headers });
 }
 
-function rfq(fields: Record<string, string>, { json = true, headers = {} as Record<string, string> } = {}) {
+function rfq(fields: Record<string, string>, { json = true, headers = {} as Record<string, string>, files = [] as File[] } = {}) {
   const body = new FormData();
   for (const [k, v] of Object.entries(fields)) body.set(k, v);
+  for (const f of files) body.append(RFQ_FILES.field, f);
   return new Request(`${ORIGIN}/api/rfq`, {
     method: "POST",
     body,
@@ -64,8 +75,18 @@ const VALID = {
   industry: "food-beverage",
   message: "Pasteurizer upgrade",
   locale: "ar",
+  consent: "yes",
   "cf-turnstile-response": "token-123",
 };
+
+/** A file whose first bytes are `head` (a real signature or not), padded to `size` bytes. */
+function file(name: string, head: string | number[], size = 1024, type = "application/octet-stream") {
+  const bytes = new Uint8Array(size);
+  bytes.set(typeof head === "string" ? [...head].map((c) => c.charCodeAt(0)) : head);
+  return new File([bytes], name, { type });
+}
+const PDF = (name = "drawing.pdf", size = 2048) => file(name, "%PDF-1.7\n", size, "application/pdf");
+const PNG = (name = "panel.png", size = 2048) => file(name, [0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a], size, "image/png");
 
 afterEach(() => {
   vi.unstubAllGlobals();
@@ -115,10 +136,11 @@ describe("GET / → 302 to the visitor's language", () => {
     expect(await target({ "Accept-Language": "ar;q=abc, tr;q=0.1" })).toBe("/tr/");
   });
 
-  // RFC 9110 §12.5.4: q=0 means "not acceptable". Browsers never send it for a language they list, so this is
-  // theoretical: the Worker still picks a q=0 language when nothing else matches (it should fall back to English).
-  it.fails("KNOWN ISSUE: q=0 marks a language as not acceptable", async () => {
+  // RFC 9110 §12.5.4: q=0 means "not acceptable": never pick it, even when nothing else matches.
+  it("q=0 marks a language as not acceptable", async () => {
     expect(await target({ "Accept-Language": "ar;q=0, fr" })).toBe("/en/");
+    expect(await target({ "Accept-Language": "ar;q=0.0, tr;q=0.2" })).toBe("/tr/");
+    expect(await target({ "Accept-Language": "zh;q=0.000" })).toBe("/en/");
   });
 
   it("the lang cookie wins over Accept-Language", async () => {
@@ -140,6 +162,13 @@ describe("GET / → 302 to the visitor's language", () => {
     const res = await call(get("/"), makeEnv().env);
     expect(res.headers.get("Cache-Control")).toBe("private, no-store");
     expect(res.headers.get("Vary")).toBe("Accept-Language, Cookie");
+  });
+
+  it("carries the site's security headers (the Worker's responses bypass public/_headers)", async () => {
+    const res = await call(get("/"), makeEnv().env);
+    expect(res.headers.get("X-Content-Type-Options")).toBe("nosniff");
+    expect(res.headers.get("Referrer-Policy")).toBe("strict-origin-when-cross-origin");
+    expect(res.headers.get("Strict-Transport-Security")).toContain("max-age=31536000");
   });
 
   it("HEAD / redirects too; other methods and paths go to static assets untouched", async () => {
@@ -174,19 +203,54 @@ describe("/api/rfq", () => {
     }
   });
 
-  it("400 invalid when the body is not form data", async () => {
-    const req = new Request(`${ORIGIN}/api/rfq`, { method: "POST", body: "{}", headers: { "Content-Type": "application/json", Accept: "application/json" } });
-    const res = await call(req, makeEnv().env);
-    expect(res.status).toBe(400);
-    expect(await res.json()).toEqual({ ok: false, error: "invalid" });
+  describe("request guard (before the body is parsed)", () => {
+    it("400 invalid when the body is not form data", async () => {
+      for (const type of ["application/json", "text/plain"]) {
+        const req = new Request(`${ORIGIN}/api/rfq`, { method: "POST", body: "{}", headers: { "Content-Type": type, Accept: "application/json" } });
+        const res = await call(req, makeEnv().env);
+        expect(res.status, type).toBe(400);
+        expect(await res.json()).toEqual({ ok: false, error: "invalid" });
+      }
+    });
+
+    it("413 attachments when Content-Length is over the cap; the no-JS redirect keeps the form's language (Referer)", async () => {
+      const { env, send } = makeEnv();
+      const big = String(RFQ_MAX_BODY + 1);
+      const json = await call(
+        new Request(`${ORIGIN}/api/rfq`, { method: "POST", body: "x", headers: { "Content-Type": "multipart/form-data; boundary=x", "Content-Length": big, Accept: "application/json" } }),
+        env,
+      );
+      expect(json.status).toBe(413);
+      expect(await json.json()).toEqual({ ok: false, error: "attachments" });
+      const form = await call(
+        new Request(`${ORIGIN}/api/rfq`, {
+          method: "POST",
+          body: "x",
+          headers: { "Content-Type": "application/x-www-form-urlencoded", "Content-Length": big, Referer: `${ORIGIN}/tr/contact/` },
+        }),
+        env,
+      );
+      expect(form.status).toBe(303);
+      expect(form.headers.get("Location")).toBe("/tr/contact/?error=attachments#rfq-error-attachments");
+      expect(send).not.toHaveBeenCalled();
+      expect(verify).not.toHaveBeenCalled();
+    });
+
+    it("413 when a body without Content-Length streams past the cap", async () => {
+      const res = await call(rfq(VALID, { files: [PDF("huge.pdf", RFQ_MAX_BODY + 10)] }), makeEnv().env);
+      expect(res.status).toBe(413);
+      expect(await res.json()).toEqual({ ok: false, error: "attachments" });
+    });
   });
 
   describe("honeypot", () => {
-    it("pretends success (JSON) and sends nothing", async () => {
+    it("pretends success (JSON, with a reference) and sends nothing", async () => {
       const { env, send } = makeEnv();
       const res = await call(rfq({ ...VALID, company_website: "http://spam.example" }), env);
       expect(res.status).toBe(200);
-      expect(await res.json()).toEqual({ ok: true });
+      const body = (await res.json()) as { ok: boolean; ref: string };
+      expect(body.ok).toBe(true);
+      expect(body.ref).toMatch(REF_RE);
       expect(send).not.toHaveBeenCalled();
       expect(verify).not.toHaveBeenCalled();
     });
@@ -194,7 +258,7 @@ describe("/api/rfq", () => {
       const { env, send } = makeEnv();
       const res = await call(rfq({ ...VALID, locale: "zh", company_website: "x" }, { json: false }), env);
       expect(res.status).toBe(303);
-      expect(res.headers.get("Location")).toBe("/zh/contact/thanks/");
+      expect(res.headers.get("Location")).toMatch(/^\/zh\/contact\/thanks\/\?ref=LC-[0-9A-Z]{5}$/);
       expect(send).not.toHaveBeenCalled();
     });
     it("a whitespace-only honeypot is not a bot", async () => {
@@ -208,9 +272,14 @@ describe("/api/rfq", () => {
     it.each([
       ["name missing", { name: "" }],
       ["name only spaces", { name: "   " }],
-      ["phone missing", { phone: "" }],
+      ["name of one letter", { name: "A" }],
+      ["neither phone nor email", { phone: "", email: "" }],
+      ["phone malformed", { phone: "12" }],
+      ["phone with letters", { phone: "call me +20 100" }],
       ["email malformed", { email: "not-an-email" }],
       ["email without TLD", { email: "a@b" }],
+      ["consent missing", { consent: "" }],
+      ["consent not 'yes'", { consent: "on" }],
     ])("%s", async (_, over) => {
       const { env, send } = makeEnv();
       const res = await call(rfq({ ...VALID, ...over }), env);
@@ -220,23 +289,36 @@ describe("/api/rfq", () => {
       expect(verify).not.toHaveBeenCalled();
     });
 
-    it("form post: 303 back to the localized form with ?error=invalid#quote", async () => {
+    it("form post: 303 back to the localized form, the hash targets the no-JS alert", async () => {
       const res = await call(rfq({ ...VALID, name: "" }, { json: false }), makeEnv().env);
       expect(res.status).toBe(303);
-      expect(res.headers.get("Location")).toBe("/ar/contact/?error=invalid#quote");
+      expect(res.headers.get("Location")).toBe("/ar/contact/?error=invalid#rfq-error-invalid");
       expect(res.headers.get("Cache-Control")).toBe("no-store");
+      expect(res.headers.get("X-Content-Type-Options")).toBe("nosniff");
     });
 
-    it("email is optional", async () => {
+    it("phone OR email: email only (zh visitors) is enough, and then there is no WhatsApp link", async () => {
+      const { env, send } = makeEnv();
+      const res = await call(rfq({ ...VALID, phone: "", locale: "zh" }), env);
+      expect(res.status).toBe(200);
+      const mail = send.mock.calls[0]![0];
+      expect(mail.replyTo).toEqual({ email: "ahmed@example.com", name: "Ahmed Ali" });
+      expect(mail.html).not.toContain("wa.me");
+      expect(mail.text).not.toContain("Phone / WhatsApp");
+    });
+
+    it("phone only: email is optional (no Reply-To)", async () => {
       const { env, send } = makeEnv();
       const res = await call(rfq({ ...VALID, email: "" }), env);
       expect(res.status).toBe(200);
       expect(send.mock.calls[0]![0].replyTo).toBeUndefined();
     });
 
-    it("an unknown locale falls back to English", async () => {
+    it("an unknown locale falls back to the Referer's language, then English", async () => {
       const res = await call(rfq({ ...VALID, name: "", locale: "fr" }, { json: false }), makeEnv().env);
-      expect(res.headers.get("Location")).toBe("/en/contact/?error=invalid#quote");
+      expect(res.headers.get("Location")).toBe("/en/contact/?error=invalid#rfq-error-invalid");
+      const ref = await call(rfq({ ...VALID, name: "", locale: "fr" }, { json: false, headers: { Referer: `${ORIGIN}/ar/contact/` } }), makeEnv().env);
+      expect(ref.headers.get("Location")).toBe("/ar/contact/?error=invalid#rfq-error-invalid");
     });
   });
 
@@ -271,6 +353,16 @@ describe("/api/rfq", () => {
       await expect403(makeEnv().env);
     });
 
+    it("siteverify unreachable or timed out (the call carries an abort signal): fails closed, no throw", async () => {
+      const fn = vi.fn(async (_u: string | URL | Request, init?: RequestInit) => {
+        expect(init?.signal).toBeInstanceOf(AbortSignal);
+        throw new DOMException("The operation was aborted due to timeout", "TimeoutError");
+      });
+      vi.stubGlobal("fetch", fn);
+      await expect403(makeEnv().env);
+      expect(fn).toHaveBeenCalledOnce();
+    });
+
     it("no TURNSTILE_SECRET configured: fails closed", async () => {
       const { env } = makeEnv({ TURNSTILE_SECRET: undefined });
       await expect403(env);
@@ -281,7 +373,7 @@ describe("/api/rfq", () => {
       mockSiteverify({ success: false });
       const res = await call(rfq({ ...VALID, locale: "tr" }, { json: false }), makeEnv().env);
       expect(res.status).toBe(303);
-      expect(res.headers.get("Location")).toBe("/tr/contact/?error=verification#quote");
+      expect(res.headers.get("Location")).toBe("/tr/contact/?error=verification#rfq-error-verification");
     });
 
     it("sends secret, token and the visitor IP to siteverify", async () => {
@@ -302,52 +394,86 @@ describe("/api/rfq", () => {
   });
 
   describe("success", () => {
-    it("JSON: 200 {ok:true}, no-store", async () => {
+    it("JSON: 200 {ok:true, ref}, no-store", async () => {
       const res = await call(rfq(VALID), makeEnv().env);
       expect(res.status).toBe(200);
-      expect(await res.json()).toEqual({ ok: true });
+      const body = (await res.json()) as { ok: boolean; ref: string };
+      expect(body).toEqual({ ok: true, ref: expect.stringMatching(REF_RE) });
       expect(res.headers.get("Cache-Control")).toBe("no-store");
     });
 
-    it("form post (no JS): 303 to the localized thanks page", async () => {
-      const res = await call(rfq(VALID, { json: false }), makeEnv().env);
+    it("form post (no JS): 303 to the localized thanks page with the reference", async () => {
+      const { env, send } = makeEnv();
+      const res = await call(rfq(VALID, { json: false }), env);
       expect(res.status).toBe(303);
-      expect(res.headers.get("Location")).toBe("/ar/contact/thanks/");
+      const loc = res.headers.get("Location")!;
+      expect(loc).toMatch(/^\/ar\/contact\/thanks\/\?ref=LC-[0-9A-Z]{5}$/);
+      expect(send.mock.calls[0]![0].subject).toContain(loc.split("ref=")[1]);
     });
 
-    it("emails the owner: subject, sender, reply-to, text and HTML with every filled field", async () => {
+    it("emails the owner: labelled subject with the reference, sender, reply-to, text and HTML with every filled field", async () => {
       const { env, send } = makeEnv();
-      await call(rfq({ ...VALID, location: "obour", timeline: "1-3m", country: "Egypt", page: "/ar/services/" }), env);
+      const res = await call(rfq({ ...VALID, location: "obour", timeline: "1-3-months", country: "Egypt", page: "/ar/services/" }), env);
+      const { ref } = (await res.json()) as { ref: string };
       expect(send).toHaveBeenCalledOnce();
       const mail = send.mock.calls[0]![0];
       expect(mail.to).toBe("owner@example.com");
       expect(mail.from).toEqual({ email: "website@logic-controls.com", name: "Logic Controls Website" });
       expect(mail.replyTo).toEqual({ email: "ahmed@example.com", name: "Ahmed Ali" });
-      expect(mail.subject).toBe("[Website AR] process-control — Nile Foods");
+      expect(mail.subject).toBe(`[Website AR] Process control (temperature, CIP, batching) — Nile Foods · ${ref}`);
       expect(mail.text).toBe(
         [
           "Name: Ahmed Ali",
           "Company: Nile Foods",
           "Phone / WhatsApp: +20 100 000 0000",
           "Email: ahmed@example.com",
+          "Service: Process control (temperature, CIP, batching)",
+          "Timeline: In 1 to 3 months",
+          "Industry: Food, beverage and dairy",
+          "Factory location: Obour City",
           "Country: Egypt",
-          "Factory location: obour",
-          "Service: process-control",
-          "Industry: food-beverage",
-          "Timeline: 1-3m",
           "Project details: Pasteurizer upgrade",
           "Sent from page: /ar/services/",
+          "Consent: Yes (privacy notice accepted on the form)",
+          `Reference: ${ref}`,
+          "",
+          "Reply on WhatsApp: https://wa.me/201000000000",
+          "Call: +201000000000",
         ].join("\n") + "\n\nLanguage: ar",
       );
-      expect(mail.html).toContain("New website inquiry (AR)");
+      expect(mail.html).toContain(`New website inquiry (AR) · ${ref}`);
       expect(mail.html).toContain('<a href="https://wa.me/201000000000">Reply on WhatsApp</a>');
+      expect(mail.html).toContain('<a href="tel:+201000000000">');
       expect(mail.html).toContain('dir="auto">Nile Foods</td>');
+      expect(mail.attachments).toBeUndefined();
     });
 
     it("subject falls back to Inquiry / the person's name", async () => {
       const { env, send } = makeEnv();
       await call(rfq({ ...VALID, service: "", company: "", locale: "en" }), env);
-      expect(send.mock.calls[0]![0].subject).toBe("[Website EN] Inquiry — Ahmed Ali");
+      expect(send.mock.calls[0]![0].subject).toMatch(/^\[Website EN\] Inquiry — Ahmed Ali · LC-[0-9A-Z]{5}$/);
+    });
+
+    it("an unknown select value is shown as sent (one line, capped), never as HTML", async () => {
+      const { env, send } = makeEnv();
+      await call(rfq({ ...VALID, service: "<b>x</b>", industry: "made-up" }), env);
+      const mail = send.mock.calls[0]![0];
+      expect(mail.subject).toContain("] <b>x</b> — ");
+      expect(mail.text).toContain("Industry: made-up");
+      expect(mail.html).toContain("&lt;b&gt;x&lt;/b&gt;");
+    });
+
+    it("urgent ('a machine is stopped'): [URGENT] subject prefix, first line of the text, banner in the HTML", async () => {
+      const { env, send } = makeEnv();
+      await call(rfq({ ...VALID, timeline: "urgent", service: "maintenance-support" }), env);
+      const mail = send.mock.calls[0]![0];
+      expect(mail.subject).toMatch(/^\[URGENT\] \[Website AR\] Troubleshooting or maintenance — Nile Foods · LC-/);
+      expect(mail.text.startsWith("URGENT: a machine is stopped.\n\n")).toBe(true);
+      expect(mail.text).toContain("Timeline: Urgent: a machine is stopped");
+      expect(mail.html).toContain("URGENT: a machine is stopped</p>");
+      // not urgent → no flag
+      await call(rfq({ ...VALID, timeline: "planning" }), env);
+      expect(send.mock.calls[1]![0].subject.startsWith("[Website AR]")).toBe(true);
     });
 
     it("escapes HTML in every field of the HTML email", async () => {
@@ -362,21 +488,51 @@ describe("/api/rfq", () => {
       expect(text).toContain(`Name: ${evil}`); // the text part stays verbatim (it is plain text)
     });
 
-    it("message falls back to service · industry, then to a placeholder, when step 2 was skipped", async () => {
+    it("strips CR/LF and other control characters from header-bound fields (subject, Reply-To name)", async () => {
       const { env, send } = makeEnv();
-      await call(rfq({ ...VALID, message: "" }), env);
-      expect(send.mock.calls[0]![0].text).toContain("Project details: process-control · food-beverage");
+      const CR = String.fromCharCode(13), LF = String.fromCharCode(10), NUL = String.fromCharCode(0), LS = String.fromCharCode(0x2028);
+      await call(
+        rfq({ ...VALID, name: `Ahmed${CR}${LF}Bcc: x@evil.example`, company: `Nile${LF}Subject: hi${NUL}${LS}Foods`, service: `process-control${CR}${LF}X: y` }),
+        env,
+      );
+      const mail = send.mock.calls[0]![0];
+      for (const s of [mail.subject, mail.replyTo!.name!]) {
+        expect([...s].some((c) => c.charCodeAt(0) < 32 || c.charCodeAt(0) === 0x2028)).toBe(false);
+      }
+      expect(mail.replyTo!.name).toBe("Ahmed Bcc: x@evil.example");
+      expect(mail.subject).toContain("Nile Subject: hi Foods");
+      expect(mail.text).toContain("Name: Ahmed Bcc: x@evil.example\n");
+    });
+
+    it("strips bidi override characters (they could reverse what the owner reads in the subject)", async () => {
+      const { env, send } = makeEnv();
+      const RLO = String.fromCharCode(0x202e), PDI = String.fromCharCode(0x2069);
+      await call(rfq({ ...VALID, company: `${RLO}gpj.exe${PDI} Foods` }), env);
+      expect(send.mock.calls[0]![0].subject).toContain("— gpj.exe Foods ·");
+    });
+
+    it("the description keeps its line breaks (and only those)", async () => {
+      const { env, send } = makeEnv();
+      const CR = String.fromCharCode(13), BEL = String.fromCharCode(7);
+      await call(rfq({ ...VALID, message: `Line 1${CR}\nLine 2${BEL}\n\n\n\nLine 3` }), env);
+      expect(send.mock.calls[0]![0].text).toContain("Project details: Line 1\nLine 2\n\nLine 3\n");
+    });
+
+    it("message falls back to the selected labels, then to a placeholder, when step 2 was skipped", async () => {
+      const { env, send } = makeEnv();
+      await call(rfq({ ...VALID, message: "", timeline: "urgent" }), env);
+      expect(send.mock.calls[0]![0].text).toContain("Project details: Process control (temperature, CIP, batching) · Food, beverage and dairy · Urgent: a machine is stopped");
       await call(rfq({ ...VALID, message: "  ", service: "", industry: "" }), env);
       expect(send.mock.calls[1]![0].text).toContain("Project details: (no details provided)");
     });
 
-    it("trims fields and caps their length (message 5000, others 300)", async () => {
+    it("trims fields and caps their length to the form's limits (message 2000, name 120, company 160)", async () => {
       const { env, send } = makeEnv();
-      await call(rfq({ ...VALID, name: `  ${"n".repeat(400)}  `, message: "m".repeat(6000) }), env);
+      await call(rfq({ ...VALID, name: `  ${"n".repeat(400)}  `, company: "c".repeat(400), message: "m".repeat(6000) }), env);
       const { text } = send.mock.calls[0]![0];
-      expect(text).toContain(`Name: ${"n".repeat(300)}\n`);
-      expect(text).toContain(`Project details: ${"m".repeat(5000)}\n`);
-      expect(text).not.toContain("n".repeat(301));
+      expect(text).toContain(`Name: ${"n".repeat(120)}\n`);
+      expect(text).toContain(`Company: ${"c".repeat(160)}\n`);
+      expect(text).toContain(`Project details: ${"m".repeat(2000)}\n`);
     });
 
     it("ignores fields outside the contract (no header or HTML injection through extra fields)", async () => {
@@ -385,6 +541,90 @@ describe("/api/rfq", () => {
       const mail = send.mock.calls[0]![0];
       expect(Object.keys(mail).sort()).toEqual(["from", "html", "replyTo", "subject", "text", "to"]);
       expect(mail.text).not.toContain("evil");
+    });
+
+    it("uses the browser's dirname values for the HTML cells (RTL descriptions stay RTL)", async () => {
+      const { env, send } = makeEnv();
+      await call(rfq({ ...VALID, "message.dir": "rtl", "company.dir": "ltr", "name.dir": "bogus" }), env);
+      const { html } = send.mock.calls[0]![0];
+      expect(html).toContain('dir="rtl">Pasteurizer upgrade</td>');
+      expect(html).toContain('dir="ltr">Nile Foods</td>');
+      expect(html).toContain('dir="auto">Ahmed Ali</td>');
+    });
+  });
+
+  describe("phone → WhatsApp / call links", () => {
+    it.each([
+      ["01001234567", "201001234567"], // Egyptian mobile, local format
+      ["010 0123 4567", "201001234567"],
+      ["٠١٠٠١٢٣٤٥٦٧", "201001234567"], // Arabic-Indic digits
+      ["0020 100 123 4567", "201001234567"],
+      ["+20 (100) 123-4567", "201001234567"],
+      ["+90 532 123 45 67", "905321234567"], // international numbers are kept
+      ["+86 138 0013 8000", "8613800138000"],
+      ["0532 123 45 67", "05321234567"], // not an Egyptian mobile: left as typed
+    ])("%s → wa.me/%s", async (phone, wa) => {
+      const { env, send } = makeEnv();
+      await call(rfq({ ...VALID, phone }), env);
+      const { html, text } = send.mock.calls[0]![0];
+      expect(html).toContain(`<a href="https://wa.me/${wa}">Reply on WhatsApp</a>`);
+      expect(html).toContain(`<a href="tel:+${wa}">`);
+      expect(text).toContain(`Reply on WhatsApp: https://wa.me/${wa}`);
+    });
+  });
+
+  describe("attachments", () => {
+    it("forwards up to 3 files as email attachments (binary, safe names, MIME type from the extension)", async () => {
+      const { env, send } = makeEnv();
+      const res = await call(rfq(VALID, { files: [PDF("../../etc/I-O list.pdf"), PNG("panel.PNG"), file("layout.dwg", "AC1032", 4096)] }), env);
+      expect(res.status).toBe(200);
+      const { attachments, text } = send.mock.calls[0]![0];
+      expect(attachments!.map((a) => [a.filename, a.type, a.disposition, a.content.byteLength])).toEqual([
+        ["I-O list.pdf", "application/pdf", "attachment", 2048],
+        ["panel.PNG", "image/png", "attachment", 2048],
+        ["layout.dwg", "application/octet-stream", "attachment", 4096],
+      ]);
+      expect(new Uint8Array(attachments![0]!.content).subarray(0, 4)).toEqual(new Uint8Array([0x25, 0x50, 0x44, 0x46]));
+      expect(text).toContain("Attachments: I-O list.pdf (2 KB), panel.PNG (2 KB), layout.dwg (4 KB)");
+    });
+
+    it("an empty file input (nothing chosen) is not an attachment", async () => {
+      const { env, send } = makeEnv();
+      await call(rfq(VALID, { files: [new File([], "", { type: "application/octet-stream" })] }), env);
+      expect(send.mock.calls[0]![0].attachments).toBeUndefined();
+    });
+
+    it("control characters in a filename never reach the email", async () => {
+      const { env, send } = makeEnv();
+      await call(rfq(VALID, { files: [PDF(`a${String.fromCharCode(13, 10)}b.pdf`)] }), env);
+      expect(send.mock.calls[0]![0].attachments![0]!.filename).toBe("a b.pdf");
+    });
+
+    it.each([
+      ["more than 3 files", () => [PDF("1.pdf"), PDF("2.pdf"), PDF("3.pdf"), PDF("4.pdf")]],
+      ["over 4 MB in total (but under the body cap)", () => [PDF("1.pdf", 2 * 1024 * 1024), PDF("2.pdf", 2 * 1024 * 1024 + 10)]],
+      ["a type the form does not accept", () => [file("setup.exe", "MZ")]],
+      ["no extension", () => [file("drawing", "%PDF")]],
+    ])("422 attachments: %s (checked before Turnstile)", async (_, files) => {
+      const { env, send } = makeEnv();
+      const res = await call(rfq(VALID, { files: files() }), env);
+      expect(res.status).toBe(422);
+      expect(await res.json()).toEqual({ ok: false, error: "attachments" });
+      expect(verify).not.toHaveBeenCalled();
+      expect(send).not.toHaveBeenCalled();
+    });
+
+    it("422 attachments when the content does not match the extension (a renamed .exe is not a PDF)", async () => {
+      const { env, send } = makeEnv();
+      const res = await call(rfq(VALID, { files: [file("quote.pdf", "MZ"), PNG()] }), env);
+      expect(res.status).toBe(422);
+      expect(await res.json()).toEqual({ ok: false, error: "attachments" });
+      expect(send).not.toHaveBeenCalled();
+    });
+
+    it("no-JS form post: 303 back with ?error=attachments", async () => {
+      const res = await call(rfq({ ...VALID, locale: "zh" }, { json: false, files: [file("a.exe", "MZ")] }), makeEnv().env);
+      expect(res.headers.get("Location")).toBe("/zh/contact/?error=attachments#rfq-error-attachments");
     });
   });
 
@@ -401,6 +641,32 @@ describe("/api/rfq", () => {
       e.send.mockRejectedValueOnce(new Error("x"));
       return e.env;
     })());
-    expect(form.headers.get("Location")).toBe("/ar/contact/?error=send#quote");
+    expect(form.headers.get("Location")).toBe("/ar/contact/?error=send#rfq-error-send");
+  });
+});
+
+describe("/api/rfq preferred reply channel", () => {
+  beforeEach(() => {
+    mockSiteverify();
+  });
+
+  it("is shown with its English label, right after the email", async () => {
+    const { env, send } = makeEnv();
+    await call(rfq({ ...VALID, reply: "whatsapp" }), env);
+    expect(send.mock.calls[0]![0].text).toContain("Email: ahmed@example.com\nPreferred reply: WhatsApp\n");
+  });
+
+  it("'email' needs an email address (422 invalid)", async () => {
+    const { env, send } = makeEnv();
+    const res = await call(rfq({ ...VALID, email: "", reply: "email" }), env);
+    expect(res.status).toBe(422);
+    expect(send).not.toHaveBeenCalled();
+  });
+
+  it("an unknown value is ignored", async () => {
+    const { env, send } = makeEnv();
+    const res = await call(rfq({ ...VALID, reply: "fax" }), env);
+    expect(res.status).toBe(200);
+    expect(send.mock.calls[0]![0].text).not.toContain("Preferred reply");
   });
 });

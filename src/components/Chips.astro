@@ -30,11 +30,14 @@ interface Props {
 const { items, joined = false, led = false, size = "md", class: className, label } = Astro.props;
 const locale = (Astro.props.locale ?? Astro.currentLocale) as Locale | undefined;
 const ledColor = led === true || led === "amber" ? "var(--color-signal-400)" : led === "green" ? "#2bd47d" : led === "blue" ? "var(--color-royal-400)" : null;
+/* sm (card chips): the page's own sans face at 12.5px/600 (≥ 13px in Arabic via the root bump) — legible, and short
+   enough that two chips stay on one line. md (hero, tech table): the mono HMI label look, kept as the accent. */
 const chipBase = [
-  "inline-flex items-center gap-2 rounded-xs border type-label normal-case tracking-[0.04em]",
-  size === "sm" ? "px-2 py-1 text-[0.6875rem]" : "px-2.5 py-1.5",
-  "border-charcoal-200 bg-charcoal-50 text-charcoal-700",
-  "in-[.on-dark]:border-white/12 in-[.on-dark]:bg-white/[0.04] in-[.on-dark]:text-navy-200",
+  "inline-flex items-center gap-2 rounded-xs border",
+  size === "sm"
+    ? "border-transparent bg-charcoal-100 px-2 py-1 text-[0.78125rem] leading-tight font-semibold text-charcoal-700"
+    : "type-label border-charcoal-200 bg-charcoal-50 px-2.5 py-1.5 normal-case tracking-[0.04em] text-charcoal-700",
+  "on-dark:border-white/12 on-dark:bg-white/[0.04] on-dark:text-navy-200",
 ];
 /** Items of a joined chip that never wrap inside: names of up to 3 words / 20 characters ("Schneider Electric"). */
 const atomic = (s: string) => s.length <= 20 && s.trim().split(/\s+/).length <= 3;

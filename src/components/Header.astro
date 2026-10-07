@@ -2,18 +2,41 @@
 /**
  * Site header.
  *  - Utility bar (≥1024px): "Setting up in Egypt?" link, phone, email, full language list. Scrolls away.
- *  - Main bar (sticky): logo, 5 nav items, quick Arabic/English switch, language menu (< 1024px; icon-only on phones),
- *    "Request a quote", menu button.
- *  - Mobile drawer: native <dialog> (focus trap, Esc, inert page) opened by a tiny script.
+ *  - Main bar (sticky; static on short landscape phones): logo, 5 nav items, language menu (< 1024px), the primary
+ *    action, menu button. Services and Industries are disclosure menus (APG "navigation menu with top-level links"):
+ *    the label stays a link to the index page, the chevron button next to it opens the full list (all 8 services /
+ *    7 industries). Opens on click / Enter / Space / ArrowDown, and on hover with a short intent delay (mouse only);
+ *    Escape, an outside click or moving focus away closes it.
+ *  - Primary action: "Request a quote" (en/tr/zh; "Quote" on phones) — WhatsApp on Arabic pages (WhatsApp-first).
+ *  - Mobile drawer: native <dialog> (focus trap, Esc, inert page). Services / Industries expand in place (the
+ *    section of the current page starts open), so any service is two taps from any page.
  * `heroDark`: starts transparent over a dark hero, turns solid once the page scrolls.
  */
 import { getMessages, type Locale } from "~/i18n";
 import { SITE } from "~/data/site";
 import Logo from "./Logo.astro";
 import Icon from "./Icon.astro";
+import { contactCta } from "./contact-cta";
 import Button from "./Button.astro";
 import LanguageSwitcher from "./LanguageSwitcher.astro";
-import { MAIN_NAV, FOREIGN_PATH, QUOTE_PATH, href, currentState, languageLinks, whatsappLink, mailtoLink, prefersEmail } from "./nav";
+import CopyEmail from "./CopyEmail.astro";
+import { serviceIcon, industryIcon } from "./sections/catalog/catalog";
+import { colon, ltr } from "./sections/main/rich";
+import {
+  MAIN_NAV,
+  FOREIGN_PATH,
+  QUOTE_PATH,
+  href,
+  currentState,
+  whatsappLink,
+  mailtoLink,
+  prefersEmail,
+  prefersWhatsapp,
+  serviceNav,
+  industryNav,
+  fmt,
+} from "./nav";
+import MotionToggle from "./MotionToggle.astro";
 
 interface Props {
   locale: Locale;
@@ -21,14 +44,34 @@ interface Props {
   heroDark?: boolean;
 }
 const { locale, path, heroDark = false } = Astro.props;
-const t = getMessages(locale).ui;
+const m = getMessages(locale);
+const t = m.ui;
 const email = prefersEmail(locale);
-// Egyptian phones set to English land on /en/: keep a one-tap Arabic switch visible on English pages;
-// Arabic, Chinese and Turkish pages get a one-tap English switch (what foreign visitors reach for).
-// Below 1024px the globe menu sits next to it (icon-only on phones), so every language is one tap + one choice away
-// on every page; from 1024px the utility bar lists all four languages.
-const quick = languageLinks(path).find((l) => l.locale === (locale === "en" ? "ar" : "en"));
+const waFirst = prefersWhatsapp(locale);
 const foreignState = currentState(FOREIGN_PATH, path);
+const mail = mailtoLink(undefined, { locale, path });
+const wa = whatsappLink(t.whatsapp.message);
+/* The drawer's "talk to an engineer" button: WhatsApp, or email with this page's context on zh (contact-cta.ts). */
+const contact = contactCta(locale, { mail: { path } });
+/* "Is a machine stopped?" — the emergency path, one tap from every page (phone first; WhatsApp except on zh). */
+const urgent = {
+  title: m.contact.thanks.urgent.title as string,
+  wa: whatsappLink(m.common.whatsapp.stopped),
+};
+
+/* Submenus of the two catalogue sections (desktop dropdown + drawer accordion share the data). */
+const menus = {
+  services: {
+    items: serviceNav(locale).map((l) => ({ ...l, icon: serviceIcon(l.slug) })),
+    all: { label: m.common.labels.allServices as string, path: "services" },
+  },
+  industries: {
+    items: industryNav(locale).map((l) => ({ ...l, icon: industryIcon(l.slug) })),
+    all: { label: m.common.labels.allIndustries as string, path: "industries" },
+  },
+};
+const ddId = (key: string) => `lc-dd-${key}`;
+const accId = (key: string) => `lc-acc-${key}`;
 ---
 
 <header
@@ -44,7 +87,10 @@ const foreignState = currentState(FOREIGN_PATH, path);
       <a
         href={href(locale, FOREIGN_PATH)}
         aria-current={foreignState}
-        class="group inline-flex min-h-6 items-center gap-2.5 font-semibold text-signal-300 transition-colors hover:text-white"
+        class:list={[
+          "group inline-flex min-h-6 items-center gap-2.5 font-semibold text-signal-300 transition-colors hover:text-white",
+          foreignState && "underline decoration-2 underline-offset-[6px]",
+        ]}
       >
         <span class="lc-led" aria-hidden="true"></span>
         <span>{t.nav.foreign}</span>
@@ -53,11 +99,13 @@ const foreignState = currentState(FOREIGN_PATH, path);
       <div class="flex items-center gap-6 text-navy-200">
         <a href={`tel:${SITE.phone.tel}`} class="inline-flex min-h-6 items-center gap-2 transition-colors hover:text-white">
           <Icon name="phone" size={14} class="text-royal-300" />
+          <span class="sr-only">{t.contact.phone}{colon(locale)}</span>
           <span class="ltr" dir="ltr">{SITE.phone.display}</span>
         </a>
-        <a href={`mailto:${SITE.email}`} class="inline-flex min-h-6 items-center gap-2 transition-colors hover:text-white">
+        <a href={mail} class="inline-flex min-h-6 items-center gap-2 transition-colors hover:text-white">
           <Icon name="mail" size={14} class="text-royal-300" />
-          <span class="ltr" dir="ltr">{SITE.email}</span>
+          <span class="sr-only">{t.contact.email}{colon(locale)}</span>
+          <Fragment set:html={ltr(SITE.email)} />
         </a>
         <span class="h-4 w-px bg-white/15" aria-hidden="true"></span>
         <LanguageSwitcher locale={locale} path={path} variant="inline" class="-me-2" />
@@ -67,9 +115,9 @@ const foreignState = currentState(FOREIGN_PATH, path);
 
   {/* ---------- main bar ---------- */}
   <div class="h-(--header-h)">
-    <div class="wrap flex h-full items-center gap-4 lg:gap-8">
+    <div class="wrap flex h-full items-center gap-2 sm:gap-4 lg:gap-6 xl:gap-8">
       <a href={href(locale)} aria-label={t.a11y.homeLink} class="relative -my-1 shrink-0 py-1">
-        <Logo variant="dark" width={124} loading="eager" class="h-auto w-[104px] lg:w-[124px]" alt="" />
+        <Logo variant="dark" width={124} loading="eager" class="h-auto w-[96px] min-[24rem]:w-[104px] lg:w-[124px]" alt="" />
         {/* Brand moment (first page of a session only, motion.css §3): an amber signal leaves the first ring node,
             branches up to the second and runs on to the third; each ring pings as it arrives. The overlay sits
             exactly over the raster mark (viewBox = logo-original.jpg pixels of the logo.png crop), never shifts layout. */}
@@ -85,24 +133,89 @@ const foreignState = currentState(FOREIGN_PATH, path);
         </svg>
       </a>
 
-      <nav aria-label={t.a11y.mainNav} class="hidden lg:block">
-        <ul role="list" class="flex items-center gap-0.5 xl:gap-2">
+      <nav aria-label={t.a11y.mainNav} class="hidden h-full lg:block">
+        <ul role="list" class="flex h-full items-center gap-0.5 xl:gap-1.5">
           {
             MAIN_NAV.map((item) => {
               const state = currentState(item.path, path);
+              const label = t.nav[item.key];
+              const menu = "menu" in item ? menus[item.menu] : undefined;
+              const linkCls = [
+                "lc-nav-link relative inline-flex h-10 items-center text-[0.9375rem] font-semibold whitespace-nowrap transition-colors",
+                menu ? "ps-2.5 pe-1 xl:ps-3" : "px-2.5 xl:px-3",
+                state ? "text-white" : "text-navy-100 hover:text-white",
+              ];
+              if (!menu)
+                return (
+                  <li>
+                    <a href={href(locale, item.path)} aria-current={state} class:list={linkCls}>
+                      {label}
+                      {state && <span class="lc-nav-ind" aria-hidden="true" />}
+                    </a>
+                  </li>
+                );
+              const id = ddId(item.key);
               return (
-                <li>
-                  <a
-                    href={href(locale, item.path)}
-                    aria-current={state}
-                    class:list={[
-                      "lc-nav-link relative inline-flex h-10 items-center px-2.5 text-[0.9375rem] font-semibold whitespace-nowrap transition-colors xl:px-3",
-                      state ? "text-white" : "text-navy-100 hover:text-white",
-                    ]}
-                  >
-                    {t.nav[item.key]}
+                <li class="lc-dd relative flex h-full items-center" data-dd>
+                  <a href={href(locale, item.path)} aria-current={state} class:list={linkCls}>
+                    {label}
                     {state && <span class="lc-nav-ind" aria-hidden="true" />}
                   </a>
+                  <button
+                    type="button"
+                    class="lc-dd-btn inline-flex h-10 w-7 items-center justify-center text-navy-200 transition-colors hover:text-white"
+                    aria-expanded="false"
+                    aria-controls={id}
+                  >
+                    <Icon name="chevron-down" size={16} class="lc-dd-chev" />
+                    <span class="sr-only">{fmt(t.a11y.submenu, { label })}</span>
+                  </button>
+                  <div id={id} class="lc-dd-panel on-dark border border-white/12 bg-navy-900 p-2 text-navy-100 shadow-header" hidden>
+                    <ul role="list" class:list={["grid gap-x-1 gap-y-0.5", menu.items.length > 4 && "grid-cols-2"]}>
+                      {menu.items.map((l) => {
+                        const cur = currentState(l.path, path) === "page";
+                        return (
+                          <li>
+                            <a
+                              href={href(locale, l.path)}
+                              aria-current={cur ? "page" : undefined}
+                              class:list={[
+                                "lc-dd-link group/dd flex min-h-11 items-center gap-3 px-2.5 py-1.5 transition-colors hover:bg-white/8",
+                                cur ? "font-bold text-white" : "font-medium text-navy-100 hover:text-white",
+                              ]}
+                            >
+                              <span
+                                class="chamfer inline-grid size-8 shrink-0 place-items-center bg-white/[0.06] text-royal-300 transition-colors [--chamfer:6px] group-hover/dd:bg-royal-600 group-hover/dd:text-white"
+                                aria-hidden="true"
+                              >
+                                <Icon name={l.icon} size={16} />
+                              </span>
+                              <span class:list={["leading-snug", cur && "underline decoration-signal-400 decoration-2 underline-offset-4"]}>{l.label}</span>
+                            </a>
+                          </li>
+                        );
+                      })}
+                    </ul>
+                    <div class="mt-2 flex flex-wrap items-center justify-between gap-x-6 gap-y-1 border-t border-white/10 px-2.5 pt-2">
+                      <a
+                        href={href(locale, menu.all.path)}
+                        aria-current={path === menu.all.path ? "page" : undefined}
+                        class="group/all inline-flex min-h-10 items-center gap-1.5 text-sm font-bold text-royal-300 transition-colors hover:text-white"
+                      >
+                        {menu.all.label}
+                        <Icon name="arrow" size={14} class="transition-transform group-hover/all:translate-x-0.5 rtl:group-hover/all:-translate-x-0.5" />
+                      </a>
+                      {menu === menus.services && (
+                        <a
+                          href={href(locale, FOREIGN_PATH)}
+                          class="inline-flex min-h-10 items-center gap-2.5 text-sm font-semibold text-signal-300 transition-colors hover:text-white"
+                        >
+                          <span class="lc-led" aria-hidden="true" />
+                          {t.nav.foreign}
+                        </a>
+                      )}
+                    </div>
+                  </div>
                 </li>
               );
             })
@@ -111,32 +224,26 @@ const foreignState = currentState(FOREIGN_PATH, path);
       </nav>
 
       <div class="ms-auto flex items-center gap-2 sm:gap-3">
+        <LanguageSwitcher locale={locale} path={path} variant="menu" tight={waFirst} class="lg:hidden" />
         {
-          quick && (
-            <a
-              href={quick.href}
-              hreflang={quick.hreflang}
-              lang={quick.htmlLang}
-              dir={quick.dir}
-              data-set-lang={quick.locale}
-              class:list={[
-                "inline-flex h-10 items-center border border-white/20 px-3 font-semibold whitespace-nowrap text-white transition-colors hover:border-signal-400 hover:text-signal-200 max-[22rem]:hidden lg:max-xl:hidden",
-                quick.locale === "ar" ? "text-[1.0625rem]" : "text-sm",
-              ]}
-            >
-              {quick.native}
-            </a>
+          waFirst ? (
+            <Button href={wa} size="sm" icon="whatsapp" external class="lc-head-cta lg:min-h-10" aria-label={`${t.cta.whatsapp} (${t.a11y.newTab})`}>
+              <span class="max-[22.5rem]:sr-only sm:hidden lg:inline xl:hidden" aria-hidden="true">{t.cta.whatsappShort}</span>
+              <span class="max-sm:hidden lg:max-xl:hidden" aria-hidden="true">{t.cta.whatsapp}</span>
+            </Button>
+          ) : (
+            <Button href={href(locale, QUOTE_PATH)} size="sm" class="lc-head-cta lg:min-h-10">
+              <span class="sm:hidden">{t.cta.quoteShort}</span>
+              <span class="max-sm:hidden">{t.cta.quote}</span>
+            </Button>
           )
         }
-        <LanguageSwitcher locale={locale} path={path} variant="menu" class="lg:hidden" />
-        <Button href={href(locale, QUOTE_PATH)} size="sm" class="max-sm:hidden lg:min-h-10">
-          {t.cta.quote}
-        </Button>
         <button
           type="button"
           class="lc-menu-open inline-flex size-10 items-center justify-center border border-white/20 text-white transition-colors hover:border-white/50 lg:hidden"
           aria-haspopup="dialog"
           aria-controls="lc-drawer"
+          aria-expanded="false"
         >
           <Icon name="menu" size={22} />
           <span class="sr-only">{t.a11y.menu}</span>
@@ -159,75 +266,165 @@ const foreignState = currentState(FOREIGN_PATH, path);
           <span class="sr-only">{t.a11y.closeMenu}</span>
         </button>
       </div>
-      <nav aria-label={t.a11y.mainNav} class="px-5 pt-4">
+      <nav aria-label={t.a11y.mainNav} class="px-5 pt-2">
         <ul role="list" class="divide-y divide-white/8">
           {
             MAIN_NAV.map((item, i) => {
               const state = currentState(item.path, path);
+              const label = t.nav[item.key];
+              const menu = "menu" in item ? menus[item.menu] : undefined;
+              const open = !!(menu && state);
+              const id = accId(item.key);
               return (
                 <li>
-                  <a
-                    href={href(locale, item.path)}
-                    aria-current={state}
-                    class:list={[
-                      "flex min-h-14 items-center justify-between text-lg font-bold",
-                      state ? "text-white" : "text-navy-100 hover:text-white",
-                    ]}
-                  >
-                    <span class="flex items-center gap-4">
-                      <span class="font-mono text-xs font-medium text-navy-400 ltr" dir="ltr" aria-hidden="true">
+                  <div class="flex items-stretch">
+                    <a
+                      href={href(locale, item.path)}
+                      aria-current={state}
+                      class:list={["flex min-h-14 flex-1 items-center gap-4 text-lg font-bold", state ? "text-white" : "text-navy-100 hover:text-white"]}
+                    >
+                      <span class="w-5 shrink-0 font-mono text-xs font-medium text-navy-400 ltr" dir="ltr" aria-hidden="true">
                         {String(i + 1).padStart(2, "0")}
                       </span>
-                      {t.nav[item.key]}
-                    </span>
-                    <Icon name="chevron-right" size={20} class={state ? "text-signal-400" : "text-navy-400"} />
-                  </a>
+                      <span class:list={[state && "underline decoration-signal-400 decoration-2 underline-offset-8"]}>{label}</span>
+                    </a>
+                    {menu ? (
+                      <button
+                        type="button"
+                        class="lc-acc-btn -me-3 grid w-14 shrink-0 place-items-center text-navy-300 transition-colors hover:text-white"
+                        aria-expanded={open ? "true" : "false"}
+                        aria-controls={id}
+                      >
+                        <Icon name="chevron-down" size={22} class="lc-acc-chev" />
+                        <span class="sr-only">{fmt(t.a11y.submenu, { label })}</span>
+                      </button>
+                    ) : (
+                      <span class="-me-3 grid w-14 shrink-0 place-items-center" aria-hidden="true">
+                        <Icon name="chevron-right" size={20} class={state ? "text-signal-400" : "text-navy-400"} />
+                      </span>
+                    )}
+                  </div>
+                  {menu && (
+                    <ul id={id} role="list" class="lc-acc-list grid pb-3 ps-9" hidden={!open}>
+                      {menu.items.map((l) => {
+                        const cur = currentState(l.path, path) === "page";
+                        return (
+                          <li>
+                            <a
+                              href={href(locale, l.path)}
+                              aria-current={cur ? "page" : undefined}
+                              class:list={[
+                                "flex min-h-11 items-center gap-3 text-[0.9375rem] transition-colors",
+                                cur ? "font-bold text-white" : "text-navy-200 hover:text-white",
+                              ]}
+                            >
+                              <Icon name={l.icon} size={18} class="shrink-0 text-royal-300" />
+                              <span class:list={["leading-snug", cur && "underline decoration-signal-400 decoration-2 underline-offset-4"]}>{l.label}</span>
+                            </a>
+                          </li>
+                        );
+                      })}
+                      <li>
+                        <a href={href(locale, menu.all.path)} class="inline-flex min-h-11 items-center gap-2 text-[0.9375rem] font-bold text-royal-300 hover:text-white">
+                          {menu.all.label}
+                          <Icon name="arrow" size={16} />
+                        </a>
+                      </li>
+                    </ul>
+                  )}
                 </li>
               );
             })
           }
         </ul>
       </nav>
-      <div class="px-5 pt-5">
+      <div class="px-5 pt-4">
         <a
           href={href(locale, FOREIGN_PATH)}
           aria-current={foreignState}
-          class="flex min-h-14 items-center gap-3 border border-signal-400/40 bg-signal-400/[0.07] px-4 font-semibold text-signal-200 hover:border-signal-400"
+          class:list={[
+            "flex min-h-14 items-center gap-3 border bg-signal-400/[0.07] px-4 font-semibold text-signal-200 hover:border-signal-400",
+            foreignState ? "border-2 border-signal-400" : "border-signal-400/40",
+          ]}
         >
           <span class="lc-led" aria-hidden="true"></span>
           <span class="flex-1">{t.nav.foreign}</span>
-          <Icon name="arrow" size={18} />
+          {foreignState ? <Icon name="check" size={18} /> : <Icon name="arrow" size={18} />}
         </a>
       </div>
       <div class="grid gap-3 px-5 pt-6">
-        <Button href={href(locale, QUOTE_PATH)} size="lg" block iconEnd="arrow">
-          {t.cta.quote}
-        </Button>
         {
-          email ? (
-            <Button href={mailtoLink(t.email.subject)} size="lg" variant="on-dark" block icon="mail" iconClass="text-royal-300">
-              {t.cta.emailEngineer}
-            </Button>
+          waFirst ? (
+            <>
+              <Button href={wa} size="lg" block icon="whatsapp" external>
+                {t.cta.whatsapp}
+              </Button>
+              <Button href={href(locale, QUOTE_PATH)} size="lg" variant="on-dark" block iconEnd="arrow">
+                {t.cta.quote}
+              </Button>
+            </>
           ) : (
-            <Button href={whatsappLink(t.whatsapp.message)} size="lg" variant="on-dark" block icon="whatsapp" iconClass="text-[#25d366]" external>
-              {t.cta.whatsapp}
-            </Button>
+            <>
+              <Button href={href(locale, QUOTE_PATH)} size="lg" block iconEnd="arrow">
+                {t.cta.quote}
+              </Button>
+              <Button
+                href={contact.href}
+                size="lg"
+                variant="on-dark"
+                block
+                icon={contact.kind === "email" ? "mail" : "whatsapp"}
+                iconClass={contact.kind === "email" ? "text-royal-300" : "text-whatsapp-500"}
+                external={contact.kind === "whatsapp"}
+              >
+                {contact.label}
+              </Button>
+            </>
           )
         }
+      </div>
+      <div class="px-5 pt-4">
+        <div class="flex flex-wrap items-center justify-between gap-x-3 gap-y-2 border border-white/10 bg-white/[0.03] px-4 py-3">
+          <p class="flex items-center gap-2.5 text-sm font-semibold text-white">
+            <span class="lc-led" style="--led: var(--color-danger-500)" aria-hidden="true"></span>
+            {urgent.title}
+          </p>
+          <div class="flex gap-2">
+            <a href={`tel:${SITE.phone.tel}`} class="lc-tel-label inline-flex min-h-10 items-center gap-1.5 border border-white/20 px-3 text-sm font-semibold text-white hover:border-white/50">
+              <Icon name="phone" size={16} class="text-royal-300" />
+              {t.cta.call}
+            </a>
+            {
+              !email && (
+                <a href={urgent.wa} target="_blank" rel="noopener" class="inline-flex min-h-10 items-center gap-1.5 border border-white/20 px-3 text-sm font-semibold text-white hover:border-white/50">
+                  <Icon name="whatsapp" size={16} class="text-whatsapp-500" />
+                  {t.cta.whatsappShort}
+                  <span class="sr-only">({t.a11y.newTab})</span>
+                </a>
+              )
+            }
+          </div>
+        </div>
       </div>
       <div class="px-5 pt-8">
         <p class="mb-3 type-label text-navy-300">{t.a11y.language}</p>
         <LanguageSwitcher locale={locale} path={path} variant="grid" />
       </div>
-      <div class="mt-auto space-y-1 border-t border-white/10 px-5 pt-5 pb-8 text-sm text-navy-200">
+      <div class="lc-drawer-foot mt-auto space-y-1 border-t border-white/10 px-5 pt-5 text-sm text-navy-200">
         <a href={`tel:${SITE.phone.tel}`} class="flex min-h-11 items-center gap-3 hover:text-white">
           <Icon name="phone" size={18} class="text-royal-300" />
+          <span class="sr-only">{t.contact.phone}{colon(locale)}</span>
           <span class="ltr" dir="ltr">{SITE.phone.display}</span>
         </a>
-        <a href={`mailto:${SITE.email}`} class="flex min-h-11 items-center gap-3 hover:text-white">
-          <Icon name="mail" size={18} class="text-royal-300" />
-          <span class="ltr" dir="ltr">{SITE.email}</span>
-        </a>
+        <div class="flex items-center justify-between gap-3">
+          <a href={mail} class="flex min-h-11 min-w-0 items-center gap-3 hover:text-white">
+            <Icon name="mail" size={18} class="text-royal-300" />
+            <span class="sr-only">{t.contact.email}{colon(locale)}</span>
+            <Fragment set:html={ltr(SITE.email)} />
+          </a>
+          <CopyEmail locale={locale} />
+        </div>
+        <MotionToggle variant="drawer" locale={locale} class="mt-4" />
       </div>
     </div>
   </dialog>
@@ -248,11 +445,18 @@ const foreignState = currentState(FOREIGN_PATH, path);
       backdrop-filter: blur(14px) saturate(1.3);
     }
   }
-  /* Over a dark hero and not yet scrolled: fully transparent. */
-  .lc-header[data-hero]:not([data-scrolled]) .lc-header-bg {
+  /* Over a dark hero and not yet scrolled: fully transparent (a dropdown being open also counts as "scrolled"). */
+  .lc-header[data-hero]:not([data-scrolled]):not(:has(.lc-dd-panel:not([hidden]))) .lc-header-bg {
     background: transparent;
     box-shadow: none;
     backdrop-filter: none;
+  }
+  /* Landscape phones (≈340px of usable height): a pinned 64px bar would take a fifth of the screen. */
+  @media (max-height: 30rem) and (max-width: 63.99rem) {
+    .lc-header {
+      position: relative;
+      top: 0 !important;
+    }
   }
 
   /* Hover: a slanted bar slides in from the inline start and leaves towards the inline end (origin flips).
@@ -265,6 +469,10 @@ const foreignState = currentState(FOREIGN_PATH, path);
     bottom: 0.125rem;
     height: 3px;
     transform: skewX(calc(-1 * var(--slant)));
+  }
+  .lc-dd .lc-nav-link::after,
+  .lc-dd .lc-nav-ind {
+    inset-inline-end: 0.25rem;
   }
   .lc-nav-link::after {
     background: rgb(255 255 255 / 0.4);
@@ -289,8 +497,73 @@ const foreignState = currentState(FOREIGN_PATH, path);
   :global([dir="rtl"]) .lc-nav-ind {
     transform: skewX(var(--slant));
   }
+  /* Forced colours drop background colours: keep the "you are here" bar as a system colour. */
+  @media (forced-colors: active) {
+    .lc-nav-ind {
+      forced-color-adjust: none;
+      background: Highlight;
+    }
+  }
 
-  /* Drawer: full-height sheet from the inline-end edge. */
+  /* Desktop dropdown panel: under its item, aligned to the item's inline start; drops a few px into place. */
+  .lc-dd-panel {
+    position: absolute;
+    top: calc(100% - 0.375rem);
+    inset-inline-start: -0.5rem;
+    z-index: 10;
+    width: max-content;
+    min-width: 17rem;
+    max-width: min(40rem, calc(100vw - 2 * var(--spacing-gutter)));
+    max-height: calc(100dvh - var(--header-h) - 1rem);
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    opacity: 1;
+    translate: 0 0;
+    transition:
+      opacity var(--dur-micro) var(--ease-exit),
+      translate var(--dur-micro) var(--ease-exit),
+      display var(--dur-micro) allow-discrete;
+  }
+  .lc-dd-panel[hidden] {
+    display: none;
+    opacity: 0;
+    translate: 0 calc(-1 * var(--move-ui));
+  }
+  .lc-dd-panel:not([hidden]) {
+    transition-duration: var(--dur-ui);
+    transition-timing-function: var(--ease-mech);
+  }
+  @starting-style {
+    .lc-dd-panel:not([hidden]) {
+      opacity: 0;
+      translate: 0 calc(-1 * var(--move-ui));
+    }
+  }
+  .lc-dd-panel .lc-dd-link {
+    min-width: 13rem;
+  }
+  .lc-dd-chev,
+  .lc-acc-chev {
+    transition: rotate var(--dur-ui) var(--ease-mech);
+  }
+  .lc-dd-btn[aria-expanded="true"] .lc-dd-chev,
+  .lc-acc-btn[aria-expanded="true"] .lc-acc-chev {
+    rotate: 180deg;
+  }
+  .lc-dd-btn[aria-expanded="true"] {
+    color: var(--color-white);
+  }
+  @media (pointer: coarse) {
+    .lc-dd-btn {
+      width: 2.5rem;
+    }
+    .lc-menu-open {
+      width: 2.75rem;
+      height: 2.75rem;
+    }
+  }
+
+  /* Drawer: full-height sheet from the inline-end edge, clear of the notch / home indicator (viewport-fit=cover). */
   .lc-drawer {
     position: fixed;
     inset: 0;
@@ -300,10 +573,17 @@ const foreignState = currentState(FOREIGN_PATH, path);
     height: 100dvh;
     max-height: 100dvh;
     margin: 0;
-    padding: 0;
+    padding: env(safe-area-inset-top, 0px) env(safe-area-inset-right, 0px) 0 0;
     border: 0;
     overflow-y: auto;
     overscroll-behavior: contain;
+  }
+  :global([dir="rtl"]) .lc-drawer {
+    padding-right: 0;
+    padding-left: env(safe-area-inset-left, 0px);
+  }
+  .lc-drawer-foot {
+    padding-bottom: max(2rem, calc(env(safe-area-inset-bottom, 0px) + 1rem));
   }
   .lc-drawer::backdrop {
     background: rgb(4 14 39 / 0.6);
@@ -322,6 +602,7 @@ const foreignState = currentState(FOREIGN_PATH, path);
   }
   .lc-drawer {
     translate: var(--drawer-from, var(--move-slide)) 0;
+    contain: layout style;
   }
   .lc-drawer[open],
   .lc-drawer[open]::backdrop {
@@ -369,7 +650,74 @@ const foreignState = currentState(FOREIGN_PATH, path);
         { passive: true },
       );
     }
-    // Mobile drawer.
+
+    /* ---- Desktop disclosure menus (Services, Industries) ---- */
+    const items = [...header.querySelectorAll<HTMLElement>("[data-dd]")];
+    const parts = (li: HTMLElement) => ({
+      btn: li.querySelector<HTMLButtonElement>(".lc-dd-btn")!,
+      panel: li.querySelector<HTMLElement>(".lc-dd-panel")!,
+    });
+    const isOpen = (li: HTMLElement) => parts(li).btn.getAttribute("aria-expanded") === "true";
+    const setOpen = (li: HTMLElement, open: boolean) => {
+      const { btn, panel } = parts(li);
+      if (open) items.forEach((other) => other !== li && setOpen(other, false));
+      btn.setAttribute("aria-expanded", String(open));
+      panel.hidden = !open;
+    };
+    const links = (li: HTMLElement) => [...parts(li).panel.querySelectorAll<HTMLAnchorElement>("a")];
+    const hoverable = matchMedia("(hover: hover) and (pointer: fine)");
+    items.forEach((li) => {
+      const { btn, panel } = parts(li);
+      let timer = 0;
+      btn.addEventListener("click", () => setOpen(li, !isOpen(li)));
+      btn.addEventListener("keydown", (e) => {
+        if (e.key === "ArrowDown") {
+          e.preventDefault();
+          setOpen(li, true);
+          links(li)[0]?.focus();
+        }
+      });
+      li.addEventListener("keydown", (e) => {
+        if (e.key === "Escape" && isOpen(li)) {
+          e.preventDefault();
+          setOpen(li, false);
+          btn.focus();
+        }
+      });
+      // Arrow keys move between the panel's links (Home / End jump to the ends).
+      panel.addEventListener("keydown", (e) => {
+        const list = links(li);
+        const i = list.indexOf(document.activeElement as HTMLAnchorElement);
+        if (i < 0) return;
+        const next = { ArrowDown: i + 1, ArrowUp: i - 1, Home: 0, End: list.length - 1 }[e.key];
+        if (next === undefined) return;
+        e.preventDefault();
+        if (next < 0) btn.focus();
+        else list[Math.min(next, list.length - 1)]?.focus();
+      });
+      li.addEventListener("focusout", (e) => {
+        const to = e.relatedTarget as Node | null;
+        if (!to || !li.contains(to)) setOpen(li, false);
+      });
+      // Hover intent (mouse only): open after a short rest, close after a short grace period.
+      li.addEventListener("pointerenter", (e) => {
+        if (e.pointerType !== "mouse" || !hoverable.matches) return;
+        clearTimeout(timer);
+        timer = window.setTimeout(() => setOpen(li, true), 140);
+      });
+      li.addEventListener("pointerleave", (e) => {
+        if (e.pointerType !== "mouse") return;
+        clearTimeout(timer);
+        timer = window.setTimeout(() => {
+          if (!li.contains(document.activeElement)) setOpen(li, false);
+        }, 260);
+      });
+    });
+    document.addEventListener("click", (e) => {
+      items.forEach((li) => !li.contains(e.target as Node) && isOpen(li) && setOpen(li, false));
+    });
+
+    /* ---- Mobile drawer ---- */
     const drawer = header.querySelector<HTMLDialogElement>("#lc-drawer");
     const opener = header.querySelector<HTMLButtonElement>(".lc-menu-open");
     if (drawer && opener) {
@@ -382,6 +730,16 @@ const foreignState = currentState(FOREIGN_PATH, path);
       // Click on the backdrop closes the sheet.
       drawer.addEventListener("click", (e) => {
         if (e.target === drawer) drawer.close();
+      });
+      // Services / Industries accordions.
+      drawer.querySelectorAll<HTMLButtonElement>(".lc-acc-btn").forEach((btn) => {
+        btn.addEventListener("click", () => {
+          const list = document.getElementById(btn.getAttribute("aria-controls") ?? "");
+          if (!list) return;
+          const open = btn.getAttribute("aria-expanded") !== "true";
+          btn.setAttribute("aria-expanded", String(open));
+          list.hidden = !open;
+        });
       });
       // Close if the viewport grows to desktop while open.
       matchMedia("(min-width: 64rem)").addEventListener("change", (e) => e.matches && drawer.close());

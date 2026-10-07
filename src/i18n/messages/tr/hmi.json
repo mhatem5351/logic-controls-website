@@ -19,15 +19,23 @@
       }
     ],
     "ctaQuestion": "Makineniz için böyle bir HMI ister misiniz?",
-    "cta": "Teklif isteyin",
-    "try": "Deneyin: “Başlat” düğmesine basın, “İleri” durumunu bekleyin, ardından “Arıza simüle et” düğmesine basın."
+    "cta": "Teklif isteyin"
   },
   "caption": "ISA-101 yüksek performanslı HMI ilkeleri esas alınarak tasarlanmış simüle 10,1″ operatör paneli: her şey normalken gri, renk yalnızca anormal durumlarda, dokunabileceğiniz her şey mavi.",
   "a11y": {
     "panel": "Etkileşimli pastörizatör HMI simülasyonu",
     "mimic": "Proses şeması: ham ürün tankı, denge tankı, besleme pompası, rejenerasyon, ısıtma ve soğutma bölümlerine sahip plakalı eşanjör, sıcak su devresi, bekletme borusu, akış yönlendirme vanası ve depolama tankı. Canlı değerler proses panelinde listelenir.",
     "trend": "Son 60 saniyenin sıcaklık trendi",
-    "led": "Panel durum lambaları"
+    "state": "Durum",
+    "sim": "Simülasyon, gerçek zamanın 3 katı hızda"
+  },
+  "tour": {
+    "label": "Deneyin",
+    "start": "Başlat'a basın",
+    "forward": "İleri durumunu bekleyin",
+    "fault": "Arıza simüle edin",
+    "ack": "Alarmları onaylayın",
+    "done": "tamamlandı"
   },
   "status": {
     "unit": "HTST-01 Pastörizatör",
@@ -61,8 +69,7 @@
     "steam": "Buhar",
     "iceWater": "Buzlu su",
     "cipSupply": "CIP besleme",
-    "drain": "Drenaja",
-    "locked": "Kilitleme"
+    "drain": "Drenaja"
   },
   "kpi": {
     "title": "Proses",
@@ -75,9 +82,7 @@
     "flow": "Debi",
     "hw": "Sıcak su",
     "valve": "Buhar vanası",
-    "outlet": "Ürün çıkışı",
-    "batch": "Parti",
-    "forwarded": "Gönderilen"
+    "batch": "Parti"
   },
   "recipe": {
     "title": "Reçete",
@@ -92,7 +97,9 @@
     "temp": "TT-102 ≥ {limit} °C",
     "check": "{s} s boyunca korundu (kontrol süresi)",
     "dp": "Rejen. ΔP: pastörize > ham",
-    "hold": "Bekletme süresi ≥ {hold} s"
+    "hold": "Bekletme süresi ≥ {hold} s",
+    "met": "sağlandı",
+    "notMet": "sağlanmadı"
   },
   "controls": {
     "run": "Çalıştırma",
@@ -146,7 +153,10 @@
     "evRecipe": "Reçete değiştirildi: {arg}",
     "evCip": "CIP döngüsü başladı",
     "evCipDone": "CIP döngüsü tamamlandı",
-    "evCipAbort": "CIP döngüsü iptal edildi"
+    "evCipAbort": "CIP döngüsü iptal edildi",
+    "srcSeq": "SEKANS",
+    "srcMode": "MOD",
+    "srcRcp": "REÇETE"
   },
   "msg": {
     "idle": "Pastörizatörü çalıştırmak için Başlat'a basın.",
@@ -161,7 +171,14 @@
     "acked": "Alarmlar onaylandı.",
     "fdvFwd": "FDV ileri.",
     "fdvDiv": "FDV geri dönüş.",
-    "alarm": "{prio} öncelikli alarm: {text}"
+    "alarm": "{prio} öncelikli alarm: {text}",
+    "press": "Pastörizatörü çalıştırmak için {key} düğmesine basın.",
+    "faultEta": "Buhar basıncı düştü. Limit sıcaklığın altındaki ürün yaklaşık {s} s içinde TT-102 noktasına ulaşacak.",
+    "recoveredAck": "Sıcaklık toparlandı: ürün yeniden ileri gidiyor. Alarmları temizlemek için Onayla'ya basın.",
+    "allClear": "Tüm alarmlar onaylandı. Parti {batch} normal çalışıyor.",
+    "faultNeedsRun": "Önce üretimi başlatın: arıza, tesis çalışırken buhar beslemesinin kesilmesini simüle eder.",
+    "faultInCip": "CIP yıkaması sırasında arıza simülasyonu yapılamaz.",
+    "noAlarms": "Onaylanacak alarm yok."
   },
   "cip": {
     "title": "CIP programı",
@@ -170,7 +187,8 @@
     "caustic": "Kostik yıkama",
     "rinse": "Ara durulama",
     "acid": "Asit yıkama",
-    "final": "Son durulama"
+    "final": "Son durulama",
+    "done": "tamamlandı"
   },
   "loop": {
     "eyebrow": "Otomasyon nasıl çalışır",

@@ -1,12 +1,25 @@
 @import "tailwindcss";
 /* Motion system (page transitions, scroll reveals, micro-interactions). Tokens live in this file, below. */
 @import "./motion.css";
+/* Print styles (DEV-07) live in ./print.css, loaded by BaseLayout as a separate media="print" stylesheet: it never
+   blocks rendering and its ~1 KB gzip stays out of this file. */
 
-/* Only scan site sources for class names (research notes and client dumps are not UI). */
+/* Only scan site sources for class names (research notes, client dumps, tests, tooling and docs are not UI, and
+   changes there must not change the stylesheet's hash). Production builds also skip the dev-only pages
+   (astro.config.mjs, "lc-prod-css-sources": it relies on the `worker` line below as its anchor). */
 @source not "../../research";
 @source not "../../client-data";
 @source not "../../dist";
+@source not "../../tests";
+@source not "../../scripts";
+@source not "../../docs";
+@source not "../../integrations";
+@source not "../../*.md";
+@source not "../**/*.md";
 @source not "../../worker";
+
+/* Inside a dark surface (an ancestor with the `on-dark` utility): `on-dark:text-white`. */
+@custom-variant on-dark (:where(.on-dark) &);
 
 /*
  * Logic Controls — design tokens
@@ -89,7 +102,11 @@
   --color-success-700: #15703d;
   --color-danger-500: #e5484d;
   --color-danger-700: #b42318;
-  --color-whatsapp: #1fa855; /* white text 3.0:1 → icon-only use; button label uses navy-950 text */
+  /* WhatsApp greens (icons and the floating button only, never text): 500 = the brand green, for icons on dark
+     surfaces; 700 = icons on light surfaces and the FAB fill (white icon 4.5:1); 800 = hover of a 700 fill. */
+  --color-whatsapp-500: #25d366;
+  --color-whatsapp-700: #128c4a;
+  --color-whatsapp-800: #0f7a40;
 
   /* Type scale — fluid between 360px and 1440px viewports. */
   --text-xs: 0.75rem;
@@ -147,7 +164,6 @@
   --ease-emph: cubic-bezier(0.16, 1, 0.3, 1);
   --ease-inout: cubic-bezier(0.65, 0, 0.35, 1);
   --ease-exit: cubic-bezier(0.4, 0, 1, 1);
-  --ease-out-expo: var(--ease-emph); /* legacy alias */
 
   --animate-trace-draw: trace-draw 2.2s var(--ease-emph) both;
 
@@ -158,8 +174,8 @@
 }
 
 @theme inline {
-  --font-sans: var(--font-latin);
-  --font-ar: var(--font-arabic);
+  /* --font-latin (astro.config.mjs) has no generic family at its end; every stack built on it adds one. */
+  --font-sans: var(--font-latin), system-ui, sans-serif;
   --font-mono: ui-monospace, "SFMono-Regular", "SF Mono", "Cascadia Mono", "Segoe UI Mono", "Roboto Mono", Menlo, Consolas, "Liberation Mono", monospace;
 }
 
@@ -168,7 +184,6 @@
   :root {
     /* The logo's italic slant, measured on the "L" stem and the gear's top cut: ~10°. */
     --slant: 10deg;
-    --slant-tan: 0.1763;
     --header-h: 4rem;
     --utility-h: 0px;
     --focus: var(--color-royal-500);
@@ -220,7 +235,12 @@
     -webkit-text-size-adjust: 100%;
     text-size-adjust: 100%;
     scroll-padding-top: calc(var(--header-h) + 1rem);
+    /* Keyboard focus scrolled into view at the bottom edge clears the floating WhatsApp / email button (56px). */
+    scroll-padding-bottom: 5rem;
     font-synthesis: none;
+    /* The page starts with a navy header and ends with a navy footer: rubber-band overscroll shows navy, not white
+       (body keeps its white background, so only the overscroll canvas changes). */
+    background-color: var(--color-navy-950);
   }
   html:lang(ar) {
     /* Arabic reads ~10% smaller than Latin at the same size: bump the root size (everything is rem-based). */
@@ -237,18 +257,37 @@
 
   /* Script-specific font stacks. Arabic pages load Alexandria (Arabic + Latin subsets, designed as
      Montserrat's Arabic companion); Chinese uses the OS CJK face with Montserrat for Latin/digits. */
-  :lang(ar) {
-    font-family: var(--font-arabic);
+  :root {
+    /* Arabic text: Alexandria where the page loads it (Arabic pages, 404). Elsewhere the only Arabic is the language
+       switcher's "العربية" / "ع": the 4 KB "LC Arabic Label" cut of Alexandria (BaseLayout.astro), then its
+       metric-matched Tahoma fallback (same width ±2 px, so the swap moves nothing), then OS faces — never the Latin
+       stack's Arial (I18N-13). */
+    --font-ar-text: var(--font-arabic, "LC Arabic Label", "LC Alexandria Fallback", "Geeza Pro", "Segoe UI", "Noto Sans Arabic", Tahoma, sans-serif);
+    /* Chinese: “ ” —— …… from the OS CJK face ("LC CJK Punct", end of this file: Montserrat's Latin quotes and dashes
+       read as typos next to Han, I18N-04), Montserrat for Latin / digits, then the CJK faces by name, all before the
+       generics (a generic first would pick an arbitrary CJK face for Han, e.g. a JP-variant one, I18N-12). */
+    --font-zh: "LC CJK Punct", var(--font-latin), "PingFang SC", "Hiragino Sans GB", "Heiti SC", "Microsoft YaHei UI",
+      "Microsoft YaHei", "HarmonyOS Sans SC", "Noto Sans CJK SC", "Source Han Sans SC", "WenQuanYi Micro Hei", system-ui,
+      sans-serif;
   }
-  /* Latin-language islands inside Arabic pages (language names, codes) use Montserrat. Matching the element
-     that carries the lang attribute (not every descendant) lets font utilities on it still win. */
-  :lang(ar) [lang="en"],
-  :lang(ar) [lang="tr"] {
-    font-family: var(--font-latin);
+  :lang(ar) {
+    font-family: var(--font-ar-text);
+  }
+  /* Latin-language islands inside Arabic pages (codes, tech names) use Montserrat. Matching the element that carries
+     the lang attribute (not every descendant) lets font utilities on it still win. Exceptions keep the page's
+     Alexandria (it has Latin, ü ç included): the <bdi lang="en"> runs src/lib/text.ts isolates in Arabic sentences
+     (lang only switches the screen-reader voice there, A11Y-38), and the language switcher (next rule). */
+  :lang(ar) :is([lang="en"], [lang="tr"]):not(bdi, [data-set-lang], .lc-lang-btn [lang]) {
+    font-family: var(--font-latin), system-ui, sans-serif;
   }
   :lang(zh-Hans) {
-    font-family: var(--font-latin), "PingFang SC", "Hiragino Sans GB", "Heiti SC", "Microsoft YaHei UI", "Microsoft YaHei",
-      "HarmonyOS Sans SC", "Noto Sans CJK SC", "Source Han Sans SC", "WenQuanYi Micro Hei", sans-serif;
+    font-family: var(--font-zh);
+  }
+  /* Arabic pages: the switcher's "English" / "Türkçe" / "中文" / "EN" stay in the page font (Han falls back per
+     character to the OS CJK face). In the Latin or zh stack they made every Arabic page fetch the 38 KB Montserrat file,
+     for ~15 letters or just for line metrics (the first font of a stack that covers U+0020 is always loaded), PERF-09. */
+  :lang(ar) :is([data-set-lang], .lc-lang-btn [lang]) {
+    font-family: var(--font-ar-text);
   }
   :lang(ar) body,
   body:lang(ar) {
@@ -312,13 +351,20 @@
   max-width: calc(var(--container-site) + 2 * var(--spacing-gutter));
   margin-inline: auto;
   padding-inline: var(--spacing-gutter);
+  /* PK2 (viewport-fit=cover): keep content clear of the notch / rounded corners in landscape. Insets are physical. */
+  padding-left: max(var(--spacing-gutter), env(safe-area-inset-left, 0px));
+  padding-right: max(var(--spacing-gutter), env(safe-area-inset-right, 0px));
 }
 
-/* Dark surfaces switch the focus colour to amber so the ring is visible on navy. */
+/* Dark surfaces switch the focus colour to amber so the ring is visible on navy. Only for descendants: a dark box
+   that draws its own ring outside itself (a dark card on a white section) keeps the surface's royal ring (amber on
+   white is 1.56:1, royal-500 is 4.25:1). */
 @utility on-dark {
-  --focus: var(--color-signal-300);
   color: var(--color-navy-100);
   color-scheme: dark;
+  & :where(*) {
+    --focus: var(--color-signal-300);
+  }
 }
 
 /* ------------------------------------------------------------------ typography utilities */
@@ -418,13 +464,13 @@
   letter-spacing: 0.12em;
   text-transform: uppercase;
   &:where(:lang(ar)) {
-    font-family: var(--font-arabic);
+    font-family: var(--font-ar-text);
     font-size: 0.8125rem;
     font-weight: 600;
     text-transform: none;
   }
   &:where(:lang(zh-Hans)) {
-    font-family: var(--font-latin), "PingFang SC", "Microsoft YaHei", "Noto Sans CJK SC", sans-serif;
+    font-family: var(--font-zh);
     font-size: 0.8125rem;
     font-weight: 600;
     text-transform: none;
@@ -446,8 +492,10 @@
     color: var(--color-royal-600);
     text-decoration: underline;
   }
-  & a:hover {
-    color: var(--color-royal-800);
+  @media (hover: hover) {
+    & a:hover {
+      color: var(--color-royal-800);
+    }
   }
   & ul {
     list-style: none;
@@ -466,6 +514,10 @@
     height: 0.3em;
     background: var(--color-royal-600);
     transform: skewX(calc(-1 * var(--slant)));
+  }
+  /* RTL mirrors the slant, like every other 10° accent (buttons, chamfers, card bars). */
+  &:where([dir="rtl"] *) ul > li::before {
+    transform: skewX(var(--slant));
   }
   & strong {
     color: var(--color-charcoal-900);
@@ -497,12 +549,6 @@
 /* Fade a decorative layer out towards the edges. */
 @utility mask-fade-edges {
   mask-image: radial-gradient(ellipse 80% 70% at 50% 40%, #000 30%, transparent 80%);
-}
-@utility mask-fade-start {
-  mask-image: linear-gradient(to right, transparent, #000 35%);
-  &:where(:dir(rtl), [dir="rtl"] *) {
-    mask-image: linear-gradient(to left, transparent, #000 35%);
-  }
 }
 
 /* The logo's ~10° italic slant as a parallelogram accent (eyebrows, list bullets, step markers). */
@@ -552,14 +598,6 @@
     clip-path: polygon(0 0, 100% var(--angle-h), 100% 100%, 0 100%);
   }
 }
-@utility angle-bottom {
-  --angle-h: clamp(1.75rem, 4.2vw, 4.5rem);
-  clip-path: polygon(0 0, 100% 0, 100% calc(100% - var(--angle-h)), 0 100%);
-  padding-block-end: calc(var(--spacing-section) + var(--angle-h));
-  &:where(:dir(rtl), [dir="rtl"] *) {
-    clip-path: polygon(0 0, 100% 0, 100% 100%, 0 calc(100% - var(--angle-h)));
-  }
-}
 @utility angle-both {
   --angle-h: clamp(1.75rem, 4.2vw, 4.5rem);
   clip-path: polygon(0 var(--angle-h), 100% 0, 100% calc(100% - var(--angle-h)), 0 100%);
@@ -570,7 +608,7 @@
   }
 }
 
-/* ------------------------------------------------------------------ circuit traces (Hero / CtaBand) */
+/* ------------------------------------------------------------------ circuit traces (Hero, 404) */
 @layer components {
   .lc-traces path,
   .lc-traces circle {
@@ -647,6 +685,10 @@
 
 /* ------------------------------------------------------------------ buttons (<Button>) */
 @layer components {
+  /* A label that needs two lines (long tr / ar CTAs) splits into two even lines, never one word left alone. */
+  .lc-btn-label {
+    text-wrap: balance;
+  }
   .lc-btn {
     --cut: 10px;
     --btn-bg: transparent;
@@ -719,16 +761,20 @@
     background-image: linear-gradient(to bottom right, transparent calc(50% - 0.75px), var(--btn-border) calc(50% - 0.75px), var(--btn-border) calc(50% + 0.75px), transparent calc(50% + 0.75px));
     background-position: top left;
   }
-  .lc-btn:hover {
-    color: var(--btn-fg-hover);
-  }
-  .lc-btn:hover::before {
-    background-color: var(--btn-bg-hover);
-    border-color: var(--btn-border-hover);
-    background-image: linear-gradient(to bottom left, transparent calc(50% - 0.75px), var(--btn-border-hover) calc(50% - 0.75px), var(--btn-border-hover) calc(50% + 0.75px), transparent calc(50% + 0.75px));
-  }
-  [dir="rtl"] .lc-btn:hover::before {
-    background-image: linear-gradient(to bottom right, transparent calc(50% - 0.75px), var(--btn-border-hover) calc(50% - 0.75px), var(--btn-border-hover) calc(50% + 0.75px), transparent calc(50% + 0.75px));
+  /* Hover colours only where hover is real: on touch screens a tapped button (e.g. "Continue" with an empty form,
+     which does not navigate) would otherwise keep its hover look until the next tap elsewhere. */
+  @media (hover: hover) {
+    .lc-btn:hover {
+      color: var(--btn-fg-hover);
+    }
+    .lc-btn:hover::before {
+      background-color: var(--btn-bg-hover);
+      border-color: var(--btn-border-hover);
+      background-image: linear-gradient(to bottom left, transparent calc(50% - 0.75px), var(--btn-border-hover) calc(50% - 0.75px), var(--btn-border-hover) calc(50% + 0.75px), transparent calc(50% + 0.75px));
+    }
+    [dir="rtl"] .lc-btn:hover::before {
+      background-image: linear-gradient(to bottom right, transparent calc(50% - 0.75px), var(--btn-border-hover) calc(50% - 0.75px), var(--btn-border-hover) calc(50% + 0.75px), transparent calc(50% + 0.75px));
+    }
   }
   /* Press: instant travel down (a switch), eased return on release. */
   .lc-btn:active {
@@ -794,10 +840,12 @@
   .lc-btn[data-variant="ghost"]::before {
     display: none;
   }
-  .lc-btn[data-variant="ghost"]:hover .lc-btn-label {
-    text-decoration: underline;
-    text-decoration-thickness: 1px;
-    text-underline-offset: 0.25em;
+  @media (hover: hover) {
+    .lc-btn[data-variant="ghost"]:hover .lc-btn-label {
+      text-decoration: underline;
+      text-decoration-thickness: 1px;
+      text-underline-offset: 0.25em;
+    }
   }
   .on-dark .lc-btn[data-variant="ghost"] {
     --btn-fg: var(--color-royal-300);
@@ -846,6 +894,38 @@
   }
 }
 
+/* ==== PK5 type ==== (text engine hooks: src/lib/text.ts)
+   - Any heading: a word or atom wider than its line breaks instead of overflowing, and only then (`break-word` does
+     not lower min-content, so grids and cards keep their widths). Covers zoom / WCAG 1.4.12 text spacing.
+   - Turkish: html() inserts soft hyphens (U+00AD) at syllable boundaries in words of 13+ letters
+     ("otomatik-leştiriyorsunuz" at a line end). They are active in headings only; body text keeps whole words.
+   - `.lc-nws` (names made only of words: "Logic Controls", "Wecon HMI"): in headings on very narrow screens they may
+     break at their space rather than push the page sideways. Codes ("S7-1200", "IEC 60204-1") stay whole. */
+@layer base {
+  h1,
+  h2,
+  h3,
+  h4 {
+    overflow-wrap: break-word;
+  }
+  html:lang(tr) {
+    -webkit-hyphens: none;
+    hyphens: none;
+  }
+  :lang(tr) :is(h1, h2, h3, h4, .type-display, .type-h1, .type-h2, .type-h3, .type-h4) {
+    -webkit-hyphens: manual;
+    hyphens: manual;
+  }
+}
+@layer components {
+  @media (max-width: 26rem) {
+    :is(h1, h2, h3, .type-display, .type-h1, .type-h2) .lc-nws {
+      white-space: normal;
+    }
+  }
+}
+/* ==== /PK5 type ==== */
+
 /* ------------------------------------------------------------------ metric-matched font fallbacks (no CLS on font swap)
    Shown until Montserrat / Alexandria arrive (font-display: swap); sized so the text wraps the same way, so the
    swap does not move the layout. astro.config.mjs lists these families as the fallbacks (optimizedFallbacks: false):
@@ -876,3 +956,229 @@
 @font-face { font-family: "LC Alexandria Fallback"; src: local("Arial Bold"), local("Arial-BoldMT"); font-style: normal; font-weight: 550 649; size-adjust: 104.10%; ascent-override: 92.99%; descent-override: 24.11%; line-gap-override: 0%; unicode-range: U+0000-05FF, U+0780-086F, U+1E00-1EFF, U+2000-206F, U+20A0-20C0, U+2100-218F, U+2190-21FF, U+2200-22FF, U+FEFF, U+FFFD; }
 @font-face { font-family: "LC Alexandria Fallback"; src: local("Arial Bold"), local("Arial-BoldMT"); font-style: normal; font-weight: 650 749; size-adjust: 105.10%; ascent-override: 92.10%; descent-override: 23.88%; line-gap-override: 0%; unicode-range: U+0000-05FF, U+0780-086F, U+1E00-1EFF, U+2000-206F, U+20A0-20C0, U+2100-218F, U+2190-21FF, U+2200-22FF, U+FEFF, U+FFFD; }
 @font-face { font-family: "LC Alexandria Fallback"; src: local("Arial Bold"), local("Arial-BoldMT"); font-style: normal; font-weight: 750 900; size-adjust: 106.10%; ascent-override: 91.23%; descent-override: 23.66%; line-gap-override: 0%; unicode-range: U+0000-05FF, U+0780-086F, U+1E00-1EFF, U+2000-206F, U+20A0-20C0, U+2100-218F, U+2190-21FF, U+2200-22FF, U+FEFF, U+FFFD; }
+
+/* "LC CJK Punct" (first in --font-zh): Chinese quotes “ ”, dash —— and ellipsis …… from the OS CJK face (PingFang SC,
+   Hiragino Sans GB, Microsoft YaHei, Noto Sans CJK SC / Source Han Sans SC), not Montserrat's narrow Latin forms.
+   local() only: nothing is downloaded. Not included: · (U+00B7) — the zh copy uses it mostly between Latin items
+   ("PT100 · 4–20 mA", "ft·lb"), where PingFang's 0.49 em dot would be too wide —, – (ranges such as 4–20) and ‘ ’ (not in
+   the zh copy; Latin apostrophes in names must stay Latin). */
+@font-face { font-family: "LC CJK Punct"; src: local("PingFangSC-Regular"), local("PingFang SC Regular"), local("HiraginoSansGB-W3"), local("Hiragino Sans GB W3"), local("MicrosoftYaHei"), local("Microsoft YaHei"), local("NotoSansCJKsc-Regular"), local("Noto Sans CJK SC Regular"), local("NotoSansSC-Regular"), local("Noto Sans SC Regular"), local("SourceHanSansSC-Regular"), local("Source Han Sans SC Regular"); font-style: normal; font-weight: 100 549; unicode-range: U+2014-2015, U+201C-201D, U+2026; }
+@font-face { font-family: "LC CJK Punct"; src: local("PingFangSC-Semibold"), local("PingFang SC Semibold"), local("HiraginoSansGB-W6"), local("Hiragino Sans GB W6"), local("MicrosoftYaHei-Bold"), local("Microsoft YaHei Bold"), local("NotoSansCJKsc-Bold"), local("Noto Sans CJK SC Bold"), local("NotoSansSC-Bold"), local("Noto Sans SC Bold"), local("SourceHanSansSC-Bold"), local("Source Han Sans SC Bold"); font-style: normal; font-weight: 550 900; unicode-range: U+2014-2015, U+201C-201D, U+2026; }
+
+/* ==== PK1 cards/grids ==== */
+@layer components {
+  /*
+   * Card grids — services (`lc-grid-services`) and industries (`lc-grid-industries`): 1 → 2 (sm) → 3 (lg) → 4 (xl)
+   * columns, never 4-up below 1280px (cards would be ~225px wide). Built on a doubled track count, each card spans
+   * two tracks, so an incomplete last row is centred instead of leaving a hole (8 cards at 3-up: 3 · 3 · 2 centred).
+   * Use the class alone (no grid-cols-* utilities, they would override the tracks); `hidden md:grid` still works.
+   */
+  .lc-grid-services,
+  .lc-grid-industries {
+    display: grid;
+    gap: 1.25rem;
+    grid-template-columns: minmax(0, 1fr);
+  }
+  :is(.lc-grid-services, .lc-grid-industries) > * {
+    min-width: 0;
+    --col: 0;
+  }
+  @media (min-width: 40rem) {
+    :is(.lc-grid-services, .lc-grid-industries) {
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+    }
+    :is(.lc-grid-services, .lc-grid-industries) > * {
+      grid-column: span 2;
+    }
+  }
+  @media (min-width: 64rem) {
+    :is(.lc-grid-services, .lc-grid-industries) {
+      grid-template-columns: repeat(6, minmax(0, 1fr));
+    }
+  }
+  @media (min-width: 80rem) {
+    :is(.lc-grid-services, .lc-grid-industries) {
+      grid-template-columns: repeat(8, minmax(0, 1fr));
+    }
+  }
+  /* Centre the last, incomplete row (and give the scroll-reveal cascade its column index). */
+  @media (40rem <= width < 64rem) {
+    :is(.lc-grid-services, .lc-grid-industries) > :nth-child(2n) {
+      --col: 1;
+    }
+    :is(.lc-grid-services, .lc-grid-industries) > :last-child:nth-child(2n + 1) {
+      grid-column: 2 / span 2;
+    }
+  }
+  @media (64rem <= width < 80rem) {
+    :is(.lc-grid-services, .lc-grid-industries) > :nth-child(3n + 2) {
+      --col: 1;
+    }
+    :is(.lc-grid-services, .lc-grid-industries) > :nth-child(3n) {
+      --col: 2;
+    }
+    :is(.lc-grid-services, .lc-grid-industries) > :last-child:nth-child(3n + 1) {
+      grid-column: 3 / span 2;
+    }
+    :is(.lc-grid-services, .lc-grid-industries) > :nth-last-child(2):nth-child(3n + 1) {
+      grid-column: 2 / span 2;
+    }
+  }
+  @media (min-width: 80rem) {
+    :is(.lc-grid-services, .lc-grid-industries) > :nth-child(4n + 2) {
+      --col: 1;
+    }
+    :is(.lc-grid-services, .lc-grid-industries) > :nth-child(4n + 3) {
+      --col: 2;
+    }
+    :is(.lc-grid-services, .lc-grid-industries) > :nth-child(4n) {
+      --col: 3;
+    }
+    :is(.lc-grid-services, .lc-grid-industries) > :last-child:nth-child(4n + 1) {
+      grid-column: 4 / span 2;
+    }
+    :is(.lc-grid-services, .lc-grid-industries) > :nth-last-child(2):nth-child(4n + 1) {
+      grid-column: 3 / span 2;
+    }
+    :is(.lc-grid-services, .lc-grid-industries) > :nth-last-child(3):nth-child(4n + 1) {
+      grid-column: 2 / span 2;
+    }
+  }
+
+  /*
+   * Project card grid (`lc-grid-projects`): 1 → 2 (sm) → 3 (lg), same centred last row (3 related projects on a
+   * tablet: 2 + 1 centred, not a card beside an empty half). Spacing comes from the caller (gap-x-8 gap-y-14).
+   * A filtered list (ProjectBrowser) sets `data-managed` and marks the items to centre itself (data-c2 / data-c3),
+   * because :nth-child also counts the hidden items.
+   */
+  .lc-grid-projects {
+    display: grid;
+    gap: 2rem;
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .lc-grid-projects > * {
+    min-width: 0;
+    --col: 0;
+  }
+  @media (min-width: 40rem) {
+    .lc-grid-projects {
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+    }
+    .lc-grid-projects > * {
+      grid-column: span 2;
+    }
+  }
+  @media (min-width: 64rem) {
+    .lc-grid-projects {
+      grid-template-columns: repeat(6, minmax(0, 1fr));
+    }
+  }
+  @media (40rem <= width < 64rem) {
+    .lc-grid-projects > :nth-child(2n) {
+      --col: 1;
+    }
+    .lc-grid-projects:not([data-managed]) > :last-child:nth-child(2n + 1),
+    .lc-grid-projects[data-managed] > [data-c2] {
+      grid-column: 2 / span 2;
+    }
+  }
+  @media (min-width: 64rem) {
+    .lc-grid-projects > :nth-child(3n + 2) {
+      --col: 1;
+    }
+    .lc-grid-projects > :nth-child(3n) {
+      --col: 2;
+    }
+    .lc-grid-projects:not([data-managed]) > :last-child:nth-child(3n + 1),
+    .lc-grid-projects[data-managed] > [data-c3="1"] {
+      grid-column: 3 / span 2;
+    }
+    .lc-grid-projects:not([data-managed]) > :nth-last-child(2):nth-child(3n + 1),
+    .lc-grid-projects[data-managed] > [data-c3="2"] {
+      grid-column: 2 / span 2;
+    }
+  }
+
+  /* Card title (service / industry / project cards): one size for every card grid, a step under type-h3 so a
+     4-up card never needs 4+ lines. Words are never cut without a hyphen: Latin titles hyphenate long words
+     (html lang drives the dictionary), and break-word is only the last resort for a single over-long token. */
+  .lc-card-title {
+    font-size: clamp(1.125rem, 0.95rem + 0.45vw, 1.375rem);
+    line-height: 1.25;
+    font-weight: 700;
+    letter-spacing: -0.01em;
+    overflow-wrap: break-word;
+  }
+  .lc-card-title:where(:lang(en), :lang(tr)) {
+    hyphens: auto;
+    -webkit-hyphens: auto;
+    hyphenate-limit-chars: 10 4 4;
+  }
+  .lc-card-title:where(:lang(ar), :lang(zh-Hans)) {
+    line-height: 1.45;
+  }
+
+  /* Project photos are untreated site captures with mixed white balance: one light, shared grade + a soft
+     bottom shade so neighbouring cards read as one set (no extra files, the originals stay untouched). */
+  .lc-card-photo img {
+    filter: saturate(0.9) contrast(1.04);
+  }
+
+  /* Stretched-link cards draw their focus ring on the card via :has(); browsers without :has() (Firefox ESR 115,
+     Safari ≤ 15.3) keep the link's own ring instead of losing focus visibility. */
+  @supports selector(:has(a)) {
+    .lc-stretch:focus-visible {
+      outline: none;
+    }
+  }
+}
+
+/* Gallery lightbox: the page behind it never scrolls (touch drags, wheel), and the reserved scrollbar gutter keeps
+   the layout from shifting when the scrollbar is hidden. */
+html:has(.lc-lightbox[open]) {
+  overflow: hidden;
+  scrollbar-gutter: stable;
+}
+.lc-lightbox {
+  overscroll-behavior: contain;
+}
+/* ==== /PK1 cards/grids ==== */
+
+/* ==== PK3 hero/cta/form ==== */
+/* Progressive-enhancement helpers (html.js is set before first paint by BaseLayout): content only for scripted or
+   only for script-less visits, without a layout shift. */
+html.js .lc-nojs,
+html:not(.js) .lc-js {
+  display: none;
+}
+/* Narrow phones (< 400px): the full-width hero / band CTAs keep long labels (Turkish, Arabic) on one line. */
+@media (max-width: 24.99rem) {
+  :is(.lc-hero, .lc-band) .lc-btn[data-size="lg"] {
+    font-size: 0.875rem;
+    padding-inline: 1rem;
+  }
+}
+/* ==== /PK3 hero/cta/form ==== */
+
+/* ==== PK2 home/nav ==== */
+/* Unlayered on purpose: these refine utilities (type-h3, max-w-*) on the same elements. */
+/* About: mission quote (was an inline style that overrode the Arabic / Chinese line-height). Alexandria's tall
+   alef / lam, deep descenders and shadda need room on consecutive bold lines. */
+.lc-mission {
+  font-size: clamp(1.25rem, 1.05rem + 0.75vw, 1.75rem);
+  line-height: 1.35;
+}
+.lc-mission:lang(ar) {
+  line-height: 1.7;
+}
+.lc-mission:lang(zh-Hans) {
+  line-height: 1.6;
+}
+/* Stat labels: balanced, narrow blocks under the figures (one word per line in Arabic otherwise). */
+.lc-stat-label:lang(ar) {
+  max-width: 13ch;
+}
+.lc-stat-label:lang(zh-Hans) {
+  max-width: none;
+}
+/* ==== /PK2 home/nav ==== */

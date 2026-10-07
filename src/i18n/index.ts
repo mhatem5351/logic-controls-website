@@ -1,4 +1,4 @@
-import { LOCALES, LOCALE_META, type Locale } from "./config";
+import { LOCALES, type Locale } from "./config";
 
 export * from "./config";
 
@@ -23,7 +23,7 @@ import type enPrivacy from "./messages/en/privacy.json";
 import type enHmi from "./messages/en/hmi.json";
 import type enTech from "./messages/en/tech.json";
 
-/** Extend this as namespaces are added (keeps `t.<ns>.<key>` fully typed from the English files). */
+/** One entry per namespace file: `t.<ns>.<key>` is fully typed from the English files (a new namespace must be added here). */
 export interface Messages {
   ui: typeof enUi;
   seo: typeof enSeo;
@@ -39,7 +39,6 @@ export interface Messages {
   privacy: typeof enPrivacy;
   hmi: typeof enHmi;
   tech: typeof enTech;
-  [namespace: string]: any;
 }
 
 const MESSAGES = Object.fromEntries(
@@ -61,16 +60,14 @@ export function localePath(locale: Locale, path = ""): string {
   return clean ? `/${locale}/${clean}/` : `/${locale}/`;
 }
 
+const LOCALE_PREFIX = new RegExp(`^/(${LOCALES.join("|")})(/|$)`);
+
 /** Strip the locale prefix from a pathname: "/ar/services/" → "services". */
 export function pathWithoutLocale(pathname: string): string {
-  return pathname.replace(/^\/(en|ar|zh|tr)(\/|$)/, "").replace(/\/+$/, "");
+  return pathname.replace(LOCALE_PREFIX, "").replace(/\/+$/, "");
 }
 
 /** Static paths for a page that exists in every locale. */
 export function localeStaticPaths() {
   return LOCALES.map((lang) => ({ params: { lang } }));
-}
-
-export function dirOf(locale: Locale) {
-  return LOCALE_META[locale].dir;
 }

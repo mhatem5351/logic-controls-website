@@ -41,12 +41,17 @@
     "phone": "电话",
     "whatsapp": "WhatsApp",
     "email": "电子邮箱",
-    "address": "地址",
-    "openInMaps": "在地图中打开"
+    "openInMaps": "在地图中打开",
+    "projectFacts": "项目概况",
+    "allRelatedProjects": "全部相关项目",
+    "fromSite": "现场照片",
+    "callEngineer": "致电工程师",
+    "panelsBuilt": "我们制作的电控柜",
+    "referenceTitle": "与过往客户交流",
+    "referenceText": "经客户许可，我们可以安排您与我们服务过的工厂通话，直接了解合作情况。",
+    "referenceCta": "申请联系参考客户"
   },
   "breadcrumbs": {
-    "label": "面包屑导航",
-    "home": "首页",
     "services": "服务",
     "industries": "行业",
     "projects": "项目案例",
@@ -138,10 +143,6 @@
       "title": "请介绍您的设备或生产线",
       "text": "请发送简要说明和几张照片。工程师审阅后，会向您提出问题或直接报价。"
     },
-    "service": {
-      "title": "您的工厂需要这项服务？",
-      "text": "请描述设备或工艺并附上照片，我们会告诉您报价还需要哪些信息。"
-    },
     "industry": {
       "title": "您也在运营类似的工厂？",
       "text": "请告诉我们您希望自动化、升级或维修的设备或工艺。我们的服务覆盖大开罗地区和埃及各工业区。"
@@ -159,7 +160,7 @@
     "eyebrow": "与您合作的团队",
     "title": "我们是工程师，不是经销商",
     "text": "创始人 Mohammed Tarek Aboalsafa 是一名自动化工程师，拥有 4 年以上经验，为食品饮料、制药及其他行业的工厂设计、编程和调试 PLC、HMI 与 SCADA 系统。",
-    "cta": "了解我们的团队"
+    "cta": "认识我们的创始人"
   },
   "whatsapp": {
     "default": "您好，Logic Controls。我想就一个自动化项目与工程师沟通。\nHello Logic Controls, I would like to talk to an engineer about an automation project.",
@@ -168,7 +169,9 @@
     "industry": "您好，Logic Controls。我从“{industry}”页面联系您，咨询一个自动化项目。\nHello Logic Controls, I am contacting you from the industry page named above about an automation project.",
     "project": "您好，Logic Controls。我看到了案例“{project}”，我们有一台类似的设备。\nHello Logic Controls, I saw the case study named above and have a similar machine.",
     "foreign": "您好，Logic Controls。我们正在埃及建厂，需要一家本地自动化合作伙伴。\nHello Logic Controls, we are setting up a factory in Egypt and need a local automation partner.",
-    "drawings": "您好，Logic Controls。现发送图纸和照片，供报价参考。\nHello Logic Controls, I am sending drawings and photos for a quote."
+    "oem": "您好，Logic Controls。我们是向埃及出口设备的制造商，需要本地调试与服务支持。\nHello Logic Controls, we are a machine builder exporting machines to Egypt and need local commissioning and service support.",
+    "drawings": "您好，Logic Controls。现发送图纸和照片，供报价参考。\nHello Logic Controls, I am sending drawings and photos for a quote.",
+    "stopped": "您好，Logic Controls。我们的设备停机了，需要故障排查支持。设备及品牌：\nHello Logic Controls, my machine is stopped and I need troubleshooting help. Machine and brand:"
   },
   "zones": {
     "title": "服务区域",
@@ -226,8 +229,9 @@
       "distance": "距公司所在地约 {km} 公里（直线距离）",
       "cta": "在{zone}规划项目",
       "homeCta": "联系我们的团队",
-      "close": "关闭",
-      "selected": "已选择{zone}",
+      "selectedPin": "已选择{zone}。详情见地图下方。",
+      "closeDetails": "关闭工业区详情",
+      "keys": "使用方向键在各工业区之间切换。",
       "short": {
         "obour": "奥布尔城",
         "badr": "巴德尔城",
@@ -245,8 +249,7 @@
   },
   "company": {
     "tagline": "为埃及工厂提供 PLC 控制系统与设备自动化",
-    "addressLine": "埃及吉萨省十月六日城",
-    "footerAbout": "位于十月六日城的工业自动化工程团队。我们设计电气控制柜，编写 PLC、HMI 与 SCADA 程序，并在埃及各地为设备和工艺生产线提供现场调试。"
+    "addressLine": "埃及吉萨省十月六日城"
   },
   "notes": {
     "brands": "品牌名称和商标归其各自所有者所有。列出某一品牌，表示我们为该品牌的产品编程并进行集成，并不代表合作伙伴关系。",

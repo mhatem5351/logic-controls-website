@@ -1,0 +1,36 @@
+---
+/**
+ * Illustration fragments for lazy art slots (LazyArt.astro + src/scripts/motion/lazy-art.ts): every piece of one kind,
+ * rendered once, language-neutral. Served as /en/art/services/, /en/art/industries/, /en/art/factory/ for every locale
+ * (built for "en" only: a path outside the locale folders would be a 404 under Astro's prefix-always i18n routing) and
+ * requested as `?v=<ART_VERSION>`, so the response is cached as immutable and shared by every page and locale
+ * (public/_headers). Not a page for people: noindex (meta + X-Robots-Tag) and left out of the sitemap (astro.config.mjs).
+ * Each piece is wrapped in <div data-slug> and keeps its own inline keyframes; the shared vocabulary and play-state
+ * CSS (ArtFrame) is already on the pages that host the slots.
+ */
+import ServiceArt from "~/components/illustrations/ServiceArt.astro";
+import IndustryArt from "~/components/illustrations/IndustryArt.astro";
+import FactoryLine from "~/components/illustrations/FactoryLine.astro";
+import { SERVICE_SLUGS } from "~/data/services";
+import { INDUSTRY_SLUGS } from "~/data/industries";
+
+export function getStaticPaths() {
+  return ["services", "industries", "factory"].map((kind) => ({ params: { lang: "en", kind } }));
+}
+
+const { kind } = Astro.params;
+---
+
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="robots" content="noindex" />
+    <title>Illustrations</title>
+  </head>
+  <body>
+    {kind === "services" && SERVICE_SLUGS.map((slug) => <div data-slug={slug}><ServiceArt slug={slug} lazy={false} /></div>)}
+    {kind === "industries" && INDUSTRY_SLUGS.map((slug) => <div data-slug={slug}><IndustryArt slug={slug} lazy={false} /></div>)}
+    {kind === "factory" && <div data-slug="factory-line"><FactoryLine lazy={false} /></div>}
+  </body>
+</html>

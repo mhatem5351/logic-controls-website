@@ -72,7 +72,7 @@
       "navTitle": "İlaç",
       "summary": "SCADA'lı, formülasyon reçeteli ve kullanıcı girişli kaplama makineleri; ilaç hatları için şişe baskı ve ambalaj makineleri.",
       "seoTitle": "Mısır'da İlaç Makineleri Otomasyonu | Logic Controls",
-      "seoDescription": "Mısır'daki ilaç tesislerinde tablet kaplama, şişe baskı ve ambalaj makineleri için SCADA ve PLC kontrolü. Reçeteler, alarmlar, kullanıcı erişimi, kayıtlar.",
+      "seoDescription": "Mısır'daki ilaç tesislerinde tablet kaplama, şişe baskı ve ambalaj makineleri için SCADA ve PLC kontrolü: reçeteler, alarmlar, kullanıcı girişi.",
       "h1": "İlaç üretimi için otomasyon",
       "intro": [
         "İlaç üretimi tekrarlanabilir prosesler ve dokümantasyon gerektirir. Formülasyon reçeteleri, kullanıcı erişimi ve alarm geçmişi olan kontrol sistemleri kuruyoruz; böylece her parti aynı şekilde çalışır ve arkasında kayıt bırakır.",
@@ -231,24 +231,24 @@
       "h1": "Beton santralleri için otomasyon",
       "intro": [
         "Bir beton santrali her partide aynı karışımı üretmelidir. Tartım hassasiyeti, boşaltma zamanlaması ve karıştırma süresi beton kalitesini ve malzeme maliyetini belirler.",
-        "Siemens S7-1200 PLC ve WinCC Professional SCADA ile bir beton santrali kontrol sistemi teslim ettik: çimento, agrega, su ve katkı maddesi dozajlama, otomatik dozaj ve karıştırma sekansları ve farklı karışımlar için reçete yönetimi."
+        "Siemens S7-1200 PLC ve WinCC Professional SCADA ile bir beton santrali kontrol sistemi teslim ettik. Sistem; çimento, agrega, su ve katkı maddesi dozajlamayı, otomatik dozaj ve karıştırma sekanslarını ve farklı karışımlar için reçete yönetimini kapsıyor."
       ],
       "needs": [
         {
           "title": "Hassas dozajlama",
-          "text": "Her malzeme için hedef ağırlıklar; otomatik dozajlama ve boşaltma."
+          "text": "Her malzeme için hedef ağırlıklar; otomatik dozajlama ve boşaltma sayesinde her parti reçetesindeki miktarları alır."
         },
         {
           "title": "Karışım reçeteleri",
-          "text": "Her beton karışımı malzemeleri, ağırlıkları ve karıştırma süresiyle kaydedilir."
+          "text": "Her beton karışımı malzemeleri, ağırlıkları ve karıştırma süresiyle kaydedilir; operatör değer girmek yerine karışımı seçer."
         },
         {
           "title": "Santral genel görünümü",
-          "text": "Bunkerlerin, tartım haznelerinin, konveyörlerin ve mikserin durumunu gösteren SCADA ekranı."
+          "text": "Bunkerlerin, tartım haznelerinin, konveyörlerin ve mikserin durumunu canlı değerler ve zamanlayıcılarla gösteren SCADA ekranı; operatör her partinin nerede olduğunu görür."
         },
         {
           "title": "Anlaşılır alarmlar",
-          "text": "Arızalar sade mesajlarla gösterilir; operatör neyi kontrol etmesi gerektiğini bilir."
+          "text": "Arızalar sade mesajlarla gösterilir; operatör bir sonraki parti başlamadan neyi kontrol etmesi gerektiğini bilir."
         }
       ],
       "applications": [
@@ -265,6 +265,10 @@
         {
           "q": "Sistem parti kayıtlarını saklayabilir mi?",
           "a": "Parti verileri SCADA'da kaydedilebilir. İhtiyaç duyduğunuz kayıtlar ve raporlar her proje için ayrıca belirlenir."
+        },
+        {
+          "q": "Beton santrali modernizasyonu için teklif hazırlamak üzere hangi bilgilere ihtiyacınız var?",
+          "a": "Malzeme ve tartım sistemi sayısı; bunkerler, tartım hazneleri ve mikser; varsa mevcut PLC veya SCADA; kontrol odasının, panonun ve santralin fotoğrafları. Ardından bir mühendisimiz sorularla size dönüş yapar veya saha ziyareti planlar."
         }
       ],
       "cta": {
@@ -336,19 +340,19 @@
       "needs": [
         {
           "title": "Tekrarlanabilir testler",
-          "text": "Her seferinde aynı test sekansı ve aynı limitler."
+          "text": "Her seferinde aynı test sekansı ve aynı limitler; farklı vardiyaların ve operatörlerin sonuçları karşılaştırılabilir."
         },
         {
           "title": "Net ölçümler",
-          "text": "HMI'da canlı değerler ve bar grafikler."
+          "text": "HMI'da canlı değerler ve bar grafikler; operatör test sürerken her ölçümü takip edebilir."
         },
         {
           "title": "Otomatik raporlar",
-          "text": "Kalite kontrol ve izlenebilirlik için sonuçlar her testte kaydedilir."
+          "text": "Kalite kontrol ve izlenebilirlik için sonuçlar, elle yazmaya gerek kalmadan her testte kaydedilir."
         },
         {
           "title": "Dokümantasyon",
-          "text": "Müşterilerinizin ve denetçilerin inceleyebileceği kayıtlar."
+          "text": "Müşterilerinizin ve denetçilerin inceleyebileceği, proje için belirlenen formatta kayıtlar."
         }
       ],
       "applications": [
@@ -365,6 +369,10 @@
         {
           "q": "Mekanik test düzeneğini de siz mi üretiyorsunuz?",
           "a": "Hayır. Kontrol sistemini, enstrüman entegrasyonunu, HMI'yı ve raporları sağlıyoruz. Mekanik düzenek sizden veya bir makine üreticisinden gelir."
+        },
+        {
+          "q": "Bir test düzeneği için teklif hazırlamak üzere hangi bilgilere ihtiyacınız var?",
+          "a": "Test sekansı, ölçtüğünüz değerler ile aralıkları ve birimleri, düzenekteki sensörler ve her testten sonra ihtiyaç duyduğunuz rapor. Düzeneğin ve varsa mevcut panonun fotoğrafları daha hızlı dönüş yapmamıza yardımcı olur."
         }
       ],
       "cta": {

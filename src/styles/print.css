@@ -1,0 +1,210 @@
+/*
+ * Print (DEV-07): case studies, service pages and the contact page print as a clean document — dark text on white
+ * paper, no site chrome, no controls, every answer and step shown, and the address of in-text links written out.
+ * Works with "Background graphics" on or off. Hooks are existing classes / ids / data attributes only.
+ * (motion.css already switches off every animation and transition in print.)
+ * Loaded as its own <link media="print"> at the end of <body> (BaseLayout.astro), after the screen styles.
+ */
+@media print {
+  @page {
+    size: A4;
+    margin: 14mm 13mm 16mm;
+  }
+
+  /* ---------- 1. Paper colours: no dark panels, no light-on-dark text ---------- */
+  html,
+  body {
+    background: #fff !important;
+    color: #1b2233 !important;
+  }
+  *,
+  *::before,
+  *::after {
+    box-shadow: none !important;
+    text-shadow: none !important;
+  }
+  /* Dark surfaces (hero, "At a glance", CTA band, quote checklist, map card …) become paper with dark text. */
+  .on-dark,
+  .on-dark * {
+    color: #1b2233 !important;
+    background-color: transparent !important;
+    background-image: none !important;
+    border-color: #c9ced8 !important;
+  }
+  .on-dark a {
+    color: #0b3f91 !important;
+  }
+  /* Light text utilities used on dark backgrounds outside an .on-dark scope (e.g. a dark <summary> bar). */
+  :is(.text-white, .text-navy-50, .text-navy-100, .text-navy-200, .text-navy-300, .text-royal-200, .text-royal-300, .text-signal-300, .text-signal-400) {
+    color: #1b2233 !important;
+  }
+  :is(.bg-navy-950, .bg-navy-900, .bg-navy-800):not(:has(> picture, > img)) {
+    background-color: transparent !important;
+  }
+
+  /* ---------- 2. Site chrome and controls: not on paper ---------- */
+  .lc-header {
+    position: static !important;
+    margin-block-end: 6mm;
+    padding-block-end: 2mm;
+    border-block-end: 1px solid #c9ced8;
+  }
+  .lc-header :is(.lc-header-bg, nav, button, .lc-lang-menu, .lc-head-cta, .lc-menu-open, .lc-logo-intro, [popover]),
+  #lc-drawer,
+  .lc-float,
+  .lc-fab,
+  .lc-top,
+  .lc-lightbox,
+  .lc-traces,
+  .lc-hero-media,
+  /* the phone hero photo band picked its <source> for the screen (a blank 1x1 on desktops): the photos print in
+     the gallery instead */
+  .lc-hero-band,
+  .lc-gear,
+  .lc-swoosh,
+  .lc-led,
+  .lc-snap-dots,
+  .lc-motion-toggle,
+  [data-mt-note],
+  .lc-copy,
+  .lc-btn,
+  button,
+  dialog,
+  video,
+  form,
+  #hmi-demo,
+  .lc-teaser,
+  .lc-hmi,
+  [data-gallery] a > span[aria-hidden="true"],
+  summary > span[aria-hidden="true"],
+  /* decorative zones map (the address is printed in text next to it) */
+  .lc-map,
+  div:has(> svg.lc-map),
+  /* browse-on navigation at the end of a case study: previous / next and related projects */
+  #more,
+  #related-projects,
+  .lc-footer {
+    display: none !important;
+  }
+  /* The header logo is the white-wordmark version (made for navy): inverted, its blues and greys stay. */
+  .lc-header img {
+    filter: invert(1) hue-rotate(180deg);
+  }
+  /* The hero no longer slides under a fixed header, and its height is the copy's. */
+  .lc-hero {
+    margin-block-start: 0 !important;
+    min-height: 0 !important;
+    clip-path: none !important;
+  }
+  .lc-hero > .wrap,
+  .lc-hero .wrap {
+    padding-block: 0 4mm !important;
+    min-height: 0 !important;
+  }
+  .lc-band {
+    clip-path: none !important;
+    margin-block-start: 0 !important;
+    padding-block: 6mm !important;
+    border-block-start: 1px solid #c9ced8;
+  }
+  [class*="angle-"] {
+    clip-path: none !important;
+  }
+
+  /* ---------- 3. Layout: the page width, one flow, compact spacing ---------- */
+  .wrap {
+    max-width: none !important;
+    padding-inline: 0 !important;
+  }
+  section {
+    padding-block: 5mm !important;
+  }
+  .sticky,
+  [class*="lg:sticky"] {
+    position: static !important;
+  }
+  /* Case study: story first, photos after it (as on desktop). */
+  #media {
+    order: 1;
+  }
+
+  /* ---------- 4. Hidden or folded content is shown ---------- */
+  details::details-content {
+    content-visibility: visible !important;
+    display: block !important;
+    block-size: auto !important;
+    opacity: 1 !important;
+  }
+  /* home: "Show all questions" / "Show all 6 steps" folds on phones (print pages are phone-width) */
+  [data-capped] details,
+  [data-capped] .lc-steps > li {
+    display: block !important;
+  }
+  [data-capped] .lc-step-rail {
+    display: revert !important;
+  }
+  .lc-teaser-body {
+    max-height: none !important;
+    mask-image: none !important;
+  }
+  .lc-ptoc-list {
+    display: block !important;
+  }
+
+  /* ---------- 5. Page breaks ---------- */
+  h1,
+  h2,
+  h3,
+  h4,
+  .lc-head,
+  summary,
+  dt {
+    break-after: avoid;
+  }
+  /* section headings (eyebrow + title) and side boxes (case-study "At a glance", each contact-channel card; not the
+     contact aside's wrapper, which would move all its cards to the next page) stay whole */
+  .lc-head,
+  aside > div:not(.space-y-6),
+  aside .space-y-6 > *,
+  img,
+  svg,
+  picture,
+  figure,
+  li,
+  dl > div,
+  address,
+  blockquote,
+  tr,
+  .lc-card-photo {
+    break-inside: avoid;
+  }
+  p {
+    orphans: 3;
+    widows: 3;
+  }
+  /* a closing band (title, one line, phone / e-mail) prints in one piece (not the one holding the quote checklist) */
+  .lc-band:not(:has(details)) .wrap {
+    break-inside: avoid;
+  }
+  img {
+    max-width: 100% !important;
+  }
+
+  /* ---------- 6. Links: the address of in-text links is written out ---------- */
+  a {
+    text-decoration: underline;
+    text-decoration-thickness: 0.5px;
+  }
+  :is(.prose-lc, main p, main li > span) a[href^="/"]:not([class])::after {
+    content: " (logic-controls.com" attr(href) ")";
+  }
+  :is(.prose-lc, main p, main li > span) a[href^="http"]:not([class], [href*="wa.me/"])::after {
+    content: " (" attr(href) ")";
+  }
+  :is(.prose-lc, main p, main li > span) a[href]:not([class])::after {
+    font-size: 0.85em;
+    font-weight: 400;
+    color: #4a5263;
+    overflow-wrap: anywhere;
+  }
+}

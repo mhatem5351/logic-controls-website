@@ -1,18 +1,32 @@
 ---
 /**
- * Floating contact button, bottom inline-end (bottom-left in RTL via logical inset).
- * WhatsApp with a pre-filled message in the page language; on zh (WhatsApp blocked in mainland China)
- * it becomes an email button.
+ * Floating contact button, bottom inline-end (bottom-left in RTL via logical inset), clear of the notch and the home
+ * indicator (env(safe-area-inset-*), viewport-fit=cover). Plus a small "back to top" button above it on long pages.
  *
- * Motion: docks in on the first page of a session, one gentle ping ~8 s later (once per session), persists
- * across page transitions (view-transition-name in motion.css).
+ * - WhatsApp with a pre-filled message in the page language (opens in a new tab, announced).
+ * - zh (WhatsApp is blocked in mainland China): an email button that opens a small panel — the address with
+ *   "Copy address", "Open your email app" (subject + body template with the page context) and "Use the quote form",
+ *   because mailto does nothing visible on desktops without a mail client (webmail). Native popover; where the Popover
+ *   API is missing the button falls back to the mailto link itself.
  *
- * It never covers a call to action: while an element marked `data-fab-avoid` (hero CTAs and proof figures,
- * form actions…) or a large button in <main> passes underneath it, the button fades out of the way.
+ * Motion: docks in on the first page of a session, one gentle ping ~8 s later (once per session, and only if the
+ * button is showing at that moment), persists across page transitions (view-transition-name in motion.css).
+ *
+ * It never covers what it should not: the button steps aside (fades out) while
+ *   - an element marked `data-fab-avoid` (hero CTAs, proof figures, form actions…) or a large button in <main>,
+ *   - any small control (link, button, FAQ toggle, form field, HMI / filter / zone controls) or
+ *   - the element that has keyboard focus
+ * sits under it. On phones and tablets (< 1024px) it also waits until the visitor has scrolled past the first
+ * screen (the header carries the primary action there), so it never sits on the hero copy. A short hysteresis keeps
+ * it from flickering in and out while a band scrolls past.
  */
 import { getMessages, type Locale } from "~/i18n";
+import { ltr } from "~/lib/text";
+import { pathWithoutLocale } from "~/i18n";
+import { SITE } from "~/data/site";
 import Icon from "./Icon.astro";
-import { whatsappLink, mailtoLink, prefersEmail } from "./nav";
+import CopyEmail from "./CopyEmail.astro";
+import { whatsappLink, mailtoLink, prefersEmail, href, QUOTE_PATH } from "./nav";
 
 interface Props {
   locale: Locale;
@@ -23,59 +37,154 @@ const { locale, message } = Astro.props;
 const t = getMessages(locale).ui;
 const email = prefersEmail(locale);
 const label = email ? t.email.fabLabel : t.whatsapp.fabLabel;
-const link = email ? mailtoLink(t.email.subject) : whatsappLink(message ?? t.whatsapp.message);
+const path = pathWithoutLocale(Astro.url.pathname);
+const mail = mailtoLink(undefined, { locale, path });
+const wa = whatsappLink(message ?? t.whatsapp.message);
+const popId = "lc-fab-mail";
+const fabCls = "lc-fab group fixed z-40 grid size-14 place-items-center rounded-full text-white shadow-[0_10px_30px_-8px_rgb(4_14_39/0.55)]";
 ---
 
-<aside aria-label={label}>
-<a
-  href={link}
-  target={email ? undefined : "_blank"}
-  rel={email ? undefined : "noopener"}
-  aria-label={label}
-  title={label}
-  class:list={[
-    "lc-fab group fixed end-4 bottom-4 z-40 grid size-14 place-items-center rounded-full text-white shadow-[0_10px_30px_-8px_rgb(4_14_39/0.55)] hover:-translate-y-(--move-lift) sm:end-6 sm:bottom-6",
-    email ? "bg-royal-600 hover:bg-royal-700" : "bg-[#128c4a] hover:bg-[#0f7a40]",
-  ]}
->
-  <span aria-hidden="true" class:list={["absolute inset-0 rounded-full", !email && "lc-fab-ring"]}></span>
-  <Icon name={email ? "mail" : "whatsapp"} size={28} />
-</a>
-</aside>
+<div class="lc-float">
+  {
+    email ? (
+      <>
+        <button
+          type="button"
+          popovertarget={popId}
+          aria-controls={popId}
+          aria-expanded="false"
+          aria-label={label}
+          data-mailto={mail}
+          data-hidden
+          class:list={[fabCls, "bg-royal-600 hover:bg-royal-700"]}
+        >
+          <span aria-hidden="true" class="absolute inset-0 rounded-full" />
+          <Icon name="mail" size={28} />
+        </button>
+        <div id={popId} popover class="lc-fab-pop on-dark m-0 w-[min(20rem,calc(100vw-2rem))] border border-white/12 bg-navy-900 p-4 text-navy-100 shadow-header">
+          <p class="type-label text-navy-300">{t.email.fabLabel}</p>
+          <div class="mt-3 flex items-center justify-between gap-3 border border-white/10 bg-white/[0.04] px-3 py-2">
+            <span class="ltr min-w-0 truncate font-semibold text-white" dir="ltr" set:html={ltr(SITE.email)} />
+            <CopyEmail locale={locale} />
+          </div>
+          <p class="mt-2 text-xs text-navy-300">{t.email.hint}</p>
+          <div class="mt-4 grid gap-2">
+            <a href={mail} class="lc-btn" data-variant="primary" data-size="sm" data-block>
+              <Icon name="mail" size={16} />
+              <span class="lc-btn-label">{t.email.openApp}</span>
+            </a>
+            <a href={href(locale, QUOTE_PATH)} class="lc-btn" data-variant="on-dark" data-size="sm" data-block>
+              <span class="lc-btn-label">{t.email.useForm}</span>
+              <Icon name="arrow" size={16} class="lc-btn-icon-end" />
+            </a>
+          </div>
+        </div>
+      </>
+    ) : (
+      <a
+        href={wa}
+        target="_blank"
+        rel="noopener"
+        aria-label={`${label} (${t.a11y.newTab})`}
+        data-hidden
+        class:list={[fabCls, "bg-whatsapp-700 hover:bg-whatsapp-800"]}
+      >
+        <span aria-hidden="true" class="lc-fab-ring absolute inset-0 rounded-full" />
+        <Icon name="whatsapp" size={28} />
+      </a>
+    )
+  }
+  <a href="#main" class="lc-top fixed z-40 grid size-11 place-items-center rounded-full border border-white/15 bg-navy-950/90 text-white shadow-[0_8px_24px_-8px_rgb(4_14_39/0.6)] backdrop-blur-sm hover:bg-navy-800" data-hidden>
+    <Icon name="chevron-down" size={20} class="rotate-180" />
+    <span class="sr-only">{t.a11y.backToTop}</span>
+  </a>
+</div>
 
 <style>
+  /* Placement: 1rem (1.5rem from 640px) from the inline-end and bottom edges, or the safe-area inset if larger.
+     Insets are physical, so RTL mirrors explicitly. */
+  .lc-fab,
+  .lc-top {
+    --fab-gap: 1rem;
+    --fab-b: max(var(--fab-gap), calc(env(safe-area-inset-bottom, 0px) + 0.5rem));
+    right: max(var(--fab-gap), calc(env(safe-area-inset-right, 0px) + 0.5rem));
+  }
+  @media (min-width: 40rem) {
+    .lc-fab,
+    .lc-top {
+      --fab-gap: 1.5rem;
+    }
+  }
   .lc-fab {
-    transition-property: transform, translate, opacity, visibility;
-    transition-duration: var(--dur-ui), var(--dur-ui), var(--dur-micro), 0s;
+    bottom: var(--fab-b);
+  }
+  /* Back to top: centred above the button (56px → 44px), 12px apart. */
+  .lc-top {
+    bottom: calc(var(--fab-b) + 3.5rem + 0.75rem);
+    margin-right: 0.375rem;
+  }
+  :global([dir="rtl"]) .lc-fab,
+  :global([dir="rtl"]) .lc-top {
+    right: auto;
+    left: max(var(--fab-gap), calc(env(safe-area-inset-left, 0px) + 0.5rem));
+  }
+  :global([dir="rtl"]) .lc-top {
+    margin-right: 0;
+    margin-left: 0.375rem;
+  }
+
+  /* Step aside / come back: opacity + translate only (compositor properties, no layout). */
+  .lc-fab,
+  .lc-top {
+    transition-property: translate, opacity, visibility, background-color;
+    transition-duration: var(--dur-ui), var(--dur-micro), 0s, var(--dur-micro);
     transition-timing-function: var(--ease-mech);
   }
-  .lc-fab[data-hidden] {
+  @media (hover: hover) {
+    .lc-fab:hover {
+      translate: 0 calc(-1 * var(--move-lift));
+    }
+  }
+  .lc-fab[data-hidden],
+  .lc-top[data-hidden] {
     opacity: 0;
-    transform: translateY(1rem) scale(0.9);
+    translate: 0 1rem;
     visibility: hidden;
     pointer-events: none;
-    transition-delay: 0s, 0s, 0s, var(--dur-micro);
+    transition-delay: 0s, 0s, var(--dur-micro), 0s;
     transition-timing-function: var(--ease-exit);
   }
-  .lc-fab:focus-visible {
+  /* Two-tone ring: visible on white pages and on the navy footer alike. */
+  .lc-fab:focus-visible,
+  .lc-top:focus-visible {
     outline: 3px solid var(--color-signal-400);
     outline-offset: 3px;
+    box-shadow: 0 0 0 3px var(--color-navy-950);
   }
   .lc-fab-ring {
     box-shadow: 0 0 0 2px rgb(37 211 102 / 0.65);
     opacity: 0;
   }
-  /* First page of the session: the button docks in once (it then persists across page transitions).
-     ~8 s later, once per session: a single sonar ping and a small nudge of the glyph. Flags: BaseLayout. */
+  /* Without JavaScript nothing decides when to step aside: just show it. */
+  :global(html:not(.js)) .lc-fab[data-hidden] {
+    opacity: 1;
+    translate: 0 0;
+    visibility: visible;
+    pointer-events: auto;
+  }
+  /* First page of the session: the button docks in (~2.8 s after first paint, or the first time it is actually
+     visible if later); it then persists across page transitions. Once per session, at least ~8 s in and only while
+     it is visible: a single sonar ping and a small nudge of the glyph. Triggers: script below. Paused motion
+     (:root[data-motion="off"], which reduced motion implies) means neither: the button is simply there. */
   @media (prefers-reduced-motion: no-preference) {
-    :global(:root[data-intro]) .lc-fab {
-      animation: lc-fab-in var(--dur-section) var(--ease-emph) 0.6s backwards;
+    :global(:root:not([data-motion="off"])) .lc-fab[data-dock] {
+      animation: lc-fab-in var(--dur-section) var(--ease-emph) backwards;
     }
-    :global(:root[data-fab-ping]) .lc-fab-ring {
-      animation: lc-fab-ping 1.5s var(--ease-emph) 8s;
+    :global(:root:not([data-motion="off"])) .lc-fab[data-ping] .lc-fab-ring {
+      animation: lc-fab-ping 1.5s var(--ease-emph);
     }
-    :global(:root[data-fab-ping]) .lc-fab > :global(svg) {
-      animation: lc-fab-nudge 0.6s var(--ease-mech) 8s;
+    :global(:root:not([data-motion="off"])) .lc-fab[data-ping] > :global(svg) {
+      animation: lc-fab-nudge 0.6s var(--ease-mech);
     }
   }
   @keyframes lc-fab-in {
@@ -100,47 +209,209 @@ const link = email ? mailtoLink(t.email.subject) : whatsappLink(message ?? t.wha
       scale: 1.14;
     }
   }
+
+  /* zh email panel: above the button, aligned to its inline-end edge. */
+  .lc-fab-pop {
+    position: fixed;
+    inset: auto;
+    bottom: calc(max(1rem, calc(env(safe-area-inset-bottom, 0px) + 0.5rem)) + 4.25rem);
+    right: max(1rem, calc(env(safe-area-inset-right, 0px) + 0.5rem));
+    max-height: calc(100dvh - var(--header-h) - 6rem);
+    overflow-y: auto;
+  }
+  :global([dir="rtl"]) .lc-fab-pop {
+    right: auto;
+    left: max(1rem, calc(env(safe-area-inset-left, 0px) + 0.5rem));
+  }
+  @supports not selector(:popover-open) {
+    .lc-fab-pop {
+      display: none;
+    }
+  }
+  @media (pointer: coarse) {
+    .lc-top {
+      width: 2.75rem;
+      height: 2.75rem;
+    }
+  }
+  @media print {
+    .lc-float {
+      display: none;
+    }
+  }
 </style>
 
 <script>
-  // Fade the button out while a CTA / proof figure / form action sits under it (bottom strip of the viewport,
-  // horizontally overlapping the button). One IntersectionObserver; rebuilt when the viewport height changes.
+  import { motionOff, onMotionChange } from "~/scripts/motion/motion-pref";
+
   const fab = document.querySelector<HTMLElement>(".lc-fab");
-  if (fab && "IntersectionObserver" in window) {
-    const targets = document.querySelectorAll<HTMLElement>("[data-fab-avoid], main .lc-btn[data-size='lg']");
-    const hits = new Set<Element>();
-    let io: IntersectionObserver | undefined;
-    let lastH = 0;
-    const overlaps = (r: DOMRectReadOnly) => {
-      const f = fab.getBoundingClientRect();
-      return r.right > f.left - 12 && r.left < f.right + 12;
-    };
-    const setup = () => {
-      if (Math.abs(window.innerHeight - lastH) < 40 && io) return;
-      lastH = window.innerHeight;
-      io?.disconnect();
-      hits.clear();
-      const zone = fab.getBoundingClientRect().height + 48; // button + its offset + breathing room
-      io = new IntersectionObserver(
-        (entries) => {
-          for (const e of entries) {
-            if (e.isIntersecting && overlaps(e.boundingClientRect)) hits.add(e.target);
-            else hits.delete(e.target);
-          }
-          // Never hide it while it has keyboard focus.
-          fab.toggleAttribute("data-hidden", hits.size > 0 && document.activeElement !== fab);
-        },
-        { rootMargin: `-${Math.max(0, window.innerHeight - zone)}px 0px 0px 0px` },
-      );
-      targets.forEach((t) => io!.observe(t));
-    };
-    if (targets.length) {
-      setup();
-      let timer = 0;
-      window.addEventListener("resize", () => {
-        clearTimeout(timer);
-        timer = window.setTimeout(setup, 150);
-      });
+  const top = document.querySelector<HTMLElement>(".lc-top");
+
+  /* zh email panel: without the Popover API the button simply opens the mail app (mailto). */
+  if (fab instanceof HTMLButtonElement) {
+    const pop = document.getElementById(fab.getAttribute("aria-controls") ?? "");
+    if (!("popover" in HTMLElement.prototype) || !pop) {
+      fab.removeAttribute("popovertarget");
+      fab.addEventListener("click", () => (location.href = fab.dataset.mailto ?? "mailto:"));
+    } else {
+      pop.addEventListener("toggle", (e) => fab.setAttribute("aria-expanded", String((e as ToggleEvent).newState === "open")));
     }
+  }
+
+  if (fab && top) {
+    /* What the buttons must not cover. Small controls by tag/role; big blocks only when marked. A hit counts only
+       if the element's own box overlaps the button (a card's stretched-link overlay does not hide it). */
+    const AVOID =
+      "[data-fab-avoid], main .lc-btn[data-size='lg'], a[href], button, summary, input, select, textarea, label, [role='button'], [role='tab'], [tabindex]:not([tabindex='-1'])";
+    const mobile = matchMedia("(max-width: 63.99rem)");
+    const pad = 10;
+    const overlapsBox = (a: DOMRect, b: DOMRect) =>
+      a.right > b.left - pad && a.left < b.right + pad && a.bottom > b.top - pad && a.top < b.bottom + pad;
+
+    /* The button's resting box: while it is hidden (or moving) it is translated down, so undo the current offset —
+       otherwise it would be measured clear and then slide up onto a control. */
+    const homeRect = (btn: HTMLElement): DOMRect => {
+      const r = btn.getBoundingClientRect();
+      const ty = parseFloat(getComputedStyle(btn).translate.split(" ")[1] ?? "0") || 0;
+      return new DOMRect(r.x, r.y - ty, r.width, r.height);
+    };
+    const blocked = (btn: HTMLElement): boolean => {
+      const f = homeRect(btn);
+      if (!f.width) return false;
+      // Keyboard focus under the button (WCAG 2.4.11): step aside.
+      const active = document.activeElement;
+      if (active && active !== document.body && active !== btn && !btn.contains(active)) {
+        const r = active.getBoundingClientRect();
+        if (r.width && overlapsBox(r, f)) return true;
+      }
+      // A 3×3 grid over the button's box grown by `pad` (catches a control that only clips its edge).
+      const xs = [f.left - pad + 1, f.left + f.width / 2, f.right + pad - 1];
+      const ys = [f.top - pad + 1, f.top + f.height / 2, f.bottom + pad - 1];
+      const pts = xs.flatMap((x) => ys.map((y) => [x, y] as [number, number]));
+      for (const [x, y] of pts) {
+        for (const el of document.elementsFromPoint(x, y)) {
+          if (el === btn || btn.contains(el) || el.closest(".lc-float, .lc-header, dialog[open]")) continue;
+          const hit = el.closest<HTMLElement>(AVOID);
+          if (hit && overlapsBox(hit.getBoundingClientRect(), f)) return true;
+        }
+      }
+      return false;
+    };
+
+    /* Motion (PK4a spec): dock-in at ~2.8 s after first paint on the session's first page, deferred until the
+       button is first actually visible; the once-per-session ping (≥ 8 s in) likewise waits until it is visible and
+       is marked done on its animationend. Nothing plays while motion is paused. */
+    const root = document.documentElement;
+    const t0 = 0; // performance.now() counts from this page's navigation start (≈ first paint)
+    let docked = !root.hasAttribute("data-intro");
+    let pingWanted = false;
+    try {
+      pingWanted = !sessionStorage.getItem("lcPing");
+    } catch {}
+    const play = (attr: "data-dock" | "data-ping", done?: () => void) => {
+      if (motionOff()) return done?.();
+      const target = attr === "data-ping" ? fab.querySelector(".lc-fab-ring") ?? fab : fab;
+      fab.setAttribute(attr, "");
+      target.addEventListener(
+        "animationend",
+        () => {
+          fab.removeAttribute(attr);
+          done?.();
+        },
+        { once: true },
+      );
+    };
+    const markPinged = () => {
+      try {
+        sessionStorage.setItem("lcPing", "1");
+      } catch {}
+    };
+    const onShown = () => {
+      if (!docked) {
+        docked = true;
+        play("data-dock");
+      } else if (pingWanted && performance.now() - t0 > 8000) {
+        pingWanted = false;
+        play("data-ping", markPinged);
+      }
+    };
+
+    /* Hysteresis: hide after 120 ms blocked, show after 200 ms clear (no flicker while a band scrolls past). */
+    const HIDE_MS = 120;
+    const SHOW_MS = 200;
+    const DOCK_MS = 2800;
+    const state = { fab: true, top: true };
+    const since = { block: 0, clear: 0 };
+    let lastY = window.scrollY;
+    let goingUp = false;
+    const visibleNow = (el: HTMLElement, want: boolean) => {
+      // Never hide a button that has focus, or the email button while its panel is open.
+      if (!want && (document.activeElement === el || el.getAttribute("aria-expanded") === "true")) return true;
+      return want;
+    };
+    const update = () => {
+      const now = performance.now();
+      const vh = window.innerHeight;
+      const y = window.scrollY;
+      const pastHero = !mobile.matches || y > vh * 0.6;
+      const longPage = document.documentElement.scrollHeight > vh * 4;
+      const waitDock = !docked && !motionOff() && now - t0 < DOCK_MS;
+      const want = visibleNow(fab, pastHero && !waitDock && !blocked(fab));
+      if (want) {
+        since.block = 0;
+        if (state.fab) {
+          if (!since.clear) since.clear = now;
+          if (now - since.clear >= SHOW_MS) state.fab = false;
+          else schedule(SHOW_MS - (now - since.clear) + 10);
+        }
+      } else {
+        since.clear = 0;
+        if (!state.fab) {
+          if (!since.block) since.block = now;
+          if (now - since.block >= HIDE_MS) state.fab = true;
+          else schedule(HIDE_MS - (now - since.block) + 10);
+        }
+      }
+      const wasHidden = fab.hasAttribute("data-hidden");
+      fab.toggleAttribute("data-hidden", state.fab);
+      if (wasHidden && !state.fab) onShown();
+      else if (!state.fab && pingWanted && now - t0 > 8000) onShown();
+      // Back to top: after three screens; on phones / tablets only while the visitor is heading back up (scrolling up),
+      // so a second floating button does not sit on the copy they are reading.
+      if (y < lastY - 4) goingUp = true;
+      else if (y > lastY + 4) goingUp = false;
+      lastY = y;
+      const wantTop = visibleNow(top, longPage && y > vh * 3 && (!mobile.matches || goingUp) && !state.fab && !blocked(top));
+      state.top = !wantTop;
+      top.toggleAttribute("data-hidden", state.top);
+    };
+    let raf = 0;
+    let timer = 0;
+    const tick = () => {
+      if (!raf) raf = requestAnimationFrame(() => ((raf = 0), update()));
+    };
+    function schedule(ms: number) {
+      clearTimeout(timer);
+      timer = window.setTimeout(tick, ms);
+    }
+    addEventListener("scroll", () => (tick(), schedule(180)), { passive: true });
+    addEventListener("resize", () => schedule(150));
+    document.addEventListener("focusin", tick);
+    document.addEventListener("toggle", () => schedule(60), true); // FAQ / details open-close moves content
+    onMotionChange(() => schedule(0));
+    // Wake-ups for the dock-in moment and the ping (their own timers: they must not cancel the hysteresis timer).
+    if (!docked) window.setTimeout(tick, DOCK_MS + 20);
+    if (pingWanted) window.setTimeout(tick, 8020);
+    mobile.addEventListener("change", tick);
+    addEventListener("load", tick);
+    update();
+
+    // Back to top: scroll smoothly (instantly with reduced motion) and move focus to the main content.
+    top.addEventListener("click", (e) => {
+      e.preventDefault();
+      const reduce = matchMedia("(prefers-reduced-motion: reduce)").matches;
+      window.scrollTo({ top: 0, behavior: reduce ? "auto" : "smooth" });
+      document.getElementById("main")?.focus({ preventScroll: true });
+    });
   }
 </script>

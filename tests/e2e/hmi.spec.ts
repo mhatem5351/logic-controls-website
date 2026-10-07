@@ -9,6 +9,9 @@ for (const locale of ["en", "ar"] as const) {
   test(`[${locale}] Start → forward → fault → divert + alarm → acknowledge`, { tag: locale === "en" ? [] : ["@desktop-only"] }, async ({ page }) => {
     test.slow();
     await page.goto(`/${locale}/#hmi-demo`);
+    // phones: the home page shows the demo as a teaser until "Try the live demo" expands it
+    const teaser = page.locator("#hmi-demo .lc-teaser[data-collapsed] .lc-teaser-cta button");
+    if (await teaser.isVisible()) await teaser.click();
     const fig = page.locator("#hmi-demo [data-hmi]");
     await fig.scrollIntoViewIfNeeded();
     await expect(fig).toHaveAttribute("data-ready", "1");
@@ -39,7 +42,10 @@ for (const locale of ["en", "ar"] as const) {
     await expect(scr).toHaveAttribute("data-fdv", "div", { timeout: 30_000 });
     await expect(state).toHaveText(T.status.divert!);
     await expect.poll(async () => Number(await scr.getAttribute("data-unack"))).toBeGreaterThan(0);
-    await expect(scr.locator(".hs-alist li:not(.hs-empty)").first()).toBeVisible();
+    // the alarm summary is a table (role=table / row / cell); priority is spoken, not only drawn
+    const firstAlarm = scr.locator('.hs-alist [data-rows] > [role="row"]:not(.hs-empty)').first();
+    await expect(firstAlarm).toBeVisible();
+    await expect(firstAlarm.locator('[role="cell"]').first()).toHaveText(/High|Medium|Low|عالية|متوسطة|منخفضة/);
     await expect(btn("ack")).not.toHaveAttribute("aria-disabled", "true");
     await expect(scr.locator('[data-v="almCount"]')).not.toHaveText("0");
 
@@ -64,7 +70,8 @@ test("the fault button is disabled (and harmless) until the plant is producing",
   const fault = fig.locator('button[data-c="fault"]');
   await expect(fault).toHaveAttribute("aria-disabled", "true");
   await fault.click({ force: true }); // aria-disabled (still focusable / clickable on purpose)
-  await expect(fig.locator(".hs-msg")).toContainText(T.msg.idle!.replace(/[\u2066-\u2069]/g, "").slice(0, 12));
+  // the click is never dead: the message line says why (start production first)
+  await expect(fig.locator(".hs-msg")).toContainText(T.msg.faultNeedsRun!.replace(/[\u2066-\u2069]/g, "").slice(0, 20));
   await expect(fig.locator(".lc-hmi-screen")).toHaveAttribute("data-unack", "0");
   await expect(fig).toHaveAttribute("data-live-run", "0");
 });

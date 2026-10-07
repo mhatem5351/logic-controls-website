@@ -1,0 +1,77 @@
+---
+/**
+ * Phone teaser for a long interactive block (the live HMI demo): below 768px the slot is shown as a ~1-screen
+ * preview — clipped, faded out at the bottom and inert (its controls are not reachable while you cannot see them) —
+ * with a "Try the live demo" button that expands it in place and moves focus into it. From 768px, and without
+ * JavaScript, the slot renders in full and the button is not shown.
+ * The demo component itself is untouched; this only wraps it from the page side.
+ */
+import { getMessages, type Locale } from "~/i18n";
+import Icon from "~/components/Icon.astro";
+
+interface Props {
+  locale: Locale;
+  /** Accessible label for the button, if it should say more than ui.demo.open. */
+  label?: string;
+  class?: string;
+}
+const { locale, label, class: className } = Astro.props;
+const t = getMessages(locale).ui;
+---
+
+<div class:list={["lc-teaser", className]} data-teaser data-collapsed>
+  <div class="lc-teaser-body">
+    <slot />
+  </div>
+  <div class="lc-teaser-cta">
+    <button type="button" class="lc-btn" data-variant="primary" data-size="lg" data-block aria-label={label}>
+      <Icon name="play" size={18} />
+      <span class="lc-btn-label">{t.demo.open}</span>
+    </button>
+  </div>
+</div>
+
+<style>
+  .lc-teaser-cta {
+    display: none;
+  }
+  @media (max-width: 47.99rem) {
+    :global(html.js) .lc-teaser[data-collapsed] .lc-teaser-body {
+      max-height: var(--teaser-h, 30rem);
+      overflow: hidden;
+      mask-image: linear-gradient(to bottom, #000 55%, transparent);
+    }
+    :global(html.js) .lc-teaser[data-collapsed] .lc-teaser-cta {
+      position: relative;
+      display: block;
+      margin-top: -3.5rem;
+    }
+  }
+</style>
+
+<script>
+  const phone = matchMedia("(max-width: 47.99rem)");
+  document.querySelectorAll<HTMLElement>("[data-teaser]").forEach((teaser) => {
+    const body = teaser.querySelector<HTMLElement>(".lc-teaser-body");
+    const btn = teaser.querySelector<HTMLButtonElement>(".lc-teaser-cta button");
+    if (!body || !btn) return;
+    // Clipped content must not be reachable by keyboard or assistive tech until it is expanded.
+    const sync = () => body.toggleAttribute("inert", phone.matches && teaser.hasAttribute("data-collapsed"));
+    sync();
+    phone.addEventListener("change", sync);
+    btn.addEventListener("click", () => {
+      teaser.removeAttribute("data-collapsed");
+      sync();
+      // Focus the first visible control of the demo (the button that was pressed disappears), else the block itself.
+      const first = [...body.querySelectorAll<HTMLElement>("button:not([disabled]), [href], [tabindex]:not([tabindex='-1'])")].find(
+        (el) => el.getClientRects().length > 0 && getComputedStyle(el).visibility !== "hidden",
+      );
+      if (first) first.focus({ preventScroll: true });
+      else {
+        body.tabIndex = -1;
+        body.focus({ preventScroll: true });
+      }
+      body.scrollIntoView({ block: "start", behavior: matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth" });
+    });
+  });
+</script>

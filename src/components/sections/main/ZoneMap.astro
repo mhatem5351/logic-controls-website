@@ -13,7 +13,7 @@
  */
 import { ZONES } from "~/data/zones";
 import { uid } from "~/components/uid";
-import { PIN, BASE } from "./zone-geo";
+import { PIN, BASE, PIN_R, MAP_W, MAP_H } from "./zone-geo";
 
 interface Props {
   only?: "home";
@@ -31,7 +31,7 @@ const u = uid("map");
 const a11y = label ? { role: "img" as const, "aria-label": label } : { "aria-hidden": "true" as const };
 ---
 
-<svg class:list={["lc-map block h-auto w-full", className]} viewBox="0 0 380 260" {...a11y} data-map data-pause-offscreen>
+<svg class:list={["lc-map block h-auto w-full", className]} viewBox={`0 0 ${MAP_W} ${MAP_H}`} {...a11y} data-map data-pause-offscreen>
   <defs>
     <pattern id={`${u}-sea`} width="6" height="6" patternUnits="userSpaceOnUse" patternTransform="rotate(-10)">
       <path d="M0 3H6" stroke="currentColor" stroke-width=".6" class="text-royal-400/25"></path>
@@ -99,9 +99,9 @@ const a11y = label ? { role: "img" as const, "aria-label": label } : { "aria-hid
         <g class="lc-map-pin lc-map-home" data-zone={z.slug} {...region(z)} style={interactive ? `--i:${z.n - 1}` : undefined}>
           <circle cx={z.x} cy={z.y} r={only ? 30 : 22} fill={`url(#${u}-glow)`} class="lc-map-pulse" />
           {interactive && <circle cx={z.x} cy={z.y} r="13" class="lc-map-ring" />}
-          <circle cx={z.x} cy={z.y} r={only ? 7 : 8.5} class="lc-map-home-dot" />
+          <circle cx={z.x} cy={z.y} r={only ? PIN_R.zone : PIN_R.home} class="lc-map-home-dot" />
           {!only && (
-            <text x={z.x} y={z.y + 3.3} text-anchor="middle" class="lc-map-num lc-map-num-home">
+            <text x={z.x} y={z.y + 3.6} text-anchor="middle" class="lc-map-num lc-map-num-home">
               {z.n}
             </text>
           )}
@@ -111,8 +111,8 @@ const a11y = label ? { role: "img" as const, "aria-label": label } : { "aria-hid
       ) : (
         <g class="lc-map-pin" data-zone={z.slug} {...region(z)} style={interactive ? `--i:${z.n - 1}` : undefined}>
           {interactive && <circle cx={z.x} cy={z.y} r="11" class="lc-map-ring" />}
-          <circle cx={z.x} cy={z.y} r="7" class="lc-map-dot" />
-          <text x={z.x} y={z.y + 3} text-anchor="middle" class="lc-map-num">
+          <circle cx={z.x} cy={z.y} r={PIN_R.zone} class="lc-map-dot" />
+          <text x={z.x} y={z.y + 3.3} text-anchor="middle" class="lc-map-num">
             {z.n}
           </text>
         </g>
@@ -148,9 +148,11 @@ const a11y = label ? { role: "img" as const, "aria-label": label } : { "aria-hid
     fill: var(--map-water);
     opacity: 0.6;
   }
+  /* the trace colour / dash come through custom properties, so ZonesBlock can light a trace (hover / selection)
+     without fighting this scoped rule's specificity */
   .lc-map-links path {
-    stroke: var(--map-link);
-    stroke-dasharray: 2 3;
+    stroke: var(--link-stroke, var(--map-link));
+    stroke-dasharray: var(--link-dash, 2 3);
   }
   .lc-map-dot {
     fill: var(--map-dot);
@@ -166,21 +168,24 @@ const a11y = label ? { role: "img" as const, "aria-label": label } : { "aria-hid
   }
   .lc-map-num {
     fill: var(--map-num);
-    font: 700 8px/1 ui-monospace, "SFMono-Regular", Menlo, Consolas, monospace;
+    font: 700 9px/1 var(--font-mono);
     pointer-events: none;
   }
   .lc-map-num-home {
     fill: var(--color-navy-950);
-    font-size: 9px;
+    font-size: 10px;
   }
   .lc-map-dim {
     fill: var(--color-royal-400);
     opacity: 0.55;
   }
+  /* the base "breathes" four times when the map is on screen, then rests as a steady glow (WCAG 2.2.2: no
+     endless loop next to the content; the reduced-motion / pause-switch pose is the same rest pose) */
   .lc-map-pulse {
+    opacity: 0.6;
     transform-box: fill-box;
     transform-origin: center;
-    animation: lc-map-pulse 3.2s var(--ease-emph) infinite;
+    animation: lc-map-pulse 3.2s var(--ease-emph) 4;
   }
   @keyframes lc-map-pulse {
     0% {
@@ -196,7 +201,9 @@ const a11y = label ? { role: "img" as const, "aria-label": label } : { "aria-hid
   @media (prefers-reduced-motion: reduce) {
     .lc-map-pulse {
       animation: none;
-      opacity: 0.6;
     }
+  }
+  :global(:root[data-motion="off"]) .lc-map-pulse {
+    animation: none;
   }
 </style>

@@ -1,5 +1,9 @@
 /* HmiDemo styles (src/components/motion/HmiDemo.astro). Loaded by a <link> inside the component, not hoisted into
-   <head>: the demo sits below the fold, so its CSS should not hold up the first paint. */
+   <head>: the demo sits below the fold, so its CSS should not hold up the first paint.
+   Motion: nothing here animates on a per-frame loop. Flowing pipes and pump impellers are stepped by the controller
+   at 10 Hz (stroke-dashoffset / transform set from hmi-demo.ts); blinks are steps(2); the only tweened animations
+   are opacity / scale of pseudo-element rings (composited). Reduced motion and html[data-motion="off"] (the site's
+   pause switch) turn every loop into a static indicator (end of file). */
 /* ----------------------------------------------------------------- section shell */
 .lc-hmi-wrap {
   display: grid;
@@ -74,14 +78,74 @@
   margin: 0;
   container: hmi / inline-size;
 }
-.lc-hmi-try {
+
+/* "Try it" checklist (ticks as the visitor plays) */
+.lc-hmi-tour {
   display: flex;
+  flex-wrap: wrap;
   align-items: center;
-  gap: 0.6rem;
+  gap: 0.5rem 1rem;
   margin: 0 0 0.9rem;
   font-size: 0.875rem;
   color: var(--color-charcoal-600);
 }
+.lc-hmi-tour-h {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  font-weight: 700;
+  color: var(--color-charcoal-800);
+}
+.lc-hmi-tour ol {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem 1.1rem;
+}
+.lc-hmi-tour li {
+  display: flex;
+  align-items: center;
+  gap: 0.45rem;
+}
+.lc-hmi-stepn {
+  display: grid;
+  flex: none;
+  place-items: center;
+  width: 1.375rem;
+  height: 1.375rem;
+  border: 1.5px solid currentColor;
+  border-radius: 50%;
+  font: 700 0.6875rem/1 var(--font-mono);
+  opacity: 0.8;
+  transition:
+    background-color var(--dur-ui) var(--ease-mech),
+    border-color var(--dur-ui) var(--ease-mech),
+    color var(--dur-ui) var(--ease-mech);
+}
+/* current step: bold, its number in the action colour */
+.lc-hmi-tour li[aria-current="step"] {
+  font-weight: 700;
+  color: var(--color-charcoal-900);
+}
+.lc-hmi-tour li[aria-current="step"] .lc-hmi-stepn {
+  border-color: var(--color-royal-600);
+  color: var(--color-royal-600);
+  opacity: 1;
+}
+/* done: a filled disc with a tick replaces the number */
+.lc-hmi-tour li[data-done] .lc-hmi-stepn {
+  border-color: var(--color-royal-600);
+  background: var(--color-royal-600) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 12'%3E%3Cpath d='M2.6 6.3l2.2 2.2 4.6-4.8' fill='none' stroke='%23fff' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E") center / 72% no-repeat;
+  color: transparent;
+  opacity: 1;
+}
+.lc-hmi-tour li[data-done] > span:not([class]) {
+  text-decoration: line-through;
+  text-decoration-color: color-mix(in oklab, currentColor 45%, transparent);
+}
+
 .lc-hmi-foot {
   display: flex;
   flex-wrap: wrap;
@@ -108,6 +172,7 @@
   vertical-align: 0.1em;
 }
 .lc-hmi-cta {
+  position: relative;
   display: flex;
   flex-wrap: wrap;
   align-items: center;
@@ -116,6 +181,25 @@
 .lc-hmi-cta p {
   font-weight: 700;
   color: var(--color-navy-800);
+}
+/* the story is complete (4 ticks): the CTA gets an amber trace underneath, switched on once */
+.lc-hmi-cta::after {
+  content: "";
+  position: absolute;
+  inset-inline: 0;
+  bottom: -0.6rem;
+  height: 2px;
+  background: linear-gradient(to right, var(--color-signal-400), rgb(255 176 43 / 0.1));
+  transform-origin: 0 50%;
+  scale: 0 1;
+  transition: scale var(--dur-page) var(--ease-emph);
+}
+[dir="rtl"] .lc-hmi-cta::after {
+  background: linear-gradient(to left, var(--color-signal-400), rgb(255 176 43 / 0.1));
+  transform-origin: 100% 50%;
+}
+.lc-hmi[data-tour-done] .lc-hmi-cta::after {
+  scale: 1 1;
 }
 .lc-hmi-btn {
   display: inline-flex;
@@ -127,7 +211,7 @@
   color: #fff;
   font-weight: 700;
   text-decoration: none;
-  transition: background-color 0.2s;
+  transition: background-color var(--dur-micro) var(--ease-mech);
 }
 .lc-hmi-btn:hover {
   background: var(--color-royal-700);
@@ -142,19 +226,29 @@
 }
 .lc-hmi-wrap[data-tone="dark"] .lc-hmi-title,
 .lc-hmi-wrap[data-tone="dark"] .lc-hmi-seeing strong,
-.lc-hmi-wrap[data-tone="dark"] .lc-hmi-cta p {
+.lc-hmi-wrap[data-tone="dark"] .lc-hmi-cta p,
+.lc-hmi-wrap[data-tone="dark"] .lc-hmi-tour-h,
+.lc-hmi-wrap[data-tone="dark"] .lc-hmi-tour li[aria-current="step"] {
   color: #fff;
 }
 .lc-hmi-wrap[data-tone="dark"] .lc-hmi-lead,
 .lc-hmi-wrap[data-tone="dark"] .lc-hmi-seeing li,
 .lc-hmi-wrap[data-tone="dark"] .lc-hmi-cap,
-.lc-hmi-wrap[data-tone="dark"] .lc-hmi-try,
+.lc-hmi-wrap[data-tone="dark"] .lc-hmi-tour,
 .lc-hmi-wrap[data-tone="dark"] .lc-hmi-seeing > .type-label {
   color: var(--color-navy-200);
 }
 .lc-hmi-wrap[data-tone="dark"] .lc-hmi-eyebrow,
 .lc-hmi-wrap[data-tone="dark"] .lc-hmi-isa {
   color: var(--color-royal-300);
+}
+.lc-hmi-wrap[data-tone="dark"] .lc-hmi-tour li[aria-current="step"] .lc-hmi-stepn {
+  border-color: var(--color-signal-300);
+  color: var(--color-signal-300);
+}
+.lc-hmi-wrap[data-tone="dark"] .lc-hmi-tour li[data-done] .lc-hmi-stepn {
+  border-color: var(--color-royal-500);
+  background-color: var(--color-royal-500);
 }
 .lc-hmi-wrap[data-tone="dark"] .lc-hmi-bico {
   color: var(--color-royal-300);
@@ -264,11 +358,13 @@
   --h-p1: #d92d20;
   --h-p2: #ef8a00;
   --h-p3: #e8c100;
-  --fd: 0.7s;
   position: relative;
   display: grid;
+  /* desktop: the command bar sits right under the mimic and its message line (left), the faceplate beside them;
+     trend + alarms below. DOM order = focus order: message → commands → faceplate → trend / alarms. */
   grid-template-columns: minmax(0, 1fr) 290px;
-  grid-template-areas: "bar bar" "mimic side" "msg msg" "low low" "cmd cmd";
+  grid-template-rows: auto 1fr auto auto auto;
+  grid-template-areas: "bar bar" "mimic side" "msg side" "cmd side" "low low";
   overflow: hidden;
   border-radius: 6px;
   background: var(--h-bg);
@@ -281,8 +377,7 @@
 .lc-hmi-screen :where(p, ol, dl, dd) {
   margin: 0;
 }
-.lc-hmi-screen .hs-num,
-.lc-hmi-screen [data-v]:not([data-v="msg"], [data-v="state"], [data-v="fdvTxt"], [data-v="outLbl"], [data-v^="perm"], [data-v="cipLeft"]) {
+.lc-hmi-screen [data-v]:not([data-v="state"], [data-v="mode"], [data-v="fdvTxt"], [data-v="outLbl"], [data-v^="perm"], [data-v="cipLeft"]) {
   font-family: var(--font-mono);
   font-variant-numeric: tabular-nums;
 }
@@ -293,7 +388,7 @@
   display: flex;
   align-items: center;
   gap: 14px;
-  height: 40px;
+  min-height: 40px;
   padding: 0 12px;
   background: #2a2b32;
   color: #e6e7eb;
@@ -332,7 +427,7 @@
   text-overflow: ellipsis;
 }
 .hs-screen {
-  color: #9a9ca5;
+  color: #a7a9b1;
   font-weight: 500;
 }
 .hs-right {
@@ -355,9 +450,18 @@
   font-family: var(--font-mono);
   letter-spacing: 0.06em;
 }
-/* localised mode words (آلي / 自动) use the page's script font, not the Latin mono face */
-.hs-mode:where(:lang(ar), :lang(zh-Hans)) {
-  font-family: inherit;
+/* localised mode words (آلي / 自动) in the script's own UI face, a little larger and bolder (Arabic reads ~10%
+   smaller than Latin at the same size) — never the Latin mono stack, which falls back to OS fonts */
+.lc-hmi-screen .hs-mode:lang(ar) {
+  font-family: var(--font-arabic);
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0;
+}
+.lc-hmi-screen .hs-mode:lang(zh-Hans) {
+  font-family: var(--font-latin), "PingFang SC", "Microsoft YaHei", "Noto Sans CJK SC", sans-serif;
+  font-size: 12px;
+  font-weight: 700;
   letter-spacing: 0;
 }
 .lc-hmi-screen[data-mode="manual"] .hs-mode,
@@ -384,7 +488,7 @@
   border: 1px solid #55565e;
   border-radius: 3px;
   font: 600 10px/20px var(--font-mono);
-  color: #a7a9b1;
+  color: #b4b6be;
 }
 .hs-clock {
   min-width: 62px;
@@ -395,7 +499,12 @@
 /* ----------------------------------------------------------------- mimic */
 .hs-mimic {
   grid-area: mimic;
+  display: flex;
+  align-items: center;
   padding: 6px 8px 2px;
+  contain: layout paint;
+  /* viewBox units per CSS px (hmi-fit.ts); labels below never render under ~10px where they are shown */
+  --mk: 1;
 }
 .hs-mimic svg {
   display: block;
@@ -408,6 +517,13 @@
   font-weight: 600;
   fill: var(--h-mut);
   text-anchor: middle;
+}
+/* main labels: at least 10 rendered px (11 for Arabic / Chinese), never larger than the drawing allows */
+.hs-mimic .m-lbl text:not(.m-tagtx, .m-dir, .m-fdvst, .m-holdv) {
+  font-size: clamp(10px, calc(10px * var(--mk)), 14px);
+}
+.lc-hmi-screen:is(:lang(ar), :lang(zh-Hans)) .hs-mimic .m-lbl text:not(.m-tagtx, .m-dir, .m-fdvst, .m-holdv) {
+  font-size: clamp(10.5px, calc(11px * var(--mk)), 14px);
 }
 .m-eq :where(rect, path) {
   fill: var(--h-eqf);
@@ -427,7 +543,14 @@
 .m-lvl {
   fill: #eef1f6;
   stroke: none;
-  transition: y 0.4s linear, height 0.4s linear;
+}
+/* values step at 10 Hz: never tweened (also keeps the site's reduced-motion catch-all from spawning a 0.01 ms
+   transition per change on these) */
+.m-lvl,
+.m-flow path,
+.m-imp,
+.hs-ai-ptr {
+  transition: none;
 }
 .m-pipe path {
   fill: none;
@@ -442,15 +565,15 @@
   stroke-width: 3.6;
   stroke-linejoin: round;
   opacity: 0;
-  transition: opacity 0.4s, stroke 0.6s;
 }
 .m-flow path[data-s="1"] {
   opacity: 0.55;
 }
+/* flowing: "marching ants", stepped at 10 Hz by the controller (--dash on .m-flow) */
 .m-flow path[data-s="2"] {
   opacity: 1;
   stroke-dasharray: 8 5;
-  animation: hmi-flow var(--fd) linear infinite;
+  stroke-dashoffset: var(--dash, 0);
 }
 .m-flow [data-p="ice"] {
   stroke: #6f9fd6;
@@ -462,10 +585,25 @@
 .m-flow path[data-p="steam"][data-s="2"] {
   stroke-dasharray: 3 5;
 }
-@keyframes hmi-flow {
-  to {
-    stroke-dashoffset: -13;
-  }
+/* under-temperature product in the holding tube once the batch has produced (abnormal): amber dashes that travel
+   with the slug; the colour scale itself already turns cool below the legal limit */
+.m-flow path[data-cold] {
+  opacity: 1;
+  stroke: var(--h-p2) !important;
+  stroke-width: 4.2;
+  stroke-dasharray: 5 3;
+}
+/* static flow-direction chevrons (shown only when the marching stops: reduced motion / pause switch, end of file) */
+.m-flow path:not([data-s="2"]) {
+  marker-end: none;
+}
+.m-arrp {
+  display: none;
+  fill: none;
+  stroke: var(--h-tx);
+  stroke-width: 1.6;
+  stroke-linecap: round;
+  stroke-linejoin: round;
 }
 .m-plate {
   fill: #b5b7bf;
@@ -483,12 +621,12 @@
   stroke: var(--h-bd);
   stroke-width: 0.8;
 }
-.m-sec text {
-  font-size: 9px;
+.hs-mimic .m-sec text {
+  font-size: clamp(9px, calc(9.5px * var(--mk)), 10.5px);
   font-weight: 700;
   fill: var(--h-tx);
   text-transform: uppercase;
-  letter-spacing: 0.06em;
+  letter-spacing: 0.04em;
 }
 .m-pump circle {
   fill: #fbfbfc;
@@ -505,6 +643,7 @@
   stroke-width: 2;
   stroke-linecap: round;
 }
+/* rotated by the controller (inline transform, 10 Hz); SVG transforms are not composited, so no CSS loop */
 .m-imp {
   transform-box: fill-box;
   transform-origin: center;
@@ -515,14 +654,6 @@
 }
 .lc-hmi-screen[data-run="1"] .m-imp path {
   stroke: #fff;
-}
-.lc-hmi-screen[data-run="1"] .m-imp {
-  animation: hmi-spin 0.9s linear infinite;
-}
-@keyframes hmi-spin {
-  to {
-    transform: rotate(360deg);
-  }
 }
 .m-valve path,
 .m-fdv path,
@@ -572,8 +703,8 @@
   stroke-width: 1;
 }
 .hs-mimic .m-tags text {
-  font: 700 7.5px/1 var(--font-mono);
-  fill: var(--h-mut);
+  font: 700 8.5px/1 var(--font-mono);
+  fill: var(--h-dark);
 }
 .m-lead {
   fill: none;
@@ -586,7 +717,7 @@
   stroke-width: 0.8;
 }
 .hs-mimic .m-ro text {
-  font: 600 10.5px/1 var(--font-mono);
+  font: 600 clamp(10.5px, calc(10px * var(--mk)), 12.5px) / 1 var(--font-mono);
   font-variant-numeric: tabular-nums;
   fill: var(--h-tx);
   text-anchor: end;
@@ -612,28 +743,42 @@
 .m-alm[data-on="unack"] {
   animation: hmi-blink 1s steps(2, jump-none) infinite;
 }
+/* ISA-18.2: acknowledged = hollow shape, unacknowledged = filled (in every motion mode, not only by blinking) */
 .m-alm path {
-  stroke: none;
+  stroke-width: 1.6;
 }
 .m-alm[data-p="1"] path {
   fill: var(--h-p1);
+  stroke: var(--h-p1);
 }
 .m-alm[data-p="2"] path {
   fill: var(--h-p2);
+  stroke: var(--h-p2);
 }
 .m-alm[data-p="3"] path {
   fill: var(--h-p3);
+  stroke: #b89a00;
+}
+.m-alm[data-on="ack"] path {
+  fill: var(--h-val);
 }
 .hs-mimic .m-alm text {
   font: 800 9px/1 var(--font-mono);
   fill: #fff;
 }
-.hs-mimic .m-alm[data-p="3"] text {
-  fill: #1d1a00;
+/* the indicator keeps its rendered size when the mimic is drawn smaller (scaled about its own centre) */
+.m-almi {
+  transform-box: view-box;
+  transform-origin: 0 0;
+  scale: clamp(1, var(--mk), 1.35);
+}
+.hs-mimic .m-alm:is([data-p="2"], [data-p="3"]) text,
+.hs-mimic .m-alm[data-on="ack"] text {
+  fill: #1d1300;
 }
 .hs-mimic .m-tagtx {
-  font: 600 7.5px/1 var(--font-mono);
-  fill: #6c6e77;
+  font: 600 9px/1 var(--font-mono);
+  fill: var(--h-dark);
 }
 .hs-mimic .m-e {
   text-anchor: end;
@@ -642,18 +787,18 @@
   text-anchor: start;
 }
 .hs-mimic .m-dir {
-  font-size: 9px;
+  font-size: 9.5px;
   font-weight: 500;
 }
 .hs-mimic .m-fdvst {
-  font-size: 10px;
+  font-size: clamp(10px, calc(11px * var(--mk)), 22px);
   font-weight: 800;
   fill: var(--h-tx);
   text-transform: uppercase;
   letter-spacing: 0.04em;
 }
 .hs-mimic .m-holdv {
-  font: 600 9.5px/1 var(--font-mono);
+  font: 600 clamp(9.5px, calc(10px * var(--mk)), 14px) / 1 var(--font-mono);
   fill: var(--h-tx);
 }
 .lc-hmi-screen:lang(ar) .hs-mimic :is(.m-lbl, .m-sec) text:not(.m-tagtx, .m-holdv) {
@@ -666,12 +811,21 @@
   text-anchor: end;
 }
 .hs-mimic .m-key text {
-  font: 600 8px/1 var(--font-mono);
-  fill: #6c6e77;
+  font: 600 9px/1 var(--font-mono);
+  fill: var(--h-dark);
   text-anchor: start;
 }
 .hs-mimic .m-key .m-e {
   text-anchor: end;
+}
+.hs-mimic .m-key-lim text {
+  font-weight: 800;
+  fill: var(--h-tx);
+  text-anchor: middle;
+}
+.m-key-lim path {
+  stroke: var(--h-tx);
+  stroke-width: 1.4;
 }
 .m-cipl {
   display: none;
@@ -683,7 +837,11 @@
 .lc-hmi-screen:not([data-cip="-1"]) .m-cipl {
   display: inline;
 }
-.lc-hmi-screen:not([data-cip="-1"]) .m-cipl + * {
+/* label layers that no longer fit at this size (hmi-fit.ts): the faceplate carries the same tags and values */
+.hs-mimic:is([data-fit="mid"], [data-fit="coarse"]) :is(.m-tags, .m-tagtx, .m-key, .m-dir, .m-sec text) {
+  display: none;
+}
+.hs-mimic[data-fit="coarse"] :is(.m-lbl text:not(.m-fdvst), .m-ro, .m-alm text) {
   display: none;
 }
 
@@ -696,6 +854,7 @@
   padding: 12px;
   background: var(--h-surf);
   border-inline-start: 1px solid var(--h-bd);
+  contain: layout paint;
 }
 .hs-main {
   padding: 10px 12px 9px;
@@ -732,7 +891,7 @@
   padding: 2px 4px;
   border-radius: 2px;
   background: #dfe1e6;
-  color: var(--h-mut);
+  color: var(--h-dark);
   font: 600 9.5px/1 var(--font-mono);
   letter-spacing: 0.02em;
 }
@@ -799,17 +958,22 @@
   border: 5px solid transparent;
   border-top: 6px solid var(--h-act);
 }
+/* the pointer is a full-width carrier moved with translate (percent of the track): composited, no layout */
 .hs-ai-ptr {
-  top: -4px;
-  bottom: -4px;
-  left: var(--pv, 0%);
+  inset-block: -4px;
+  inset-inline: 0;
+  translate: var(--pv, 0%) 0;
+}
+.hs-ai-ptr::before {
+  content: "";
+  position: absolute;
+  inset-block: 0;
+  left: -2px;
   width: 4px;
-  margin-left: -2px;
   border-radius: 1px;
   background: var(--h-tx);
-  transition: left 0.2s linear;
 }
-.hs-big[data-alm="1"] + .hs-ai .hs-ai-ptr {
+.hs-big[data-alm="1"] + .hs-ai .hs-ai-ptr::before {
   background: var(--h-p1);
 }
 .hs-sub {
@@ -820,6 +984,42 @@
   font-weight: 600;
   color: var(--h-tx);
   font-family: var(--font-mono);
+}
+/* cause line under the headline, while the steam supply is down (appears within ~200 ms of "Simulate fault").
+   Side by side its line is reserved (no shift of the command bar under the visitor's pointer); stacked, the
+   faceplate sits below the command bar, so it simply appears. */
+.hs-cause {
+  display: flex;
+  visibility: hidden;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 2px 12px;
+  margin-top: 7px !important;
+  padding: 4px 7px;
+  border-inline-start: 3px solid var(--h-p2);
+  background: #fbefd9;
+  font-size: 11.5px;
+  color: var(--h-tx);
+}
+.hs-cause > span {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  white-space: nowrap;
+}
+.hs-cause b {
+  font-weight: 700;
+}
+.hs-dn {
+  width: 0;
+  height: 0;
+  margin-inline-end: 4px;
+  border: 4px solid transparent;
+  border-top: 5px solid #a35a00;
+  border-bottom: 0;
+}
+.lc-hmi-screen[data-fault="1"] .hs-cause {
+  visibility: visible;
 }
 .hs-grid {
   display: grid;
@@ -993,15 +1193,17 @@
   content: "";
   display: block;
   height: 100%;
-  width: var(--p, 0%);
+  width: 100%;
   background: var(--h-act);
+  transform-origin: 0 50%;
+  scale: var(--p, 0%) 1;
 }
 .hs-cip li[data-st="done"]::before {
   background: var(--h-dark);
   border-color: var(--h-dark);
 }
 .hs-cip li[data-st="done"] i::after {
-  width: 100%;
+  scale: 1 1;
   background: #9a9ca5;
 }
 .hs-cip li[data-st="on"] {
@@ -1022,6 +1224,7 @@
 /* message line */
 .hs-msg {
   grid-area: msg;
+  position: relative;
   display: flex;
   align-items: center;
   gap: 10px;
@@ -1032,8 +1235,10 @@
   font-size: 12.5px;
   font-weight: 600;
 }
+/* the info / warning glyph is decoration (empty alternative text): it is not read as "i" / "!" */
 .hs-msg::before {
   content: "i";
+  content: "i" / "";
   flex: none;
   display: grid;
   place-items: center;
@@ -1049,9 +1254,55 @@
 }
 .hs-msg[data-tone="warn"]::before {
   content: "!";
+  content: "!" / "";
   border-radius: 2px;
   background: var(--h-p2);
   color: #1d1300;
+}
+/* every new note (refusal, hint) registers with a short highlight (opacity only) */
+.hs-msg::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: rgb(5 86 173 / 0.12);
+  opacity: 0;
+  pointer-events: none;
+}
+.hs-msg[data-flash="0"]::after {
+  animation: hmi-note-a var(--dur-ui) var(--ease-mech);
+}
+.hs-msg[data-flash="1"]::after {
+  animation: hmi-note-b var(--dur-ui) var(--ease-mech);
+}
+@keyframes hmi-note-a {
+  from {
+    opacity: 1;
+  }
+}
+@keyframes hmi-note-b {
+  from {
+    opacity: 1;
+  }
+}
+/* the Start key drawn inline ("Press [▶ Start] to run …") */
+.hs-key {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  margin-inline: 2px;
+  padding: 1px 7px 1px 5px;
+  border: 1px solid var(--h-act);
+  border-bottom-width: 2px;
+  border-radius: 3px;
+  background: #fff;
+  color: var(--h-act);
+  font-weight: 700;
+  white-space: nowrap;
+}
+.hs-key svg {
+  width: 10px;
+  height: 10px;
+  fill: currentColor;
 }
 
 /* trend */
@@ -1059,6 +1310,8 @@
   grid-area: low;
   display: grid;
   grid-template-columns: minmax(0, 1fr) minmax(0, 0.92fr);
+  border-top: 1px solid var(--h-bd);
+  contain: layout paint;
 }
 .hs-trend {
   min-width: 0;
@@ -1072,10 +1325,13 @@
   gap: 10px;
   margin-bottom: 6px;
 }
+/* a real target (24px+, 44px on touch screens), styled as the panel's section heading */
 .lc-hmi-screen .hs-tgl {
-  min-height: 0;
-  padding: 0;
-  border: 0;
+  min-height: 28px;
+  margin-block: -4px;
+  margin-inline-start: -6px;
+  padding: 2px 6px;
+  border: 1px solid transparent;
   background: none;
   box-shadow: none;
   font-size: 11px;
@@ -1084,6 +1340,10 @@
   text-transform: uppercase;
   letter-spacing: 0.06em;
   cursor: pointer;
+}
+.lc-hmi-screen .hs-tgl:hover {
+  border-color: var(--h-bd);
+  background: var(--h-val);
 }
 .lc-hmi-screen .hs-tgl::after {
   content: "";
@@ -1101,6 +1361,7 @@
   display: none;
 }
 .hs-tgl small {
+  font-size: 10.5px;
   font-weight: 500;
   text-transform: none;
   letter-spacing: 0;
@@ -1185,13 +1446,13 @@
   top: 100%;
 }
 
-/* alarm list */
+/* alarm summary (role=table, laid out as compact rows) */
 .hs-alarms {
   min-width: 0;
   padding: 8px 12px 12px;
 }
 .hs-ah {
-  margin-bottom: 6px;
+  margin-bottom: 6px !important;
   font-size: 11px;
   font-weight: 700;
   color: var(--h-mut);
@@ -1199,14 +1460,13 @@
   letter-spacing: 0.06em;
 }
 .hs-alist {
-  list-style: none;
-  padding: 0;
+  position: relative;
   height: 108px;
   overflow: hidden;
   border: 1px solid var(--h-bd);
   background: var(--h-val);
 }
-.hs-alist li {
+.hs-alist [data-rows] > [role="row"] {
   display: grid;
   grid-template-columns: 16px 58px 50px minmax(0, 1fr) auto;
   align-items: center;
@@ -1217,7 +1477,7 @@
   font-size: 11.5px;
   white-space: nowrap;
 }
-.hs-alist .hs-empty {
+.hs-alist [data-rows] > .hs-empty {
   display: block;
   height: auto;
   padding: 8px;
@@ -1230,6 +1490,12 @@
   font-size: 10.5px;
   color: var(--h-mut);
 }
+/* localised event sources (Sequence / Mode / Recipe) in the UI face */
+.hs-alist .a-src {
+  font-family: inherit;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
 .hs-alist .a-tx {
   overflow: hidden;
   text-overflow: ellipsis;
@@ -1238,41 +1504,58 @@
   font-size: 10.5px;
   color: var(--h-mut);
 }
+.a-pc {
+  display: grid;
+}
 .a-ic {
   display: grid;
   place-items: center;
-  width: 14px;
-  height: 14px;
-  font: 800 9px/1 var(--font-mono);
+  width: 16px;
+  height: 16px;
+  font: 800 10px/1 var(--font-mono);
   color: #fff;
 }
-[data-p="1"] > .a-ic {
+[data-p="1"] .a-ic {
   background: var(--h-p1);
 }
-[data-p="2"] > .a-ic {
+/* priority 2 / 3 / events: dark digits (≥ 4.5:1 on amber / yellow / grey) */
+[data-p="2"] .a-ic {
   background: var(--h-p2);
   clip-path: polygon(50% 0, 100% 100%, 0 100%);
   padding-top: 4px;
+  color: #1d1300;
 }
-[data-p="3"] > .a-ic {
+[data-p="3"] .a-ic {
   background: var(--h-p3);
   clip-path: polygon(50% 0, 100% 50%, 50% 100%, 0 50%);
   color: #1d1a00;
 }
-[data-p="0"] > .a-ic {
+[data-p="0"] .a-ic {
   border-radius: 50%;
-  background: #a3a5ad;
+  background: #6c6e77;
 }
-.hs-alist li[data-p="0"] {
+/* acknowledged but still active: hollow priority shape (unacknowledged = filled + blinking) */
+[data-st="acked"]:is([data-p="1"], [data-p="2"], [data-p="3"]) .a-ic {
+  box-shadow: inset 0 0 0 2px currentColor;
+}
+[data-st="acked"][data-p="1"] .a-ic {
+  background: var(--h-val);
+  color: var(--h-p1);
+}
+[data-st="acked"][data-p="2"] .a-ic,
+[data-st="acked"][data-p="3"] .a-ic {
+  opacity: 0.75;
+}
+.hs-alist [role="row"][data-p="0"] {
   color: var(--h-mut);
 }
-.hs-alist li[data-st="unack"] {
+.hs-alist [role="row"][data-st="unack"] {
   font-weight: 700;
 }
-.hs-alist li[data-st="unack"] > .a-ic {
+.hs-alist [role="row"][data-st="unack"] .a-ic {
   animation: hmi-blink 1s steps(2, jump-none) infinite;
 }
-.hs-alist li[data-st="cleared"] > .a-ic {
+.hs-alist [role="row"][data-st="cleared"] .a-ic {
   opacity: 0.45;
 }
 
@@ -1284,10 +1567,10 @@
   align-items: center;
   gap: 10px;
   padding: 9px 12px;
-  border-top: 1px solid var(--h-bd);
   background: #d2d4d9;
 }
 .lc-hmi-screen button {
+  position: relative;
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -1305,7 +1588,9 @@
   line-height: 1.1;
   cursor: pointer;
   touch-action: manipulation;
-  transition: background-color 0.15s, border-color 0.15s;
+  transition:
+    background-color var(--dur-micro) var(--ease-mech),
+    border-color var(--dur-micro) var(--ease-mech);
 }
 .lc-hmi-screen button svg {
   width: 14px;
@@ -1320,15 +1605,73 @@
   outline-offset: 2px;
   border-radius: 4px;
 }
+/* latched / selected keys (Stop at rest, Auto, the recipe …): pressed-in neutral grey with a dark bar under the
+   label, not the action blue (ISA-101: colour for what needs attention). The bar is the non-colour cue. */
 .lc-hmi-screen button[aria-pressed="true"] {
-  border-color: #023378;
-  background: var(--h-act);
-  box-shadow: inset 0 2px 3px rgb(0 0 0 / 0.28);
-  color: #fff;
+  border-color: #8e919a;
+  background: #c3c5cc;
+  box-shadow:
+    inset 0 2px 3px rgb(0 0 0 / 0.22),
+    inset 0 -3px 0 var(--h-dark);
+  color: var(--h-tx);
 }
 .lc-hmi-screen button[aria-disabled="true"] {
-  opacity: 0.45;
+  opacity: 0.5;
   cursor: not-allowed;
+}
+/* the next step of the "Try it" story: an amber lamp in the key's corner */
+.lc-hmi-screen button[data-next]::after {
+  content: "";
+  position: absolute;
+  top: 4px;
+  inset-inline-end: 4px;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: #ffb02b;
+  box-shadow: 0 0 0 1.5px rgb(29 19 0 / 0.55), 0 0 6px #ffb02b;
+}
+/* Start before anything has been pressed: the action key, in the action colour */
+.lc-hmi-screen button[data-c="start"][aria-pressed="false"] {
+  border-color: #023378;
+  background: var(--h-act);
+  box-shadow: inset 0 1px 0 rgb(255 255 255 / 0.18), 0 1px 2px rgb(0 0 0 / 0.2);
+  color: #fff;
+}
+.lc-hmi-screen button[data-c="start"][aria-pressed="false"]:hover {
+  background: var(--color-royal-700, #034996);
+}
+/* attention rings (opacity / scale of a pseudo-element: composited): Start, twice, the first time it is on screen;
+   Acknowledge while alarms are unacknowledged */
+.lc-hmi-screen button::before {
+  content: "";
+  position: absolute;
+  inset: -4px;
+  border-radius: 7px;
+  border: 2px solid #ffb02b;
+  opacity: 0;
+  pointer-events: none;
+}
+.lc-hmi[data-fresh][data-seen] .lc-hmi-screen button[data-c="start"]::before {
+  animation: hmi-ring 1.2s var(--ease-inout) 2;
+}
+.lc-hmi-screen .hs-fault[aria-pressed="true"] {
+  border-color: #a85d00;
+  background: var(--h-p2);
+  box-shadow: inset 0 2px 3px rgb(0 0 0 / 0.2);
+  color: #1d1300;
+}
+.lc-hmi-screen .hs-ack {
+  margin-inline-start: auto;
+}
+.lc-hmi-screen[data-unack]:not([data-unack="0"]) .hs-ack {
+  border-color: var(--h-p1);
+  box-shadow: 0 0 0 1px var(--h-p1);
+}
+.lc-hmi-screen[data-unack]:not([data-unack="0"]) .hs-ack::before {
+  border-color: rgb(217 45 32 / 0.55);
+  opacity: 0.6;
+  animation: hmi-ring 1.4s var(--ease-inout) infinite;
 }
 .lc-hmi-screen .hs-seg {
   display: inline-flex;
@@ -1345,6 +1688,10 @@
 .lc-hmi-screen .hs-seg button:last-child {
   border-radius: 0 4px 4px 0;
 }
+.lc-hmi-screen .hs-seg button[aria-pressed="true"],
+.lc-hmi-screen .hs-seg button:focus-visible {
+  z-index: 1;
+}
 .hs-box .hs-seg {
   display: flex;
 }
@@ -1354,27 +1701,23 @@
   padding: 0 8px;
   text-wrap: balance;
 }
-.lc-hmi-screen .hs-fault[aria-pressed="true"] {
-  border-color: #a85d00;
-  background: var(--h-p2);
-  color: #1d1300;
-}
-.lc-hmi-screen .hs-ack {
-  margin-left: auto;
-}
-.lc-hmi-screen[data-unack]:not([data-unack="0"]) .hs-ack {
-  border-color: var(--h-p1);
-  box-shadow: 0 0 0 2px rgb(217 45 32 / 0.25);
-  animation: hmi-pulse 1.4s ease-in-out infinite;
-}
 @keyframes hmi-blink {
   50% {
     opacity: 0.2;
   }
 }
-@keyframes hmi-pulse {
-  50% {
-    box-shadow: 0 0 0 4px rgb(217 45 32 / 0.12);
+@keyframes hmi-ring {
+  0% {
+    opacity: 0;
+    scale: 0.96;
+  }
+  45% {
+    opacity: 1;
+    scale: 1;
+  }
+  100% {
+    opacity: 0;
+    scale: 1.08;
   }
 }
 
@@ -1383,6 +1726,24 @@
 .lc-hmi[data-paused="1"] *::before,
 .lc-hmi[data-paused="1"] *::after {
   animation-play-state: paused !important;
+}
+
+/* ----------------------------------------------------------------- touch screens: finger-sized keys */
+@media (pointer: coarse) {
+  .lc-hmi-screen button,
+  .lc-hmi-screen .hs-box .hs-seg button,
+  .lc-hmi-screen .hs-tgl {
+    min-height: 44px;
+  }
+  .lc-hmi-screen .hs-step button {
+    width: 44px;
+  }
+  .hs-step {
+    gap: 10px;
+  }
+  .lc-hmi-screen .hs-tgl {
+    margin-block: -8px;
+  }
 }
 
 /* ----------------------------------------------------------------- medium */
@@ -1406,6 +1767,7 @@
 @container hmi (max-width: 860px) {
   .lc-hmi-screen {
     grid-template-columns: minmax(0, 1fr);
+    grid-template-rows: none;
     grid-template-areas: "bar" "mimic" "msg" "cmd" "side" "low";
   }
   .hs-side {
@@ -1416,14 +1778,13 @@
     border-top: 1px solid var(--h-bd);
   }
   .hs-cmd {
-    border-top: 0;
     border-bottom: 1px solid var(--h-bd);
-  }
-  .hs-low {
-    border-top: 1px solid var(--h-bd);
   }
   .hs-bigv {
     font-size: 34px;
+  }
+  .lc-hmi-screen:not([data-fault="1"]) .hs-cause {
+    display: none;
   }
 }
 
@@ -1445,52 +1806,69 @@
   .lc-hmi-screen {
     font-size: 12.5px;
   }
+  /* the status bar wraps instead of clipping (320px, user text spacing) */
   .hs-bar {
-    gap: 8px;
-    height: 36px;
-    padding: 0 8px;
+    flex-wrap: wrap;
+    row-gap: 2px;
+    gap: 2px 8px;
+    min-height: 36px;
+    padding: 4px 8px;
   }
   .hs-name,
   .hs-state {
     display: none;
   }
   .hs-unit {
+    flex: 1 1 8rem;
     padding-inline-start: 8px;
     font-size: 11.5px;
+  }
+  .hs-unit > span {
+    overflow: visible;
+    white-space: normal;
+  }
+  .hs-right {
+    margin-inline-start: auto;
   }
   .hs-mimic {
     padding: 4px 2px 0;
   }
-  .m-lbl text:not(.m-fdvst),
-  .m-key,
-  .m-ro,
-  .m-tags,
-  .m-sec,
-  .m-alm {
+  /* two lines reserved: most messages fit, so the command keys below rarely move under a finger */
+  .hs-msg {
+    min-height: calc(2 * 1.35em + 14px);
+  }
+  /* no-JS fallback (with JS, hmi-fit.ts crops and sizes the mimic and data-fit decides) */
+  .hs-mimic:not([data-fit]) :is(.m-lbl text:not(.m-fdvst), .m-key, .m-ro, .m-tags, .m-sec, .m-alm) {
     display: none;
   }
-  .hs-mimic .m-fdvst {
-    font-size: 22px;
-    translate: -40px 22px;
+  .hs-mimic .m-alm {
+    display: none;
   }
+  /* command keys: two columns that fall back to one rather than clip (Turkish "Otomatik | Manuel" at 320px) */
   .hs-cmd {
     display: grid;
-    grid-template-columns: 1fr 1fr;
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 9.5rem), 1fr));
     gap: 8px;
     padding: 8px;
+  }
+  .hs-cmd > * {
+    min-width: 0;
   }
   .hs-cmd .hs-seg {
     display: flex;
   }
-  .hs-cmd .hs-seg button {
-    flex: 1;
-  }
   .lc-hmi-screen .hs-cmd button {
-    min-height: 40px;
-    padding: 0 8px;
+    flex: 1 1 0;
+    min-width: 0;
+    min-height: 44px;
+    padding: 6px;
+    white-space: normal;
+    overflow-wrap: anywhere;
+    text-wrap: balance;
+    line-height: 1.15;
   }
   .lc-hmi-screen .hs-ack {
-    margin-left: 0;
+    margin-inline-start: 0;
     grid-column: 1 / -1;
   }
   .hs-side {
@@ -1501,15 +1879,28 @@
   .hs-bigv {
     font-size: 32px;
   }
+  .hs-tag {
+    font-size: 10.5px;
+  }
+  .lc-hmi-screen .hs-box .hs-seg button,
+  .lc-hmi-screen .hs-tgl {
+    min-height: 44px;
+  }
+  .lc-hmi-screen .hs-tgl {
+    margin-block: -8px;
+  }
+  .lc-hmi-screen .hs-step button {
+    width: 44px;
+  }
+  .hs-step {
+    gap: 10px;
+  }
   .hs-low {
     grid-template-columns: minmax(0, 1fr);
   }
   .hs-trend {
     border-inline-end: 0;
-    padding: 6px 8px 8px;
-  }
-  .lc-hmi-screen .hs-tgl {
-    min-height: 32px;
+    padding: 10px 8px 8px;
   }
   .hs-alarms {
     padding: 6px 8px 10px;
@@ -1520,31 +1911,115 @@
     min-height: 44px;
     max-height: 130px;
   }
-  .hs-alist li {
-    grid-template-columns: 16px 54px minmax(0, 1fr) auto;
+  .hs-alist [data-rows] > [role="row"] {
+    grid-template-columns: 16px 54px 0 minmax(0, 1fr) auto;
+    column-gap: 6px;
   }
+  /* the tag column stays in the table for AT, just not shown */
   .hs-alist .a-tag {
-    display: none;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip-path: inset(50%);
   }
   .lc-hmi-foot {
     margin-top: 1rem;
   }
 }
 
+/* ----------------------------------------------------------------- Arabic / Chinese: no UI text under 12px */
+.lc-hmi-screen:is(:lang(ar), :lang(zh-Hans)) :is(.hs-chip, .hs-h, .hs-ah, .hs-tgl, .hs-k, .hs-grid dt, .hs-rl, .hs-perm li, .hs-cause) {
+  font-size: 12px;
+}
+.lc-hmi-screen:is(:lang(ar), :lang(zh-Hans)) :is(.hs-tgl small, .hs-alist [role="row"], .hs-alist .a-st, .hs-alist .a-src) {
+  font-size: 12px;
+}
+
+/* ----------------------------------------------------------------- reduced motion / pause switch */
+/* No blinking, rings or marching: flowing pipes become solid with static direction chevrons; unacknowledged vs
+   acknowledged alarms stay apart by filled vs hollow shapes; Start keeps its amber lamp (static). The simulation
+   itself still runs when asked to. */
 @media (prefers-reduced-motion: reduce) {
-  .lc-hmi .m-flow path[data-s="2"],
-  .lc-hmi .m-imp,
-  .lc-hmi .m-alm,
-  .lc-hmi .a-ic,
-  .lc-hmi .hs-ack,
-  .lc-hmi [data-led] {
+  .lc-hmi *,
+  .lc-hmi *::before,
+  .lc-hmi *::after {
     animation: none !important;
   }
-  .lc-hmi .m-flow path[data-s="2"] {
+  .lc-hmi .m-flow path[data-s="2"]:not([data-cold]) {
     stroke-dasharray: none;
   }
-  .lc-hmi .m-lvl,
-  .lc-hmi .hs-ai-ptr {
-    transition: none;
+  .lc-hmi .m-arrp {
+    display: inline;
+  }
+  .lc-hmi-screen[data-unack]:not([data-unack="0"]) .hs-ack::before {
+    opacity: 1;
+  }
+}
+:root[data-motion="off"] .lc-hmi *,
+:root[data-motion="off"] .lc-hmi *::before,
+:root[data-motion="off"] .lc-hmi *::after {
+  animation: none !important;
+}
+:root[data-motion="off"] .lc-hmi .m-flow path[data-s="2"]:not([data-cold]) {
+  stroke-dasharray: none;
+}
+:root[data-motion="off"] .lc-hmi .m-arrp {
+  display: inline;
+}
+:root[data-motion="off"] .lc-hmi-screen[data-unack]:not([data-unack="0"]) .hs-ack::before {
+  opacity: 1;
+}
+
+/* ----------------------------------------------------------------- forced colours (Windows High Contrast) */
+@media (forced-colors: active) {
+  .lc-hmi-screen button[aria-pressed="true"],
+  .lc-hmi-screen button[data-c="start"][aria-pressed="true"] {
+    forced-color-adjust: none;
+    background: SelectedItem;
+    color: SelectedItemText;
+    border-color: SelectedItem;
+  }
+  .lc-hmi-screen button[aria-disabled="true"] {
+    color: GrayText;
+    border-color: GrayText;
+  }
+  .hs-alist .a-ic,
+  .hs-almi {
+    forced-color-adjust: none;
+    background: CanvasText;
+    color: Canvas;
+  }
+  [data-st="acked"] .a-ic {
+    background: Canvas;
+    color: CanvasText;
+    box-shadow: inset 0 0 0 2px CanvasText;
+  }
+  .hs-ai,
+  .hs-ai > span,
+  .hs-ai-ptr::before {
+    forced-color-adjust: none;
+  }
+  .hs-ai {
+    background: Canvas;
+    outline: 1px solid CanvasText;
+  }
+  .hs-ai-band {
+    background: Highlight;
+  }
+  .hs-ai-lim,
+  .hs-ai-ptr::before {
+    background: CanvasText;
+  }
+  .hs-ai-sp {
+    border-top-color: Highlight;
+  }
+  .hs-perm li[data-ok] i,
+  .lc-hmi-leds i,
+  .lc-hmi-screen button[data-next]::after {
+    forced-color-adjust: none;
+  }
+  .hs-cause,
+  .hs-msg[data-tone="warn"] {
+    border: 1px solid CanvasText;
   }
 }

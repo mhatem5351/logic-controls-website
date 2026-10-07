@@ -1,8 +1,8 @@
 /**
  * Shared Playwright fixtures for the E2E suite.
  *
- * - The server is `wrangler dev --local-protocol https` (playwright.config.ts), so the production CSP
- *   (`upgrade-insecure-requests`) and cookies behave as on https://logic-controls.com without rewriting responses.
+ * - The server is `wrangler dev --local-protocol https` (playwright.config.ts), so the production headers (CSP, HSTS)
+ *   and Secure cookies behave as on https://logic-controls.com without rewriting responses.
  * - The production Turnstile site key only works on logic-controls.com: an init script swaps it for Cloudflare's
  *   always-pass TEST site key before the widget renders (it pairs with the test secret in .dev.vars). No network
  *   interception, so cross-document view transitions and redirects behave exactly as in production.

@@ -2,6 +2,7 @@
 /**
  * Compact cross-link tiles (related industries on a service page, relevant services on an industry page).
  * One link per tile (stretched), icon chip, title, optional one-line summary and a trailing arrow.
+ * The focus ring is drawn on the tile via :has(); `lc-stretch` keeps the link's own ring where :has() is missing.
  */
 import Icon, { type IconName } from "~/components/Icon.astro";
 import { html } from "~/lib/text";
@@ -29,18 +30,18 @@ const grid = { 2: "sm:grid-cols-2", 3: "sm:grid-cols-2 lg:grid-cols-3", 4: "sm:g
 <ul role="list" class:list={["grid gap-4", grid, className]}>
   {
     items.map((it) => (
-      <li class="lc-reveal group relative flex items-start gap-4 border border-charcoal-200 bg-white p-5 transition-[translate,border-color,box-shadow] duration-(--dur-ui) ease-mech hover:-translate-y-(--move-lift) hover:border-royal-300 hover:shadow-lift has-[a:focus-visible]:outline-2 has-[a:focus-visible]:outline-offset-4 has-[a:focus-visible]:outline-(--focus) in-[.on-dark]:border-white/10 in-[.on-dark]:bg-white/[0.03]">
+      <li class="lc-reveal group relative flex items-start gap-4 border border-charcoal-200 bg-white p-5 transition-[translate,border-color,box-shadow] duration-(--dur-ui) ease-mech hover:-translate-y-(--move-lift) hover:border-royal-300 hover:shadow-lift has-[a:focus-visible]:outline-2 has-[a:focus-visible]:outline-offset-4 has-[a:focus-visible]:outline-(--focus) on-dark:border-white/10 on-dark:bg-white/[0.03]">
         <span class="chamfer inline-grid size-11 shrink-0 place-items-center bg-navy-950 text-royal-300 [--chamfer:9px]">
           <Icon name={it.icon} size={22} />
         </span>
         <div class="min-w-0 flex-1">
-          <H class="type-h4 text-navy-950 transition-colors duration-(--dur-micro) ease-mech group-hover:text-royal-700 in-[.on-dark]:text-white">
-            <a href={it.href} class="after:absolute after:inset-0 after:content-[''] focus-visible:outline-none">
+          <H class="type-h4 text-navy-950 transition-colors duration-(--dur-micro) ease-mech group-hover:text-royal-700 on-dark:text-white">
+            <a href={it.href} class="lc-stretch after:absolute after:inset-0 after:content-['']">
               <Fragment set:html={html(locale, it.title)} />
             </a>
           </H>
-          {it.meta && <span class="mt-1 block type-label text-charcoal-600 in-[.on-dark]:text-navy-300">{it.meta}</span>}
-          {it.text && <span class="mt-2 block text-sm text-charcoal-600 in-[.on-dark]:text-navy-200" set:html={html(locale, it.text)} />}
+          {it.meta && <span class="mt-1 block type-label text-charcoal-600 on-dark:text-navy-300">{it.meta}</span>}
+          {it.text && <span class="mt-2 block text-sm text-charcoal-600 on-dark:text-navy-200" set:html={html(locale, it.text)} />}
         </div>
         <Icon name="arrow" size={18} class="mt-1 text-royal-600 transition-[translate] duration-(--dur-ui) ease-mech group-hover:translate-x-1 rtl:group-hover:-translate-x-1" />
       </li>

@@ -113,6 +113,49 @@ Use this to keep the four languages consistent. "Keep" = write the term in Latin
 | Personal Data Protection Center | — | مركز حماية البيانات الشخصية |
 | IEC 60204-1, IEC 61439, UL, CE | Keep | Keep |
 
+## Arabic search terms Egyptian buyers use
+
+The formal MSA terms above stay the default in body copy. Egyptian plant engineers and owners also search with colloquial-technical forms. Use them in Arabic titles, H1s, intros and meta descriptions where they read naturally: once per title or H1, never stuffed, and keep the formal term nearby in the body.
+
+| Search term | Use it for | Example in the copy |
+|---|---|---|
+| لوحات كنترول / لوحة كنترول | Control panels (titles, H1s, panel-build scope) | home title "لوحات كنترول وبرمجة PLC وأتمتة المصانع في مصر"; control-panels H1 "التصميم الكهربائي وتصنيع لوحات كنترول PLC" |
+| لوحات تحكم كهربائية | Control panels (descriptions, body) | home description |
+| برمجة PLC | PLC programming | titles and H1s |
+| أوتوميشن | Industrial automation; gloss it once: "الأتمتة الصناعية (الأوتوميشن)" | services index H1, about lead and title |
+| سكادا | SCADA; write "نظام SCADA (سكادا)" or "أنظمة سكادا" | SCADA service title, home description |
+| صيانة PLC / صيانة الماكينات / الانفرترات | Maintenance and troubleshooting | maintenance title "صيانة PLC والانفرترات وماكينات المصانع في مصر" |
+
+Review the Search Console queries 6 to 8 weeks after a change and adjust.
+
+## Project facts labels (case-study "Project facts" table)
+
+`projects.items[slug].facts[]` reuses a small set of labels so the table reads the same on every case study. Values contain only facts already in the copy or `projects.ts`.
+
+| EN | AR | ZH | TR |
+|---|---|---|---|
+| Equipment | الماكينة / النظام / المحطة | 设备 / 系统 | Makine / Sistem / Santral |
+| Our scope | نطاق عملنا | 工作范围 | Kapsamımız |
+| Project type | نوع المشروع | 项目类型 | Proje türü |
+| PLC / Controller | PLC / وحدة التحكم | PLC / 控制器 | PLC / Kontrolör |
+| HMI / SCADA | شاشة HMI / نظام SCADA | HMI / SCADA | HMI / SCADA |
+| Drives / Drive | الانفرترات / الانفرتر / الدرايفرات | 变频器 / 驱动 | Sürücüler / Sürücü |
+| Operating modes | أوضاع التشغيل | 运行模式 | Çalışma modları |
+| Recipes / Programs / Program editor | الوصفات / البرامج / محرر البرامج | 配方 / 程序 / 程序编辑器 | Reçeteler / Programlar / Program editörü |
+| Records / Reports | السجلات / التقارير | 记录 / 报告 | Kayıtlar / Raporlar |
+| Controlled | نطاق التحكم | 控制对象 | Kontrol edilenler |
+| Handover | التسليم | 移交 | Teslim |
+
+## Machine builders (OEM) path
+
+| EN | AR | ZH | TR |
+|---|---|---|---|
+| Machine builder (OEM) | مُصنِّع الماكينات (OEM) | 设备制造商 (OEM) | Makine üreticisi (OEM) |
+| Commissioning on your behalf | التشغيل نيابةً عنك | 代表您进行调试 | Sizin adınıza devreye alma |
+| Local commissioning and service | تشغيل وصيانة محلية | 本地调试与服务 | Yerel devreye alma ve servis |
+
+Never "partner", "agent", "authorized service center" or "official representative" of a machine or control brand.
+
 ## Chinese and Turkish anchors (for native review)
 
 | EN | 中文 (suggested) | Türkçe (suggested) |

@@ -1,4 +1,4 @@
-// Brand asset generators (run from the project root): node src/assets/brand/tools/logo-extract.cjs · node src/assets/brand/tools/gen-brand.mjs · node src/assets/brand/tools/gen-icons.cjs · node src/assets/brand/tools/gen-og.cjs
+// Brand asset generators (run from the project root): node src/assets/brand/tools/logo-extract.cjs · node src/assets/brand/tools/gen-brand.mjs · node src/assets/brand/tools/gen-icons.cjs
 import { writeFileSync } from "node:fs";
 import { parts } from "./mark.mjs";
 const ROOT = process.cwd() + "/";

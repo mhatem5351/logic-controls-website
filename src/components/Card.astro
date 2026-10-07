@@ -1,22 +1,28 @@
 ---
 /**
  * Card — three variants sharing one API.
- *   service:  icon tile + title + text + spec chips + "Learn more"
- *   industry: full-bleed image (or illustration) with navy gradient, icon, title, text
- *   project:  image, mono meta line (industry · zone · year), title, tech chips, "View project"
+ *   service:  art (or icon tile) + title + text + spec chips + "Learn more"
+ *   industry: two zones on navy: art / photo on top (in the flow, fading into the card), then icon, title, text, CTA.
+ *             Text never sits on the art, and the content sets the height (no fixed ratio), so long titles in
+ *             narrow columns or longer locales grow the card instead of being clipped.
+ *   project:  editorial card: photo, mono meta line (industry / year), title, tech chips, "Read case study" — no slab,
+ *             the text sits on the section's own background.
  * The whole card is clickable (stretched title link); only one tab stop per card.
+ * Grids: put cards in `lc-grid-services` / `lc-grid-industries` (global.css) — 1 → 2 → 3 (≥1024) → 4 (≥1280).
  * Motion: scroll reveal (.lc-reveal), hover lift / edge trace / image zoom, and `data-vt-href` on the media so the
  * art or photo morphs into the detail page's hero (view transition, see BaseLayout + motion.css).
- * Put an illustration component in `<Fragment slot="media">…</Fragment>` to replace the photo.
- * Text: title / text go through html() (src/lib/text.ts); `wrap-anywhere` is the last-resort safety net so no word
- * or code can ever overflow a narrow card (only kicks in when a single piece is wider than the card).
+ * Put an illustration component in `<Fragment slot="media">…</Fragment>` to replace the photo; the card frames it
+ * (pass the art bare, e.g. `<ServiceArt slug="…" />`, no extra box or border).
+ * Text: title / text go through toHtml() (src/lib/text.ts: plain text is escaped + typeset, html() output passes). Titles use `.lc-card-title` (global.css): long Latin words
+ * hyphenate, break-word is only the last resort, so words are never split without a hyphen.
  */
 import type { ImageMetadata } from "astro";
 import { Picture } from "astro:assets";
 import type { Locale } from "~/i18n";
-import { html, techLabel } from "~/lib/text";
+import { techLabel, toHtml } from "~/lib/text";
 import Icon, { type IconName } from "./Icon.astro";
 import Chips from "./Chips.astro";
+import { CARD_SIZES_3, CARD_SIZES_4, CARD_WIDTHS } from "./sections/catalog/sizes";
 
 interface Props {
   variant?: "service" | "industry" | "project";
@@ -56,54 +62,55 @@ const {
   class: className,
 } = Astro.props;
 const locale = (Astro.props.locale ?? Astro.currentLocale) as Locale | undefined;
-/* Title / text are plain text: html() escapes them and keeps codes and brand names whole ("S7-1200",
-   "Schneider Electric"), isolates Latin runs on Arabic pages and breaks Chinese only between words. */
-const titleHtml = html(locale, title);
-const textHtml = text ? html(locale, text) : "";
+/* Title / text: plain text is escaped and typeset (codes and brand names kept whole, "S7-1200", "Schneider Electric";
+   Latin runs isolated on Arabic pages; Chinese breaks only between words); html() output passes through unchanged. */
+const titleHtml = toHtml(locale, title);
+const textHtml = toHtml(locale, text);
 /* Technology strings from projects.ts are English: show the localised name where messages have one. */
 const chips = tags.map((s) => techLabel(locale, s));
 
 const hasMedia = Astro.slots.has("media");
-const sizes = variant === "industry" ? "(min-width: 1024px) 25vw, (min-width: 640px) 50vw, 100vw" : "(min-width: 1024px) 33vw, (min-width: 640px) 50vw, 100vw";
-const titleLink = "after:absolute after:inset-0 after:z-10 after:content-[''] focus-visible:outline-none";
+/* The ring is drawn on the card (has-[a:focus-visible]); `lc-stretch` hides the link's own ring only where :has() works. */
+const titleLink = "lc-stretch after:absolute after:inset-0 after:z-10 after:content-['']";
 /** Industry cards are clipped (chamfer), so the focus ring is drawn on the title link itself. */
 const titleLinkVisible = "after:absolute after:inset-0 after:z-10 after:content-['']";
+const zoom = "size-full object-cover transition-[scale] duration-(--dur-section) ease-emph group-hover:scale-[1.04]";
 ---
 
 {
   variant === "service" && (
     <article
       class:list={[
-        "lc-reveal wrap-anywhere group relative flex h-full flex-col border border-charcoal-200 bg-white p-6 transition-[translate,border-color,box-shadow,background-color] duration-(--dur-ui) ease-mech sm:p-7",
+        "lc-reveal wrap-break-word group relative flex h-full min-w-0 flex-col border border-charcoal-200 bg-white p-6 transition-[translate,border-color,box-shadow,background-color] duration-(--dur-ui) ease-mech sm:p-7",
         "hover:-translate-y-(--move-lift) hover:border-royal-300 hover:shadow-lift",
         "has-[a:focus-visible]:outline-2 has-[a:focus-visible]:outline-offset-4 has-[a:focus-visible]:outline-(--focus)",
-        "in-[.on-dark]:border-white/10 in-[.on-dark]:bg-white/[0.03] in-[.on-dark]:hover:border-royal-400/50",
+        "on-dark:border-white/10 on-dark:bg-white/[0.03] on-dark:hover:border-royal-400/50",
         className,
       ]}
     >
-      <span aria-hidden="true" class="absolute -top-px start-6 h-1 w-20 origin-left scale-x-50 bg-royal-600 transition-[scale] duration-(--dur-ui) ease-mech group-hover:scale-x-100 group-has-[a:focus-visible]:scale-x-100 skew-x-[-10deg] rtl:origin-right rtl:skew-x-[10deg] sm:start-7 in-[.on-dark]:bg-signal-400" />
+      <span aria-hidden="true" class="absolute -top-px start-6 h-1 w-20 origin-left scale-x-50 bg-royal-600 transition-[scale] duration-(--dur-ui) ease-mech group-hover:scale-x-100 group-has-[a:focus-visible]:scale-x-100 skew-x-[-10deg] rtl:origin-right rtl:skew-x-[10deg] sm:start-7 on-dark:bg-signal-400" />
       {hasMedia ? (
-        <div class="mb-6" data-vt-href={href}>
+        <div class="-mx-2 -mt-1 mb-5 sm:-mx-3" data-vt-href={href}>
           <slot name="media" />
         </div>
       ) : (
         icon && (
-          <span class="chamfer mb-6 inline-grid size-12 place-items-center bg-navy-950 text-royal-300 [--chamfer:10px] in-[.on-dark]:bg-royal-600/20">
+          <span class="chamfer mb-6 inline-grid size-12 place-items-center bg-navy-950 text-royal-300 [--chamfer:10px] on-dark:bg-royal-600/20">
             <Icon name={icon} size={24} />
           </span>
         )
       )}
-      <H class="type-h3 text-navy-950 in-[.on-dark]:text-white">
+      <H class="lc-card-title text-navy-950 on-dark:text-white">
         {href ? (
           <a href={href} class={titleLink} set:html={titleHtml} />
         ) : (
           <Fragment set:html={titleHtml} />
         )}
       </H>
-      {text && <p class="mt-3 text-charcoal-600 in-[.on-dark]:text-navy-200" set:html={textHtml} />}
+      {text && <p class="mt-3 text-[0.9375rem] leading-relaxed text-charcoal-700 on-dark:text-navy-200" set:html={textHtml} />}
       {chips.length > 0 && <Chips items={chips} size="sm" class="mt-5" locale={locale} />}
       {cta && (
-        <span class="mt-auto inline-flex items-center gap-2 pt-6 text-sm font-bold text-royal-600 in-[.on-dark]:text-royal-300" aria-hidden="true">
+        <span class="mt-auto inline-flex items-center gap-2 pt-6 text-sm font-bold text-royal-600 on-dark:text-royal-300" aria-hidden="true">
           {cta}
           <Icon name="arrow" size={16} class="transition-[translate] duration-(--dur-ui) ease-mech group-hover:translate-x-1 rtl:group-hover:-translate-x-1" />
         </span>
@@ -116,57 +123,48 @@ const titleLinkVisible = "after:absolute after:inset-0 after:z-10 after:content-
   variant === "industry" && (
     <article
       class:list={[
-        "lc-reveal wrap-anywhere on-dark group relative isolate flex aspect-[4/5] flex-col justify-end overflow-hidden bg-navy-950 text-white chamfer-lg transition-[translate] duration-(--dur-ui) ease-mech hover:-translate-y-(--move-lift)",
+        "lc-reveal wrap-break-word on-dark group relative isolate flex h-full w-full min-w-0 flex-col bg-navy-950 text-white chamfer-lg transition-[translate] duration-(--dur-ui) ease-mech hover:-translate-y-(--move-lift)",
         className,
       ]}
     >
-      <div class="absolute inset-0 -z-10" data-vt-href={href}>
+      {/* Media zone: in the flow, clipped here only, fading into the card. 16:11 = a 4:3 illustration at ~86% width
+          minus the empty strip under its floor line (slot: `<div class="relative flex justify-center pt-5"><Art size="86%" /></div>`). */}
+      <div class="relative aspect-[16/11] overflow-hidden" data-vt-href={href}>
         {hasMedia ? (
           <slot name="media" />
         ) : image ? (
           typeof image === "string" ? (
-            <img src={image} alt={imageAlt} loading={eager ? "eager" : "lazy"} decoding="async" class="size-full object-cover transition-[scale] duration-(--dur-section) ease-emph group-hover:scale-[1.04]" />
+            <img src={image} alt={imageAlt} loading={eager ? "eager" : "lazy"} decoding="async" class={zoom} />
           ) : (
-            <Picture
-              src={image}
-              alt={imageAlt}
-              formats={["avif", "webp"]}
-              widths={[360, 560, 800]}
-              sizes={sizes}
-              loading={eager ? "eager" : "lazy"}
-              layout="full-width"
-              class="size-full object-cover transition-[scale] duration-(--dur-section) ease-emph group-hover:scale-[1.04]"
-            />
+            <Picture src={image} alt={imageAlt} formats={["avif", "webp"]} widths={CARD_WIDTHS} sizes={CARD_SIZES_4} loading={eager ? "eager" : "lazy"} layout="full-width" class={zoom} />
           )
         ) : (
           <div class="size-full bg-blueprint" />
         )}
-        <div class="absolute inset-0 bg-[linear-gradient(to_top,var(--color-navy-950)_0%,rgb(4_14_39/0.9)_42%,rgb(4_14_39/0.25)_78%,rgb(4_14_39/0.05))]" />
+        <div aria-hidden="true" class="pointer-events-none absolute inset-x-0 bottom-0 h-10 bg-linear-to-t from-navy-950 to-transparent" />
       </div>
-      <span aria-hidden="true" class="absolute inset-x-0 bottom-0 h-1 origin-left scale-x-0 bg-signal-400 transition-[scale] duration-(--dur-section) ease-emph group-hover:scale-x-100 group-has-[a:focus-visible]:scale-x-100 rtl:origin-right" />
-      <div class="p-6 sm:p-7">
+      <div class="flex flex-1 flex-col px-6 pt-3 pb-6 sm:px-7 sm:pb-7">
         {icon && (
-          <span class="mb-4 inline-grid size-10 place-items-center border border-white/20 bg-navy-950/60 text-signal-300 backdrop-blur-sm">
+          <span class="mb-4 inline-grid size-10 place-items-center border border-white/20 bg-navy-950/60 text-signal-300">
             <Icon name={icon} size={22} />
           </span>
         )}
-        {/* Arabic titles run ~6% larger (root size) and the 4-up tiles are narrow: one step down so two-word lines
-            fit ("الأغذية والمشروبات / والألبان", not three lines). */}
-        <H class="type-h3 text-white [&:lang(ar)]:text-[calc(var(--text-h3)*0.9)]">
+        <H class="lc-card-title text-white">
           {href ? (
             <a href={href} class={titleLinkVisible} set:html={titleHtml} />
           ) : (
             <Fragment set:html={titleHtml} />
           )}
         </H>
-        {text && <p class="mt-2 text-sm text-navy-100" set:html={textHtml} />}
+        {text && <p class="mt-2 text-[0.9375rem] leading-relaxed text-navy-100" set:html={textHtml} />}
         {cta && (
-          <span class="mt-4 inline-flex items-center gap-2 text-sm font-bold text-royal-300 transition-colors duration-(--dur-micro) ease-mech group-hover:text-white" aria-hidden="true">
+          <span class="mt-auto inline-flex items-center gap-2 pt-5 text-sm font-bold text-royal-300 transition-colors duration-(--dur-micro) ease-mech group-hover:text-white" aria-hidden="true">
             {cta}
             <Icon name="arrow" size={16} class="transition-[translate] duration-(--dur-ui) ease-mech group-hover:translate-x-1 rtl:group-hover:-translate-x-1" />
           </span>
         )}
       </div>
+      <span aria-hidden="true" class="absolute inset-x-0 bottom-0 h-1 origin-left scale-x-0 bg-signal-400 transition-[scale] duration-(--dur-section) ease-emph group-hover:scale-x-100 group-has-[a:focus-visible]:scale-x-100 rtl:origin-right" />
     </article>
   )
 }
@@ -175,56 +173,48 @@ const titleLinkVisible = "after:absolute after:inset-0 after:z-10 after:content-
   variant === "project" && (
     <article
       class:list={[
-        "lc-reveal wrap-anywhere group relative flex h-full flex-col bg-white",
+        "lc-reveal wrap-break-word group relative flex h-full min-w-0 flex-col",
         "has-[a:focus-visible]:outline-2 has-[a:focus-visible]:outline-offset-4 has-[a:focus-visible]:outline-(--focus)",
         className,
       ]}
     >
-      <div class="chamfer-lg relative aspect-[16/10] overflow-hidden bg-navy-950" data-vt-href={href}>
+      <div class="lc-card-photo chamfer-lg relative aspect-[16/10] overflow-hidden bg-navy-950" data-vt-href={href}>
         {hasMedia ? (
           <slot name="media" />
         ) : image ? (
           typeof image === "string" ? (
-            <img src={image} alt={imageAlt} loading={eager ? "eager" : "lazy"} decoding="async" class="size-full object-cover transition-[scale] duration-(--dur-section) ease-emph group-hover:scale-[1.04]" />
+            <img src={image} alt={imageAlt} loading={eager ? "eager" : "lazy"} decoding="async" class={zoom} />
           ) : (
-            <Picture
-              src={image}
-              alt={imageAlt}
-              formats={["avif", "webp"]}
-              widths={[400, 640, 900]}
-              sizes={sizes}
-              loading={eager ? "eager" : "lazy"}
-              layout="full-width"
-              class="size-full object-cover transition-[scale] duration-(--dur-section) ease-emph group-hover:scale-[1.04]"
-            />
+            <Picture src={image} alt={imageAlt} formats={["avif", "webp"]} widths={CARD_WIDTHS} sizes={CARD_SIZES_3} loading={eager ? "eager" : "lazy"} layout="full-width" class={zoom} />
           )
         ) : (
           <div class="size-full bg-blueprint" />
         )}
+        <span aria-hidden="true" class="pointer-events-none absolute inset-0 bg-linear-to-t from-navy-950/30 via-navy-950/0 via-45% to-transparent" />
         <span aria-hidden="true" class="absolute inset-x-0 bottom-0 h-1 origin-[0_50%] scale-x-0 bg-royal-500 transition-[scale] duration-(--dur-section) ease-emph group-hover:scale-x-100 group-has-[a:focus-visible]:scale-x-100 rtl:origin-[100%_50%]" />
       </div>
       <div class="flex flex-1 flex-col pt-5">
         {meta.length > 0 && (
-          <p class="type-label flex flex-wrap items-center gap-x-2 gap-y-1 text-charcoal-600">
+          <p class="type-label flex flex-wrap items-center gap-x-2 gap-y-1 text-charcoal-600 on-dark:text-navy-300">
             {meta.map((m, i) => (
               <>
-                {i > 0 && <span aria-hidden="true" class="text-charcoal-300">/</span>}
+                {i > 0 && <span aria-hidden="true" class="text-charcoal-400">/</span>}
                 <span>{m}</span>
               </>
             ))}
           </p>
         )}
-        <H class="mt-2 type-h3 text-navy-950 transition-colors duration-(--dur-micro) ease-mech group-hover:text-royal-700">
+        <H class="lc-card-title mt-2 text-navy-950 transition-colors duration-(--dur-micro) ease-mech group-hover:text-royal-700 on-dark:text-white">
           {href ? (
               <a href={href} class={titleLink} set:html={titleHtml} />
           ) : (
             <Fragment set:html={titleHtml} />
           )}
         </H>
-        {text && <p class="mt-2 text-charcoal-600" set:html={textHtml} />}
+        {text && <p class="mt-2 text-[0.9375rem] leading-relaxed text-charcoal-700 on-dark:text-navy-200" set:html={textHtml} />}
         {chips.length > 0 && <Chips items={chips} size="sm" class="mt-4" locale={locale} />}
         {cta && (
-          <span class="mt-auto inline-flex items-center gap-2 pt-5 text-sm font-bold text-royal-600" aria-hidden="true">
+          <span class="mt-auto inline-flex items-center gap-2 pt-5 text-sm font-bold text-royal-600 on-dark:text-royal-300" aria-hidden="true">
             {cta}
             <Icon name="arrow" size={16} class="transition-[translate] duration-(--dur-ui) ease-mech group-hover:translate-x-1 rtl:group-hover:-translate-x-1" />
           </span>

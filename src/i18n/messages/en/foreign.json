@@ -1,7 +1,7 @@
 {
   "seo": {
     "title": "Automation Partner for New Plants in Egypt",
-    "description": "Local automation engineers for factories setting up in Egypt: commissioning of imported lines, I/O checks, FAT/SAT support, Arabic HMIs, local spares."
+    "description": "Local automation engineers for new factories in Egypt: commissioning of imported lines, I/O checks, FAT/SAT support, Arabic HMIs, local spares."
   },
   "hero": {
     "eyebrow": "For manufacturers setting up or relocating a factory in Egypt",
@@ -128,7 +128,7 @@
   "proof": {
     "title": "Experience that fits imported lines",
     "paragraphs": [
-      "We work every day with Wecon, a PLC and HMI brand from China, and we have commissioned a system built on a Siemens S7-200 SMART PLC and an MCGS HMI, a combination common on machines built in China.",
+      "We work every day with Wecon, a PLC and HMI brand from China. We have also commissioned a system built on a Siemens S7-200 SMART PLC and an MCGS HMI, a combination common on machines built in China.",
       "We program and integrate Siemens, Schneider Electric, Delta, LS Electric and Wecon, and we have delivered more than 50 projects in food, dairy, pharmaceutical, cosmetics, packaging and other plants in Egypt."
     ],
     "cta": "See the commissioning case study"
@@ -142,6 +142,30 @@
       "zh": "Key documents on request",
       "tr": "Key documents on request"
     }
+  },
+  "oem": {
+    "eyebrow": "For machine builders",
+    "title": "Are you the machine builder?",
+    "intro": "If you build machines in China, Türkiye or Europe and ship them to plants in Egypt, we can be your engineers on site. We work from your drawings, programs and procedures, and report to you and to your customer.",
+    "items": [
+      {
+        "title": "Commissioning on your behalf",
+        "text": "Power-up, I/O and loop checks, start-up and tuning at your customer's plant, following your procedures."
+      },
+      {
+        "title": "I/O checks and SAT with your engineers",
+        "text": "Your engineers join on site or remotely while we run the checks and the site acceptance test."
+      },
+      {
+        "title": "Arabic HMI from your project file",
+        "text": "We translate screens, alarms and messages into Arabic and test them on the machine, after you approve the changes."
+      },
+      {
+        "title": "Support after handover",
+        "text": "Troubleshooting and program changes in Egypt, so your engineers do not have to fly in for every fault."
+      }
+    ],
+    "cta": "Talk to us about your machines"
   },
   "faq": {
     "title": "Questions from manufacturers setting up in Egypt",
@@ -172,11 +196,11 @@
       },
       {
         "q": "Do you support the plant after start-up?",
-        "a": "Yes. We offer troubleshooting, program changes, preventive maintenance and training under a support agreement, with response times agreed in writing."
+        "a": "Yes. We offer troubleshooting, program changes, preventive maintenance and training under a {link:services/maintenance-support|support agreement}, with response times agreed in writing."
       },
       {
         "q": "Can you help with licenses, customs or company registration?",
-        "a": "No. We are an engineering company and focus on automation. For investment procedures, contact GAFI or the SCZONE one-stop shop, or a legal adviser."
+        "a": "No. We are an engineering company and focus on automation. For investment procedures, contact {link:ext:https://www.gafi.gov.eg/|GAFI} or the {link:ext:https://sczone.eg/|SCZONE one-stop shop}, or a legal adviser."
       }
     ]
   },

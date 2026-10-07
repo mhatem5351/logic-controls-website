@@ -14,9 +14,9 @@ only paid item, so never turn on a paid Cloudflare or third-party feature.
 | Layer | What |
 |---|---|
 | Site | [Astro 7](https://astro.build) static output (`build.format: "directory"`, trailing slashes), TypeScript strict, no UI framework: small vanilla-JS islands |
-| Styling | Tailwind CSS 4 (Vite plugin), design tokens in `src/styles/global.css`, motion in `src/styles/motion.css` |
+| Styling | Tailwind CSS 4 (Vite plugin), design tokens in `src/styles/global.css`, motion in `src/styles/motion.css`, print in `src/styles/print.css` (its own `media="print"` sheet) |
 | Images / fonts | `astro:assets` + sharp (AVIF / WebP / JPEG), self-hosted Montserrat + Alexandria (fontsource), a 5 KB Turkish subset |
-| Hosting | Cloudflare Workers static assets (`wrangler.jsonc`), custom domain, `public/_headers` (CSP, caching) and `public/_redirects` |
+| Hosting | Cloudflare Workers static assets (`wrangler.jsonc`), custom domain, `public/_headers` (CSP, HSTS, caching) and `public/_redirects`. Each page also carries a CSP `<meta>` whose `script-src` lists the SHA-256 of that page's inline scripts and no `'unsafe-inline'` (`security.csp` + `integrations/csp-inline-hashes.mjs`; build only, not `astro dev`) |
 | Worker | `worker/index.ts`: `/` redirects to the visitor's language (cookie, then `Accept-Language`); `/api/rfq` takes the quote form (honeypot, then Turnstile, then `send_email` to the owner's inbox). Every other path is a free static-asset hit (`run_worker_first: ["/", "/api/*"]`) |
 | Forms / anti-spam | Cloudflare Turnstile + Email Routing `send_email` binding |
 | Analytics | Cloudflare Web Analytics (beacon loads on the production hostname only) |
@@ -69,7 +69,10 @@ Internal pages (`/[lang]/styleguide/`, `/[lang]/lab/*`) only exist in `astro dev
 | `npm run dev` | Astro dev server (`http://localhost:4321`). Astro 7 allows only one dev server per project, so share it |
 | `npm run build` | `check-i18n` + `astro build` into `dist/` |
 | `npm run preview` | build, then `wrangler dev` on `http://127.0.0.1:8787`: the production setup (Worker, headers, redirects, 404, form) |
-| `npm run check` | `astro check` + i18n check |
+| `npm run check` | `astro check` + Worker type-check (`tsc -p worker`) + i18n check |
+| `npm run typecheck:worker` | `tsc -p worker` only (`astro check` does not cover `worker/`) |
+| `npm run lint` | ESLint (`eslint.config.mjs`: JS/TS recommended, Astro + jsx-a11y rules) over src, tests, worker, scripts. Clean today (0 problems); any error fails CI |
+| `npm run format` / `npm run format:check` | Prettier (`prettier.config.mjs`, Astro + Tailwind class sorting). Not run in CI: the codebase predates it, so format files you touch rather than the whole tree |
 | `npm run qa:html` | html-validate over `dist/**/*.html` |
 | `npm test` | unit + static checks (needs a build) |
 | `npm run test:unit` | Vitest: `tests/unit/**` |
@@ -108,13 +111,13 @@ logic-controls.com; the E2E fixtures swap in the test key. Form emails sent thro
 |---|---|---|
 | Unit (`tests/unit`) | Vitest | `text.ts`: escaping of hostile input in every locale, atoms, Arabic isolates, Chinese breaking, plus invariants checked over every message string. `check-i18n.mjs`: fixture trees for every failure mode. `src/data`: cross-references, images, alts, videos, featured = 3, zones. Worker: locale negotiation and `/api/rfq` (honeypot, 422, 403, 303 / JSON, escaping, message fallback, 405, 502) |
 | Static (`tests/static/check-dist.mjs`) | node | every internal link, asset, `#anchor` and ARIA idref in `dist/` resolves; trailing slashes; no mixed-locale links; contact preselection values exist; tel / mailto / wa.me formats; sitemap ↔ pages; no `/lab/` or `/styleguide/`; no `client-data` or raw Facebook / Telegram / screenshot file names; no tokens (`cfut_`, `cfat_`, `ghp_`…), no `TURNSTILE_SECRET`, and no value from a local `.env` |
-| Budgets (`tests/static/check-budgets.mjs`) | node | gzip HTML / CSS / JS and image bytes per page type, largest CSS / JS / font / image / video file, against `budgets.json` (measured values + 10 %) |
+| Budgets (`tests/static/check-budgets.mjs`) | node | gzip HTML / screen CSS / JS (incl. statically imported chunks) and image bytes per page type (largest candidate per image, worst of a 1440px and a 412px viewport, so a `<picture>` split by `media` counts once), largest CSS / JS / font / image / video file, against `budgets.json` (measured values + 10 %). Re-baseline only for intended growth and add a line to `notes` in `budgets.json` saying why |
 | E2E (`tests/e2e`) | Playwright | full-sitemap smoke (status, `lang` / `dir`, one `h1`, title width, description, canonical, 5 hreflang, no console errors); redirects (`/` by language and cookie, every `_redirects` rule, 404, headers); language switcher; header, drawer, skip link; quote form (localized validation, 2 steps, Turnstile, email written and escaped, preselection, error panel, no-JS POST, honeypot); HMI demo; zones map; project filters; gallery; FAQ; axe (WCAG 2.2 AA, every page type × locale, open UI states); reduced motion |
 
 Projects: `chromium-desktop` (1440×900), `chromium-mobile` (Pixel 7), `webkit-mobile` (iPhone 15). Viewport-independent
 checks are tagged `@desktop-only` and run once. The web server is
 `wrangler dev --port 8788 --local-protocol https` (self-signed certificate), so it never collides with `npm run preview`
-on 8787 and the production CSP behaves as on the live site. Reports go to `playwright-report/`, traces to `test-results/`.
+on 8787 and the production headers (CSP header + the per-page CSP `<meta>`, HSTS) behave as on the live site. Reports go to `playwright-report/`, traces to `test-results/`.
 
 Known issues are kept as tests marked `it.fails` (Vitest) or `test.fixme` (Playwright) with a note. They start failing
 loudly once the issue is fixed, so flip them then.
@@ -127,7 +130,7 @@ Visual tests: record a baseline on a commit you trust with `npm run test:visual 
 
 `.github/workflows/ci.yml` runs on pushes to `main`, on pull requests and on manual dispatch. It skips docs-only
 changes and cancels a run when a newer push supersedes it. One job on `ubuntu-24.04` with Node 24 runs `npm ci`,
-`npm run build` (Astro's image cache is restored first), `npm test`, `npm run test:budget`, installs the Playwright
+`npm run lint` + `tsc -p worker`, `npm run build` (Astro's image cache is restored first), `npm test`, `npm run test:budget`, installs the Playwright
 browsers (cached), writes `.dev.vars` with the public test secret, then runs `npm run test:e2e` with 2 workers and 1
 retry. The Playwright report is uploaded only on failure. There is no deploy step and no Cloudflare secret in CI. A
 cached run takes about 8–10 minutes, well inside the 2,000 free minutes a month GitHub Free gives private repos.

@@ -1,7 +1,8 @@
 /**
  * Case studies (15), built from the client's Facebook and LinkedIn project posts. Clients are anonymised.
  * Copy lives in src/i18n/messages/<locale>/projects.json → items[slug]
- * (title, client, summary, challenge, solution, scope, result, highlights, imageAlts, seo…).
+ * (title, client, summary, challenge, solution, scope, result, highlights, facts, imageAlts, videoTitle/videoDescription, seo…).
+ * `facts` = [{label, value}] built only from what the copy and this file already state (no invented numbers).
  *
  * Images: src/assets/projects/<slug>/*.jpg — third-party logos/nameplates were already cropped or blurred.
  * Alt text for each image: projects.json → items[slug].imageAlts[<key>] where <key> = `cover` or a gallery `key`.
@@ -141,12 +142,12 @@ export const PROJECTS: readonly ProjectData[] = [
     cover: { key: "cover", image: shampooLsCover },
     gallery: [],
     video: {
-      src: "/media/shampoo-filling-line-v2.mp4",
+      src: "/media/shampoo-filling-line-v3.mp4",
       uploadDate: "2026-09-15",
-      poster: "/media/shampoo-filling-line-poster-v2.webp",
+      poster: "/media/shampoo-filling-line-poster-v3.webp",
       width: 1280,
       height: 720,
-      note: "The product brand is readable on some bottles in the video. Get the client's OK (or blur) before launch.",
+      note: "The product brand on the bottles is blurred (motion-tracked) in the -v3 files. No audio track (stripped), so no captions are needed; the visible description (videoDescription) is the text alternative.",
     },
   },
   {
@@ -161,12 +162,12 @@ export const PROJECTS: readonly ProjectData[] = [
     cover: { key: "cover", image: printingCover },
     gallery: [],
     video: {
-      src: "/media/bottle-printing-retrofit-v2.mp4",
+      src: "/media/bottle-printing-retrofit-v3.mp4",
       uploadDate: "2026-07-29",
-      poster: "/media/bottle-printing-retrofit-poster-v2.webp",
+      poster: "/media/bottle-printing-retrofit-poster-v3.webp",
       width: 1280,
       height: 720,
-      note: "The original machine builder's nameplate may be visible at the start of the video. Check before launch.",
+      note: "The original machine builder's nameplate is blurred (motion-tracked) in the -v3 files. No audio track (stripped: it was machine noise only).",
     },
   },
   {
@@ -178,8 +179,8 @@ export const PROJECTS: readonly ProjectData[] = [
     technologies: ["Siemens S7-200 SMART PLC", "Siemens EM expansion modules", "MCGS HMI", "Industrial Ethernet switch"],
     location: "egypt",
     featured: false,
-    cover: { key: "hmi", image: wasteHmi },
-    gallery: [{ key: "panel", image: wastePanel }],
+    cover: { key: "panel", image: wastePanel },
+    gallery: [{ key: "hmi", image: wasteHmi }],
   },
   {
     slug: "commercial-laundry-washer-control",
@@ -193,9 +194,9 @@ export const PROJECTS: readonly ProjectData[] = [
     cover: { key: "hmi", image: laundryHmi },
     gallery: [],
     video: {
-      src: "/media/hotel-laundry-hmi-v2.mp4",
+      src: "/media/hotel-laundry-hmi-v3.mp4",
       uploadDate: "2026-06-16",
-      poster: "/media/hotel-laundry-hmi-poster-v2.webp",
+      poster: "/media/hotel-laundry-hmi-poster-v3.webp",
       width: 540,
       height: 960,
       note: "Vertical video (9:16). Show it in a narrow frame, not full-width.",
@@ -226,10 +227,10 @@ export const PROJECTS: readonly ProjectData[] = [
     technologies: ["Delta DVP PLC", "Wecon HMI", "Schneider Electric stepper drives", "Schneider Electric Altivar VFD"],
     location: "egypt",
     featured: false,
-    cover: { key: "hmi", image: labelHmi },
+    cover: { key: "panel", image: labelPanel },
     gallery: [
+      { key: "hmi", image: labelHmi },
       { key: "recipes", image: labelRecipes },
-      { key: "panel", image: labelPanel },
     ],
   },
   {
@@ -307,8 +308,8 @@ export const PROJECTS: readonly ProjectData[] = [
     technologies: ["Wecon PLC with expansion module", "Wecon HMI"],
     location: "egypt",
     featured: false,
-    cover: { key: "hmi", image: milkHmi },
-    gallery: [{ key: "panel", image: milkPanel }],
+    cover: { key: "panel", image: milkPanel },
+    gallery: [{ key: "hmi", image: milkHmi }],
   },
   {
     slug: "pipe-make-break-test-rig",

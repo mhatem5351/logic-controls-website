@@ -1,28 +1,38 @@
 ---
 /**
- * Closing call-to-action band (dark navy, angled top edge, blueprint grid, gear watermark).
+ * Closing call-to-action band (dark navy, angled top edge, blueprint grid, gear watermark) — the one band component.
+ *   <CtaBand title text />                       one column: pitch, buttons, phone/email line
+ *   <CtaBand title text><X slot="aside" /></CtaBand>   two columns from 1024px (QuoteCta puts the quote checklist there)
  * Motion (motion.css): the gear watermark turns a few degrees as the band scrolls past; the swoosh wipes in.
- * Defaults: "Request a quote" + "WhatsApp an engineer" (zh: email instead of WhatsApp) and the phone line.
+ * Default CTAs (contact-cta.ts): "Request a quote" + "WhatsApp an engineer" (zh: email with the page's context);
+ * on Arabic pages WhatsApp comes first and filled.
  */
-import { getMessages, type Locale } from "~/i18n";
+import { getMessages, pathWithoutLocale, type Locale } from "~/i18n";
 import { SITE } from "~/data/site";
 import Button from "./Button.astro";
 import BrandMark from "./BrandMark.astro";
 import Icon from "./Icon.astro";
 import Swoosh from "./Swoosh.astro";
-import { href as lhref, QUOTE_PATH, whatsappLink, mailtoLink, prefersEmail } from "./nav";
+import { contactCta, pageTopic, placeCtas, type Cta } from "./contact-cta";
+import CopyEmail from "./CopyEmail.astro";
+import { href as lhref, QUOTE_PATH, mailtoLink, prefersEmail } from "./nav";
+import { colon, ltr, toHtml } from "~/lib/text";
 
-interface Cta {
-  label: string;
-  href: string;
-}
 interface Props {
   locale?: Locale;
+  /** Escaped HTML (rendered with set:html). */
   title: string;
+  /** Plain text. */
   text?: string;
+  /** Escaped HTML instead of `text` (rich copy: <bdi>, no-wrap codes). */
+  textHtml?: string;
   eyebrow?: string;
   primary?: Cta;
   secondary?: Cta | false;
+  /** Page topic for email CTAs; default: the catalogue page's title. */
+  topic?: string;
+  /** WhatsApp message for the default secondary CTA. */
+  whatsappMessage?: string;
   /** Show phone + email under the buttons. */
   contactLine?: boolean;
   angle?: boolean;
@@ -31,30 +41,50 @@ interface Props {
 }
 
 const locale = (Astro.props.locale ?? Astro.currentLocale ?? "en") as Locale;
-const t = getMessages(locale).ui;
-const email = prefersEmail(locale);
+const m = getMessages(locale);
+const t = m.ui;
+const path = pathWithoutLocale(Astro.url.pathname);
+const mail = { topic: Astro.props.topic ?? pageTopic(locale, path), path };
 const {
   title,
   text,
+  textHtml,
   eyebrow,
-  primary = { label: t.cta.quote, href: lhref(locale, QUOTE_PATH) },
-  secondary = email
-    ? { label: t.cta.emailEngineer, href: mailtoLink(t.email.subject) }
-    : { label: t.cta.whatsapp, href: whatsappLink(t.whatsapp.message) },
+  whatsappMessage = t.whatsapp.message,
+  primary = { label: t.cta.quote, href: lhref(locale, QUOTE_PATH), kind: "form" },
+  secondary = contactCta(locale, { whatsapp: whatsappMessage, mail }),
   contactLine = true,
   angle = true,
   id,
   class: className,
 } = Astro.props;
-const secondaryIsWa = secondary && secondary.href.startsWith("https://wa.me");
+const ctas = placeCtas(locale, primary, secondary, mail);
+const aside = Astro.slots.has("aside");
 ---
 
 <section id={id} class:list={["lc-band lc-clip on-dark relative isolate overflow-hidden bg-navy-950 py-section text-navy-100", angle && "angle-top", className]}>
   <div aria-hidden="true" class="pointer-events-none absolute inset-0 -z-10 bg-blueprint mask-fade-edges" />
-  <div aria-hidden="true" class="pointer-events-none absolute inset-0 -z-20 bg-[radial-gradient(ellipse_60%_80%_at_80%_50%,rgb(5_86_173/0.35),transparent_70%)] rtl:bg-[radial-gradient(ellipse_60%_80%_at_20%_50%,rgb(5_86_173/0.35),transparent_70%)]" />
-  <BrandMark tone="mono" class="lc-gear pointer-events-none absolute -end-16 top-1/2 -z-10 hidden h-[130%] w-auto -translate-y-1/2 text-white/[0.035] md:block" />
-  <div class="wrap">
-    <div class="max-w-3xl">
+  {
+    aside ? (
+      <>
+        <div
+          aria-hidden="true"
+          class="pointer-events-none absolute inset-0 -z-20 bg-[radial-gradient(ellipse_60%_80%_at_20%_40%,rgb(5_86_173/0.35),transparent_70%)] rtl:bg-[radial-gradient(ellipse_60%_80%_at_80%_40%,rgb(5_86_173/0.35),transparent_70%)]"
+        />
+        <BrandMark tone="mono" class="lc-gear pointer-events-none absolute -start-24 top-1/2 -z-10 hidden h-[120%] w-auto -translate-y-1/2 text-white/[0.03] lg:block" />
+      </>
+    ) : (
+      <>
+        <div
+          aria-hidden="true"
+          class="pointer-events-none absolute inset-0 -z-20 bg-[radial-gradient(ellipse_60%_80%_at_80%_50%,rgb(5_86_173/0.35),transparent_70%)] rtl:bg-[radial-gradient(ellipse_60%_80%_at_20%_50%,rgb(5_86_173/0.35),transparent_70%)]"
+        />
+        <BrandMark tone="mono" class="lc-gear pointer-events-none absolute -end-16 top-1/2 -z-10 hidden h-[130%] w-auto -translate-y-1/2 text-white/[0.035] md:block" />
+      </>
+    )
+  }
+  <div class:list={["wrap", aside && "grid items-start gap-12 lg:grid-cols-12 lg:gap-10"]}>
+    <div class:list={[aside ? "lg:col-span-6 lg:pt-4" : "max-w-3xl"]}>
       {
         eyebrow && (
           <p class="mb-4 flex items-center gap-3 type-label text-navy-200">
@@ -63,25 +93,25 @@ const secondaryIsWa = secondary && secondary.href.startsWith("https://wa.me");
           </p>
         )
       }
-      <h2 class="type-h2 text-white" set:html={title} />
+      <h2 class="type-h2 text-white" set:html={toHtml(locale, title)} />
       <Swoosh tone="light" class="mt-5 w-40" />
-      {text && <p class="mt-5 type-lead text-navy-200">{text}</p>}
+      {textHtml ? <p class="mt-5 max-w-xl type-lead text-navy-200" set:html={toHtml(locale, textHtml)} /> : text && <p class="mt-5 type-lead text-navy-200" set:html={toHtml(locale, text)} />}
       <div class="mt-9 flex flex-wrap items-center gap-3">
-        <Button href={primary.href} size="lg" iconEnd="arrow" class="max-sm:w-full">{primary.label}</Button>
         {
-          secondary && (
+          ctas.map((c) => (
             <Button
-              href={secondary.href}
+              href={c.cta.href}
               size="lg"
-              variant="on-dark"
-              icon={secondaryIsWa ? "whatsapp" : "mail"}
-              iconClass={secondaryIsWa ? "text-[#25d366]" : "text-royal-300"}
-              external={secondaryIsWa}
+              variant={c.filled ? "primary" : "on-dark"}
+              icon={c.icon}
+              iconEnd={c.iconEnd}
+              iconClass={c.iconClass}
+              external={c.external}
               class="max-sm:w-full"
             >
-              {secondary.label}
+              {c.cta.label}
             </Button>
-          )
+          ))
         }
       </div>
       {
@@ -89,15 +119,33 @@ const secondaryIsWa = secondary && secondary.href.startsWith("https://wa.me");
           <p class="mt-8 flex flex-wrap items-center gap-x-6 gap-y-2 text-sm text-navy-200">
             <a href={`tel:${SITE.phone.tel}`} class="inline-flex min-h-6 items-center gap-2 hover:text-white">
               <Icon name="phone" size={16} class="text-royal-300" />
-              <span class="ltr" dir="ltr">{SITE.phone.display}</span>
+              <span class="sr-only">
+                {m.common.labels.phone}
+                {colon(locale)}
+              </span>
+              <span class="ltr" dir="ltr">
+                {SITE.phone.display}
+              </span>
             </a>
-            <a href={`mailto:${SITE.email}`} class="inline-flex min-h-6 items-center gap-2 hover:text-white">
+            <a href={mailtoLink(t.email.subject, { locale, ...mail })} class="inline-flex min-h-6 items-center gap-2 hover:text-white">
               <Icon name="mail" size={16} class="text-royal-300" />
-              <span class="ltr" dir="ltr">{SITE.email}</span>
+              <span class="sr-only">
+                {m.common.labels.email}
+                {colon(locale)}
+              </span>
+              <Fragment set:html={ltr(SITE.email)} />
             </a>
+            {prefersEmail(locale) && <CopyEmail locale={locale} tone="dark" />}
           </p>
         )
       }
     </div>
+    {
+      aside && (
+        <div class="lg:col-span-6">
+          <slot name="aside" />
+        </div>
+      )
+    }
   </div>
 </section>

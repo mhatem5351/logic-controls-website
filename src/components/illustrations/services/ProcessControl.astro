@@ -35,7 +35,7 @@ const pv = "M20 118C28 118 30 96 34.7 96S41 101.5 45.2 100H57C59 100 60 118 62 1
     @keyframes pcD{0%{transform:translateY(18px)}35%{transform:translateY(-4px)}47%{transform:translateY(1.5px)}60%,88%{transform:none}100%{transform:translateY(18px)}}
     @keyframes pcA{0%,100%{transform:none}50%{transform:scaleX(.08)}}
     @keyframes pcW{to{transform:translateX(-16px)}}
-    @media (prefers-reduced-motion:reduce){.lca-pc .stem{transform:translateY(-3px)}.lca-pc .bar{transform:scaleY(.5)}.lca-pc .st{opacity:.6}}
+    @media (prefers-reduced-motion:reduce){.lca-pc .stem{transform:translateY(-3px)}.lca-pc .bar{transform:scaleY(.5)}.lca-pc .st{opacity:.6}}.lca-pc:is([data-play=rest],[data-motion=off] *) .stem{transform:translateY(-3px)}.lca-pc:is([data-play=rest],[data-motion=off] *) .bar{transform:scaleY(.5)}.lca-pc:is([data-play=rest],[data-motion=off] *) .st{opacity:.6}
   </style>
   <defs>
     <path id={`${u}s`} d={steam}></path>

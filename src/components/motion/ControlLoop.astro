@@ -1,12 +1,19 @@
 ---
 /**
- * ControlLoop — animated explainer: Sensor → PLC → HMI/SCADA → Actuator → Process → back to Sensor.
- * Pure CSS timeline (one 7.5 s cycle, amber signal pulses hop node to node); a ~300-byte script only flips
- * data-play when the diagram is on screen. Horizontal ≥ 60rem, vertical below. Static under reduced motion.
+ * ControlLoop — animated explainer of a closed loop: Sensor → PLC → Actuator → Process → back to the Sensor, with the
+ * HMI / SCADA beside the PLC as a supervisory branch (dashed, two-way: status up, operator commands down). The list
+ * keeps the five nodes in reading order; the drawing shows the PLC driving the actuator directly (an arc over the HMI
+ * node), as in a real plant.
+ * Pure CSS timeline (one 7.5 s cycle, played 3 times while the diagram is on screen, then it rests as the static
+ * diagram). Everything that moves is composited: the amber signal dots ride full-length carriers moved with
+ * `translate`, and each node's "strike" is a pre-rendered royal disc faded in with `opacity`. A tiny script flips
+ * data-play when the diagram is on screen (and the site's motion switch allows it) and, in the vertical layout, measures
+ * where the PLC → Actuator arc starts and ends. Horizontal ≥ 64rem, vertical below. Static under reduced motion /
+ * html[data-motion="off"], with every arrowhead drawn.
  */
-import type enHmi from "~/i18n/messages/en/hmi.json";
 import { getMessages, type Locale } from "~/i18n";
 import Icon from "~/components/Icon.astro";
+import { html } from "~/lib/text";
 
 interface Props {
   locale: Locale;
@@ -18,11 +25,17 @@ interface Props {
 }
 
 const { locale, intro = true, tone = "light", headingLevel = 2, class: className } = Astro.props;
-const t = (getMessages(locale).hmi as typeof enHmi).loop;
+const t = getMessages(locale).hmi.loop;
 const H = headingLevel === 3 ? "h3" : "h2";
 const N = headingLevel === 3 ? "h4" : "h3";
-const nodes = (["sensor", "plc", "hmi", "actuator", "process"] as const).map((k) => ({ k, ...t.nodes[k] }));
+// ranges always with an en dash ("4–20 mA", "0–50 Hz"), whatever the copy uses
+const range = (s: string) => s.replace(/(\d)\s?-\s?(\d)/g, "$1–$2");
+/** When each node's strike peaks in the cycle (s): the signal arrives there (see the timeline in the styles). */
+const GLOW = { sensor: 6.78, plc: 1.12, hmi: 2.02, actuator: 2.72, process: 3.92 } as const;
+const nodes = (["sensor", "plc", "hmi", "actuator", "process"] as const).map((k) => ({ k, ...t.nodes[k], spec: range(t.nodes[k].spec) }));
 const icon = { sensor: "thermometer", plc: "plc", hmi: "hmi", process: "factory" } as const;
+/** Wire after each node: signal hop, supervisory link (PLC ⇄ HMI), none (HMI → Actuator is not a path), hop, last. */
+const WIRE = ["hop", "sup", "skip", "hop", "last"] as const;
 ---
 
 <div class:list={["lc-loop", tone === "dark" && "on-dark", className]} data-loop data-play="0" data-tone={tone}>
@@ -33,7 +46,7 @@ const icon = { sensor: "thermometer", plc: "plc", hmi: "hmi", process: "factory"
           <span class="slant-bar" aria-hidden="true" />
           {t.eyebrow}
         </p>
-        <H class="type-h2 lc-loop-title">{t.title}</H>
+        <H class="type-h2 lc-loop-title" set:html={html(locale, t.title)} />
         <p class="type-lead lc-loop-lead">{t.lead}</p>
       </header>
     )
@@ -42,15 +55,19 @@ const icon = { sensor: "thermometer", plc: "plc", hmi: "hmi", process: "factory"
     <ol class="lc-loop-row">
       {
         nodes.map((n, i) => (
-          <li class="lc-loop-node" style={`--i:${i}`}>
+          <li class="lc-loop-node" data-k={n.k} style={`--gd:${GLOW[n.k]}s`}>
             <span class="lc-loop-ic" aria-hidden="true">
-              {n.k === "actuator" ? (
-                <svg viewBox="0 0 24 24" width="26" height="26" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round">
-                  <path d="M3.5 11.5l8.5 5 8.5-5v9l-8.5-5-8.5 5zM12 16.5V8M7.5 8a4.5 4.5 0 0 1 9 0z" />
-                </svg>
-              ) : (
-                <Icon name={icon[n.k]} size={26} />
-              )}
+              {[0, 1].map((on) => (
+                <span class={on ? "lc-loop-on" : "lc-loop-off"}>
+                  {n.k === "actuator" ? (
+                    <svg viewBox="0 0 24 24" width="26" height="26" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round">
+                      <path d="M3.5 11.5l8.5 5 8.5-5v9l-8.5-5-8.5 5zM12 16.5V8M7.5 8a4.5 4.5 0 0 1 9 0z" />
+                    </svg>
+                  ) : (
+                    <Icon name={icon[n.k]} size={26} />
+                  )}
+                </span>
+              ))}
             </span>
             <div class="lc-loop-txt">
               <N class="lc-loop-l">
@@ -60,20 +77,26 @@ const icon = { sensor: "thermometer", plc: "plc", hmi: "hmi", process: "factory"
               <span class="lc-loop-t">{n.text}</span>
               <span class="lc-loop-spec" dir="ltr">{n.spec}</span>
             </div>
-            <span class="lc-loop-wire" aria-hidden="true">
-              {i < 4 && <i />}
+            <span class="lc-loop-wire" data-w={WIRE[i]} aria-hidden="true">
+              {(WIRE[i] === "hop" || WIRE[i] === "sup") && <i />}
             </span>
           </li>
         ))
       }
     </ol>
-    <span class="lc-loop-ret" aria-hidden="true"><i></i></span>
+    {/* PLC → Actuator (over the HMI node) and Process → Sensor: three legs each, one dot per leg */}
+    <span class="lc-loop-byp" aria-hidden="true"><i class="lg lg-a"></i><i class="lg lg-b"></i><i class="lg lg-c"></i></span>
+    <span class="lc-loop-ret" aria-hidden="true"><i class="lg lg-a"></i><i class="lg lg-b"></i><i class="lg lg-c"></i></span>
   </div>
   <p class="lc-loop-cap">{t.caption}</p>
 </div>
 
 <script>
-  const play = (el: HTMLElement) => (el.dataset.play = el.dataset.vis === "1" && !document.hidden ? "1" : "0");
+  import { motionOff, onMotionChange } from "~/scripts/motion/motion-pref";
+
+  const loops = [...document.querySelectorAll<HTMLElement>("[data-loop]")];
+  // plays only while on screen, in a visible tab, and when motion is allowed (else the CSS shows the static diagram)
+  const play = (el: HTMLElement) => (el.dataset.play = el.dataset.vis === "1" && !document.hidden && !motionOff() ? "1" : "0");
   const io = new IntersectionObserver(
     (es) =>
       es.forEach((e) => {
@@ -83,20 +106,46 @@ const icon = { sensor: "thermometer", plc: "plc", hmi: "hmi", process: "factory"
       }),
     { threshold: 0.2 },
   );
-  document.querySelectorAll<HTMLElement>("[data-loop]").forEach((el) => io.observe(el));
-  document.addEventListener("visibilitychange", () => document.querySelectorAll<HTMLElement>("[data-loop]").forEach(play));
+  const wide = matchMedia("(min-width: 64rem)");
+  // vertical layout: the PLC → Actuator arc runs from the PLC icon's centre to the Actuator icon's centre
+  const measure = (el: HTMLElement) => {
+    const body = el.querySelector<HTMLElement>(".lc-loop-body")!;
+    if (wide.matches) return body.removeAttribute("data-byp");
+    const ic = (k: string) => el.querySelector<HTMLElement>(`[data-k="${k}"] .lc-loop-ic`)!;
+    const b = body.getBoundingClientRect();
+    const mid = (k: string) => {
+      const r = ic(k).getBoundingClientRect();
+      return r.top + r.height / 2 - b.top;
+    };
+    const top = mid("plc");
+    body.style.setProperty("--byp-t", `${top.toFixed(1)}px`);
+    body.style.setProperty("--byp-h", `${(mid("actuator") - top).toFixed(1)}px`);
+    body.setAttribute("data-byp", "");
+  };
+  const ro = new ResizeObserver((es) => es.forEach((e) => measure((e.target as HTMLElement).closest<HTMLElement>("[data-loop]")!)));
+  for (const el of loops) {
+    io.observe(el);
+    ro.observe(el.querySelector(".lc-loop-body")!);
+  }
+  document.addEventListener("visibilitychange", () => loops.forEach(play));
+  onMotionChange(() => loops.forEach(play));
 </script>
 
 <style is:global>
   .lc-loop {
     --lp-cycle: 7.5s;
-    --lp-hop: 1.5s;
+    --lp-n: 3; /* cycles per showing */
     --lp-ic: 3.5rem;
+    --lp-pad: 2.75rem; /* vertical layout: room for the two brackets on the inline-start side */
     --lp-line: var(--color-navy-200);
     --lp-pulse: var(--color-signal-400);
     --lp-ink: var(--color-navy-800);
     --lp-txt: var(--color-charcoal-600);
     --lp-ic-bg: #fff;
+    --dir: 1;
+  }
+  [dir="rtl"] .lc-loop {
+    --dir: -1;
   }
   .lc-loop[data-tone="dark"] {
     --lp-line: rgb(150 182 232 / 0.35);
@@ -125,14 +174,17 @@ const icon = { sensor: "thermometer", plc: "plc", hmi: "hmi", process: "factory"
     margin-top: 1rem;
     color: var(--lp-txt);
   }
+  /* the dot carriers travel by their own length: clip, so they never add page overflow (RTL scrolls leftwards) */
   .lc-loop-body {
     position: relative;
+    overflow: clip;
+    overflow-clip-margin: 1rem;
   }
   .lc-loop-row {
     list-style: none;
     margin: 0;
     padding: 0 0 1.5rem;
-    padding-inline-start: 2.25rem;
+    padding-inline-start: var(--lp-pad);
     display: grid;
     gap: 1.75rem;
   }
@@ -147,15 +199,28 @@ const icon = { sensor: "thermometer", plc: "plc", hmi: "hmi", process: "factory"
     z-index: 1;
     flex: none;
     display: grid;
-    place-items: center;
     width: var(--lp-ic);
     height: var(--lp-ic);
     border-radius: 50%;
     border: 1.5px solid var(--lp-line);
     background: var(--lp-ic-bg);
     color: var(--color-royal-600);
-    animation: lc-loop-glow var(--lp-cycle) linear infinite;
-    animation-delay: calc(var(--i) * var(--lp-hop) - 0.6s);
+  }
+  .lc-loop-ic > span {
+    grid-area: 1 / 1;
+    display: grid;
+    place-items: center;
+    border-radius: 50%;
+  }
+  /* the strike: a royal disc with a white icon, faded in when the signal arrives (opacity only: composited) */
+  .lc-loop-on {
+    margin: -1.5px;
+    background: var(--color-royal-600);
+    color: #fff;
+    box-shadow:
+      0 0 0 6px rgb(37 122 224 / 0.18),
+      0 10px 26px -8px rgb(5 86 173 / 0.7);
+    opacity: 0;
   }
   .lc-loop[data-tone="dark"] .lc-loop-ic {
     color: var(--color-royal-300);
@@ -196,19 +261,28 @@ const icon = { sensor: "thermometer", plc: "plc", hmi: "hmi", process: "factory"
     font: 500 0.75rem/1.4 var(--font-mono);
     font-variant-numeric: tabular-nums;
   }
+  /* Chinese / Arabic words in the spec chip: the page's script face, not whatever the OS maps "monospace" to */
+  .lc-loop-spec:lang(zh-Hans) {
+    font-family: ui-monospace, "SF Mono", Menlo, Consolas, "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", "Noto Sans CJK SC", sans-serif;
+  }
+  .lc-loop-spec:lang(ar) {
+    font-family: ui-monospace, "SF Mono", Menlo, Consolas, var(--font-arabic), sans-serif;
+  }
   .lc-loop[data-tone="dark"] .lc-loop-spec {
     background: rgb(150 182 232 / 0.1);
     color: var(--color-navy-100);
   }
-  /* wires (vertical on phones/tablets) */
+
+  /* ---------------------------------------------------------- wires (vertical on phones / tablets) */
   .lc-loop-wire {
     position: absolute;
     inset-inline-start: calc(var(--lp-ic) / 2 - 1px);
     top: calc(var(--lp-ic) + 4px);
-    bottom: -1.5rem;
+    bottom: calc(-1.75rem + 4px);
     width: 2px;
     background: var(--lp-line);
   }
+  /* arrowhead at the downstream end */
   .lc-loop-wire::after {
     content: "";
     position: absolute;
@@ -218,122 +292,321 @@ const icon = { sensor: "thermometer", plc: "plc", hmi: "hmi", process: "factory"
     border-top: 6px solid var(--lp-line);
     border-bottom: 0;
   }
-  .lc-loop-wire i,
-  .lc-loop-ret i {
+  /* last node: the line down to the return bracket, no arrowhead */
+  .lc-loop-wire[data-w="last"] {
+    bottom: -1.5rem;
+  }
+  .lc-loop-wire[data-w="last"]::after {
+    display: none;
+  }
+  /* PLC ⇄ HMI: supervisory link, dashed, arrowheads both ways */
+  .lc-loop-wire[data-w="sup"] {
+    background: repeating-linear-gradient(var(--lp-line) 0 4px, transparent 4px 8px);
+  }
+  .lc-loop-wire[data-w="sup"]::before {
+    content: "";
+    position: absolute;
+    top: -2px;
+    left: -4px;
+    border: 5px solid transparent;
+    border-bottom: 6px solid var(--lp-line);
+    border-top: 0;
+  }
+  /* HMI → Actuator is not a signal path: the PLC → Actuator arc replaces it (once measured, see the script) */
+  .lc-loop-body[data-byp] .lc-loop-wire[data-w="skip"] {
+    display: none;
+  }
+
+  /* dots: a carrier the size of its line, moved by translate (percent of the carrier = the line length) */
+  .lc-loop-wire > i,
+  .lc-loop .lg {
+    position: absolute;
+    opacity: 0;
+    pointer-events: none;
+  }
+  .lc-loop-wire > i {
+    inset: 0;
+    --to: 0 100%;
+  }
+  .lc-loop-wire > i::before,
+  .lc-loop .lg::before {
+    content: "";
     position: absolute;
     width: 10px;
     height: 10px;
-    margin: -5px;
     border-radius: 50%;
     background: var(--lp-pulse);
-    box-shadow: 0 0 0 3px rgb(255 176 43 / 0.25), 0 0 12px 2px rgb(255 176 43 / 0.7);
-    opacity: 0;
+    box-shadow:
+      0 0 0 3px rgb(255 176 43 / 0.25),
+      0 0 12px 2px rgb(255 176 43 / 0.7);
   }
-  .lc-loop-wire i {
-    left: 1px;
-    animation: lc-loop-hop-v var(--lp-cycle) linear infinite;
-    animation-delay: calc(var(--i) * var(--lp-hop));
+  .lc-loop-wire > i::before {
+    top: -5px;
+    left: -4px;
   }
-  /* return path: bracket on the inline-start side */
-  .lc-loop-node:last-child .lc-loop-wire::after {
-    display: none;
+  .lc-loop-wire[data-w="sup"] > i::before {
+    scale: 0.7;
+    opacity: 0.85;
   }
-  .lc-loop-ret {
+
+  /* brackets: PLC → Actuator (inner, measured) and Process → Sensor (outer) on the inline-start side */
+  .lc-loop-ret,
+  .lc-loop-byp {
     position: absolute;
-    inset-inline-start: 0.5rem;
-    top: calc(var(--lp-ic) / 2 - 1px);
-    bottom: 0;
-    width: calc(1.75rem + var(--lp-ic) / 2);
-    border: 2px dashed var(--lp-line);
+    border: 2px solid var(--lp-line);
     border-inline-end: 0;
     border-start-start-radius: 12px;
     border-end-start-radius: 12px;
   }
-  .lc-loop-ret i {
-    animation: lc-loop-ret-v var(--lp-cycle) linear infinite;
-    animation-delay: calc(4 * var(--lp-hop));
+  .lc-loop-ret {
+    inset-inline-start: 0.5rem;
+    top: calc(var(--lp-ic) / 2 - 1px);
+    bottom: 0;
+    width: calc(var(--lp-pad) - 0.5rem + var(--lp-ic) / 2);
+    border-style: dashed;
+    border-inline-end: 0;
   }
+  .lc-loop-byp {
+    display: none;
+    inset-inline-start: 1.5rem;
+    top: calc(var(--byp-t, 0px) - 1px);
+    height: calc(var(--byp-h, 0px) + 2px);
+    width: calc(var(--lp-pad) - 1.5rem + var(--lp-ic) / 2);
+  }
+  .lc-loop-body[data-byp] .lc-loop-byp {
+    display: block;
+  }
+  /* static arrowheads into the Sensor (return) and into the Actuator (arc), visible in every motion mode */
+  .lc-loop-ret::after,
+  .lc-loop-byp::after {
+    content: "";
+    position: absolute;
+    inset-inline-start: calc(var(--lp-pad) - 0.5rem - 9px);
+    top: -4px;
+    border: 5px solid transparent;
+    border-inline-start: 7px solid var(--lp-line);
+    border-inline-end: 0;
+  }
+  .lc-loop-byp::after {
+    top: auto;
+    bottom: -4px;
+    inset-inline-start: calc(var(--lp-pad) - 1.5rem - 9px);
+  }
+  /* legs (vertical layout) — return: bottom → inline-start side → top; arc: top → inline-start side → bottom */
+  .lc-loop .lg-a,
+  .lc-loop .lg-c {
+    inset-inline: 0;
+    height: 2px;
+  }
+  .lc-loop .lg-b {
+    inset-block: 0;
+    inset-inline-start: -2px;
+    width: 2px;
+  }
+  .lc-loop .lg::before {
+    top: -4px;
+  }
+  .lc-loop .lg-b::before {
+    left: -4px;
+  }
+  .lc-loop-ret .lg-a {
+    bottom: -2px;
+    --to: calc(var(--dir) * -100%) 0;
+  }
+  .lc-loop-ret .lg-a::before,
+  .lc-loop-byp .lg-a::before {
+    inset-inline-end: -5px;
+  }
+  .lc-loop-ret .lg-b {
+    --to: 0 -100%;
+  }
+  .lc-loop-ret .lg-b::before {
+    top: auto;
+    bottom: -5px;
+  }
+  .lc-loop-ret .lg-c,
+  .lc-loop-byp .lg-a {
+    top: -2px;
+  }
+  .lc-loop-ret .lg-c,
+  .lc-loop-byp .lg-c {
+    --to: calc(var(--dir) * 100%) 0;
+  }
+  .lc-loop-ret .lg-c::before,
+  .lc-loop-byp .lg-c::before {
+    inset-inline-start: -5px;
+  }
+  .lc-loop-byp .lg-a {
+    --to: calc(var(--dir) * -100%) 0;
+  }
+  .lc-loop-byp .lg-b {
+    --to: 0 100%;
+  }
+  .lc-loop-byp .lg-b::before {
+    top: -5px;
+  }
+  .lc-loop-byp .lg-c {
+    bottom: -2px;
+  }
+
   .lc-loop-cap {
     margin-top: 1.5rem;
     font-size: 0.8125rem;
     color: var(--lp-txt);
   }
+
+  /* ---------------------------------------------------------- timeline (one 7.5 s cycle, --lp-n times)
+     0.20 s  Sensor → PLC hop (0.9 s)             1.12  PLC strikes
+     1.50 s  PLC → HMI status blip (0.5 s)        2.02  HMI strikes (lighter)
+     1.50 s  PLC → Actuator arc (0.12 + 0.95 + 0.12 s)   2.72  Actuator strikes
+     3.00 s  Actuator → Process hop (0.9 s)       3.92  Process strikes
+     4.20 s  Process → Sensor return (0.12 + 2.3 + 0.12 s: within 2× the forward speed)   6.78  Sensor strikes
+     Hops ease in and out (a packet that accelerates and settles); bracket legs run at constant speed. */
+  @media (prefers-reduced-motion: no-preference) {
+    :root:not([data-motion="off"]) .lc-loop {
+      & .lc-loop-on {
+        animation: lc-loop-glow var(--lp-cycle) linear var(--lp-n);
+        animation-delay: calc(var(--gd) - 0.1s);
+      }
+      & [data-k="hmi"] .lc-loop-on {
+        --gmax: 0.6;
+      }
+      & .lc-loop-wire[data-w="hop"] > i {
+        animation: lc-loop-hop var(--lp-cycle) linear var(--lp-n);
+      }
+      & [data-k="sensor"] .lc-loop-wire > i {
+        animation-delay: 0.2s;
+      }
+      & [data-k="actuator"] .lc-loop-wire > i {
+        animation-delay: 3s;
+      }
+      & .lc-loop-wire[data-w="sup"] > i {
+        animation: lc-loop-blip var(--lp-cycle) linear var(--lp-n) 1.5s;
+      }
+      & .lg-a,
+      & .lg-c {
+        animation: lc-loop-leg-s var(--lp-cycle) linear var(--lp-n);
+      }
+      & .lc-loop-byp .lg-a {
+        animation-delay: 1.5s;
+      }
+      & .lc-loop-byp .lg-b {
+        animation: lc-loop-leg-b var(--lp-cycle) linear var(--lp-n) 1.62s;
+      }
+      & .lc-loop-byp .lg-c {
+        animation-delay: 2.57s;
+      }
+      & .lc-loop-ret .lg-a {
+        animation-delay: 4.2s;
+      }
+      & .lc-loop-ret .lg-b {
+        animation: lc-loop-leg-r var(--lp-cycle) linear var(--lp-n) 4.32s;
+      }
+      & .lc-loop-ret .lg-c {
+        animation-delay: 6.62s;
+      }
+    }
+  }
   .lc-loop:not([data-play="1"]) * {
     animation-play-state: paused !important;
   }
-
   @keyframes lc-loop-glow {
-    0%,
-    1% {
-      background: var(--lp-ic-bg);
-      color: inherit;
-      box-shadow: none;
-    }
-    3% {
-      background: var(--color-royal-600);
-      border-color: var(--color-royal-600);
-      color: #fff;
-      box-shadow: 0 0 0 6px rgb(37 122 224 / 0.18), 0 10px 26px -8px rgb(5 86 173 / 0.7);
-    }
-    16%,
-    100% {
-      background: var(--lp-ic-bg);
-      box-shadow: none;
-    }
-  }
-  @keyframes lc-loop-hop-v {
     0% {
-      top: 0;
       opacity: 0;
     }
-    1% {
-      opacity: 1;
+    1.3% {
+      opacity: var(--gmax, 1);
     }
+    14%,
+    100% {
+      opacity: 0;
+    }
+  }
+  @keyframes lc-loop-hop {
+    0% {
+      translate: 0 0;
+      opacity: 0;
+      animation-timing-function: cubic-bezier(0.65, 0, 0.35, 1);
+    }
+    1.5%,
     11% {
       opacity: 1;
     }
     12%,
     100% {
-      top: 100%;
+      translate: var(--to);
       opacity: 0;
     }
   }
-  @keyframes lc-loop-ret-v {
+  @keyframes lc-loop-blip {
     0% {
-      inset-inline-start: 100%;
-      top: 100%;
+      translate: 0 0;
+      opacity: 0;
+      animation-timing-function: cubic-bezier(0.65, 0, 0.35, 1);
+    }
+    1%,
+    6% {
+      opacity: 1;
+    }
+    6.7%,
+    100% {
+      translate: var(--to);
       opacity: 0;
     }
-    1% {
+  }
+  /* bracket legs: visible only while they run (short: 0.12 s, arc: 0.95 s, return: 2.3 s) */
+  @keyframes lc-loop-leg-s {
+    0% {
+      translate: 0 0;
       opacity: 1;
     }
-    2.5% {
-      inset-inline-start: 0;
-      top: 100%;
-    }
-    9.5% {
-      inset-inline-start: 0;
-      top: 0;
-    }
-    11.5% {
-      inset-inline-start: 100%;
-      top: 0;
+    1.6% {
+      translate: var(--to);
       opacity: 1;
     }
-    12%,
+    1.7%,
     100% {
-      inset-inline-start: 100%;
-      top: 0;
+      translate: var(--to);
+      opacity: 0;
+    }
+  }
+  @keyframes lc-loop-leg-b {
+    0% {
+      translate: 0 0;
+      opacity: 1;
+    }
+    12.67% {
+      translate: var(--to);
+      opacity: 1;
+    }
+    12.8%,
+    100% {
+      translate: var(--to);
+      opacity: 0;
+    }
+  }
+  @keyframes lc-loop-leg-r {
+    0% {
+      translate: 0 0;
+      opacity: 1;
+    }
+    30.67% {
+      translate: var(--to);
+      opacity: 1;
+    }
+    30.8%,
+    100% {
+      translate: var(--to);
       opacity: 0;
     }
   }
 
-  /* ---------------------------------------------------------- horizontal */
-  @media (min-width: 60rem) {
+  /* ---------------------------------------------------------- horizontal (lg) */
+  @media (min-width: 64rem) {
     .lc-loop-row {
       grid-template-columns: repeat(5, minmax(0, 1fr));
       gap: 1.5rem;
-      padding: 0 0 3.25rem;
+      padding: 2.25rem 0 3.25rem;
     }
     .lc-loop-node {
       flex-direction: column;
@@ -367,13 +640,30 @@ const icon = { sensor: "thermometer", plc: "plc", hmi: "hmi", process: "factory"
       border-inline-start: 6px solid var(--lp-line);
       border-inline-end: 0;
     }
-    .lc-loop-wire i {
-      top: 1px;
-      animation-name: lc-loop-hop-h;
+    .lc-loop-wire[data-w="sup"] {
+      background: repeating-linear-gradient(to right, var(--lp-line) 0 4px, transparent 4px 8px);
     }
-    .lc-loop-node:last-child .lc-loop-wire {
+    .lc-loop-wire[data-w="sup"]::before {
+      top: -5px;
+      left: auto;
+      inset-inline-start: -2px;
+      border: 5px solid transparent;
+      border-inline-end: 6px solid var(--lp-line);
+      border-inline-start: 0;
+    }
+    .lc-loop-wire > i {
+      --to: calc(var(--dir) * 100%) 0;
+    }
+    .lc-loop-wire > i::before {
+      top: -4px;
+      left: auto;
+      inset-inline-start: -5px;
+    }
+    .lc-loop-wire[data-w="skip"],
+    .lc-loop-wire[data-w="last"] {
       display: none;
     }
+    /* Process → Sensor: under the row, from the 5th column's centre to the 1st */
     .lc-loop-ret {
       top: auto;
       bottom: 0.5rem;
@@ -384,64 +674,174 @@ const icon = { sensor: "thermometer", plc: "plc", hmi: "hmi", process: "factory"
       border-top: 0;
       border-radius: 0 0 14px 14px;
     }
-    .lc-loop-ret i {
-      animation-name: lc-loop-ret-h;
+    /* PLC → Actuator: over the row, from the 2nd column's centre to the 4th (over the HMI) */
+    .lc-loop-byp,
+    .lc-loop-body[data-byp] .lc-loop-byp {
+      display: block;
+      top: 0.5rem;
+      height: calc(2.25rem - 0.5rem - 6px);
+      inset-inline: calc(30% - 0.3rem);
+      width: auto;
+      border: 2px solid var(--lp-line);
+      border-bottom: 0;
+      border-radius: 14px 14px 0 0;
+    }
+    .lc-loop-ret::after,
+    .lc-loop-byp::after {
+      top: -7px;
+      bottom: auto;
+      inset-inline-start: -4px;
+      border: 5px solid transparent;
+      border-bottom: 7px solid var(--lp-line);
+      border-top: 0;
+    }
+    .lc-loop-byp::after {
+      top: auto;
+      bottom: -7px;
+      inset-inline-start: auto;
+      inset-inline-end: -4px;
+      border-bottom: 0;
+      border-top: 7px solid var(--lp-line);
+    }
+    /* legs (horizontal) — return: down the 5th column's side → under the row → up into the Sensor;
+       arc: up from the PLC → over the row → down into the Actuator */
+    .lc-loop .lg-a,
+    .lc-loop .lg-c {
+      inset-inline: auto;
+      inset-block: 0;
+      width: 2px;
+      height: auto;
+    }
+    .lc-loop .lg-b {
+      inset-block: auto;
+      inset-inline: 0;
+      width: auto;
+      height: 2px;
+    }
+    .lc-loop .lg::before {
+      top: auto;
+      left: -4px;
+    }
+    .lc-loop .lg-b::before {
+      left: auto;
+      top: -4px;
+    }
+    .lc-loop-ret .lg-a {
+      bottom: auto;
+      inset-inline-end: -2px;
+      --to: 0 100%;
+    }
+    .lc-loop-ret .lg-a::before {
+      inset-inline-end: auto;
+      top: -5px;
+    }
+    .lc-loop-ret .lg-b {
+      bottom: -2px;
+      --to: calc(var(--dir) * -100%) 0;
+    }
+    .lc-loop-ret .lg-b::before {
+      bottom: auto;
+      inset-inline-end: -5px;
+    }
+    .lc-loop-ret .lg-c {
+      top: auto;
+      inset-inline-start: -2px;
+      --to: 0 -100%;
+    }
+    .lc-loop-ret .lg-c::before {
+      inset-inline-start: auto;
+      bottom: -5px;
+    }
+    .lc-loop-byp .lg-a {
+      top: auto;
+      inset-inline-start: -2px;
+      --to: 0 -100%;
+    }
+    .lc-loop-byp .lg-a::before {
+      inset-inline-end: auto;
+      bottom: -5px;
+    }
+    .lc-loop-byp .lg-b {
+      top: -2px;
+      --to: calc(var(--dir) * 100%) 0;
+    }
+    .lc-loop-byp .lg-b::before {
+      inset-inline-start: -5px;
+    }
+    .lc-loop-byp .lg-c {
+      bottom: auto;
+      inset-inline-end: -2px;
+      --to: 0 100%;
+    }
+    .lc-loop-byp .lg-c::before {
+      inset-inline-start: auto;
+      top: -5px;
     }
     .lc-loop-cap {
       text-align: center;
       margin-top: 0.75rem;
     }
   }
-  @keyframes lc-loop-hop-h {
-    0% {
-      inset-inline-start: 0;
-      opacity: 0;
-    }
-    1%,
-    11% {
-      opacity: 1;
-    }
-    12%,
-    100% {
-      inset-inline-start: 100%;
-      opacity: 0;
-    }
-  }
-  @keyframes lc-loop-ret-h {
-    0% {
-      inset-inline-start: 100%;
-      top: 0;
-      opacity: 0;
-    }
-    1% {
-      opacity: 1;
-    }
-    2% {
-      inset-inline-start: 100%;
-      top: 100%;
-    }
-    10% {
-      inset-inline-start: 0;
-      top: 100%;
-    }
-    11.5% {
-      inset-inline-start: 0;
-      top: 0;
-      opacity: 1;
-    }
-    12%,
-    100% {
-      inset-inline-start: 0;
-      top: 0;
-      opacity: 0;
-    }
-  }
 
-  @media (prefers-reduced-motion: reduce) {
-    .lc-loop-ic,
-    .lc-loop-wire i,
-    .lc-loop-ret i {
-      animation: none !important;
+  /* ---------------------------------------------------------- forced colours: lines and arrowheads in CanvasText */
+  @media (forced-colors: active) {
+    .lc-loop-wire,
+    .lc-loop-wire::before,
+    .lc-loop-wire::after,
+    .lc-loop-ret,
+    .lc-loop-byp,
+    .lc-loop-ret::after,
+    .lc-loop-byp::after {
+      forced-color-adjust: none;
+    }
+    .lc-loop-wire {
+      background: CanvasText;
+    }
+    .lc-loop-wire[data-w="sup"] {
+      background: repeating-linear-gradient(CanvasText 0 4px, transparent 4px 8px);
+    }
+    .lc-loop-wire::after {
+      border-top-color: CanvasText;
+    }
+    .lc-loop-wire[data-w="sup"]::before {
+      border-bottom-color: CanvasText;
+    }
+    .lc-loop-ret,
+    .lc-loop-byp {
+      border-color: CanvasText;
+    }
+    .lc-loop-ret::after,
+    .lc-loop-byp::after {
+      border-inline-start-color: CanvasText;
+    }
+    .lc-loop-wire > i,
+    .lc-loop .lg,
+    .lc-loop-on {
+      display: none;
+    }
+    .lc-loop-ic {
+      border-color: CanvasText;
+    }
+    @media (min-width: 64rem) {
+      .lc-loop-wire::after {
+        border-top-color: transparent;
+        border-inline-start-color: CanvasText;
+      }
+      .lc-loop-wire[data-w="sup"] {
+        background: repeating-linear-gradient(to right, CanvasText 0 4px, transparent 4px 8px);
+      }
+      .lc-loop-wire[data-w="sup"]::before {
+        border-bottom-color: transparent;
+        border-inline-end-color: CanvasText;
+      }
+      .lc-loop-ret::after {
+        border-inline-start-color: transparent;
+        border-bottom-color: CanvasText;
+      }
+      .lc-loop-byp::after {
+        border-inline-start-color: transparent;
+        border-top-color: CanvasText;
+      }
     }
   }
 </style>

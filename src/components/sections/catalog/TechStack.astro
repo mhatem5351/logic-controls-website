@@ -15,9 +15,7 @@ interface Props {
   class?: string;
 }
 const { technologies, locale, class: className } = Astro.props;
-const groupsT = ((getMessages(locale).projects as { labels?: { techGroups?: Record<TechGroup, string> } }).labels?.techGroups ?? {}) as Partial<
-  Record<TechGroup, string>
->;
+const groupsT: Partial<Record<TechGroup, string>> = getMessages(locale).projects.labels.techGroups;
 const groups = groupTechnologies(technologies);
 ---
 

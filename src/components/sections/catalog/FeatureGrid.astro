@@ -5,7 +5,7 @@
  */
 import type { Locale } from "~/i18n";
 import Icon, { type IconName } from "~/components/Icon.astro";
-import { html } from "./catalog";
+import { html } from "~/lib/text";
 
 interface Item {
   title: string;
@@ -27,16 +27,16 @@ const pad = (i: number) => String(i + 1).padStart(2, "0");
 <ul role="list" class:list={["grid gap-x-8 gap-y-10", grid, className]}>
   {
     items.map((it, i) => (
-      <li class="lc-reveal relative border-t border-charcoal-200 pt-6 in-[.on-dark]:border-white/12">
-        <span aria-hidden="true" class="lc-draw-x absolute -top-px start-0 h-0.5 w-10 bg-royal-600 in-[.on-dark]:bg-signal-400" />
+      <li class="lc-reveal relative border-t border-charcoal-200 pt-6 on-dark:border-white/12">
+        <span aria-hidden="true" class="lc-draw-x absolute -top-px start-0 h-0.5 w-10 bg-royal-600 on-dark:bg-signal-400" />
         <span aria-hidden="true" class="mb-4 flex items-center gap-3">
-          <span class="font-mono text-xs font-semibold tracking-widest text-royal-600 ltr in-[.on-dark]:text-signal-300" dir="ltr">
+          <span class="font-mono text-xs font-semibold tracking-widest text-royal-600 ltr on-dark:text-signal-300" dir="ltr">
             {pad(i)}
           </span>
-          {it.icon && <Icon name={it.icon} size={20} class="text-royal-600 in-[.on-dark]:text-royal-300" />}
+          {it.icon && <Icon name={it.icon} size={20} class="text-royal-600 on-dark:text-royal-300" />}
         </span>
-        <H class="type-h4 text-navy-950 in-[.on-dark]:text-white" set:html={html(it.title, locale)} />
-        <p class="mt-2 text-charcoal-600 in-[.on-dark]:text-navy-200" set:html={html(it.text, locale)} />
+        <H class="type-h4 text-navy-950 on-dark:text-white" set:html={html(locale, it.title)} />
+        <p class="mt-2 text-charcoal-600 on-dark:text-navy-200" set:html={html(locale, it.text)} />
       </li>
     ))
   }

@@ -4,8 +4,13 @@
    end in ring nodes. Loops: bottles advance one pitch every 1.6 s (seamless: each station changes the
    state of the bottle crossing it); a network packet runs the bus every 6 s and wakes each node in turn. */
 import Frame from "./ArtFrame.astro";
+import LazyArt from "./LazyArt.astro";
 import { uid, type ArtProps } from "./types";
-const p = Astro.props as ArtProps;
+interface Props extends ArtProps {
+  /** Load from the shared, cached fragment when near the viewport (LazyArt.astro). Default: true unless labelled. */
+  lazy?: boolean;
+}
+const { lazy = !Astro.props.label, ...p } = Astro.props;
 const u = uid("fl");
 
 // bottles: pitch 32, k = 0 … 16 at x = 474 + 32k (bottom at y 219); k=0 fades in, k=16 drops into the case
@@ -26,6 +31,10 @@ const pipes = "M216 220V240H329M284 220V240M338 231V200H376M376 156H362V70H570V9
 const plates = Array.from({ length: 10 }, (_, k) => 380 + k * 4);
 ---
 
+{
+  lazy ? (
+    <LazyArt src="factory/factory-line" viewBox="0 0 1200 300" {...p} />
+  ) : (
 <Frame {...p} uid={u} name="fl" viewBox="0 0 1200 300">
   <style is:inline>
     .lca-fl .po{stroke:var(--i-ink);stroke-width:7}
@@ -66,7 +75,7 @@ const plates = Array.from({ length: 10 }, (_, k) => 380 + k * 4);
     @keyframes flD{0%{stroke-dashoffset:14}10%,100%{stroke-dashoffset:-102}}
     @keyframes flN{0%,8%{opacity:0}9%,22%{opacity:1}38%,100%{opacity:0}}
     @keyframes flG{0%,8.5%{opacity:0;transform:scale(1)}9%{opacity:1;transform:scale(1)}26%,100%{opacity:0;transform:scale(2.6)}}
-    @media (prefers-reduced-motion:reduce){.lca-fl .p.bus{stroke-dashoffset:-50}.lca-fl .f1{transform:scaleY(.5)}.lca-fl .lb{transform:scaleX(.6)}.lca-fl .wv{opacity:.4}}
+    @media (prefers-reduced-motion:reduce){.lca-fl .p.bus{stroke-dashoffset:-50}.lca-fl .f1{transform:scaleY(.5)}.lca-fl .lb{transform:scaleX(.6)}.lca-fl .wv{opacity:.4}}.lca-fl:is([data-play=rest],[data-motion=off] *) .p.bus{stroke-dashoffset:-50}.lca-fl:is([data-play=rest],[data-motion=off] *) .f1{transform:scaleY(.5)}.lca-fl:is([data-play=rest],[data-motion=off] *) .lb{transform:scaleX(.6)}.lca-fl:is([data-play=rest],[data-motion=off] *) .wv{opacity:.4}
   </style>
   <defs>
     <path id={`${u}a`} d={pipes}></path>
@@ -214,3 +223,5 @@ const plates = Array.from({ length: 10 }, (_, k) => 380 + k * 4);
   {drops.map(([x, ry, d]) => <circle class="nd dr" cx={x + 10} cy={ry} r="2.5" style={`--d:${d}s`}></circle>)}
   {drops.map(([x, ry, d]) => <circle class="pg dr" cx={x + 10} cy={ry} r="5" style={`--d:${d}s`}></circle>)}
 </Frame>
+  )
+}

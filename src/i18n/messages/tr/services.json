@@ -2,7 +2,7 @@
   "index": {
     "seo": {
       "title": "Mısır'da Endüstriyel Otomasyon Hizmetleri | Logic Controls",
-      "description": "Mısır'daki tesisler için otomasyon panoları, PLC ve HMI programlama, makine otomasyonu ve retrofit, proses kontrolü, SCADA, devreye alma ve destek."
+      "description": "Mısır'daki tesisler için otomasyon panoları, PLC/HMI programlama, makine otomasyonu, retrofit, proses kontrolü, SCADA, devreye alma ve destek."
     },
     "h1": "Tasarımdan ilk çalıştırmaya otomasyon hizmetleri",
     "intro": [
@@ -48,8 +48,12 @@
           "a": "Çizimler her teslimatın parçasıdır. Program dosyaları, şifreler ve mülkiyet teklifte yazılı olarak belirtilir; böylece sipariş vermeden önce neyi teslim alacağınızı bilirsiniz."
         },
         {
+          "q": "Bir kontrol sisteminin fiyatı neye bağlıdır?",
+          "a": "Giriş ve çıkış (I/O) sayısına, PLC ve HMI platformuna, panonun boyutuna ve bileşenlerine, programlama ve test iş yüküne ve sahanın konumuna. Kısa bir açıklama ve fotoğraflar gönderin; bir mühendisimiz sorularla, saha ziyareti önerisiyle veya teklifle size dönüş yapar."
+        },
+        {
           "q": "UL veya CE gibi sertifikalarınız var mı?",
-          "a": "Hayır. Tasarımlarımızda IEC 60204-1 ve IEC 61439 uygulamalarını esas alıyor ve yaptığımız işi belgeliyoruz. UL listelemesi veya CE işaretlemesi yapmıyoruz."
+          "a": "Hayır. Tasarımlarımızda {link:services/control-panels|IEC 60204-1 ve IEC 61439 uygulamalarını} esas alıyor ve yaptığımız işi belgeliyoruz. UL listelemesi veya CE işaretlemesi yapmıyoruz."
         }
       ]
     }
@@ -60,7 +64,7 @@
       "navTitle": "Otomasyon panoları",
       "summary": "Makineniz veya prosesiniz için elektrik şemaları, I/O listeleri ve PLC otomasyon panoları: tasarım, montaj, kablaj ve test.",
       "seoTitle": "Otomasyon Panosu Tasarım ve İmalatı, Mısır | Logic Controls",
-      "seoDescription": "Mısır'daki makine ve proses hatları için tasarlanan, kablajlanan ve test edilen PLC otomasyon panoları. Elektrik şemaları, I/O ve malzeme listesi dahil.",
+      "seoDescription": "Mısır'da makine ve proses hatları için EPLAN'da tasarlanan, kablajlanan, etiketlenen ve teslimden önce test edilen PLC otomasyon panoları.",
       "h1": "Elektrik tasarımı ve PLC otomasyon panoları",
       "intro": [
         "Bir otomasyon panosu ancak çizimleri kadar iyidir. İşe elektrik tasarımıyla başlıyoruz: güç dağıtımı, motor devreleri, güvenlik devreleri ve eksiksiz I/O listesi. Ardından panoyu monte ediyor, kablajını yapıyor, etiketliyor ve sahanıza ulaşmadan önce test ediyoruz.",
@@ -112,7 +116,7 @@
         },
         {
           "q": "Panoda hangi markaları kullanıyorsunuz?",
-          "a": "Bütçenize ve tercihinize bağlı. Yakın tarihli panolarımızdan birinde Siemens S7-1200 PLC ve Yaskawa sürücüler, bir diğerinde Delta PLC, LS Electric sürücü, Schneider Electric devre kesiciler ve MEAN WELL güç kaynağı kullanıldı."
+          "a": "Bütçenize, tercihinize ve Mısır'da bulunabilen yedek parçalara göre sizinle birlikte seçiyoruz. Yakın tarihli panolarımızdan birinde Siemens S7-1200 PLC ve Yaskawa sürücüler, bir diğerinde Delta PLC, LS Electric sürücü, Schneider Electric devre kesiciler ve MEAN WELL güç kaynağı kullanıldı."
         },
         {
           "q": "Panolarınız bir standarda göre mi tasarlanıyor?",
@@ -120,7 +124,7 @@
         },
         {
           "q": "Bir pano ne kadar sürede hazırlanır?",
-          "a": "Panonun büyüklüğüne ve bileşenlerin tedarik durumuna bağlıdır. Tasarım onaylandıktan sonra teklifte teslim tarihi veriyoruz."
+          "a": "Tasarım onaylandıktan sonra teklifte teslim tarihi veriyoruz. Tarih esas olarak panonun büyüklüğüne ve bileşenlerin tedarik durumuna bağlıdır."
         }
       ],
       "cta": {
@@ -133,7 +137,7 @@
       "navTitle": "PLC ve HMI programlama",
       "summary": "Siemens, Schneider Electric, Delta, LS Electric ve Wecon için anlaşılır, açıklamalı PLC programları ve Arapça, İngilizce veya iki dilli HMI ekranları.",
       "seoTitle": "Mısır'da PLC ve HMI Programlama | Logic Controls",
-      "seoDescription": "Siemens, Delta, LS Electric, Schneider Electric ve Wecon için PLC programlama ve HMI tasarımı. Sekanslar, kilitlemeler, alarmlar, reçeteler, Arapça HMI.",
+      "seoDescription": "Mısır'da Siemens, Delta, LS Electric, Schneider Electric ve Wecon için PLC programlama ve HMI tasarımı: sekanslar, kilitlemeler, Arapça ekranlar.",
       "h1": "PLC programlama ve HMI tasarımı",
       "intro": [
         "İyi bir PLC kodunu, sonradan gelen başka bir mühendis de okuyabilir. Makine sekansları, kilitlemeler, alarmlar ve reçeteler için yapılandırılmış lojik yazıyor, bakım ekibinizin takip edebilmesi için açıklamalar ekliyoruz.",
@@ -193,7 +197,7 @@
         },
         {
           "q": "Bir makineyi bir PLC markasından diğerine geçirebilir misiniz?",
-          "a": "Evet. Eski PLC'nin yedek parçalarını bulmak zorlaştığında bu sık yapılan bir iştir. Makine modernizasyonu (retrofit) hizmetimize göz atın."
+          "a": "Evet. Eski PLC'nin yedek parçalarını bulmak zorlaştığında bu sık yapılan bir iştir. {link:services/machine-retrofits|Makine modernizasyonu (retrofit) hizmetimize} göz atın."
         }
       ],
       "cta": {
@@ -205,8 +209,8 @@
       "title": "Makine otomasyonu, sürücüler ve hareket kontrolü",
       "navTitle": "Makine otomasyonu",
       "summary": "Dolum, etiketleme, baskı, yıkama ve test makineleri için komple kontrol sistemleri: PLC, HMI, VFD'ler, step motor ve hareket kontrolü.",
-      "seoTitle": "Makine Otomasyonu, Hareket Kontrolü | Logic Controls Mısır",
-      "seoDescription": "Mısır'da dolum, etiketleme, baskı ve yıkama makineleri için PLC, HMI, VFD, step motor ve hareket kontrol sistemleri. Tesisler ve makine üreticileri için.",
+      "seoTitle": "Makine Otomasyonu ve Hareket Kontrolü | Logic Controls",
+      "seoDescription": "Mısır'da dolum, etiketleme, baskı ve yıkama makineleri için PLC, HMI, sürücü ve hareket kontrol sistemleri; tesisler ve makine üreticileri için.",
       "h1": "Makine otomasyonu, sürücüler ve hareket kontrolü",
       "intro": [
         "Tekil makineleri otomatikleştiriyoruz: dolum, etiketleme, şişe baskı ve yıkama makineleri ile test düzenekleri. Kontrol tasarımını, sürücüleri ve programı tek ekip üstlendiği için makine tek bir sistem olarak çalışır.",
@@ -275,7 +279,7 @@
       "navTitle": "Makine modernizasyonu",
       "summary": "İyi durumdaki makinenizi koruyun, eski kontrol sistemini yenileyin: yeni PLC, HMI, sürücüler ve hareket kontrolü; belgelenmiş, test edilmiş ve planlı geçişle.",
       "seoTitle": "Mısır'da Makine Retrofiti ve PLC Yenileme | Logic Controls",
-      "seoDescription": "Eski makineleri değiştirmek yerine modernize edin: yeni PLC, HMI, sürücüler ve hareket kontrolü; çizimler ve testlerle. Mısır genelinde retrofit hizmeti.",
+      "seoDescription": "Makineyi koruyun, kontrolü yenileyin: duruştan önce test edilen yeni PLC, HMI, sürücüler ve hareket kontrolü. Mısır genelinde makine retrofiti.",
       "h1": "Makine modernizasyonu ve kontrol sistemi yenileme",
       "intro": [
         "Pek çok makine mekanik olarak sağlamdır ama kontrol sistemi değildir: üretimi durmuş PLC'ler, kayıp programlar, röleli lojik, yıpranmış kablaj veya artık satılmayan yedek parçalar. Makinenin tamamını değiştirmek pahalıdır. Kontrol sistemini yenilemek genellikle çok daha az maliyetlidir.",
@@ -327,7 +331,7 @@
         },
         {
           "q": "Makine ne kadar süre duracak?",
-          "a": "Makineye bağlı. Yeni panoyu ve programı duruştan önce hazırlayıp test ediyoruz; böylece sahadaki iş ağırlıklı olarak montaj, I/O kontrolleri ve ilk çalıştırmadan oluşur. Planı sizinle önceden belirliyoruz."
+          "a": "Mümkün olan en kısa süre. Yeni panoyu ve programı duruştan önce hazırlayıp test ediyoruz; böylece sahadaki iş ağırlıklı olarak montaj, I/O kontrolleri ve ilk çalıştırmadan oluşur. Duruşun kesin süresi makineye bağlıdır ve planı sizinle önceden belirliyoruz."
         },
         {
           "q": "İthal bir makineyi modernize edebilir misiniz?",
@@ -344,7 +348,7 @@
       "navTitle": "Proses kontrolü",
       "summary": "Pastörizasyon, sterilizasyon, pişirme, kaplama, CIP, harmanlama ve dozajlama kontrolü; reçeteler, kilitlemeler ve veri kaydıyla.",
       "seoTitle": "Mısır'da Proses Kontrolü ve Harmanlama | Logic Controls",
-      "seoDescription": "Mısır'da pastörizatörler, otoklavlar, pişirme kazanları, CIP, harmanlama ve dozajlama için PLC proses kontrolü. Sıcaklık, basınç, süre ve reçete kontrolü.",
+      "seoDescription": "Mısır'da pastörizatör, otoklav, pişirme kazanı, CIP, harmanlama ve dozajlama için PLC proses kontrolü: sıcaklık, basınç, süre ve reçeteler.",
       "h1": "Termal prosesler, CIP ve harmanlama sistemleri için proses kontrolü",
       "intro": [
         "Gıda, süt ürünleri ve ilaç proseslerinde ürünü sayılar belirler: sıcaklık, basınç, süre, debi ve doz. Bu değerleri koruyan, sağlanmadıklarında prosesi durduran ve olup biteni kaydeden kontrol sistemleri kuruyoruz.",
@@ -400,7 +404,7 @@
         },
         {
           "q": "Mevcut bir prosese CIP ekleyebilir misiniz?",
-          "a": "Vanalar ve pompalar uygunsa çoğu zaman evet. CIP, pastörizatör projelerimizde olduğu gibi makine programının içinde ya da ayrı bir sekans olarak çalışabilir."
+          "a": "Vanalar ve pompalar uygunsa çoğu zaman evet. CIP, {link:projects/pasteurizer-cip-recipes|pastörizatör projelerimizde} olduğu gibi makine programının içinde ya da ayrı bir sekans olarak çalışabilir."
         }
       ],
       "cta": {
@@ -413,7 +417,7 @@
       "navTitle": "SCADA ve veri kaydı",
       "summary": "Prosesi görebilmeniz ve neyin üretildiğini gösterebilmeniz için SCADA ekranları, alarmlar, reçeteler, raporlar ve izlenebilirlik.",
       "seoTitle": "Mısır'da SCADA ve Veri Kayıt Sistemleri | Logic Controls",
-      "seoDescription": "Siemens WinCC Professional ile SCADA, HMI'da veri kaydı, alarm geçmişi, reçeteler ve izlenebilirlik için otomatik test raporları. Mısır'daki tesisler için.",
+      "seoDescription": "Mısır'daki tesisler için Siemens WinCC Professional ile SCADA, HMI'da veri kaydı, alarm geçmişi, reçeteler ve otomatik test raporları.",
       "h1": "SCADA, izleme ve veri kaydı",
       "intro": [
         "Bir parti hatalı çıktığında ilk soru ne olduğudur. SCADA ve veri kaydı bu soruyu yanıtlar. Tüm prosesi gösteren izleme ekranları, zaman damgalı alarm listeleri ve her partiyi kendi ayarlarıyla ilişkilendiren kayıtlar oluşturuyoruz.",
@@ -530,7 +534,7 @@
       "faq": [
         {
           "q": "Kendi kurmadığınız ekipmanları devreye alabilir misiniz?",
-          "a": "Evet. Bir gıda ve içecek tesisindeki atık arıtma projemiz yalnızca devreye almayı kapsıyordu: enstrüman kontrolleri, I/O testleri, lojik doğrulama, ilk çalıştırma ve eksik listesinin kapatılması."
+          "a": "Evet. Bir gıda ve içecek tesisindeki {link:projects/anaerobic-waste-treatment-commissioning|atık arıtma projemiz} yalnızca devreye almayı kapsıyordu: enstrüman kontrolleri, I/O testleri, lojik doğrulama, ilk çalıştırma ve eksik listesinin kapatılması."
         },
         {
           "q": "Makine üreticisinin mühendisleriyle birlikte çalışıyor musunuz?",
@@ -538,7 +542,7 @@
         },
         {
           "q": "Devreye alma ne kadar sürer?",
-          "a": "I/O nokta sayısına, prosese ve sahanın hazır olma durumuna bağlıdır. Süreyi teklifte tahmin ediyor, saha ziyaretinden sonra netleştiriyoruz."
+          "a": "Süreyi teklifte tahmin ediyor, saha ziyaretinden sonra netleştiriyoruz. Süre; I/O nokta sayısına, prosese ve sahanın hazır olma durumuna bağlıdır."
         }
       ],
       "cta": {
@@ -551,7 +555,7 @@
       "navTitle": "Bakım ve destek",
       "summary": "Arıza tespiti ve giderme, program değişiklikleri, önleyici bakım, operatör eğitimi ve Mısır'da yedek parça tedarikinde destek.",
       "seoTitle": "Mısır'da Otomasyon Bakım ve Teknik Destek | Logic Controls",
-      "seoDescription": "Mısır'daki tesisler için PLC, HMI ve sürücü arızalarının giderilmesi, önleyici bakım, program değişiklikleri, operatör eğitimi ve yedek parça tedariki.",
+      "seoDescription": "Mısır'daki tesisler için PLC, HMI ve sürücü arıza giderme, önleyici bakım, program değişiklikleri, eğitim ve yedek parça tedariki.",
       "h1": "Arıza giderme, bakım ve teknik destek",
       "intro": [
         "Duran bir makine her saat para kaybettirir. Kontrol arızalarını PLC diyagnostiği, I/O durumu, sürücü hata kodları ve kablaj kontrolleriyle sistemli biçimde buluyor; yalnızca belirtiyi değil, nedeni gideriyoruz.",
@@ -599,7 +603,7 @@
       "faq": [
         {
           "q": "Bir arızaya ne kadar hızlı müdahale edebilirsiniz?",
-          "a": "Konumunuza ve destek sözleşmesine bağlıdır. Müdahale süreleri her saha için belirlenir ve sözleşmeye yazılır. Acil yardım için bizi arayın veya WhatsApp'tan yazın."
+          "a": "Bizi arayın veya WhatsApp'tan yazın: bir mühendisimiz arızayı sizinle konuşur ve bir sonraki adımı, uzaktan ya da sahada, birlikte belirler. Planlı destek için müdahale süreleri her saha için belirlenir ve teknik destek sözleşmesine yazılır."
         },
         {
           "q": "Stokta yedek parça bulunduruyor musunuz?",

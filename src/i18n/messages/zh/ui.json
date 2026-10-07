@@ -31,7 +31,9 @@
     "learnMore": "了解更多",
     "viewProject": "查看项目",
     "viewAll": "查看全部",
-    "inEgyptWhatsapp": "已在埃及？可通过 WhatsApp 联系我们"
+    "inEgyptWhatsapp": "已在埃及？可通过 WhatsApp 联系我们",
+    "quoteShort": "报价",
+    "whatsappShort": "WhatsApp"
   },
   "a11y": {
     "skip": "跳到主要内容",
@@ -43,7 +45,8 @@
     "breadcrumbs": "面包屑导航",
     "homeLink": "Logic Controls 首页",
     "newTab": "在新标签页中打开",
-    "currentLanguage": "当前语言"
+    "submenu": "{label}子菜单",
+    "backToTop": "返回顶部"
   },
   "whatsapp": {
     "fabLabel": "通过 WhatsApp 联系工程师",
@@ -51,13 +54,22 @@
   },
   "email": {
     "fabLabel": "邮件联系工程师",
-    "subject": "自动化项目咨询"
+    "subject": "自动化项目咨询",
+    "subjectTopic": "{subject}：{topic}",
+    "body": "您好，Logic Controls：\n\n设备或生产线：\n需求内容：\n工厂所在地（城市或工业区）：\n目标日期：\n\n（如有设备照片、铭牌照片或图纸，请一并附上。）\n\n来源页面：{page}",
+    "copy": "复制邮箱地址",
+    "copied": "邮箱地址已复制",
+    "openApp": "打开邮件应用",
+    "useForm": "使用报价表单",
+    "hint": "使用网页邮箱（如 QQ 邮箱、163 邮箱）？复制地址后即可发送。"
+  },
+  "demo": {
+    "open": "打开实时演示"
   },
   "contact": {
     "phone": "电话",
     "email": "电子邮箱",
     "whatsapp": "WhatsApp",
-    "address": "地址",
     "addressValue": "埃及吉萨省十月六日城"
   },
   "footer": {
@@ -79,21 +91,34 @@
   },
   "gallery": {
     "label": "图片查看器",
-    "open": "打开第 {n} 张图片，共 {total} 张",
     "close": "关闭图片查看器",
     "prev": "上一张",
     "next": "下一张",
-    "counter": "{n} / {total}"
+    "counter": "{n} / {total}",
+    "counterLong": "第 {n} 张，共 {total} 张",
+    "openSuffix": "（第 {n} 张，共 {total} 张，点击查看大图）"
   },
   "video": {
-    "play": "播放视频",
-    "playNamed": "播放视频：{title}"
+    "playNamed": "播放视频：{title}",
+    "pauseLoop": "暂停背景视频"
+  },
+  "urgent": {
+    "title": "设备已停机？",
+    "text": "无需等待表单回复：请立即致电或通过 WhatsApp 联系工程师。",
+    "textEmail": "无需等待表单回复：请立即致电工程师。",
+    "whatsapp": "立即 WhatsApp"
   },
   "faq": {
-    "title": "常见问题"
+    "title": "常见问题",
+    "more": "查看全部问题（{count}）"
   },
   "process": {
-    "step": "步骤"
+    "step": "步骤",
+    "more": "查看全部 {count} 个步骤"
+  },
+  "motion": {
+    "pause": "暂停动画",
+    "systemReduced": "您的设备已设置为减少动态效果，因此动画已关闭。"
   },
   "notFound": {
     "title": "页面未找到",

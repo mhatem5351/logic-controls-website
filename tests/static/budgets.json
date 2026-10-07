@@ -1,96 +1,100 @@
 {
   "$comment": "Byte limits = measured values + 10% headroom, rounded up to 1 KB. Re-baseline on purpose with `npm run test:budget -- --update` and review the diff.",
+  "notes": [
+    "2026-10-07 (round-1 integration, PK7). Fixed before re-baselining: card images capped at 800w (2x; phones no longer take 1200w: /ar/projects/ on a Pixel 7 772 -> 509 KB, about the pre-round 514 KB); hero photo panel `sizes` from the image's aspect ratio and the hero height instead of a flat 80vw (/ar/technologies/ desktop back to the pre-round 54 KB at 1x / 124 KB at 2x); gallery widths gained a 960 step; print CSS moved to its own media=print sheet; dev-only pages no longer feed the production CSS. The measuring script now counts a <picture> split by `media` (desktop panel vs phone band) once instead of twice and follows JS static imports.",
+    "Intended growth accepted: HTML +3-9 KB gzip per page (header dropdowns + drawer accordions with icons, full footer lists, back-to-top, motion toggle, 'On this page' bars, CSP <meta> with per-page script hashes ~0.4 KB); external JS on every page 3-9 KB gzip (motion preference + toggle, FAB/back-to-top, hero video pause; previously 0 because the old scripts were inlined); global CSS 22.3 -> 26.2 KB gzip (nav, grids, FAB, view transitions, motion system, lang links, copy button, TOC chips); ControlLoop/HMI CSS + hmi-demo.js (lazy) from the compositor-only animation rewrite; images: new 'Panels we have built' grid on /services/control-panels/, panel-photo covers on case-study cards, the 820px lead photo in 3-photo galleries."
+  ],
   "pageTypes": {
     "404": {
-      "html": 6144,
-      "css": 25600,
-      "js": 0,
+      "html": 9216,
+      "css": 29696,
+      "js": 1024,
       "images": 26624
     },
     "about": {
-      "html": 40960,
-      "css": 27648,
-      "js": 0,
-      "images": 230400
+      "html": 45056,
+      "css": 32768,
+      "js": 9216,
+      "images": 304128
     },
     "contact": {
-      "html": 23552,
-      "css": 27648,
-      "js": 3072,
+      "html": 34816,
+      "css": 32768,
+      "js": 10240,
       "images": 60416
     },
     "thanks": {
-      "html": 14336,
-      "css": 25600,
-      "js": 0,
+      "html": 23552,
+      "css": 29696,
+      "js": 5120,
       "images": 60416
     },
     "foreign-manufacturers": {
-      "html": 39936,
-      "css": 27648,
-      "js": 0,
-      "images": 193536
+      "html": 51200,
+      "css": 32768,
+      "js": 7168,
+      "images": 223232
     },
     "home": {
-      "html": 92160,
-      "css": 34816,
-      "js": 8192,
-      "images": 297984
+      "html": 70656,
+      "css": 40960,
+      "js": 11264,
+      "images": 366592
     },
     "industry": {
-      "html": 27648,
-      "css": 25600,
-      "js": 0,
-      "images": 235520
+      "html": 36864,
+      "css": 29696,
+      "js": 6144,
+      "images": 281600
     },
     "industries-index": {
-      "html": 33792,
-      "css": 25600,
-      "js": 0,
+      "html": 26624,
+      "css": 29696,
+      "js": 6144,
       "images": 60416
     },
     "privacy": {
-      "html": 20480,
-      "css": 25600,
-      "js": 0,
+      "html": 28672,
+      "css": 29696,
+      "js": 4096,
       "images": 60416
     },
     "project": {
-      "html": 24576,
-      "css": 25600,
-      "js": 0,
-      "images": 766976
+      "html": 35840,
+      "css": 29696,
+      "js": 4096,
+      "images": 687104
     },
     "projects-index": {
-      "html": 27648,
-      "css": 25600,
-      "js": 0,
-      "images": 608256
+      "html": 36864,
+      "css": 29696,
+      "js": 4096,
+      "images": 669696
     },
     "service": {
-      "html": 41984,
-      "css": 32768,
-      "js": 8192,
-      "images": 194560
+      "html": 52224,
+      "css": 38912,
+      "js": 7168,
+      "images": 445440
     },
     "services-index": {
-      "html": 45056,
-      "css": 27648,
-      "js": 0,
-      "images": 169984
+      "html": 34816,
+      "css": 32768,
+      "js": 7168,
+      "images": 157696
     },
     "technologies": {
-      "html": 35840,
-      "css": 33792,
-      "js": 8192,
-      "images": 181248
+      "html": 48128,
+      "css": 41984,
+      "js": 6144,
+      "images": 247808
     }
   },
   "files": {
-    "cssGz": 25600,
-    "jsGz": 8192,
-    "font": 44032,
+    "cssGz": 29696,
+    "jsGz": 9216,
+    "font": 41984,
     "image": 570368,
-    "video": 7440384
+    "video": 6901760
   }
 }

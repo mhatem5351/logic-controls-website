@@ -3,7 +3,7 @@
  */
 import { test, expect } from "./fixtures";
 
-test("gallery: thumbnail opens the lightbox; arrows / buttons move; Escape closes and returns focus", async ({ page }) => {
+test("gallery: thumbnail opens the lightbox; arrows / buttons move; Escape closes and returns focus to the opener", async ({ page }) => {
   await page.goto("/en/projects/pasteurizer-cip-recipes/");
   const thumbs = page.locator("[data-gallery] a[data-full]");
   const n = await thumbs.count();
@@ -16,7 +16,8 @@ test("gallery: thumbnail opens the lightbox; arrows / buttons move; Escape close
   await expect(dialog).toBeVisible();
   expect(await dialog.evaluate((d: HTMLDialogElement) => d.matches(":modal"))).toBe(true);
   await expect(dialog.locator("[data-counter]")).toHaveText(`1 / ${n}`);
-  const img = dialog.locator("[data-image]");
+  // two stacked layers (the next photo is decoded behind the current one, then crossfaded): the shown one is not aria-hidden
+  const img = dialog.locator("[data-image]:not([aria-hidden])");
   await expect(img).toHaveAttribute("alt", /\S/);
   await expect.poll(() => img.evaluate((i: HTMLImageElement) => i.complete && i.naturalWidth > 0)).toBe(true);
   expect(await img.getAttribute("src")).toBe(await thumbs.first().getAttribute("data-full"));
@@ -28,9 +29,10 @@ test("gallery: thumbnail opens the lightbox; arrows / buttons move; Escape close
   await dialog.locator("[data-prev]").click(); // wraps around
   await expect(dialog.locator("[data-counter]")).toHaveText(`${n} / ${n}`);
 
+  // focus returns to the thumbnail that opened the lightbox (not the one last shown)
   await page.keyboard.press("Escape");
   await expect(dialog).toBeHidden();
-  await expect(thumbs.nth(n - 1)).toBeFocused();
+  await expect(thumbs.first()).toBeFocused();
 });
 
 test("gallery: arrow keys follow the reading direction in Arabic", { tag: "@desktop-only" }, async ({ page }) => {
@@ -38,9 +40,9 @@ test("gallery: arrow keys follow the reading direction in Arabic", { tag: "@desk
   const n = await page.locator("[data-gallery] a[data-full]").count();
   await page.locator("[data-gallery] a[data-full]").first().click();
   const counter = page.locator(".lc-lightbox [data-counter]");
-  await expect(counter).toHaveText(`1 / ${n}`);
+  await expect(counter).toHaveText(`1 من ${n}`); // ui.gallery.counter (ar)
   await page.keyboard.press("ArrowLeft"); // "next" in RTL
-  await expect(counter).toHaveText(`2 / ${n}`);
+  await expect(counter).toHaveText(`2 من ${n}`);
   await page.locator(".lc-lightbox [data-close]").click();
   await expect(page.locator(".lc-lightbox")).toBeHidden();
 });

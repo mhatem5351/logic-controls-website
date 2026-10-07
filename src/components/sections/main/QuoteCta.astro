@@ -1,25 +1,16 @@
 ---
 /**
- * Closing CTA with the "What we need to quote" checklist (common.quoteChecklist).
- * Same visual language as <CtaBand> (navy, angled top, blueprint, gear watermark) in two columns:
- * pitch + buttons + contact line | checklist card (<ChecklistPanel>, collapsed below 1024px so the buttons stay close
- * to the pitch). Also the single closing block of the service pages (pitch, buttons and checklist in one band).
- * On zh the drawings hint points to email (WhatsApp is blocked).
+ * Closing CTA with the "What we need to quote" checklist (common.quoteChecklist): <CtaBand> with <ChecklistPanel> in
+ * its aside (two columns from 1024px; the panel is collapsed below that so the buttons stay close to the pitch).
+ * Also the single closing block of the service pages. Takes plain-text copy (formatted with the rich-text rules).
+ * On zh the drawings hint points to email (WhatsApp is blocked); on ar WhatsApp is the first, filled button.
  */
-import { getMessages, type Locale } from "~/i18n";
-import { SITE } from "~/data/site";
-import Button from "~/components/Button.astro";
-import BrandMark from "~/components/BrandMark.astro";
-import Icon from "~/components/Icon.astro";
-import Swoosh from "~/components/Swoosh.astro";
-import { href as lhref, QUOTE_PATH, whatsappLink, mailtoLink, prefersEmail } from "~/components/nav";
+import type { Locale } from "~/i18n";
+import CtaBand from "~/components/CtaBand.astro";
+import type { Cta } from "~/components/contact-cta";
 import ChecklistPanel from "./ChecklistPanel.astro";
-import { html, colon } from "./rich";
+import { html } from "./rich";
 
-interface Cta {
-  label: string;
-  href: string;
-}
 interface Props {
   locale: Locale;
   title: string;
@@ -28,76 +19,25 @@ interface Props {
   primary?: Cta;
   /** Defaults to WhatsApp (email on zh). */
   secondary?: Cta | false;
-  /** WhatsApp message for the drawings hint. */
+  /** WhatsApp message for the drawings hint (and the default WhatsApp button). */
   whatsappMessage?: string;
   id?: string;
   class?: string;
 }
 
-const { locale, title, text, eyebrow, id, class: className } = Astro.props;
-const t = getMessages(locale);
-const email = prefersEmail(locale);
-const {
-  primary = { label: t.ui.cta.quote, href: lhref(locale, QUOTE_PATH) },
-  secondary = email
-    ? { label: t.ui.cta.emailEngineer, href: mailtoLink(t.ui.email.subject) }
-    : { label: t.ui.cta.whatsapp, href: whatsappLink(t.common.whatsapp.default) },
-  whatsappMessage = t.common.whatsapp.drawings,
-} = Astro.props;
-const secondaryIsWa = secondary && secondary.href.startsWith("https://wa.me");
+const { locale, title, text, eyebrow, primary, secondary, whatsappMessage, id, class: className } = Astro.props;
 ---
 
-<section id={id} class:list={["lc-band lc-clip on-dark angle-top relative isolate overflow-hidden bg-navy-950 py-section text-navy-100", className]}>
-  <div aria-hidden="true" class="pointer-events-none absolute inset-0 -z-10 bg-blueprint mask-fade-edges"></div>
-  <div aria-hidden="true" class="pointer-events-none absolute inset-0 -z-20 bg-[radial-gradient(ellipse_60%_80%_at_20%_40%,rgb(5_86_173/0.35),transparent_70%)] rtl:bg-[radial-gradient(ellipse_60%_80%_at_80%_40%,rgb(5_86_173/0.35),transparent_70%)]"></div>
-  <BrandMark tone="mono" class="lc-gear pointer-events-none absolute -start-24 top-1/2 -z-10 hidden h-[120%] w-auto -translate-y-1/2 text-white/[0.03] lg:block" />
-  <div class="wrap grid items-start gap-12 lg:grid-cols-12 lg:gap-10">
-    <div class="lg:col-span-6 lg:pt-4">
-      {
-        eyebrow && (
-          <p class="mb-4 flex items-center gap-3 type-label text-navy-200">
-            <span class="slant-bar text-signal-400" aria-hidden="true" />
-            <span>{eyebrow}</span>
-          </p>
-        )
-      }
-      <h2 class="type-h2 text-white" set:html={html(locale, title)} />
-      <Swoosh tone="light" class="mt-5 w-40" />
-      {text && <p class="mt-5 max-w-xl type-lead text-navy-200" set:html={html(locale, text)} />}
-      <div class="mt-9 flex flex-wrap items-center gap-3">
-        <Button href={primary.href} size="lg" iconEnd="arrow" class="max-sm:w-full">{primary.label}</Button>
-        {
-          secondary && (
-            <Button
-              href={secondary.href}
-              size="lg"
-              variant="on-dark"
-              icon={secondaryIsWa ? "whatsapp" : "mail"}
-              iconClass={secondaryIsWa ? "text-[#25d366]" : "text-royal-300"}
-              external={secondaryIsWa}
-              class="max-sm:w-full"
-            >
-              {secondary.label}
-            </Button>
-          )
-        }
-      </div>
-      <p class="mt-8 flex flex-wrap items-center gap-x-6 gap-y-2 text-sm text-navy-200">
-        <a href={`tel:${SITE.phone.tel}`} class="inline-flex min-h-6 items-center gap-2 hover:text-white">
-          <Icon name="phone" size={16} class="text-royal-300" />
-          <span class="sr-only">{t.common.labels.phone}{colon(locale)}</span>
-          <span class="ltr" dir="ltr">{SITE.phone.display}</span>
-        </a>
-        <a href={`mailto:${SITE.email}`} class="inline-flex min-h-6 items-center gap-2 hover:text-white">
-          <Icon name="mail" size={16} class="text-royal-300" />
-          <span class="sr-only">{t.common.labels.email}{colon(locale)}</span>
-          <span class="ltr" dir="ltr">{SITE.email}</span>
-        </a>
-      </p>
-    </div>
-
-    <div class="lg:col-span-6">
-      <ChecklistPanel locale={locale} tone="dark" whatsappMessage={whatsappMessage} />
-    </div>
-  </div>
-</section>
+<CtaBand
+  locale={locale}
+  title={html(locale, title)}
+  textHtml={text ? html(locale, text) : undefined}
+  eyebrow={eyebrow}
+  primary={primary}
+  secondary={secondary}
+  whatsappMessage={whatsappMessage}
+  id={id}
+  class={className}
+>
+  <ChecklistPanel slot="aside" locale={locale} tone="dark" whatsappMessage={whatsappMessage} />
+</CtaBand>

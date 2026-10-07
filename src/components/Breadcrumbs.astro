@@ -2,9 +2,13 @@
 /**
  * Breadcrumb trail + JSON-LD BreadcrumbList. "Home" is prepended automatically.
  * items: [{ label, path? }] — path is locale-less ("services"); the last item is the current page.
+ * Pass labels as plain text: the visible label goes through the text engine here (codes and names never split,
+ * Chinese breaks between words, Arabic Latin runs isolated); the JSON-LD gets the same words without any display
+ * controls (src/lib/jsonld.ts). Labels already run through plain()/keepCodes() are accepted too.
  */
 import { getMessages, localePath, type Locale } from "~/i18n";
-import { SITE } from "~/data/site";
+import { toHtml } from "~/lib/text";
+import { breadcrumbList } from "~/lib/jsonld";
 import Icon from "./Icon.astro";
 
 interface Crumb {
@@ -24,20 +28,11 @@ const locale = (Astro.props.locale ?? Astro.currentLocale ?? "en") as Locale;
 const t = getMessages(locale).ui;
 const { items, jsonLd = true, label, class: className } = Astro.props;
 const trail: Crumb[] = [{ label: t.nav.home, path: "" }, ...items];
-const ld = {
-  "@context": "https://schema.org",
-  "@type": "BreadcrumbList",
-  itemListElement: trail.map((c, i) => ({
-    "@type": "ListItem",
-    position: i + 1,
-    name: c.label,
-    ...(c.path !== undefined ? { item: new URL(localePath(locale, c.path), SITE.url).href } : {}),
-  })),
-};
+const ld = breadcrumbList(locale, trail);
 ---
 
 <nav aria-label={label ?? t.a11y.breadcrumbs} class:list={["text-sm", className]}>
-  <ol class="flex flex-wrap items-center gap-x-1.5 gap-y-1 text-charcoal-600 in-[.on-dark]:text-navy-300">
+  <ol class="flex flex-wrap items-center gap-x-1.5 gap-y-1 text-charcoal-600 on-dark:text-navy-300">
     {
       trail.map((c, i) => {
         const last = i === trail.length - 1;
@@ -45,13 +40,17 @@ const ld = {
           <li class="flex items-center gap-1.5">
             {i > 0 && <Icon name="chevron-right" size={14} class="opacity-60" />}
             {last || c.path === undefined ? (
-              <span aria-current={last ? "page" : undefined} class:list={[last && "font-semibold text-navy-900 in-[.on-dark]:text-white"]}>
-                {c.label}
-              </span>
+              <span
+                aria-current={last ? "page" : undefined}
+                class:list={[last && "font-semibold text-navy-900 on-dark:text-white"]}
+                set:html={toHtml(locale, c.label)}
+              />
             ) : (
-              <a href={localePath(locale, c.path)} class="inline-flex min-h-6 items-center underline-offset-4 hover:text-royal-700 hover:underline in-[.on-dark]:hover:text-white">
-                {c.label}
-              </a>
+              <a
+                href={localePath(locale, c.path)}
+                class="inline-flex min-h-6 items-center underline-offset-4 hover:text-royal-700 hover:underline on-dark:hover:text-white"
+                set:html={toHtml(locale, c.label)}
+              />
             )}
           </li>
         );

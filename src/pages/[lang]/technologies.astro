@@ -1,8 +1,9 @@
 ---
 /**
  * Technologies — platforms we program and integrate (never "partners").
- * Hero (intro[0]) → PLC/HMI brand data sheet (intro[1] as its lead) + honest note → drives / SCADA / communication / signals → control loop →
- * live HMI (compact) → other equipment + how we choose a platform → closing CTA. Order: CONTENT.md §4.
+ * Hero (intro[0]) → "On this page" bar → PLC/HMI brand data sheet (intro[1] as its lead) + honest note → drives / SCADA /
+ * communication / signals → control loop → live HMI (compact; a one-screen teaser on phones) → other equipment + how we
+ * choose a platform → closing CTA. Order: CONTENT.md §4.
  */
 import BaseLayout from "~/layouts/BaseLayout.astro";
 import Hero from "~/components/Hero.astro";
@@ -11,11 +12,14 @@ import SectionHeading from "~/components/SectionHeading.astro";
 import Breadcrumbs from "~/components/Breadcrumbs.astro";
 import Button from "~/components/Button.astro";
 import Chips from "~/components/Chips.astro";
+import { techLabel } from "~/lib/text";
 import CtaBand from "~/components/CtaBand.astro";
 import Icon, { type IconName } from "~/components/Icon.astro";
 import ControlLoop from "~/components/motion/ControlLoop.astro";
 import HmiDemo from "~/components/motion/HmiDemo.astro";
 import BrandPanel from "~/components/sections/main/BrandPanel.astro";
+import PageToc from "~/components/sections/main/PageToc.astro";
+import DemoTeaser from "~/components/sections/main/DemoTeaser.astro";
 import { html } from "~/components/sections/main/rich";
 import { href, QUOTE_PATH, whatsappLink, prefersEmail, mailtoLink } from "~/components/nav";
 import { getMessages, localeStaticPaths, type Locale } from "~/i18n";
@@ -33,11 +37,18 @@ const panelAlt = (t.projects.items["pasteurizer-cip-recipes"]?.imageAlts as Reco
 const categories: { key: "drives" | "scada" | "networks" | "signals"; icon: IconName; title: string; text?: string; items: string[]; chips?: readonly string[] }[] = [
   { key: "drives", icon: "gear", title: tt.drives.title, text: tt.drives.text, items: tt.drives.items },
   { key: "scada", icon: "hmi", title: tt.scada.title, text: tt.scada.text, items: tt.scada.items },
-  { key: "networks", icon: "traces", title: tt.networks.title, text: tt.networks.text, items: tt.networks.items, chips: PROTOCOLS },
+  { key: "networks", icon: "traces", title: tt.networks.title, text: tt.networks.text, items: tt.networks.items, chips: PROTOCOLS.map((p) => techLabel(locale, p)) },
   { key: "signals", icon: "gauge", title: tt.signals.title, items: tt.signals.items },
 ];
 const choosingIcons: IconName[] = ["box", "layers", "users", "factory"];
 const pad = (n: number) => String(n).padStart(2, "0");
+const toc = [
+  { id: "platforms", label: "PLC · HMI" },
+  { id: "categories", label: tt.categories.eyebrow },
+  { id: "control-loop", label: t.hmi.loop.eyebrow },
+  { id: "hmi-demo", label: t.hmi.intro.eyebrow },
+  { id: "choosing", label: tt.choosing.eyebrow },
+];
 ---
 
 <BaseLayout locale={locale} title={tt.seo.title} description={tt.seo.description} path="technologies" heroDark>
@@ -52,6 +63,8 @@ const pad = (n: number) => String(n).padStart(2, "0");
   >
     <Breadcrumbs slot="breadcrumbs" locale={locale} items={[{ label: c.breadcrumbs.technologies }]} />
   </Hero>
+
+  <PageToc locale={locale} items={toc} />
 
   {/* ---------- PLC / HMI platforms ---------- */}
   <Section id="platforms" aria-labelledby="brands-title">
@@ -100,7 +113,12 @@ const pad = (n: number) => String(n).padStart(2, "0");
             </div>
             <h3 id={`${cat.key}-title`} class="mt-6 type-h3 text-navy-950" set:html={html(locale, cat.title)} />
             {cat.text && <p class="mt-3 text-charcoal-600" set:html={html(locale, cat.text)} />}
-            {cat.chips && <Chips items={[...cat.chips]} size="sm" class="mt-5" label={cat.title} />}
+            {/* Summary of the bullet list below: decorative for assistive tech (the list carries the content). */}
+            {cat.chips && (
+              <div aria-hidden="true">
+                <Chips items={[...cat.chips]} size="sm" class="mt-5" />
+              </div>
+            )}
             <ul role="list" class="mt-6 space-y-2.5 border-t border-charcoal-200 pt-5 text-[0.9375rem] text-charcoal-700">
               {cat.items.map((item) => (
                 <li
@@ -123,11 +141,13 @@ const pad = (n: number) => String(n).padStart(2, "0");
   {/* ---------- live HMI (compact) ---------- */}
   <Section variant="dark" angle="both" id="hmi-demo" aria-labelledby="hmi-title">
     <SectionHeading id="hmi-title" eyebrow={t.hmi.intro.eyebrow} title={html(locale, t.hmi.intro.title)} lead={html(locale, t.hmi.intro.lead)} class="mb-10" />
-    <HmiDemo locale={locale} variant="compact" tone="dark" headingLevel={3} />
+    <DemoTeaser locale={locale} class="[--teaser-h:24rem]">
+      <HmiDemo locale={locale} variant="compact" tone="dark" headingLevel={3} />
+    </DemoTeaser>
   </Section>
 
   {/* ---------- other equipment + how we choose ---------- */}
-  <Section aria-labelledby="choosing-title">
+  <Section id="choosing" aria-labelledby="choosing-title">
     <div class="grid gap-12 lg:grid-cols-12 lg:gap-14">
       <aside class="lg:col-span-5" aria-labelledby="other-title">
         <div class="chamfer-lg relative bg-navy-50 p-6 sm:p-8 lg:sticky lg:top-[calc(var(--header-h)+2rem)]">
@@ -142,11 +162,11 @@ const pad = (n: number) => String(n).padStart(2, "0");
               <Button href={href(locale, QUOTE_PATH)} iconEnd="arrow">{t.ui.cta.quote}</Button>
               {
                 email ? (
-                  <Button href={mailtoLink(t.ui.email.subject)} variant="secondary" icon="mail" iconClass="text-royal-600">
+                  <Button href={mailtoLink(undefined, { locale, topic: tt.otherBrands.title, path: "technologies" })} variant="secondary" icon="mail" iconClass="text-royal-600">
                     {t.ui.cta.email}
                   </Button>
                 ) : (
-                  <Button href={whatsappLink(c.whatsapp.default)} variant="secondary" icon="whatsapp" iconClass="text-[#128c4a]" external>
+                  <Button href={whatsappLink(c.whatsapp.default)} variant="secondary" icon="whatsapp" iconClass="text-whatsapp-700" external>
                     {c.labels.whatsapp}
                   </Button>
                 )

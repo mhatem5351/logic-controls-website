@@ -6,12 +6,16 @@
  * `compact` (home page): below 768px each region's zones wrap as numbered chips (names only) instead of ruled rows.
  *
  * Interaction (src/scripts/zones-map.ts, progressive enhancement — without JS the map and list are static):
- *  - Pins are HTML buttons laid over the LTR map (physical left/top from the SVG coordinates); the list rows are
- *    buttons too. Hover / keyboard focus on either lights the pin, its list row and the trace from our base; an amber
- *    signal travels the trace and the pin pings once; a tooltip shows name, governorate · region, SCZONE and the
- *    straight-line distance from our base. Hovering a region heading lights that region's pins.
- *  - Click / tap / Enter / Space selects: the readout strip under the map swaps its legend for a detail card with
- *    a CTA to the quote form (?location=<slug>#quote). Same control again, Escape or the close button deselects.
+ *  - Pins are HTML buttons laid over the LTR map (physical left/top from the SVG coordinates), grouped as one
+ *    toolbar: one Tab stop, arrow keys / Home / End move between the zones (roving tabindex). Their names start with
+ *    the number drawn on the pin. Hover / keyboard focus on a pin or a list row lights the pin, its row and the trace
+ *    from our base; an amber signal travels the trace and the pin pings once; a tooltip shows name,
+ *    governorate · region, SCZONE and the straight-line distance from our base. Hovering a region heading lights
+ *    that region's pins.
+ *  - A pin (click / tap / Enter / Space) opens the detail card under the map: the next Tab stops are its close button
+ *    and its CTA to the quote form (?location=<slug>#quote). A list row is a disclosure: its own detail (distance +
+ *    the same CTA) opens right under it, so nothing jumps; the map lights the zone and its trace. The same control
+ *    again, Escape or the close button deselects.
  *  - Every text inserted by the script is server-rendered here with the text helper (html() / plain()).
  */
 import { getMessages, localePath, type Locale } from "~/i18n";
@@ -20,7 +24,7 @@ import Icon from "~/components/Icon.astro";
 import Button from "~/components/Button.astro";
 import { uid } from "~/components/uid";
 import ZoneMap from "./ZoneMap.astro";
-import { PIN, BASE, HIT_ANCHOR, MAP_W, MAP_H, kmFromBase } from "./zone-geo";
+import { PIN, HIT, HIT_ANCHOR, HIT_ANCHOR_NARROW, MAP_W, MAP_H, PIN_R, BASE, kmFromBase } from "./zone-geo";
 import { colon, html, plain } from "./rich";
 
 interface Props {
@@ -39,6 +43,8 @@ const m = t.map;
 const u = uid("zones");
 const cardId = `${u}-card`;
 const comma = locale === "ar" ? "، " : locale === "zh" ? "，" : ", ";
+/** Between the pin number and the zone name in accessible names ("2. Obour City"; "2 مدينة العبور"). */
+const numSep = locale === "ar" || locale === "zh" ? " " : ". ";
 const contact = localePath(locale, "contact");
 const regions = [...new Set(ZONES.map((z) => z.region))] as ZoneRegion[];
 
@@ -46,31 +52,37 @@ const numbered = ZONES.map((z, i) => {
   const it = t.items[z.slug];
   const [x, y] = PIN[z.slug];
   const [ax, ay] = HIT_ANCHOR[z.slug] ?? [0.5, 0.5];
+  const [axn, ayn] = HIT_ANCHOR_NARROW[z.slug] ?? [ax, ay];
   const km = kmFromBase(z.slug);
   // "About 80 km …": the number and its unit never split (no-break space); the number is the highlighted readout.
-  const distText = m.distance.replace("{km} ", `${km}\u00A0`).replace("{km}", String(km));
+  const distText = m.distance.replace("{km} ", `${km} `).replace("{km}", String(km));
   const dist = z.home ? "" : html(locale, distText).replace(new RegExp(`(?<!\\d)${km}(?!\\d)`), `<b>${km}</b>`);
   // "Alexandria" alone when the region is named after the governorate (never "Alexandria · Alexandria")
   const region = it.governorate.includes(t.regions[z.region]) ? "" : t.regions[z.region];
+  const n = i + 1;
   return {
     ...z,
-    n: i + 1,
+    n,
     x,
     y,
     ax,
     ay,
+    axn,
+    ayn,
     name: it.name,
-    label: plain(locale, [it.name, it.governorate, z.home && t.homeBase].filter(Boolean).join(comma)),
+    // WCAG 2.5.3: the pin's only visible label is its number, so the name starts with it
+    label: `${n}${numSep}${plain(locale, [it.name, it.governorate, z.home && t.homeBase].filter(Boolean).join(comma))}`,
     meta: html(locale, region ? `${it.governorate} · ${region}` : it.governorate),
     // pin description for assistive tech (name + governorate are its label): region, straight-line distance
     desc: plain(locale, [region, !z.home && distText].filter(Boolean).join(locale === "ar" || locale === "zh" ? comma : ". ")),
     dist,
     cta: z.home ? m.homeCta : m.cta.replace("{zone}", (m.short as Record<string, string>)[z.slug] ?? it.name),
     href: z.home ? contact : `${contact}?location=${z.slug}#quote`,
-    said: plain(locale, m.selected.replace("{zone}", it.name)),
+    said: plain(locale, m.selectedPin.replace("{zone}", it.name)),
   };
 });
 const pct = (v: number, of: number) => `${((v / of) * 100).toFixed(3)}%`;
+const distIcon = `<svg viewBox="0 0 24 8" width="24" height="8" aria-hidden="true"><circle cx="3.5" cy="4" r="2.4" fill="none" stroke="currentColor" stroke-width="1.4"/><path d="M6 4h14" stroke="currentColor" stroke-width="1.4" stroke-dasharray="2 2"/><circle cx="21" cy="4" r="2" fill="currentColor"/></svg>`;
 ---
 
 <div class:list={["lc-zones grid items-start gap-8 sm:gap-10 lg:grid-cols-12 lg:gap-12", className]} data-zones>
@@ -80,16 +92,26 @@ const pct = (v: number, of: number) => `${((v / of) * 100).toFixed(3)}%`;
   >
     <div aria-hidden="true" class="pointer-events-none absolute inset-0 -z-10 bg-blueprint opacity-70"></div>
 
-    <div class="lc-zm relative" data-zm data-base={BASE.join(" ")} data-home={ZONES.find((z) => z.home)?.slug}>
+    <div
+      class="lc-zm relative"
+      style={`--map-w:${MAP_W};--hit:${HIT}`}
+      data-zm
+      data-base={BASE.join(" ")}
+      data-map-w={MAP_W}
+      data-r={`${PIN_R.home} ${PIN_R.zone}`}
+      data-home={ZONES.find((z) => z.home)?.slug}
+    >
       <ZoneMap interactive />
-      <div class="lc-zm-pins" role="group" aria-label={plain(locale, m.label)}>
+      <div class="lc-zm-pins" role="toolbar" aria-label={plain(locale, m.label)} aria-describedby={`${u}-kbd`} data-zm-pins>
         {
           numbered.map((z) => (
             <button
               type="button"
               class="lc-zm-pin"
-              style={`left:${pct(z.x, MAP_W)};top:${pct(z.y, MAP_H)};--ax:${z.ax};--ay:${z.ay};--r:${z.home ? 8.5 : 7}`}
+              style={`left:${pct(z.x, MAP_W)};top:${pct(z.y, MAP_H)};--ax0:${z.ax};--ay0:${z.ay};--axn:${z.axn};--ayn:${z.ayn};--r:${z.home ? PIN_R.home : PIN_R.zone}`}
+              tabindex={z.home ? 0 : -1}
               data-zm-ctrl
+              data-zm-pin
               data-zone={z.slug}
               data-xy={`${z.x} ${z.y}`}
               aria-label={z.label}
@@ -100,7 +122,10 @@ const pct = (v: number, of: number) => `${((v / of) * 100).toFixed(3)}%`;
           ))
         }
       </div>
-      <div hidden>{numbered.map((z) => z.desc && <span id={`${u}-x${z.n}`}>{z.desc}</span>)}</div>
+      <div hidden>
+        <span id={`${u}-kbd`}>{m.keys}</span>
+        {numbered.map((z) => z.desc && <span id={`${u}-x${z.n}`}>{z.desc}</span>)}
+      </div>
       <div class="lc-zm-tip" data-zm-tip hidden aria-hidden="true"></div>
       <p class="lc-zm-hint" data-zm-hint hidden aria-hidden="true"><span class="lc-led"></span><span set:html={html(locale, m.hint)} /></p>
     </div>
@@ -109,14 +134,14 @@ const pct = (v: number, of: number) => `${((v / of) * 100).toFixed(3)}%`;
     <div class="lc-zm-legend">
       <div>
         <p class="flex items-center gap-2 px-2 pt-2 text-xs text-navy-200 sm:px-1">
-          <span class="lc-led" aria-hidden="true"></span>{t.homeBase}{colon(locale)}{t.items["6th-of-october"].name}
+          <span class="lc-led" aria-hidden="true"></span>{t.homeBase}{colon(locale)}<Fragment set:html={html(locale, t.items["6th-of-october"].name)} />
         </p>
       </div>
     </div>
     <div class="lc-zm-card" id={cardId} data-zm-card>
       <div>
         <div class="lc-zm-card-in">
-          <button type="button" class="lc-zm-close" data-zm-close aria-label={m.close}><Icon name="close" size={18} /></button>
+          <button type="button" class="lc-zm-close" data-zm-close aria-label={m.closeDetails}><Icon name="close" size={18} /></button>
           {
             numbered.map((z) => (
               <div class="lc-zm-art" data-card={z.slug} data-said={z.said} hidden>
@@ -139,11 +164,7 @@ const pct = (v: number, of: number) => `${((v / of) * 100).toFixed(3)}%`;
                 </div>
                 {z.dist && (
                   <p class="lc-zm-dist" data-tip>
-                    <svg viewBox="0 0 24 8" width="24" height="8" aria-hidden="true">
-                      <circle cx="3.5" cy="4" r="2.4" fill="none" stroke="currentColor" stroke-width="1.4" />
-                      <path d="M6 4h14" stroke="currentColor" stroke-width="1.4" stroke-dasharray="2 2" />
-                      <circle cx="21" cy="4" r="2" fill="currentColor" />
-                    </svg>
+                    <Fragment set:html={distIcon} />
                     <span set:html={z.dist} />
                   </p>
                 )}
@@ -160,7 +181,7 @@ const pct = (v: number, of: number) => `${((v / of) * 100).toFixed(3)}%`;
   </div>
 
   <div class="lg:col-span-5">
-    <div class="grid gap-5 sm:grid-cols-2 sm:gap-7 lg:grid-cols-1">
+    <div class="grid gap-5 sm:grid-cols-2 sm:gap-7 lg:grid-cols-1" data-fab-avoid>
       {
         regions.map((r) => (
           <div>
@@ -175,22 +196,21 @@ const pct = (v: number, of: number) => `${((v / of) * 100).toFixed(3)}%`;
               {numbered
                 .filter((z) => z.region === r)
                 .map((z) => (
-                  <li>
+                  <li class:list={["lc-zm-li", compact && "max-md:max-w-full"]}>
                     <button
                       type="button"
                       class:list={[
                         "lc-zm-row flex w-full items-center gap-3 py-2 text-start sm:py-2.5",
-                        compact && "max-md:w-auto max-md:gap-2 max-md:rounded-xs max-md:border max-md:border-charcoal-200 max-md:bg-white max-md:py-1 max-md:ps-1 max-md:pe-2.5",
+                        compact && "max-md:w-auto max-md:max-w-full max-md:gap-2 max-md:rounded-xs max-md:border max-md:border-charcoal-200 max-md:bg-white max-md:py-1 max-md:ps-1 max-md:pe-2.5",
                       ]}
                       data-zm-ctrl
                       data-zm-row
                       data-compact={compact ? "" : undefined}
                       data-zone={z.slug}
                       aria-expanded="false"
-                      aria-controls={cardId}
+                      aria-controls={`${u}-d${z.n}`}
                     >
                       <span
-                        aria-hidden="true"
                         class:list={[
                           "grid size-6 shrink-0 place-items-center rounded-full font-mono text-[0.6875rem] font-bold ltr",
                           z.home ? "bg-signal-400 text-navy-950" : "border border-royal-600/40 bg-royal-50 text-royal-700",
@@ -199,8 +219,9 @@ const pct = (v: number, of: number) => `${((v / of) * 100).toFixed(3)}%`;
                       >
                         {z.n}
                       </span>
-                      <span class:list={["min-w-0 flex-1", compact && "max-md:flex-none"]}>
-                        <span class:list={["block font-semibold text-navy-950", compact && "max-md:text-sm"]}>{z.name}</span>
+                      <span class="sr-only">{numSep}</span>
+                      <span class:list={["min-w-0 flex-1", compact && "max-md:flex-initial"]}>
+                        <span class:list={["block font-semibold text-navy-950", compact && "max-md:text-sm"]} set:html={html(locale, z.name)} />
                         <span class:list={["block text-[0.8125rem] leading-snug text-charcoal-600 sm:text-sm", compact && "max-md:hidden"]}>{t.items[z.slug].governorate}</span>
                       </span>
                       {z.home && (
@@ -215,6 +236,18 @@ const pct = (v: number, of: number) => `${((v / of) * 100).toFixed(3)}%`;
                         </span>
                       )}
                     </button>
+                    {/* the row's own disclosure: distance + CTA, one Tab after the row */}
+                    <div class="lc-zm-rowdetail" id={`${u}-d${z.n}`} data-zm-detail={z.slug} hidden>
+                      {z.dist && (
+                        <p class="lc-zm-dist">
+                          <Fragment set:html={distIcon} />
+                          <span set:html={z.dist} />
+                        </p>
+                      )}
+                      <Button href={z.href} size="sm" iconEnd="arrow" class="lc-zm-cta">
+                        <Fragment set:html={html(locale, z.cta)} />
+                      </Button>
+                    </div>
                   </li>
                 ))}
             </ul>
@@ -234,13 +267,13 @@ const pct = (v: number, of: number) => `${((v / of) * 100).toFixed(3)}%`;
   /* ------------------------------------------------------------------ pins: HTML buttons over the LTR map */
   .lc-zm {
     container-type: inline-size;
-    --u: calc(100cqw / 380); /* one map unit (viewBox 380×260), resolved inside the container */
+    --u: calc(100cqw / var(--map-w)); /* one map unit (viewBox from zone-geo.ts), resolved inside the container */
     --k: 1; /* pin scale */
   }
-  /* phones: pins a little larger (legible numbers, clearer tap affordance; hit areas are sized separately) */
+  /* phones: pins larger (numbers ≥ ~10px, clearer tap affordance; hit areas are sized separately) */
   @media (max-width: 39.99rem) {
     .lc-zm {
-      --k: 1.2;
+      --k: 1.35;
     }
     .lc-zm .lc-map-pin {
       scale: var(--k);
@@ -256,13 +289,22 @@ const pct = (v: number, of: number) => `${((v / of) * 100).toFixed(3)}%`;
     display: none;
   }
   .lc-zm-pin {
+    --ax: var(--ax0);
+    --ay: var(--ay0);
     position: absolute;
-    /* 28 map units (≈ 24px on a phone, never below 24px), at most 44px; the pin sits at (--ax, --ay) inside */
-    width: clamp(1.5rem, calc(28 * var(--u)), 2.75rem);
+    /* HIT map units (≈ 24px on a phone, never below 24px), at most 44px; the pin sits at (--ax, --ay) inside */
+    width: clamp(1.5rem, calc(var(--hit) * var(--u)), 2.75rem);
     aspect-ratio: 1;
     translate: calc(var(--ax) * -100%) calc(var(--ay) * -100%);
     cursor: pointer;
     -webkit-tap-highlight-color: transparent;
+  }
+  /* below zone-geo.ts HIT_NARROW (map width) the 24px floor would make the cluster's squares overlap: spread them */
+  @container (max-width: 335.98px) {
+    .lc-zm-pin {
+      --ax: var(--axn);
+      --ay: var(--ayn);
+    }
   }
   .lc-zm-pin:focus-visible {
     outline: none;
@@ -316,16 +358,20 @@ const pct = (v: number, of: number) => `${((v / of) * 100).toFixed(3)}%`;
   .lc-zm .lc-map-home[data-sel] .lc-map-ring {
     stroke: var(--color-signal-300);
   }
+  /* the trace from our base lights up (colour / dash via ZoneMap's custom properties, no specificity contest) */
   .lc-zm .lc-map-links path {
-    transition: stroke var(--dur-ui) var(--ease-mech);
+    transition:
+      stroke var(--dur-ui) var(--ease-mech),
+      stroke-width var(--dur-ui) var(--ease-mech);
   }
   .lc-zm .lc-map-links path:is([data-hl], [data-rhl]) {
-    stroke: rgb(193 224 255 / 0.85);
+    --link-stroke: rgb(193 224 255 / 0.85);
     stroke-width: 1.2;
   }
   .lc-zm .lc-map-links path[data-sel] {
-    stroke: rgb(255 198 75 / 0.85);
-    stroke-width: 1.4;
+    --link-stroke: rgb(255 198 75 / 0.9);
+    --link-dash: none;
+    stroke-width: 1.6;
   }
   /* the signal (dash length / offsets are set per run by the script, in map units) */
   .lc-zm .lc-map-sig {
@@ -345,7 +391,7 @@ const pct = (v: number, of: number) => `${((v / of) * 100).toFixed(3)}%`;
   }
   /* once, when the map first scrolls into view: the pins breathe in numbered order */
   @media (prefers-reduced-motion: no-preference) {
-    .lc-zm[data-intro] .lc-map-ring {
+    :root:not([data-motion="off"]) .lc-zm[data-intro] .lc-map-ring {
       animation: lc-zm-breathe 1s var(--ease-emph) calc(var(--i) * 90ms + 150ms);
     }
   }
@@ -395,13 +441,14 @@ const pct = (v: number, of: number) => `${((v / of) * 100).toFixed(3)}%`;
   }
 
   /* ------------------------------------------------------------------ tooltip */
+  /* placed by the script on the side that covers the fewest other pins and the lit trace (data-place) */
   .lc-zm-tip {
     position: absolute;
     left: 0;
     top: 0;
     z-index: 2;
     width: max-content;
-    max-width: min(17rem, calc(100% - 0.5rem));
+    max-width: min(15rem, calc(100% - 0.5rem));
     padding: 0.625rem 0.75rem 0.6875rem;
     color: var(--color-navy-100);
     background: var(--color-navy-900);
@@ -409,7 +456,7 @@ const pct = (v: number, of: number) => `${((v / of) * 100).toFixed(3)}%`;
     border-radius: var(--radius-sm);
     box-shadow: 0 8px 20px -12px rgb(0 0 0 / 0.8);
     pointer-events: none;
-    animation: lc-zm-in var(--dur-ui) var(--ease-emph);
+    animation: lc-zm-in var(--dur-micro) var(--ease-emph);
   }
   .lc-zm-tip::after {
     content: "";
@@ -424,9 +471,21 @@ const pct = (v: number, of: number) => `${((v / of) * 100).toFixed(3)}%`;
     border: solid rgb(95 164 250 / 0.38);
     border-width: 0 1px 1px 0;
   }
-  .lc-zm-tip[data-below]::after {
+  .lc-zm-tip[data-place="bottom"]::after {
     top: 0;
     border-width: 1px 0 0 1px;
+  }
+  .lc-zm-tip[data-place="left"]::after,
+  .lc-zm-tip[data-place="right"]::after {
+    top: var(--cy, 50%);
+  }
+  .lc-zm-tip[data-place="left"]::after {
+    left: 100%;
+    border-width: 1px 1px 0 0;
+  }
+  .lc-zm-tip[data-place="right"]::after {
+    left: 0;
+    border-width: 0 0 1px 1px;
   }
   .lc-zm-tip .lc-zm-name {
     font-size: 0.875rem;
@@ -613,12 +672,12 @@ const pct = (v: number, of: number) => `${((v / of) * 100).toFixed(3)}%`;
     font-variant-numeric: tabular-nums;
   }
   @media (max-width: 39.99rem) {
-    .lc-zm-cta {
+    .lc-zm-card .lc-zm-cta {
       width: 100%;
     }
   }
 
-  /* ------------------------------------------------------------------ list rows (buttons) */
+  /* ------------------------------------------------------------------ list rows (disclosure buttons) */
   .lc-zm-row {
     position: relative;
     isolation: isolate;
@@ -635,8 +694,7 @@ const pct = (v: number, of: number) => `${((v / of) * 100).toFixed(3)}%`;
     opacity: 0;
     transition: opacity var(--dur-micro) var(--ease-mech);
   }
-  .lc-zm-row[data-hl]::before,
-  .lc-zm-row[aria-expanded="true"]::before {
+  .lc-zm-row:is([data-hl], [data-sel], [aria-expanded="true"])::before {
     opacity: 1;
   }
   @media (hover: hover) {
@@ -644,11 +702,35 @@ const pct = (v: number, of: number) => `${((v / of) * 100).toFixed(3)}%`;
       opacity: 1;
     }
   }
-  .lc-zm-row[aria-expanded="true"]::before {
+  .lc-zm-row:is([data-sel], [aria-expanded="true"])::before {
     border-inline-start-color: var(--color-signal-500);
   }
   .lc-zm-row:focus-visible {
     outline-offset: 2px;
+  }
+  /* the row's detail: distance + CTA, right under the row */
+  .lc-zm-rowdetail {
+    display: grid;
+    justify-items: start;
+    gap: 0.625rem;
+    margin-inline: -0.5rem;
+    padding: 0.125rem 0.5rem 0.875rem;
+    padding-inline-start: calc(0.5rem + 2.25rem);
+    background: var(--color-royal-50);
+    border-inline-start: 2px solid var(--color-signal-500);
+    animation: lc-zm-in var(--dur-ui) var(--ease-mech);
+  }
+  .lc-zm-rowdetail[hidden] {
+    display: none;
+  }
+  .lc-zm-rowdetail .lc-zm-dist {
+    color: var(--color-charcoal-700);
+  }
+  .lc-zm-rowdetail .lc-zm-dist svg {
+    color: var(--color-signal-600);
+  }
+  .lc-zm-rowdetail .lc-zm-dist b {
+    color: var(--color-navy-950);
   }
   @media (max-width: 47.99rem) {
     .lc-zm-row[data-compact]::before {
@@ -656,9 +738,18 @@ const pct = (v: number, of: number) => `${((v / of) * 100).toFixed(3)}%`;
       border-inline-start: 0;
       border-radius: inherit;
     }
-    .lc-zm-row[data-compact][aria-expanded="true"] {
+    .lc-zm-row[data-compact]:is([data-sel], [aria-expanded="true"]) {
       border-color: var(--color-royal-600);
       box-shadow: 0 0 0 1px var(--color-royal-600);
+    }
+    /* compact chips: an open chip takes its own row, its detail under it */
+    .lc-zm-li:has(> [data-compact][aria-expanded="true"]) {
+      flex-basis: 100%;
+    }
+    .lc-zm-li > [data-compact] + .lc-zm-rowdetail {
+      margin: 0.375rem 0 0.25rem;
+      padding: 0.625rem 0.75rem 0.75rem;
+      border-radius: var(--radius-xs);
     }
   }
 </style>

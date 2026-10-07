@@ -80,7 +80,3 @@ export const SERVICES: readonly ServiceData[] = [
     featuredProjects: [],
   },
 ];
-
-export function getService(slug: string): ServiceData | undefined {
-  return SERVICES.find((s) => s.slug === slug);
-}

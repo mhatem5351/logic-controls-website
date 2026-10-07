@@ -1,51 +1,51 @@
 /**
  * HMI demo view/controller: binds a Pasteurizer model (hmi-sim.ts) to the HmiDemo.astro markup.
+ * Loaded on demand by the HmiDemo bootstrap (near the viewport or on the first touch / focus in the panel).
  *
- * - Fixed-timestep simulation inside requestAnimationFrame; DOM writes are throttled to ~10 Hz.
- * - Fully static until the first interaction; the loop stops again once the plant has come to rest.
- * - Paused while offscreen (IntersectionObserver) or while the tab is hidden; CSS animations too.
- * - Reduced motion: CSS drops the flowing/spinning/blinking; values still update on interaction.
+ * - One 10 Hz timer (no per-frame loop): fixed-timestep simulation, DOM writes, and the stepped "marching ants" of
+ *   the flowing pipes and the pump impellers all land in the same frame, so the panel repaints ~10×/s at most.
+ *   No value transitions: values step at 10 Hz, which reads as smooth at these magnitudes (MOT-09).
+ * - Fully static until the first interaction; the timer stops again once the plant has come to rest.
+ * - Paused while offscreen (IntersectionObserver) or while the tab is hidden; CSS blinks too.
+ * - Reduced motion or the site's pause switch (html[data-motion="off"]): no marching / spinning / blinking and no
+ *   ticking clock; flowing pipes become static flow indicators (CSS). The simulation still runs when asked to.
+ * - Story: a "Try it" checklist ticks as the visitor plays (Start → Forward → Simulate fault → Acknowledge), the
+ *   next step's key carries an amber lamp, and the message line says what happens next, with live values.
  */
 import { CHECK_S, CIP, DT, Pasteurizer, RECIPES, SPEED, type Alarm, type RecipeId } from "./hmi-sim";
 import { iso } from "./hmi-bidi";
+import { fmt1, keyStops, plainColor, productColor, KEY_T0, KEY_T1 } from "./hmi-fmt";
+import { motionOff, onMotionChange } from "./motion-pref";
 
 type Dict = { [k: string]: string };
 interface I18n {
+  lang: string;
+  colon: string;
+  comma: string;
   perm: Dict;
   status: Dict;
-  /** Status-bar mode chip (hmi.mode.auto / .manual). */
-  mode?: Dict;
+  mode: Dict;
   mimic: Dict;
   recipe: Dict;
   trend: Dict;
   alarms: Dict;
   msg: Dict;
   cip: Dict;
+  controls: Dict;
+  tour: Dict;
 }
 
 const fill = (s: string, o: Record<string, string | number>) => s.replace(/\{(\w+)\}/g, (_, k) => String(o[k] ?? ""));
 const pad = (n: number) => String(n).padStart(2, "0");
 const hms = (d: Date) => `${pad(d.getHours())}:${pad(d.getMinutes())}:${pad(d.getSeconds())}`;
 const esc = (s: string) => s.replace(/[&<>"]/g, (c) => `&#${c.charCodeAt(0)};`);
-const f1 = (v: number) => v.toFixed(1);
-// Product temperature → colour (cold steel-blue → neutral → warm copper). Muted on purpose (ISA-101).
-const STOPS: [number, number, number, number][] = [
-  [4, 95, 136, 184],
-  [35, 150, 157, 170],
-  [62, 196, 152, 104],
-  [85, 206, 104, 58],
-];
-function tColor(t: number): string {
-  let i = 0;
-  while (i < STOPS.length - 2 && t > STOPS[i + 1][0]) i++;
-  const [t0, r0, g0, b0] = STOPS[i];
-  const [t1, r1, g1, b1] = STOPS[i + 1];
-  const k = Math.max(0, Math.min(1, (t - t0) / (t1 - t0)));
-  return `rgb(${Math.round(r0 + (r1 - r0) * k)},${Math.round(g0 + (g1 - g0) * k)},${Math.round(b0 + (b1 - b0) * k)})`;
-}
 const FLUID: Record<string, string> = { water: "#7fa6d3", caustic: "#9284c6", acid: "#a9a64e" };
+const STEPS = ["start", "forward", "fault", "ack"] as const;
+type Step = (typeof STEPS)[number];
 
 const N_TREND = 120; // 60 s at 0.5 s
+const TICK = 100; // ms: simulation + DOM at 10 Hz
+const DASH = 13; // stroke-dasharray period of a flowing pipe (8 + 5)
 
 export function initHmi(fig: HTMLElement): void {
   if (fig.dataset.ready) return;
@@ -54,6 +54,9 @@ export function initHmi(fig: HTMLElement): void {
   const scr = fig.querySelector<HTMLElement>(".lc-hmi-screen")!;
   const live = fig.querySelector<HTMLElement>("[data-live]")!;
   const sim = new Pasteurizer();
+  const f1 = (v: number) => fmt1(v, T.lang);
+  /** Operator-event sources in the alarm summary, localised (the PLC-side codes stay SEQ / MODE / RCP). */
+  const SRC: Dict = { SEQ: T.alarms.srcSeq, MODE: T.alarms.srcMode, RCP: T.alarms.srcRcp };
 
   // ---------------------------------------------------------------- element lookups
   const vals = new Map<string, Element[]>();
@@ -69,13 +72,16 @@ export function initHmi(fig: HTMLElement): void {
     if (v === null) el.removeAttribute(k);
     else el.setAttribute(k, v);
   };
-  const flows = [...scr.querySelectorAll<SVGPathElement>(".m-flow path")];
+  const flowG = scr.querySelector<SVGGElement>(".m-flow")!;
+  const flows = [...flowG.querySelectorAll<SVGPathElement>("path")];
+  const imps = [...scr.querySelectorAll<SVGGElement>(".m-imp")];
   const lvls = [...scr.querySelectorAll<SVGRectElement>("[data-lvl]")];
   const btns = [...scr.querySelectorAll<HTMLButtonElement>("button[data-c]")];
   const btn = (c: string) => btns.filter((b) => b.dataset.c === c);
   const ai = scr.querySelector<HTMLElement>(".hs-ai")!;
-  const alist = scr.querySelector<HTMLElement>(".hs-alist")!;
+  const rowsEl = scr.querySelector<HTMLElement>(".hs-alist [data-rows]")!;
   const msgEl = scr.querySelector<HTMLElement>(".hs-msg")!;
+  const msgTx = msgEl.querySelector<HTMLElement>("[data-msg]")!;
   const trendBox = scr.querySelector<HTMLElement>(".hs-trend")!;
   const trendPaths = ["pv", "th", "sp", "lim"].map((k) => scr.querySelector<SVGPathElement>(`.tr-${k}`)!);
   const yLbl = [...scr.querySelectorAll<HTMLElement>(".hs-y")];
@@ -84,6 +90,10 @@ export function initHmi(fig: HTMLElement): void {
   const almInd = [...scr.querySelectorAll<Element>("[data-alm-ind]")];
   const perm = scr.querySelector<HTMLElement>(".hs-perm");
   const permLi = [...scr.querySelectorAll<HTMLElement>("[data-perm]")];
+  const keyGrad = scr.querySelector<SVGLinearGradientElement>("[data-key-grad]");
+  const keyLim = scr.querySelector<SVGGElement>(".m-key-lim");
+  const keyW = +(scr.querySelector(".m-key rect")?.getAttribute("width") || 104);
+  const tourLis = [...fig.querySelectorAll<HTMLElement>("[data-step]")];
 
   // ---------------------------------------------------------------- trend buffers
   const tr = { pv: new Float32Array(N_TREND), th: new Float32Array(N_TREND), sp: new Float32Array(N_TREND), lim: new Float32Array(N_TREND) };
@@ -99,24 +109,52 @@ export function initHmi(fig: HTMLElement): void {
   };
 
   // ---------------------------------------------------------------- messages / announcements
-  let note = ""; // transient operator message (e.g. interlock refusal)
+  /** Transient operator note (refusals, hints). A function, so a refusal keeps showing live values. */
+  let note: (() => string) | null = null;
   let noteTone = "";
   let noteUntil = 0;
+  let flashN = 0;
   let stickyKey = "idle"; // message once the plant is idle
+  let allClearUntil = 0;
+  let liveTimer = 0;
   const say = (s: string) => {
     live.textContent = "";
-    // re-set on the next frame so repeated messages are announced again
+    clearTimeout(liveTimer);
+    // re-set on the next frame so repeated messages are announced again; cleared later so browse mode never
+    // meets a stale announcement after the panel
     requestAnimationFrame(() => (live.textContent = s));
+    liveTimer = window.setTimeout(() => (live.textContent = ""), 6000);
   };
   const alarmText = (a: Alarm) => {
     const arg = a.key === "evRecipe" ? T.recipe[a.arg || ""] || a.arg : a.arg;
-    return iso(fill(T.alarms[a.key] || a.key, { limit: a.arg || "", arg: arg || "" }));
+    const lim = a.arg && a.key === "almDivert" ? f1(+a.arg) : a.arg || "";
+    return iso(fill(T.alarms[a.key] || a.key, { limit: lim, arg: arg || "" }));
   };
-  const flash = (s: string, tone = "warn", ms = 5000) => {
-    note = s;
+  const flash = (fn: () => string, tone = "warn", ms = 5000) => {
+    note = fn;
     noteTone = tone;
     noteUntil = performance.now() + ms;
+    msgEl.dataset.flash = String(++flashN % 2); // restarts the 160 ms highlight (CSS)
   };
+
+  // ---------------------------------------------------------------- "Try it" checklist
+  const tour: Record<Step, boolean> = { start: false, forward: false, fault: false, ack: false };
+  let tourDone = false;
+  function renderTour(): void {
+    const cur = STEPS.find((k) => !tour[k]);
+    for (const li of tourLis) {
+      const k = li.dataset.step as Step;
+      attr(li, "data-done", tour[k] ? "" : null);
+      attr(li, "aria-current", k === cur ? "step" : null);
+      const st = li.querySelector("[data-step-st]");
+      const tx = tour[k] ? `${T.comma}${T.tour.done}` : "";
+      if (st && st.textContent !== tx) st.textContent = tx;
+    }
+    if (!cur && !tourDone) {
+      tourDone = true;
+      fig.setAttribute("data-tour-done", "");
+    }
+  }
 
   function handleEvents(): void {
     const ann: string[] = [];
@@ -126,8 +164,9 @@ export function initHmi(fig: HTMLElement): void {
         ann.push(a.prio ? fill(T.msg.alarm, { prio: T.alarms[`p${a.prio}`], text: alarmText(a) }) : alarmText(a));
         if (a.key === "evCipDone") stickyKey = "cipDone";
       } else if (e.type === "fdv" && sim.producing) ann.push(e.fwd ? T.msg.fdvFwd : T.msg.fdvDiv);
-      else if (e.type === "cip" && e.phase >= 0) ann.push(`${T.cip.title}: ${T.cip[CIP[e.phase][0]]}`);
+      else if (e.type === "cip" && e.phase >= 0) ann.push(`${T.cip.title}${T.colon}${T.cip[CIP[e.phase][0]]}`);
     }
+    if (sim.events.length && motionOff()) clockNow(); // no ticking clock: keep it in step with the time stamps
     sim.events.length = 0;
     if (ann.length) {
       say(ann.join(" "));
@@ -138,6 +177,21 @@ export function initHmi(fig: HTMLElement): void {
   // ---------------------------------------------------------------- rendering
   let alarmsDirty = true;
   let lastCip = -2;
+  let lastLimit = -1;
+  let msgKey = "";
+  const setMsg = (text: string, html?: string) => {
+    const k = html ?? text;
+    if (k === msgKey) return;
+    msgKey = k;
+    if (html) msgTx.innerHTML = html;
+    else msgTx.textContent = text;
+  };
+  /** "Press [▶ Start] to run the pasteurizer.": the Start key drawn as a key cap (same markup as HmiDemo.astro). */
+  const PRESS = esc(iso(T.msg.press)).replace(
+    "{key}",
+    `<span class="hs-key"><svg viewBox="0 0 16 16" aria-hidden="true"><path d="M4.5 3l8 5-8 5z"/></svg>${esc(T.controls.start)}</span>`,
+  );
+
   function render(): void {
     const s = sim;
     const R = s.R;
@@ -146,6 +200,8 @@ export function initHmi(fig: HTMLElement): void {
     const unack = s.alarms.filter((a) => a.prio > 0 && !a.acked);
     const producing = s.producing;
     const abn = producing && s.produced && !s.fwd;
+    const faulted = producing && (s.fault > 0 || s.steam < 2);
+    const now = performance.now();
 
     // root state attributes (drive the CSS)
     attr(scr, "data-run", s.q > 50 ? "1" : "0");
@@ -159,8 +215,8 @@ export function initHmi(fig: HTMLElement): void {
     attr(scr, "data-tcv", s.u > 0.02 && s.running ? "1" : "0");
     attr(scr, "data-blocked", s.blocked ? "1" : "0");
     attr(scr, "data-abn", abn ? "1" : "0");
+    attr(scr, "data-fault", faulted ? "1" : null);
     attr(scr, "data-unack", String(unack.length));
-    scr.style.setProperty("--fd", `${(0.7 / Math.max(0.35, s.q / 3000)).toFixed(2)}s`);
 
     // values
     set("tt102", f1(tt));
@@ -181,12 +237,22 @@ export function initHmi(fig: HTMLElement): void {
     set("minHold", `${R.hold} s`);
     set("fdvTxt", s.fwd ? T.mimic.forward : T.mimic.divert);
     set("outLbl", cip ? T.mimic.drain : T.mimic.storage);
-    set("mode", cip ? "CIP" : s.manual ? (T.mode?.manual ?? "MAN") : (T.mode?.auto ?? "AUTO"));
-    set(
-      "state",
-      cip ? T.status.cip : !s.running ? (s.q > 0 ? T.status.stopped : stickyKey === "idle" ? T.status.ready : T.status.stopped) : s.fwd ? T.status.forward : s.produced ? T.status.divert : T.status.heating,
-    );
+    set("mode", cip ? "CIP" : s.manual ? T.mode.manual : T.mode.auto);
+    const idleReady = stickyKey === "idle" || stickyKey === "cipDone";
+    set("state", cip ? T.status.cip : !s.running ? (s.q === 0 && idleReady ? T.status.ready : T.status.stopped) : s.fwd ? T.status.forward : s.produced ? T.status.divert : T.status.heating);
     set("almCount", String(unack.length));
+
+    // colour key follows the recipe's legal limit
+    if (R.limit !== lastLimit) {
+      lastLimit = R.limit;
+      keyGrad?.querySelectorAll("stop").forEach((st, i) => {
+        const [o, c] = keyStops(R.limit)[i] ?? [1, ""];
+        attr(st, "offset", o.toFixed(3));
+        attr(st, "stop-color", c);
+      });
+      attr(keyLim!, "transform", `translate(${(((R.limit - KEY_T0) / (KEY_T1 - KEY_T0)) * keyW).toFixed(1)} 0)`);
+      set("keyLim", String(R.limit));
+    }
 
     // tank levels
     for (const r of lvls) {
@@ -197,14 +263,17 @@ export function initHmi(fig: HTMLElement): void {
       attr(r, "height", h.toFixed(1));
     }
 
-    // pipes: state (0 empty / 1 full / 2 flowing) + colour
+    // pipes: state (0 empty / 1 full / 2 flowing) + colour; under-limit product in the holding tube after the batch
+    // has produced is abnormal: amber dashes (data-cold) that travel with the slug
     const fluidC = s.fluid !== "milk" ? FLUID[s.fluid] : "";
     const flowing = s.q > 50;
     const segs = s.tubeSegments(16);
+    const lim = R.limit;
     for (const p of flows) {
       const k = p.dataset.p!;
       let st = 1;
       let t = tt;
+      let cold = false;
       switch (k) {
         case "raw":
           st = s.lv ? 2 : 1;
@@ -220,6 +289,7 @@ export function initHmi(fig: HTMLElement): void {
           const a = Math.floor(+p.dataset.a! * 16);
           const b = Math.max(a + 1, Math.round(+p.dataset.b! * 16));
           t = segs.slice(a, b).reduce((x, y) => x + y, 0) / (b - a);
+          cold = producing && s.produced && !fluidC && Math.min(...segs.slice(a, b)) < lim;
           break;
         }
         case "fwd":
@@ -246,16 +316,17 @@ export function initHmi(fig: HTMLElement): void {
           break;
       }
       attr(p, "data-s", String(st));
+      if (k === "hold") attr(p, "data-cold", cold ? "" : null);
       if (k !== "ice" && k !== "steam") {
-        const c = fluidC && k !== "raw" && !k.startsWith("hw") ? fluidC : tColor(t);
+        const c = k.startsWith("hw") ? plainColor(t) : fluidC && k !== "raw" ? fluidC : productColor(t, lim);
         if (p.style.stroke !== c) p.style.stroke = c;
       }
     }
     const bt = lvls.find((r) => r.dataset.lvl === "bt");
-    if (bt) bt.style.fill = fluidC || tColor(s.tbt).replace("rgb", "rgba").replace(")", ",.45)");
+    if (bt) bt.style.fill = fluidC || productColor(s.tbt, lim).replace("rgb", "rgba").replace(")", ",.45)");
 
-    // analog indicator: span limit-8 … limit+6
-    const lo = (cip ? 20 : R.limit - 8);
+    // analog indicator: span limit-8 … limit+6 (pointer moved with a composited translate)
+    const lo = cip ? 20 : R.limit - 8;
     const span = cip ? 70 : 14;
     const pc = (v: number) => `${Math.max(0, Math.min(100, ((v - lo) / span) * 100)).toFixed(1)}%`;
     ai.style.setProperty("--pv", pc(tt));
@@ -264,7 +335,7 @@ export function initHmi(fig: HTMLElement): void {
     ai.style.setProperty("--b0", pc(cip ? s.spActive - 3 : R.limit));
     ai.style.setProperty("--bw", `${((cip ? 6 : s.sp + 1.5 - R.limit) / span) * 100}%`);
 
-    // FDV forward permissive (what the PLC checks before it energises the FDV)
+    // FDV forward permissive (what the PLC checks before it energises the FDV), state in words for AT
     if (perm) {
       const ok: Record<string, boolean> = {
         temp: tt >= R.limit,
@@ -272,7 +343,13 @@ export function initHmi(fig: HTMLElement): void {
         dp: producing && s.q > 50,
         hold: producing && s.holdS >= R.hold,
       };
-      permLi.forEach((li) => attr(li, "data-ok", ok[li.dataset.perm!] ? "" : null));
+      permLi.forEach((li) => {
+        const on = ok[li.dataset.perm!];
+        attr(li, "data-ok", on ? "" : null);
+        const sr = li.querySelector("[data-perm-st]");
+        const tx = `${T.comma}${on ? T.perm.met : T.perm.notMet}`;
+        if (sr && sr.textContent !== tx) sr.textContent = tx;
+      });
       const all = Object.values(ok).every(Boolean);
       attr(perm, "data-ok", all ? "" : null);
       set("permSt", all ? T.perm.ok : T.perm.blocked);
@@ -306,27 +383,39 @@ export function initHmi(fig: HTMLElement): void {
     btn("fault").forEach((b) => attr(b, "aria-disabled", producing ? null : "true"));
     btn("ack").forEach((b) => attr(b, "aria-disabled", unack.length ? null : "true"));
 
-    // CIP stepper
+    // "Try it": progress + the amber lamp on the next key
+    if (tour.start && producing && s.fwd) tour.forward = true;
+    const next = !tour.start || (!s.running && !tour.forward) ? "start" : !tour.forward ? "" : !tour.fault ? (producing ? "fault" : "start") : !tour.ack && unack.length ? "ack" : "";
+    btns.forEach((b) => attr(b, "data-next", b.dataset.c === next ? "" : null));
+    renderTour();
+
+    // CIP stepper (current phase marked for AT, finished phases say so)
     if (cip || lastCip !== s.cip) {
       cipLis.forEach((li, i) => {
         attr(li, "data-st", i < s.cip ? "done" : i === s.cip ? "on" : null);
+        attr(li, "aria-current", i === s.cip ? "step" : null);
         li.style.setProperty("--p", i === s.cip ? `${((s.cipT / CIP[i][1]) * 100).toFixed(0)}%` : "0%");
+        const sr = li.querySelector("[data-ph-st]");
+        const tx = i < s.cip ? `${T.comma}${T.cip.done}` : "";
+        if (sr && sr.textContent !== tx) sr.textContent = tx;
       });
       set("cipLeft", cip ? iso(fill(T.cip.left, { s: Math.ceil((CIP[s.cip][1] - s.cipT) / SPEED) })) : "");
       lastCip = s.cip;
     }
 
     // operator message line
-    const now = performance.now();
-    let m = "";
+    let m: string;
     let tone = "";
     if (note && now < noteUntil) {
-      m = note;
+      m = note();
       tone = noteTone;
-    } else if (cip) m = `${T.cip.title}: ${T.cip[CIP[s.cip][0]]}`;
-    else if (s.running && (s.fault > 0 || s.steam < 2)) {
-      m = T.msg.fault;
+    } else if (cip) m = `${T.cip.title}${T.colon}${T.cip[CIP[s.cip][0]]}`;
+    else if (faulted) {
       tone = "warn";
+      const eta = s.produced ? s.coldEta() : -1;
+      if (abn) m = fill(T.msg.recovering, { limit: f1(R.limit) });
+      else if (eta > 0) m = fill(T.msg.faultEta, { s: Math.max(1, Math.round(eta / SPEED)) });
+      else m = T.msg.fault;
     } else if (s.running && s.manual && s.manualFwd && s.blocked) {
       m = fill(T.msg.blocked, { t: f1(tt), limit: f1(R.limit) });
       tone = "warn";
@@ -334,9 +423,15 @@ export function initHmi(fig: HTMLElement): void {
     else if (s.running && !s.fwd) {
       m = fill(s.produced ? T.msg.recovering : T.msg.heating, { limit: f1(R.limit) });
       tone = s.produced ? "warn" : "";
-    } else if (s.running) m = fill(T.msg.forward, { limit: f1(R.limit), hold: f1(s.holdS) });
+    } else if (s.running && unack.some((a) => !a.active)) {
+      m = T.msg.recoveredAck;
+      tone = "warn";
+    } else if (s.running && now < allClearUntil) m = fill(T.msg.allClear, { batch: `B-${s.batch}` });
+    else if (s.running) m = fill(T.msg.forward, { limit: f1(R.limit), hold: f1(s.holdS) });
+    else if (stickyKey === "idle") m = "";
     else m = T.msg[stickyKey] || T.msg.idle;
-    set("msg", iso(m));
+    if (m) setMsg(iso(m));
+    else setMsg("", PRESS);
     attr(msgEl, "data-tone", tone || null);
 
     if (alarmsDirty) renderAlarms();
@@ -346,14 +441,23 @@ export function initHmi(fig: HTMLElement): void {
     alarmsDirty = false;
     const rows = sim.alarms.slice(0, 5);
     if (!rows.length) {
-      alist.innerHTML = `<li class="hs-empty">${esc(T.alarms.empty)}</li>`;
+      rowsEl.innerHTML = `<div role="row" class="hs-empty"><span role="cell" aria-colspan="5">${esc(T.alarms.empty)}</span></div>`;
       return;
     }
-    alist.innerHTML = rows
+    rowsEl.innerHTML = rows
       .map((a) => {
         const st = a.prio === 0 ? "event" : !a.acked ? "unack" : a.active ? "acked" : "cleared";
         const stTx = a.prio === 0 ? T.alarms.p0 : a.active ? (a.acked ? T.alarms.acked : T.alarms.active) : T.alarms.cleared;
-        return `<li data-p="${a.prio}" data-st="${st}"><span class="a-ic" title="${esc(T.alarms[`p${a.prio}`])}">${a.prio || "i"}</span><time>${hms(new Date(a.t))}</time><span class="a-tag">${esc(a.tag)}</span><span class="a-tx">${esc(alarmText(a))}</span><span class="a-st">${esc(stTx)}</span></li>`;
+        const d = new Date(a.t);
+        const src = a.prio === 0 ? SRC[a.tag] : "";
+        return (
+          `<div role="row" data-p="${a.prio}" data-st="${st}">` +
+          `<span role="cell" class="a-pc"><span class="a-ic" aria-hidden="true">${a.prio || "i"}</span><span class="lc-hmi-sr">${esc(T.alarms[`p${a.prio}`])}</span></span>` +
+          `<span role="cell"><time datetime="${d.toISOString()}">${hms(d)}</time></span>` +
+          `<span role="cell" class="a-tag${src ? " a-src" : ""}">${esc(src || a.tag)}</span>` +
+          `<span role="cell" class="a-tx">${esc(alarmText(a))}</span>` +
+          `<span role="cell" class="a-st">${esc(stTx)}</span></div>`
+        );
       })
       .join("");
   }
@@ -391,14 +495,33 @@ export function initHmi(fig: HTMLElement): void {
       }
       attr(trendPaths[j], "d", d);
     });
-    yLbl.forEach((el, i) => (el.textContent = String(hi - ((hi - lo) / 2) * i)));
+    yLbl.forEach((el, i) => {
+      const v = String(hi - ((hi - lo) / 2) * i);
+      if (el.textContent !== v) el.textContent = v;
+    });
+  }
+
+  // ---------------------------------------------------------------- stepped motion (marching ants, impellers)
+  let phase = 0;
+  let rot = 0;
+  function animate(dt: number): void {
+    if (motionOff()) return;
+    if (sim.running || sim.q > 0) {
+      const period = 0.7 / Math.max(0.35, sim.q / 3000); // seconds per dash period at this flow
+      phase = (phase + (dt / period) * DASH) % DASH;
+      flowG.style.setProperty("--dash", (-phase).toFixed(1));
+    }
+    if (sim.q > 50) {
+      rot = (rot + dt * 400) % 360;
+      const r = `rotate(${rot.toFixed(0)}deg)`;
+      for (const g of imps) g.style.transform = r;
+    }
   }
 
   // ---------------------------------------------------------------- loop + visibility
-  let raf = 0;
+  let timer = 0;
   let last = 0;
   let acc = 0;
-  let lastUi = 0;
   let lastTrend = 0;
   let restUntil = 0; // keep simulating a little after Stop so the plant visibly winds down
   let visible = false;
@@ -407,8 +530,9 @@ export function initHmi(fig: HTMLElement): void {
   const busy = () => sim.running || sim.q > 0 || performance.now() < restUntil;
   const canRun = () => visible && !document.hidden;
 
-  function frame(now: number): void {
-    raf = 0;
+  function tick(): void {
+    timer = 0;
+    const now = performance.now();
     const dt = Math.min(0.25, (now - last) / 1000);
     last = now;
     acc += dt * SPEED;
@@ -422,53 +546,66 @@ export function initHmi(fig: HTMLElement): void {
       }
     }
     handleEvents();
-    if (now - lastUi > 100) {
-      lastUi = now;
-      render();
-    }
+    animate(dt);
+    render();
     if (now - lastTrend > 250) {
       lastTrend = now;
       renderTrend();
     }
-    if (busy() && canRun()) raf = requestAnimationFrame(frame);
-    else render();
+    if (busy() && canRun()) timer = window.setTimeout(tick, TICK);
   }
   function kick(): void {
-    if (raf || !busy() || !canRun()) return;
+    if (timer || !busy() || !canRun()) return;
     last = performance.now();
-    raf = requestAnimationFrame(frame);
+    timer = window.setTimeout(tick, 16);
   }
+  const clockNow = () => set("clock", hms(new Date()));
   function syncPause(): void {
     const on = canRun();
     attr(fig, "data-paused", on ? null : "1");
-    if (on) {
-      kick();
-      if (!clock) {
-        tick();
-        clock = window.setInterval(tick, 1000);
-      }
-    } else {
-      if (raf) cancelAnimationFrame(raf);
-      raf = 0;
+    if (on) kick();
+    else {
+      clearTimeout(timer);
+      timer = 0;
+    }
+    // the status-bar clock ticks only while the panel is on screen and motion is allowed (else: set on each event)
+    const tickClock = on && !motionOff();
+    if (tickClock && !clock) {
+      clockNow();
+      clock = window.setInterval(clockNow, 1000);
+    } else if (!tickClock && clock) {
       clearInterval(clock);
       clock = 0;
     }
   }
-  const tick = () => set("clock", hms(new Date()));
 
   if ("IntersectionObserver" in window) {
     new IntersectionObserver(
       (es) => {
-        visible = es[0].isIntersecting;
+        visible = es[es.length - 1].isIntersecting; // the latest entry (several can queue up in one callback)
         syncPause();
       },
       { rootMargin: "60px 0px" },
     ).observe(fig);
+    // the one-time "press Start" cue plays when the Start key itself is fully on screen
+    const startB = btn("start")[0];
+    if (startB) {
+      const seen = new IntersectionObserver(
+        (es) => {
+          if (!es[0].isIntersecting) return;
+          seen.disconnect();
+          fig.setAttribute("data-seen", "");
+        },
+        { threshold: 1 },
+      );
+      seen.observe(startB);
+    }
   } else {
     visible = true;
     syncPause();
   }
   document.addEventListener("visibilitychange", syncPause);
+  onMotionChange(() => syncPause());
 
   // ---------------------------------------------------------------- commands
   scr.addEventListener("click", (ev) => {
@@ -476,8 +613,11 @@ export function initHmi(fig: HTMLElement): void {
     if (!b) return;
     const c = b.dataset.c!;
     const s = sim;
+    fig.removeAttribute("data-fresh");
+    note = null; // a new command replaces any earlier note (refusals never linger into the next state)
     if (b.getAttribute("aria-disabled") === "true") {
-      if (c === "fault") flash(T.msg.idle, "", 3000);
+      if (c === "fault") flash(() => (s.cip >= 0 ? T.msg.faultInCip : T.msg.faultNeedsRun), "", 4000);
+      else if (c === "ack") flash(() => T.msg.noAlarms, "", 3000);
       render();
       return;
     }
@@ -486,6 +626,7 @@ export function initHmi(fig: HTMLElement): void {
         if (s.cip >= 0) s.stop();
         s.start();
         stickyKey = "idle";
+        tour.start = true;
         break;
       case "stop":
         if (s.running) {
@@ -510,11 +651,14 @@ export function initHmi(fig: HTMLElement): void {
       case "fault":
         if (s.fault > 0) break;
         s.injectFault();
+        tour.fault = true;
         break;
       case "ack":
         s.ack();
         say(T.msg.acked);
         alarmsDirty = true;
+        tour.ack = true;
+        if (s.running && s.fwd) allClearUntil = performance.now() + 5000;
         break;
       case "recipe":
         s.setRecipe(b.dataset.r as RecipeId);
@@ -526,9 +670,9 @@ export function initHmi(fig: HTMLElement): void {
       case "fdvFwd":
       case "fdvDiv":
         if (!s.commandFdv(c === "fdvFwd")) {
-          const m = iso(fill(T.msg.blocked, { t: f1(s.tt102), limit: f1(s.R.limit) }));
-          flash(m);
-          say(m);
+          const refusal = () => iso(fill(T.msg.blocked, { t: f1(s.tt102), limit: f1(s.R.limit) }));
+          flash(refusal);
+          say(refusal());
         }
         break;
       case "trend": {
@@ -538,6 +682,7 @@ export function initHmi(fig: HTMLElement): void {
         break;
       }
     }
+    if (motionOff()) clockNow();
     handleEvents();
     render();
     renderTrend();
@@ -551,5 +696,6 @@ export function initHmi(fig: HTMLElement): void {
   }
   // Initial paint of the static snapshot (localised values, recipe data).
   set("limit", `≥ ${f1(RECIPES.milk.limit)} °C`);
+  clockNow();
   render();
 }

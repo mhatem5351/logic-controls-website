@@ -5,6 +5,8 @@
  */
 import { Font } from "astro:assets";
 import "~/styles/global.css";
+/* Plain CSS (no Tailwind), all inside @media print: fetched at low priority, never render-blocking. */
+import printCss from "~/styles/print.css?url";
 import { LOCALE_META, getMessages, type Locale } from "~/i18n";
 import { SITE } from "~/data/site";
 import Seo from "~/components/Seo.astro";
@@ -13,6 +15,7 @@ import Footer from "~/components/Footer.astro";
 import WhatsAppButton from "~/components/WhatsAppButton.astro";
 import montserratTrNormal from "~/assets/fonts/montserrat-tr-normal.woff2?url&no-inline";
 import montserratTrItalic from "~/assets/fonts/montserrat-tr-italic.woff2?url&no-inline";
+import alexandriaLabel from "~/assets/fonts/alexandria-ar-label.woff2?url&no-inline";
 
 interface Props {
   locale: Locale;
@@ -25,8 +28,9 @@ interface Props {
   jsonLd?: Record<string, unknown> | Array<Record<string, unknown>>;
   /** The page starts with a dark <Hero>: header is transparent until scrolled. */
   heroDark?: boolean;
-  /** Preload the LCP image (home hero poster); `media` limits it to the viewports where it is the LCP. */
-  preloadImage?: { href: string; srcset?: string; sizes?: string; media?: string };
+  /** Preload the LCP image (home hero poster); `media` limits it to the viewports where it is the LCP; `type` (e.g.
+   *  "image/avif") lets browsers that cannot decode it skip the preload. */
+  preloadImage?: { href: string; srcset?: string; sizes?: string; media?: string; type?: string };
   ogImage?: string;
   /** Real pixel size of `ogImage` (default 1200×630). */
   ogImageSize?: { width: number; height: number };
@@ -38,6 +42,8 @@ interface Props {
   alternates?: boolean;
   /** Emit canonical + og:url (false for 404). */
   canonical?: boolean;
+  /** Preload the first-screen font files (default true). */
+  preloadFonts?: boolean;
   bodyClass?: string;
 }
 
@@ -56,6 +62,7 @@ const {
   chrome = true,
   alternates = true,
   canonical = true,
+  preloadFonts = true,
   bodyClass,
 } = Astro.props;
 
@@ -63,29 +70,46 @@ const meta = LOCALE_META[locale];
 const t = getMessages(locale).ui;
 /* Preload exactly the font files the first screen uses (the hero H1 is Montserrat italic, the lead upright), plus the
    Turkish letters on Turkish pages; Arabic pages use Alexandria's Arabic + Latin files ("PLC" in the H1).
-   Fonts that arrive late swap in without moving the layout (metric-matched fallbacks, global.css). */
-const latinPreload =
-  locale === "ar" ? false : [{ subset: "latin", style: "normal" }, { subset: "latin", style: "italic" }];
+   Chinese headings are upright (no italic Latin on any zh first screen, checked at 390 / 1440), so zh preloads the
+   upright file only. Fonts that arrive late swap in without moving the layout (metric-matched fallbacks, global.css).
+   The fonts are self-hosted local files (astro.config.mjs), so the filters select by style only (no `subset`). */
+const latinPreload = preloadFonts && locale !== "ar" && [{ style: "normal" }, ...(locale === "zh" ? [] : [{ style: "italic" }])];
 /* "LC Montserrat Ext": the Montserrat glyphs Turkish needs beyond the "latin" subset (which has ı): ğ Ğ İ Ş ş (Ğ, İ
    also come from text-transform: uppercase). Listed right after Montserrat in --font-latin (astro.config.mjs), so the
    browser takes only these code points from it, and only pages that contain them download it (unicode-range).
-   ~5 KB per style vs 72/76 KB for fontsource's full latin-ext files. Same outlines, metrics, hinting and wght axis
-   (100–900) as those files, cut with fonttools (Romanian locl dropped) from
+   ~5 KB / 2 KB vs 72/76 KB for fontsource's full latin-ext files. Same outlines, metrics and hinting as those files,
+   and the same wght axis as the main faces (upright 100–900; italic 700–800, unhinted, like the italic "latin" file),
+   cut with fonttools (Romanian locl dropped) from
    https://cdn.jsdelivr.net/fontsource/fonts/montserrat:vf@latest/latin-ext-wght-{normal,italic}.woff2:
+     [italic: fonttools varLib.instancer <file> wght=700:800 -o <file>, then --no-hinting below]
      pyftsubset <file> --unicodes="U+011E-011F,U+0130,U+015E-015F" --layout-features="kern,mark,mkmk,ccmp,rvrn" \
        --flavor=woff2 --output-file=src/assets/fonts/montserrat-tr-<style>.woff2
+   Turkish pages preload both (the first screen's H1 / lead usually has ş or ğ; a late Ext glyph would re-wrap a
+   balanced heading).
    scripts/check-i18n.mjs fails the build if the copy gains a Latin letter that neither subset covers.
    `no-inline`: Vite would inline files < 4 KB as data: URIs, which the CSP (font-src 'self') blocks. */
 const latinExtFaces = [
-  { style: "normal", url: montserratTrNormal },
-  { style: "italic", url: montserratTrItalic },
+  { style: "normal", weight: "100 900", url: montserratTrNormal },
+  { style: "italic", weight: "700 800", url: montserratTrItalic },
 ];
-const latinExtCss = latinExtFaces
-  .map(
-    ({ style, url }) =>
-      `@font-face{font-family:"LC Montserrat Ext";src:url("${url}") format("woff2");font-display:swap;font-weight:100 900;font-style:${style};unicode-range:U+011E-011F,U+0130,U+015E-015F}`,
-  )
-  .join("");
+/* "LC Arabic Label" (I18N-13): on en / zh / tr pages the only Arabic is the language switcher's "العربية" / "ع" (the
+   404 page loads the full Alexandria). A 4 KB Alexandria cut of exactly those letters (ا ب ة ر ع ل ي, all joining
+   forms, wght 400–700, unhinted) instead of an OS fallback face; `:lang(ar)` in global.css falls back to it when
+   --font-arabic is not loaded. Fetched only when a page shows those letters (unicode-range), not preloaded: it swaps
+   inside the label without moving anything around it (measured CLS 0).
+     fonttools varLib.instancer alexandria-arabic-wght.woff2 wght=400:700 -o tmp.ttf
+     pyftsubset tmp.ttf --text="العربية" --layout-features='*' --no-hinting --flavor=woff2 \
+       --output-file=src/assets/fonts/alexandria-ar-label.woff2 */
+const fontFaceCss =
+  latinExtFaces
+    .map(
+      ({ style, weight, url }) =>
+        `@font-face{font-family:"LC Montserrat Ext";src:url("${url}") format("woff2");font-display:swap;font-weight:${weight};font-style:${style};unicode-range:U+011E-011F,U+0130,U+015E-015F}`,
+    )
+    .join("") +
+  (locale === "ar"
+    ? ""
+    : `@font-face{font-family:"LC Arabic Label";src:url("${alexandriaLabel}") format("woff2");font-display:swap;font-weight:400 700;unicode-range:U+0627-0629,U+0631,U+0639,U+0644,U+064A}`);
 const beacon = JSON.stringify({ token: SITE.webAnalyticsToken });
 /** /^(www\.)?logic-controls\.com$/ as source text for the inline loader below. */
 const beaconHost = `/^(www\\.)?${new URL(SITE.url).hostname.replace(/\./g, "\\.")}$/`;
@@ -97,44 +121,83 @@ const beaconHost = `/^(www\\.)?${new URL(SITE.url).hostname.replace(/\./g, "\\."
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
     {/*
-      Render-blocking on purpose (tiny): sets html.js, the once-per-session motion flags before first paint (logo
-      intro, FAB ping), and listens for pagereveal, which fires before the first frame of a cross-document view
-      transition. Names for the shared-element morph are set only for that one navigation (unique, cheap):
-        pageswap (old page): the clicked card's art/photo → "lc-media" (or the hero, when going back up)
-        pagereveal (new page): the hero media + copy (or the card we came back to) → "lc-media" / "lc-hero-copy"
-      Transition types: lc-next / lc-prev (case-study pager), lc-back (history back), lc-lang (language switch).
-      Also pauses looping decoration ([data-pause-offscreen]) while it is offscreen. See src/styles/motion.css.
+      Render-blocking on purpose (tiny): before first paint it sets html.js, the motion preference
+      (html[data-motion="off"]: user paused animations — localStorage.lcMotion — or the OS asks for reduced motion; see
+      src/scripts/motion/motion-pref.ts) and the once-per-session motion flags (logo intro, FAB ping). It also listens
+      for pageswap / pagereveal, which fire before the first frame of a cross-document view transition. Names are set
+      only for that one navigation (unique, cheap) and cleared when it ends:
+        both pages: header, floating button, nav indicator → "lc-header" / "lc-fab" / "lc-nav-ind" (only while the
+          transition runs: a permanent name would make the header a backdrop root and kill its frosted glass)
+        pageswap (old page): the clicked card's art/photo → "lc-media"; going back / up: the hero's art, or its photo
+          alone ("lc-media") with its scrims as separate layers above it ("lc-hs0…"), and its copy ("lc-copy-out")
+        pagereveal (new page): the hero art, phone photo band or desktop photo (+ scrims) and copy → "lc-media" /
+          "lc-hs*" / "lc-hero-copy", the card we came back to → "lc-media", or the own hero when coming "up"
+      Transition types: lc-next / lc-prev (case-study pager), lc-back (history back), lc-lang (language switch),
+      lc-dark (a dark hero is the first screen: navy backdrop), lc-photo / lc-photo-out (a hero photo is the new / old
+      side of the morph: clipped to the hero's slant), lc-orphan (old hero with no counterpart: leaves quickly).
+      html[data-vt]: this page arrived through a view transition (hero entrances don't replay). With motion off the
+      transition is skipped. Also pauses looping decoration ([data-pause-offscreen]) while it is offscreen.
+      See src/styles/motion.css.
     */}
     <script is:inline>
       (() => {
         const d = document.documentElement, N = [];
         d.classList.add("js");
-        let S = {};
+        let S = {}, off = matchMedia("(prefers-reduced-motion: reduce)").matches;
+        try {
+          if (localStorage.lcMotion === "off") off = true;
+        } catch {}
+        if (off) d.dataset.motion = "off";
         try {
           S = sessionStorage;
-          if (!matchMedia("(prefers-reduced-motion: reduce)").matches) {
+          if (!off) {
             if (!S.lcIntro) { d.dataset.intro = ""; S.lcIntro = 1; }
-            if (!S.lcPing) { d.dataset.fabPing = ""; setTimeout(() => (S.lcPing = 1), 8e3); }
+            if (!S.lcPing) d.dataset.fabPing = ""; /* WhatsAppButton sets S.lcPing once its ping has played */
           }
         } catch {}
         const path = (u) => new URL(u, location.href).pathname;
+        const depth = (p) => p.split("/").length;
         const vis = (el) => { const r = el.getBoundingClientRect(); return r.width > 0 && r.bottom > 0 && r.top < innerHeight; };
         const art = (el) => el.querySelector(".lca") || el;
-        const name = (el, n) => { el.style.viewTransitionName = n; N.push(el); };
+        const name = (el, n) => { if (el) { el.style.viewTransitionName = n; N.push(el); } };
         const clear = () => { N.forEach((el) => (el.style.viewTransitionName = "")); N.length = 0; };
         const card = (p) => [...document.querySelectorAll("[data-vt-href]")].find((el) => path(el.dataset.vtHref) === p && vis(art(el)));
-        const hero = () => {
-          const h = document.querySelector(".lc-hero"), m = h?.querySelector(".lc-hero-media");
-          return (h && [...h.querySelectorAll(".lca")].find(vis)) || (m?.querySelector("img") && vis(m) ? m : null);
+        const chrome = () => {
+          name(document.querySelector(".lc-header"), "lc-header");
+          name(document.querySelector(".lc-fab"), "lc-fab");
+          const i = [...document.querySelectorAll(".lc-nav-ind")].find(vis);
+          name(i, "lc-nav-ind");
         };
+        /* The hero's visible picture — its illustration, the phone photo band, else the desktop panel's photo alone
+           (its scrims named above it) — plus its copy (`copy`: kept above the lifted picture).
+           Returns "art" | "band" | "photo" | "". */
+        const hero = (copy) => {
+          const h = document.querySelector(".lc-hero"), m = h?.querySelector(".lc-hero-media");
+          const a = h && [...h.querySelectorAll(".lca, .lc-hero-band")].find(vis);
+          const img = !a && m && vis(m) && m.querySelector("img");
+          if (!a && !img) return "";
+          name(h.querySelector(".lc-hero-copy"), copy);
+          if (a) return name(a, "lc-media"), a.classList.contains("lca") ? "art" : "band";
+          name(img, "lc-media");
+          [...m.children].filter((x) => x.tagName === "DIV").slice(0, 4).forEach((x, i) => name(x, "lc-hs" + i));
+          return "photo";
+        };
+        const done = (t) => { t.ready.catch(() => {}); t.finished.then(clear, clear); };
         addEventListener("pageswap", (e) => {
           const t = e.viewTransition, a = e.activation;
-          if (!t || !a?.entry?.url) return;
-          const p = path(a.entry.url), c = card(p), h = !c && hero();
-          const r = [...document.querySelectorAll("a[rel=prev],a[rel=next]")].find((x) => path(x.href) === p);
+          if (!t) return;
+          t.ready.catch(() => {});
+          if (d.dataset.motion === "off") return t.skipTransition();
           try {
+            chrome();
+            if (!a?.entry?.url) return;
+            const p = path(a.entry.url), c = card(p);
+            const r = [...document.querySelectorAll("a[rel=prev],a[rel=next]")].find((x) => path(x.href) === p);
             if (c) { name(art(c), "lc-media"); S.lcMorph = p; }
-            else if (h && !r && (a.navigationType === "traverse" || p.split("/").length < location.pathname.split("/").length)) name(h, "lc-media");
+            else if (!r && (a.navigationType === "traverse" || depth(p) < depth(location.pathname))) {
+              const h = hero("lc-copy-out");
+              if (h) S.lcUp = (h === "photo" ? "photo " : "art ") + p;
+            }
             if (r) S.lcDir = r.rel + " " + p;
           } catch {}
         });
@@ -142,22 +205,40 @@ const beaconHost = `/^(www\\.)?${new URL(SITE.url).hostname.replace(/\./g, "\\."
           const t = e.viewTransition, a = window.navigation?.activation, from = a?.from?.url, here = location.pathname;
           clear();
           if (!t) return;
+          if (d.dataset.motion === "off") {
+            t.ready.catch(() => {});
+            t.skipTransition();
+          } else {
+            d.dataset.vt = "";
+            try {
+              const ty = t.types, add = (x) => ty?.add(x);
+              const [dir, to] = (S.lcDir || "").split(" "), [upKind, up] = (S.lcUp || "").split(" ");
+              if (to === here) add("lc-" + dir);
+              if (a?.navigationType === "traverse" && a.entry.index < a.from?.index) add("lc-back");
+              if (from && path(from).split("/")[1] !== here.split("/")[1]) add("lc-lang");
+              if (document.querySelector(".lc-header[data-hero]") && scrollY < 24) add("lc-dark");
+              if (up === here && upKind === "photo") add("lc-photo-out");
+              chrome();
+              if (S.lcMorph === here) {
+                const h = hero("lc-hero-copy");
+                if (h === "photo") add("lc-photo");
+                else if (!h) { name(document.querySelector(".lc-hero-copy"), "lc-hero-copy"); add("lc-orphan"); }
+              } else if (from) {
+                const c = card(path(from));
+                if (c) name(art(c), "lc-media");
+                else if (up === here) {
+                  const h = hero("lc-hero-copy");
+                  if (h === "photo") add("lc-photo");
+                  else if (!h) add("lc-orphan");
+                }
+              }
+              if (S.lcSuccess) name(document.querySelector("[data-vt-success]"), "lc-success");
+            } catch {}
+            done(t);
+          }
           try {
-            const [dir, to] = (S.lcDir || "").split(" ");
-            if (to === here) t.types?.add("lc-" + dir);
-            if (a?.navigationType === "traverse" && a.entry.index < a.from?.index) t.types?.add("lc-back");
-            if (from && path(from).split("/")[1] !== here.split("/")[1]) t.types?.add("lc-lang");
-            if (S.lcMorph === here) {
-              const h = hero(), c = document.querySelector(".lc-hero-copy");
-              if (h) { name(h, "lc-media"); c && name(c, "lc-hero-copy"); }
-            } else if (from) {
-              const c = card(path(from));
-              if (c) name(art(c), "lc-media");
-            }
-            delete S.lcMorph;
-            delete S.lcDir;
+            ["lcMorph", "lcDir", "lcUp", "lcSuccess"].forEach((k) => delete S[k]);
           } catch {}
-          t.finished.finally(clear);
         });
         addEventListener("DOMContentLoaded", () => {
           if (!window.IntersectionObserver) return;
@@ -194,14 +275,15 @@ const beaconHost = `/^(www\\.)?${new URL(SITE.url).hostname.replace(/\./g, "\\."
           imagesrcset={preloadImage.srcset}
           imagesizes={preloadImage.sizes}
           media={preloadImage.media}
+          type={preloadImage.type}
           fetchpriority="high"
         />
       )
     }
     <Font cssVariable="--font-latin" preload={latinPreload} />
-    {locale === "tr" && latinExtFaces.map(({ url }) => <link rel="preload" href={url} as="font" type="font/woff2" crossorigin />)}
-    <style is:inline set:html={latinExtCss} />
-    {locale === "ar" && <Font cssVariable="--font-arabic" preload={[{ subset: "arabic" }, { subset: "latin" }]} />}
+    {preloadFonts && locale === "tr" && latinExtFaces.map(({ url }) => <link rel="preload" href={url} as="font" type="font/woff2" crossorigin />)}
+    <style is:inline set:html={fontFaceCss} />
+    {locale === "ar" && <Font cssVariable="--font-arabic" preload={preloadFonts} />}
     <noscript><style>.lc-header[data-hero] .lc-header-bg{background:rgb(4 14 39/.94)!important}</style></noscript>
     <slot name="head" />
   </head>
@@ -228,5 +310,7 @@ const beaconHost = `/^(www\\.)?${new URL(SITE.url).hostname.replace(/\./g, "\\."
         />
       )
     }
+    {/* Last in the document, so its rules win ties with the screen styles above. */}
+    <link rel="stylesheet" href={printCss} media="print" />
   </body>
 </html>

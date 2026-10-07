@@ -1,7 +1,8 @@
 ---
 /**
- * Request sent (noindex, excluded from the sitemap). Confirmation, what happens next, urgent help and
- * "send drawings" (WhatsApp; email first on zh), links back. No third-party conversion pixels.
+ * Request sent (noindex, excluded from the sitemap). Confirmation, the request number (?ref= from the Worker), what
+ * happens next, urgent help and "send drawings" (WhatsApp; email first on zh), links back. With a valid ?ref= the
+ * WhatsApp/email links carry the number, so files sent later land with the request. No third-party conversion pixels.
  */
 import BaseLayout from "~/layouts/BaseLayout.astro";
 import Hero from "~/components/Hero.astro";
@@ -10,7 +11,7 @@ import Section from "~/components/Section.astro";
 import Button from "~/components/Button.astro";
 import Icon from "~/components/Icon.astro";
 import NextSteps from "~/components/sections/main/NextSteps.astro";
-import { html, colon } from "~/components/sections/main/rich";
+import { html, colon, ltr } from "~/components/sections/main/rich";
 import { getMessages, localeStaticPaths, type Locale } from "~/i18n";
 import { SITE } from "~/data/site";
 import { href, whatsappLink, mailtoLink, prefersEmail } from "~/components/nav";
@@ -25,6 +26,11 @@ const email = prefersEmail(locale);
 <BaseLayout locale={locale} title={th.seo.title} description={th.seo.description} path="contact/thanks" noindex heroDark>
   <Hero locale={locale} size="page" title={html(locale, th.h1)} lead={html(locale, th.text)} primary={false} secondary={false}>
     <Breadcrumbs slot="breadcrumbs" locale={locale} items={[{ label: t.common.breadcrumbs.contact, path: "contact" }, { label: t.common.breadcrumbs.thanks }]} />
+    <p class="lc-rise mt-7 flex w-fit max-w-full flex-wrap items-baseline gap-x-3 gap-y-1 border border-white/15 bg-white/[0.04] px-4 py-3 text-sm" style="--i:2" data-ref-box data-handoff={th.handoff} hidden>
+      <span class="text-navy-200">{th.ref.label}{colon(locale)}</span>
+      <strong class="ltr font-mono text-lg tracking-wide text-white" dir="ltr" data-ref></strong>
+      <span class="basis-full text-navy-300">{th.ref.hint}</span>
+    </p>
     <div class="lc-rise mt-8 flex flex-wrap gap-3" style="--i:2">
       <Button href={href(locale)} variant="on-dark" icon="arrow" iconClass="-scale-x-100 rtl:scale-x-100">{th.backHome}</Button>
       <Button href={href(locale, "projects")} variant="ghost">{th.seeProjects}</Button>
@@ -35,7 +41,7 @@ const email = prefersEmail(locale);
     <div class="grid gap-8 lg:grid-cols-12 lg:gap-12">
       <div class="lg:col-span-5">
         <div class="flex items-center gap-3">
-          <span class="grid size-11 place-items-center rounded-full bg-success-700 text-white"><Icon name="check" size={22} /></span>
+          <span class="grid size-11 place-items-center rounded-full bg-success-700 text-white" data-vt-success><Icon name="check" size={22} /></span>
           <span class="type-label text-success-700">{t.common.breadcrumbs.thanks}</span>
         </div>
         <NextSteps locale={locale} headingLevel="h2" class="mt-8 [&>h2]:type-h3" />
@@ -50,9 +56,9 @@ const email = prefersEmail(locale);
           <div class="mt-auto grid gap-2.5 pt-6">
             {
               email ? (
-                <Button href={mailtoLink(t.ui.email.subject)} variant="on-dark" icon="mail" iconClass="text-royal-300" block>{t.ui.cta.emailEngineer}</Button>
+                <Button href={mailtoLink(t.ui.email.subject)} variant="on-dark" icon="mail" iconClass="text-royal-300" block data-ref-mail={th.ref.emailSubject} data-ref-nobody>{t.ui.cta.emailEngineer}</Button>
               ) : (
-                <Button href={whatsappLink(t.common.whatsapp.default)} variant="on-dark" icon="whatsapp" iconClass="text-[#25d366]" external block>{th.urgent.cta}</Button>
+                <Button href={whatsappLink(t.common.whatsapp.stopped)} variant="on-dark" icon="whatsapp" iconClass="text-whatsapp-500" external block data-ref-wa={`${t.common.whatsapp.stopped} (${"{ref}"})`}>{th.urgent.cta}</Button>
               )
             }
             <a href={`tel:${SITE.phone.tel}`} class="inline-flex min-h-11 items-center justify-center gap-2 text-sm font-semibold text-navy-100 hover:text-white">
@@ -70,18 +76,18 @@ const email = prefersEmail(locale);
             {
               email ? (
                 <>
-                  <Button href={mailtoLink(t.ui.email.subject)} icon="mail" block>
-                    <span class="ltr" dir="ltr">{SITE.email}</span>
+                  <Button href={mailtoLink(t.ui.email.subject)} icon="mail" block data-ref-mail={th.ref.emailSubject}>
+                    <Fragment set:html={ltr(SITE.email)} />
                   </Button>
-                  <a href={whatsappLink(t.common.whatsapp.drawings)} target="_blank" rel="noopener" class="inline-flex min-h-11 items-center justify-center gap-2 text-sm font-semibold text-royal-600 hover:text-royal-800 hover:underline">
-                    <Icon name="whatsapp" size={16} class="text-[#128c4a]" />{t.ui.cta.inEgyptWhatsapp}<span class="sr-only"> ({t.ui.a11y.newTab})</span>
+                  <a href={whatsappLink(t.common.whatsapp.drawings)} target="_blank" rel="noopener" class="inline-flex min-h-11 items-center justify-center gap-2 text-sm font-semibold text-royal-600 hover:text-royal-800 hover:underline" data-ref-wa={th.ref.whatsapp}>
+                    <Icon name="whatsapp" size={16} class="text-whatsapp-700" />{t.ui.cta.inEgyptWhatsapp}<span class="sr-only"> ({t.ui.a11y.newTab})</span>
                   </a>
                 </>
               ) : (
                 <>
-                  <Button href={whatsappLink(t.common.whatsapp.drawings)} icon="whatsapp" external block>{th.more.cta}</Button>
-                  <a href={mailtoLink(t.ui.email.subject)} class="inline-flex min-h-11 items-center justify-center gap-2 text-sm font-semibold text-royal-600 hover:text-royal-800 hover:underline">
-                    <Icon name="mail" size={16} /><span class="ltr" dir="ltr">{SITE.email}</span>
+                  <Button href={whatsappLink(t.common.whatsapp.drawings)} icon="whatsapp" external block data-ref-wa={th.ref.whatsapp}>{th.more.cta}</Button>
+                  <a href={mailtoLink(t.ui.email.subject)} data-ref-mail={th.ref.emailSubject} class="inline-flex min-h-11 items-center justify-center gap-2 text-sm font-semibold text-royal-600 hover:text-royal-800 hover:underline">
+                    <Icon name="mail" size={16} /><Fragment set:html={ltr(SITE.email)} />
                   </a>
                 </>
               )
@@ -92,3 +98,32 @@ const email = prefersEmail(locale);
     </div>
   </Section>
 </BaseLayout>
+
+<script>
+  // The Worker redirects (no-JS) or the form navigates (JS) here with ?ref=LC-XXXXX: show it and put it in the links.
+  import { REF_RE } from "~/lib/rfq-rules";
+
+  // The form also leaves {ref, name, company, need} in sessionStorage: then the drawings message says who and what.
+  const ref = new URLSearchParams(location.search).get("ref") ?? "";
+  const box = document.querySelector<HTMLElement>("[data-ref-box]");
+  if (box && REF_RE.test(ref)) {
+    box.querySelector("[data-ref]")!.textContent = ref;
+    box.hidden = false;
+    let sent: { ref?: string; name?: string; company?: string; need?: string } = {};
+    try {
+      sent = JSON.parse(sessionStorage.getItem("lcRfqSent") ?? "{}");
+    } catch {}
+    const vars: Record<string, string> = { ref, name: sent.name ?? "", company: sent.company ?? "", need: sent.need ?? "" };
+    const fill = (s: string) => s.replace(/\{(\w+)\}/g, (_, k: string) => vars[k] ?? "");
+    const handoff = sent.ref === ref && sent.name && sent.company && sent.need ? fill(box.dataset.handoff!) : "";
+    document.querySelectorAll<HTMLAnchorElement>("a[data-ref-wa]").forEach((a) => {
+      // the drawings links get the full hand-off; the "machine stopped" link keeps its own message + the number
+      const text = handoff && !a.dataset.refWa!.includes("({ref})") ? handoff : fill(a.dataset.refWa!);
+      a.href = `${a.href.split("?")[0]}?text=${encodeURIComponent(text)}`;
+    });
+    document.querySelectorAll<HTMLAnchorElement>("a[data-ref-mail]").forEach((a) => {
+      const body = handoff && !a.hasAttribute("data-ref-nobody") ? `&body=${encodeURIComponent(handoff)}` : "";
+      a.href = `${a.href.split("?")[0]}?subject=${encodeURIComponent(fill(a.dataset.refMail!))}${body}`;
+    });
+  }
+</script>

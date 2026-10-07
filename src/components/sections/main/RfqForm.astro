@@ -1,16 +1,15 @@
 ---
 /**
- * Quote request (RFQ) form → POST /api/rfq (worker/index.ts).
+ * Quote request (RFQ) form → POST /api/rfq (worker/index.ts). Contract, limits and validation rules:
+ * src/lib/rfq-rules.ts (shared with the Worker). Behaviour: src/scripts/rfq-form.ts. Styles: src/styles/rfq-form.css.
  *
- * Without JS: one long form (all fields visible, native validation, the description is required because the
- * Worker requires `message`), posting to /api/rfq which answers 303 → /{locale}/contact/thanks/ or ?error=….
- * With JS (progressive enhancement): two steps — 1) name, company, phone, "what do you need" (required);
- * 2) optional project details — localized inline validation, fetch with Accept: application/json, inline
- * success → thanks page, inline error panel (also for ?error= on load), Turnstile token handling.
- *
- * Field names follow the Worker contract: name, company, phone, email, country, location, service, industry,
- * timeline, message, page, locale; honeypot `company_website`; Turnstile adds `cf-turnstile-response`.
- * On zh, email moves to step 1 and is required (WhatsApp is blocked in mainland China, email is the reply channel).
+ * Without JS: one long multipart form (all fields and the attachments input visible, native validation, the
+ * description optional), posting to /api/rfq, which answers 303 → /{locale}/contact/thanks/?ref=… or
+ * ?error=<code>#rfq-error-<code>; the matching <noscript> alert below is shown with :target.
+ * With JS (progressive enhancement): two steps — 1) name, company, phone (zh: email; phone optional), "what do you
+ * need"; 2) optional project details and up to 3 files — linked error summary, Turnstile loaded on the first
+ * interaction, JSON submit, inline success → thanks page, and a pre-filled WhatsApp/email hand-over if sending fails.
+ * "Machine stopped?" (timeline "urgent" or the troubleshooting service) shows a call-now panel.
  */
 import { getMessages, localePath, LOCALE_META, type Locale } from "~/i18n";
 import { SITE } from "~/data/site";
@@ -18,8 +17,11 @@ import { ZONES } from "~/data/zones";
 import Icon from "~/components/Icon.astro";
 import Button from "~/components/Button.astro";
 import { fmt, whatsappLink, mailtoLink, prefersEmail } from "~/components/nav";
+import { REPLY_CHANNELS, RFQ_FILES, RFQ_FILES_ACCEPT, RFQ_MAX } from "~/lib/rfq-rules";
+import type { RfqI18n } from "~/scripts/rfq-form";
 import Field from "./Field.astro";
-import { rich, esc } from "./rich";
+import { rich, esc, ltr } from "./rich";
+import "~/styles/rfq-form.css";
 
 interface Props {
   locale: Locale;
@@ -29,8 +31,9 @@ const { locale, class: className } = Astro.props;
 const t = getMessages(locale);
 const f = t.contact.form;
 const fields = f.fields;
+const urgent = t.ui.urgent;
+/** zh: email is the reply channel (required, step 1) and the phone is optional; WhatsApp is not offered. */
 const email = prefersEmail(locale);
-const MAX_MESSAGE = 2000;
 const siteKey = import.meta.env.DEV ? "1x00000000000000000000AA" : SITE.turnstileSiteKey;
 const thanks = localePath(locale, "contact/thanks");
 const privacyHref = localePath(locale, "privacy");
@@ -38,20 +41,36 @@ const consentHtml = rich(locale, fields.consent.text, {
   link: `<a href="${privacyHref}" class="font-semibold text-royal-600 underline underline-offset-2 hover:text-royal-800">${esc(fields.consent.linkText)}</a>`,
 });
 const counter = (current: number) => fmt(f.steps.counter, { current, total: 2 });
+/** "4 MB" as an LTR isolate, so RTL text never reorders it to "MB 4". */
+const isolate = (s: string | number) => `${String.fromCharCode(0x2066)}${s}${String.fromCharCode(0x2069)}`;
+const maxSize = isolate(`${RFQ_FILES.maxTotal / 1024 / 1024} MB`);
+const mail = mailtoLink(t.ui.email.subject, { locale, path: "contact" });
+const phone = email ? fields.phoneOptional : fields.phone;
+/** "How should we reply?": no WhatsApp on zh; preselected WhatsApp on ar and email on zh (the locale's usual channel). */
+const replyChannels = REPLY_CHANNELS.filter((c) => !(email && c === "whatsapp"));
+const replyDefault = locale === "ar" ? "whatsapp" : email ? "email" : undefined;
+const replyIcon = { whatsapp: "whatsapp", phone: "phone", email: "mail" } as const;
 
-/** Strings the client script needs (validation, errors, step counter, composed fallback message). */
-const i18n = {
+/** Strings the client script needs. */
+const i18n: RfqI18n = {
   validation: t.contact.validation,
   errors: t.contact.errors,
   counter: f.steps.counter,
   sending: f.buttons.sending,
   submit: f.buttons.submit,
   sendNow: f.buttons.sendNow,
-  max: MAX_MESSAGE,
+  sent: f.sent,
+  waiting: f.security.waiting,
   thanks,
+  files: { remove: fields.files.remove, summary: fields.files.summary },
+  prefill: f.prefill,
+  whatsapp: email ? null : SITE.whatsapp,
+  email: SITE.email,
 };
 const desc = (id: string, help = true) => (help ? `${id}-help ${id}-error` : `${id}-error`);
 const optional = f.optional;
+const linkCls = "inline-flex min-h-6 items-center gap-1.5 font-semibold underline underline-offset-2";
+const NOJS_ERRORS = ["invalid", "attachments", "verification", "send"] as const;
 ---
 
 <form
@@ -59,773 +78,450 @@ const optional = f.optional;
   class:list={["lc-rfq relative scroll-mt-28 border border-charcoal-200 bg-white shadow-lift", className]}
   action="/api/rfq"
   method="post"
+  enctype="multipart/form-data"
   accept-charset="UTF-8"
   data-rfq
   data-fab-avoid
   data-i18n={JSON.stringify(i18n)}
   aria-labelledby="rfq-title"
 >
-  <input type="hidden" name="locale" value={locale} />
-  <input type="hidden" name="page" value={localePath(locale, "contact")} data-page-field />
-  {/* honeypot: hidden from people and assistive tech, bots fill it */}
-  <div class="lc-hp" aria-hidden="true">
-    <label for="rfq-company-website">Website</label>
-    <input id="rfq-company-website" type="text" name="company_website" tabindex="-1" autocomplete="off" />
-  </div>
-
-  {/* ---------- header ---------- */}
-  <div class="relative border-b border-charcoal-200 px-5 pt-6 pb-5 sm:px-8 sm:pt-8">
-    <span aria-hidden="true" class="absolute -top-px start-5 h-1 w-14 skew-x-[-10deg] bg-royal-600 sm:start-8 rtl:skew-x-[10deg]"></span>
-    <div class="flex flex-wrap items-end justify-between gap-x-6 gap-y-2">
-      <h2 id="rfq-title" class="type-h3 text-navy-950">{f.title}</h2>
-      <p class="text-sm text-charcoal-600">{f.requiredNote}</p>
+  {/* outside the body: stays announced while the body is inert after success */}
+  <p class="sr-only" aria-live="polite" data-step-live>{counter(1)}</p>
+  <div data-rfq-body>
+    <input type="hidden" name="locale" value={locale} />
+    <input type="hidden" name="page" value={localePath(locale, "contact")} data-page-field />
+    {/* honeypot: hidden from people and assistive tech, bots fill it */}
+    <div class="lc-hp" aria-hidden="true">
+      <label for="rfq-company-website">Website</label>
+      <input id="rfq-company-website" type="text" name="company_website" tabindex="-1" autocomplete="off" />
     </div>
-    {/* step indicator (JS only: .lc-js shows it from the first paint when html.js is set, so the form never shifts) */}
-    <div class="lc-stepper lc-js mt-5" data-stepper>
-      <p class="sr-only" aria-live="polite" data-step-live>{counter(1)}</p>
-      <ol role="list" class="grid grid-cols-2 gap-2">
+
+    {/* ---------- header ---------- */}
+    <div class="relative border-b border-charcoal-200 px-5 pt-6 pb-5 sm:px-8 sm:pt-8">
+      <span aria-hidden="true" class="absolute -top-px start-5 h-1 w-14 skew-x-[-10deg] bg-royal-600 sm:start-8 rtl:skew-x-[10deg]"></span>
+      <div class="flex flex-wrap items-end justify-between gap-x-6 gap-y-2">
+        <h2 id="rfq-title" class="type-h3 text-navy-950">{f.title}</h2>
+        <p class="text-sm text-charcoal-600">{f.requiredNote}</p>
+      </div>
+      {/* step indicator (JS only: .lc-js shows it from the first paint when html.js is set, so the form never shifts) */}
+      <div class="lc-stepper lc-js mt-5" data-stepper>
+        <ol role="list" class="grid grid-cols-2 gap-2">
+          {
+            [f.steps.one, f.steps.two].map((label, i) => (
+              <li class="lc-step" data-step-tab={i + 1} data-active={i === 0 ? "" : undefined} aria-current={i === 0 ? "step" : undefined}>
+                <span class="lc-step-bar" aria-hidden="true" />
+                <span class="mt-2 flex items-center gap-2 text-sm">
+                  <span class="font-mono text-xs ltr" dir="ltr">
+                    {String(i + 1).padStart(2, "0")}
+                  </span>
+                  <span class="lc-step-label font-semibold">{label}</span>
+                  <Icon name="check" size={14} strokeWidth={2.5} class="lc-step-check" />
+                  <span class="sr-only" data-done-text hidden>
+                    ({f.steps.done})
+                  </span>
+                </span>
+              </li>
+            ))
+          }
+        </ol>
+      </div>
+    </div>
+
+    <div class="px-5 py-6 sm:px-8 sm:py-8">
+      {/* ---------- alert: validation summary / server errors (also ?error=) ---------- */}
+      <div class="lc-alert mb-7" data-alert tabindex="-1" role="alert" hidden>
+        <Icon name="close" size={20} class="mt-0.5 shrink-0" />
+        <div class="min-w-0 flex-1">
+          <p class="font-bold" data-alert-title></p>
+          <p class="mt-1" data-alert-text hidden></p>
+          <ul role="list" class="lc-alert-list mt-2 space-y-1.5" data-alert-list hidden></ul>
+          <div class="mt-3 text-sm" data-alert-fallback hidden>
+            <p>{t.contact.errors.fallback}</p>
+            <p class="mt-2 flex flex-wrap gap-x-5 gap-y-2">
+              <a href={`tel:${SITE.phone.tel}`} class={linkCls}>
+                <Icon name="phone" size={15} /><span class="ltr" dir="ltr">{SITE.phone.display}</span>
+              </a>
+              {
+                !email && (
+                  <a href={whatsappLink(t.common.whatsapp.quote)} target="_blank" rel="noopener" class={linkCls} data-fallback="whatsapp">
+                    <Icon name="whatsapp" size={15} />
+                    {t.common.labels.whatsapp}
+                    <span class="sr-only"> ({t.ui.a11y.newTab})</span>
+                  </a>
+                )
+              }
+              <a href={mail} class={linkCls} data-fallback="email">
+                <Icon name="mail" size={15} /><Fragment set:html={ltr(SITE.email)} />
+              </a>
+            </p>
+            <p class="mt-2 text-charcoal-600">{t.contact.errors.handover}</p>
+            <button
+              type="button"
+              class="mt-3 inline-flex min-h-11 items-center gap-2 border border-danger-700 bg-white px-4 font-bold text-danger-700 hover:bg-danger-700 hover:text-white"
+              data-retry
+              hidden
+            >
+              {f.buttons.retry}
+            </button>
+          </div>
+        </div>
+      </div>
+
+      {/* ---------- no-JS: the Worker's ?error=<code>#rfq-error-<code> lands on one of these (:target) ---------- */}
+      <noscript>
         {
-          [f.steps.one, f.steps.two].map((label, i) => (
-            <li class="lc-step" data-step-tab={i + 1} data-active={i === 0 ? "" : undefined}>
-              <span class="lc-step-bar" aria-hidden="true" />
-              <span class="mt-2 flex items-center gap-2 text-sm">
-                <span class="font-mono text-xs ltr" dir="ltr">{String(i + 1).padStart(2, "0")}</span>
-                <span class="font-semibold">{label}</span>
-              </span>
-            </li>
+          NOJS_ERRORS.map((code) => (
+            <div id={`rfq-error-${code}`} class="lc-alert lc-nojs-alert mb-7" role="alert">
+              <Icon name="close" size={20} class="mt-0.5 shrink-0" />
+              <div class="min-w-0 flex-1">
+                <p class="font-bold">{t.contact.errors.title}</p>
+                <p class="mt-1">{t.contact.errors[code]}</p>
+                <div class="mt-3 text-sm">
+                  <p>{t.contact.errors.fallback}</p>
+                  <p class="mt-2 flex flex-wrap gap-x-5 gap-y-2">
+                    <a href={`tel:${SITE.phone.tel}`} class={linkCls}>
+                      <Icon name="phone" size={15} />
+                      <span class="ltr" dir="ltr">
+                        {SITE.phone.display}
+                      </span>
+                    </a>
+                    {!email && (
+                      <a href={whatsappLink(t.common.whatsapp.quote)} target="_blank" rel="noopener" class={linkCls}>
+                        <Icon name="whatsapp" size={15} />
+                        {t.common.labels.whatsapp}
+                      </a>
+                    )}
+                    <a href={mail} class={linkCls}>
+                      <Icon name="mail" size={15} />
+                      <Fragment set:html={ltr(SITE.email)} />
+                    </a>
+                  </p>
+                </div>
+              </div>
+            </div>
           ))
         }
-      </ol>
-    </div>
-  </div>
+      </noscript>
 
-  <div class="px-5 py-6 sm:px-8 sm:py-8">
-    {/* ---------- alert: validation summary / server errors (also ?error=) ---------- */}
-    <div class="lc-alert mb-7" data-alert tabindex="-1" role="alert" hidden>
-      <Icon name="close" size={20} class="mt-0.5 shrink-0" />
-      <div class="min-w-0">
-        <p class="font-bold" data-alert-title></p>
-        <p class="mt-1" data-alert-text></p>
-        <div class="mt-3 text-sm" data-alert-fallback hidden>
-          <p>{t.contact.errors.fallback}</p>
-          <p class="mt-2 flex flex-wrap gap-x-5 gap-y-2">
-            <a href={`tel:${SITE.phone.tel}`} class="inline-flex min-h-6 items-center gap-1.5 font-semibold underline underline-offset-2">
-              <Icon name="phone" size={15} /><span class="ltr" dir="ltr">{SITE.phone.display}</span>
-            </a>
-            {
-              !email && (
-                <a href={whatsappLink(t.common.whatsapp.quote)} target="_blank" rel="noopener" class="inline-flex min-h-6 items-center gap-1.5 font-semibold underline underline-offset-2">
-                  <Icon name="whatsapp" size={15} />{t.common.labels.whatsapp}<span class="sr-only"> ({t.ui.a11y.newTab})</span>
-                </a>
-              )
-            }
-            <a href={mailtoLink(t.ui.email.subject)} class="inline-flex min-h-6 items-center gap-1.5 font-semibold underline underline-offset-2">
-              <Icon name="mail" size={15} /><span class="ltr" dir="ltr">{SITE.email}</span>
-            </a>
+      {/* ---------- step 1 ---------- */}
+      <fieldset class="lc-step-panel" data-step="1" data-active>
+        <legend class="lc-legend" tabindex="-1">
+          <span class="font-mono text-xs text-royal-700 ltr" dir="ltr">01</span>
+          {f.steps.one}
+        </legend>
+        <div class="grid gap-5 sm:grid-cols-2">
+          <Field id="rfq-name" label={fields.name.label} required>
+            <input
+              id="rfq-name"
+              class="lc-input"
+              type="text"
+              name="name"
+              autocomplete="name"
+              required
+              minlength="2"
+              maxlength={RFQ_MAX.name}
+              dir="auto"
+              dirname="name.dir"
+              aria-invalid="false"
+              aria-describedby={desc("rfq-name", false)}
+            />
+          </Field>
+          <Field id="rfq-company" label={fields.company.label} required help={fields.company.help}>
+            <input
+              id="rfq-company"
+              class="lc-input"
+              type="text"
+              name="company"
+              autocomplete="organization"
+              required
+              maxlength={RFQ_MAX.company}
+              dir="auto"
+              dirname="company.dir"
+              aria-invalid="false"
+              aria-describedby={desc("rfq-company")}
+            />
+          </Field>
+          <Field id="rfq-phone" label={phone.label} required={!email} optional={email ? optional : undefined} help={phone.help}>
+            <input
+              id="rfq-phone"
+              class="lc-input"
+              type="tel"
+              name="phone"
+              autocomplete="tel"
+              inputmode="tel"
+              required={!email}
+              maxlength={RFQ_MAX.phone}
+              dir="ltr"
+              aria-invalid="false"
+              aria-describedby={desc("rfq-phone")}
+              data-phone
+            />
+          </Field>
+          {
+            email && (
+              <Field id="rfq-email" label={fields.email.label} required help={fields.email.help}>
+                <input
+                  id="rfq-email"
+                  class="lc-input"
+                  type="email"
+                  name="email"
+                  autocomplete="email"
+                  inputmode="email"
+                  required
+                  maxlength={RFQ_MAX.email}
+                  dir="ltr"
+                  aria-invalid="false"
+                  aria-describedby={desc("rfq-email")}
+                  data-email
+                />
+              </Field>
+            )
+          }
+          <Field id="rfq-service" label={fields.need.label} required class={email ? "sm:col-span-2" : undefined}>
+            <select id="rfq-service" class="lc-input lc-select" name="service" required aria-invalid="false" aria-describedby={desc("rfq-service", false)}>
+              <option value="">{fields.need.placeholder}</option>
+              {Object.entries(fields.need.options).map(([value, label]) => <option value={value}>{label}</option>)}
+            </select>
+          </Field>
+          {/* preferred reply channel (the thanks page promises "your preferred channel") */}
+          <fieldset class="lc-field lc-choice sm:col-span-2" data-field="rfq-reply">
+            <legend class="lc-label">
+              <span>{fields.contactPreference.label}</span>
+              <span class:list={["lc-opt", locale === "zh" && "-ms-1.5"]}>{locale === "zh" ? `（${optional}）` : `(${optional})`}</span>
+            </legend>
+            <div class="flex flex-wrap gap-2">
+              {
+                replyChannels.map((c) => (
+                  <label class="lc-choice-opt">
+                    <input id={`rfq-reply-${c}`} type="radio" name="reply" value={c} checked={c === replyDefault} data-reply />
+                    <Icon name={replyIcon[c]} size={16} class={c === "whatsapp" ? "text-whatsapp-700" : "text-royal-600"} />
+                    <span>{fields.contactPreference.options[c]}</span>
+                  </label>
+                ))
+              }
+            </div>
+          </fieldset>
+        </div>
+      </fieldset>
+
+      {/* ---------- step 2 ---------- */}
+      <fieldset class="lc-step-panel mt-9" data-step="2" aria-describedby="rfq-step2-note">
+        <legend class="lc-legend" tabindex="-1">
+          <span class="font-mono text-xs text-royal-700 ltr" dir="ltr">02</span>
+          {f.steps.two}
+        </legend>
+        <p id="rfq-step2-note" class="-mt-2 mb-5 text-sm text-charcoal-600">{f.steps.twoNote}</p>
+        <div class="grid gap-5 sm:grid-cols-2">
+          <Field id="rfq-message" label={fields.message.label} optional={optional} help={fields.message.help} class="sm:col-span-2">
+            <textarea
+              id="rfq-message"
+              class="lc-input lc-textarea"
+              name="message"
+              rows="5"
+              maxlength={RFQ_MAX.message}
+              dir="auto"
+              dirname="message.dir"
+              aria-invalid="false"
+              aria-describedby={desc("rfq-message")}
+              data-message></textarea>
+            <p class="lc-count" data-count hidden aria-hidden="true"></p>
+          </Field>
+          <Field
+            id="rfq-files"
+            label={fields.files.label}
+            optional={optional}
+            help={fmt(fields.files.help, { count: isolate(RFQ_FILES.maxCount), size: maxSize })}
+            class="sm:col-span-2"
+          >
+            <div class="lc-file">
+              <input
+                id="rfq-files"
+                class="lc-file-input"
+                type="file"
+                name={RFQ_FILES.field}
+                multiple
+                accept={RFQ_FILES_ACCEPT}
+                aria-invalid="false"
+                aria-describedby="rfq-files-help rfq-files-error rfq-files-summary"
+                data-files
+              />
+              <label for="rfq-files" class="lc-file-btn lc-js" aria-hidden="true">
+                <Icon name="file" size={18} />
+                {fields.files.choose}
+              </label>
+              <ul role="list" class="lc-file-list lc-js" data-files-list></ul>
+              <p id="rfq-files-summary" class="lc-file-summary" data-files-summary aria-live="polite" hidden></p>
+            </div>
+          </Field>
+          <Field id="rfq-industry" label={fields.industry.label} optional={optional}>
+            <select id="rfq-industry" class="lc-input lc-select" name="industry" aria-invalid="false" aria-describedby={desc("rfq-industry", false)}>
+              <option value="">{fields.industry.placeholder}</option>
+              {Object.entries(fields.industry.options).map(([value, label]) => <option value={value}>{label}</option>)}
+            </select>
+          </Field>
+          <Field id="rfq-location" label={fields.location.label} optional={optional}>
+            <select id="rfq-location" class="lc-input lc-select" name="location" aria-invalid="false" aria-describedby={desc("rfq-location", false)}>
+              <option value="">{fields.location.placeholder}</option>
+              {ZONES.map((z) => <option value={z.slug}>{t.common.zones.items[z.slug].name}</option>)}
+              <option value="otherEgypt">{fields.location.otherEgypt}</option>
+              <option value="outsideEgypt">{fields.location.outsideEgypt}</option>
+            </select>
+          </Field>
+          <Field id="rfq-timeline" label={fields.timeline.label} optional={optional}>
+            <select id="rfq-timeline" class="lc-input lc-select" name="timeline" aria-invalid="false" aria-describedby={desc("rfq-timeline", false)}>
+              <option value="">{fields.timeline.placeholder}</option>
+              {Object.entries(fields.timeline.options).map(([value, label]) => <option value={value}>{label}</option>)}
+            </select>
+          </Field>
+          <Field id="rfq-country" label={fields.country.label} optional={optional} help={fields.country.help}>
+            <input
+              id="rfq-country"
+              class="lc-input"
+              type="text"
+              name="country"
+              autocomplete="country-name"
+              maxlength={RFQ_MAX.country}
+              dir="auto"
+              aria-invalid="false"
+              aria-describedby={desc("rfq-country")}
+            />
+          </Field>
+          {
+            !email && (
+              <Field id="rfq-email" label={fields.email.label} optional={optional} help={fields.email.help} class="sm:col-span-2">
+                <input
+                  id="rfq-email"
+                  class="lc-input"
+                  type="email"
+                  name="email"
+                  autocomplete="email"
+                  inputmode="email"
+                  maxlength={RFQ_MAX.email}
+                  dir="ltr"
+                  aria-invalid="false"
+                  aria-describedby={desc("rfq-email")}
+                  data-email
+                />
+              </Field>
+            )
+          }
+        </div>
+      </fieldset>
+
+      {/* ---------- consent + security (always visible) ---------- */}
+      <div class="mt-8 border-t border-charcoal-200 pt-6">
+        {/* "Machine stopped?": the form is the slow channel, so offer the phone (and WhatsApp) right here */}
+        <div aria-live="polite">
+          <div class="lc-urgent on-dark" data-urgent hidden>
+            <div class="min-w-0 flex-1 basis-64">
+              <p class="flex items-center gap-2.5 font-bold text-white">
+                <span class="lc-led" data-blink aria-hidden="true"></span>
+                {urgent.title}
+              </p>
+              <p class="mt-1 text-sm text-navy-200">{email ? urgent.textEmail : urgent.text}</p>
+              <p class="mt-1 text-sm font-semibold text-white"><span class="ltr" dir="ltr">{SITE.phone.display}</span></p>
+            </div>
+            <div class="flex flex-wrap items-center gap-2">
+              <Button href={`tel:${SITE.phone.tel}`} size="sm" icon="phone">{t.common.labels.callEngineer}</Button>
+              {
+                !email && (
+                  <Button href={whatsappLink(t.common.whatsapp.stopped)} size="sm" variant="on-dark" icon="whatsapp" iconClass="text-whatsapp-500" external>
+                    {urgent.whatsapp}
+                  </Button>
+                )
+              }
+            </div>
+          </div>
+        </div>
+
+        <div class="lc-field" data-field="rfq-consent">
+          <div class="flex items-start gap-3">
+            <input id="rfq-consent" class="lc-check" type="checkbox" name="consent" value="yes" required aria-invalid="false" aria-describedby="rfq-consent-error" />
+            <label for="rfq-consent" class="text-[0.9375rem] text-charcoal-700">
+              <Fragment set:html={consentHtml} />
+              <span class="lc-req" aria-hidden="true">*</span>
+            </label>
+          </div>
+          <p id="rfq-consent-error" class="lc-error ms-9" hidden></p>
+        </div>
+
+        <div class="mt-5">
+          <p class="mb-2 text-sm" data-ts-label hidden>
+            <span class="font-semibold text-navy-950">{f.security.label}</span>
+            <span class="text-charcoal-600"> — {f.security.help}</span>
           </p>
+          {/* Rendered explicitly by rfq-form.ts on the first interaction with the form (api.js?render=explicit). */}
+          <div class="cf-turnstile" data-turnstile data-sitekey={siteKey} data-language={LOCALE_META[locale].turnstile}></div>
+          <div class="mt-3 border-s-4 border-signal-500 bg-signal-50 px-4 py-3 text-sm text-charcoal-800" data-ts-status hidden>
+            <p>{f.security.waiting}</p>
+            <p class="mt-2 flex flex-wrap gap-x-5 gap-y-2">
+              <a href={`tel:${SITE.phone.tel}`} class={linkCls}>
+                <Icon name="phone" size={15} /><span class="ltr" dir="ltr">{SITE.phone.display}</span>
+              </a>
+              {
+                !email && (
+                  <a href={whatsappLink(t.common.whatsapp.quote)} target="_blank" rel="noopener" class={linkCls} data-fallback="whatsapp">
+                    <Icon name="whatsapp" size={15} />
+                    {t.common.labels.whatsapp}
+                    <span class="sr-only"> ({t.ui.a11y.newTab})</span>
+                  </a>
+                )
+              }
+              <a href={mail} class={linkCls} data-fallback="email">
+                <Icon name="mail" size={15} /><Fragment set:html={ltr(SITE.email)} />
+              </a>
+            </p>
+          </div>
+          <noscript>
+            <p class="flex gap-2.5 border-s-4 border-signal-500 bg-signal-50 px-4 py-3 text-sm text-charcoal-800">{f.noscript}</p>
+          </noscript>
         </div>
-      </div>
-    </div>
 
-    {/* ---------- step 1 ---------- */}
-    <fieldset class="lc-step-panel" data-step="1" data-active>
-      <legend class="lc-legend" tabindex="-1">
-        <span class="font-mono text-xs text-royal-700 ltr" dir="ltr">01</span>
-        {f.steps.one}
-      </legend>
-      <div class="grid gap-5 sm:grid-cols-2">
-        <Field id="rfq-name" label={fields.name.label} required>
-          <input id="rfq-name" class="lc-input" type="text" name="name" autocomplete="name" required minlength="2" maxlength="120" dir="auto" aria-describedby={desc("rfq-name", false)} />
-        </Field>
-        <Field id="rfq-company" label={fields.company.label} required help={fields.company.help}>
-          <input id="rfq-company" class="lc-input" type="text" name="company" autocomplete="organization" required maxlength="160" dir="auto" aria-describedby={desc("rfq-company")} />
-        </Field>
-        <Field id="rfq-phone" label={fields.phone.label} required help={fields.phone.help}>
-          <input id="rfq-phone" class="lc-input" type="tel" name="phone" autocomplete="tel" inputmode="tel" required maxlength="40" dir="ltr" aria-describedby={desc("rfq-phone")} data-phone />
-        </Field>
-        {
-          email && (
-            <Field id="rfq-email" label={fields.email.label} required help={fields.email.help}>
-              <input id="rfq-email" class="lc-input" type="email" name="email" autocomplete="email" inputmode="email" required maxlength="160" dir="ltr" aria-describedby={desc("rfq-email")} data-email />
-            </Field>
-          )
-        }
-        <Field id="rfq-service" label={fields.need.label} required class={email ? "sm:col-span-2" : undefined}>
-          <select id="rfq-service" class="lc-input lc-select" name="service" required aria-describedby={desc("rfq-service", false)}>
-            <option value="">{fields.need.placeholder}</option>
-            {Object.entries(fields.need.options).map(([value, label]) => <option value={value}>{label}</option>)}
-          </select>
-        </Field>
-      </div>
-    </fieldset>
-
-    {/* ---------- step 2 ---------- */}
-    <fieldset class="lc-step-panel mt-9" data-step="2">
-      <legend class="lc-legend" tabindex="-1">
-        <span class="font-mono text-xs text-royal-700 ltr" dir="ltr">02</span>
-        {f.steps.two}
-      </legend>
-      <p class="-mt-2 mb-5 text-sm text-charcoal-600">{f.steps.twoNote}</p>
-      <div class="grid gap-5 sm:grid-cols-2">
-        <Field id="rfq-message" label={fields.message.label} requiredNoJs optional={optional} help={fields.message.help} class="sm:col-span-2">
-          <textarea id="rfq-message" class="lc-input lc-textarea" name="message" rows="5" required dir="auto" aria-describedby={desc("rfq-message")} data-message data-nojs-required></textarea>
-          <p class="lc-count" data-count hidden aria-hidden="true"></p>
-        </Field>
-        <Field id="rfq-industry" label={fields.industry.label} optional={optional}>
-          <select id="rfq-industry" class="lc-input lc-select" name="industry" aria-describedby={desc("rfq-industry", false)}>
-            <option value="">{fields.industry.placeholder}</option>
-            {Object.entries(fields.industry.options).map(([value, label]) => <option value={value}>{label}</option>)}
-          </select>
-        </Field>
-        <Field id="rfq-location" label={fields.location.label} optional={optional}>
-          <select id="rfq-location" class="lc-input lc-select" name="location" aria-describedby={desc("rfq-location", false)}>
-            <option value="">{fields.location.placeholder}</option>
-            {ZONES.map((z) => <option value={z.slug}>{t.common.zones.items[z.slug].name}</option>)}
-            <option value="otherEgypt">{fields.location.otherEgypt}</option>
-            <option value="outsideEgypt">{fields.location.outsideEgypt}</option>
-          </select>
-        </Field>
-        <Field id="rfq-timeline" label={fields.timeline.label} optional={optional}>
-          <select id="rfq-timeline" class="lc-input lc-select" name="timeline" aria-describedby={desc("rfq-timeline", false)}>
-            <option value="">{fields.timeline.placeholder}</option>
-            {Object.entries(fields.timeline.options).map(([value, label]) => <option value={value}>{label}</option>)}
-          </select>
-        </Field>
-        <Field id="rfq-country" label={fields.country.label} optional={optional} help={fields.country.help}>
-          <input id="rfq-country" class="lc-input" type="text" name="country" autocomplete="country-name" maxlength="80" dir="auto" aria-describedby={desc("rfq-country")} />
-        </Field>
-        {
-          !email && (
-            <Field id="rfq-email" label={fields.email.label} optional={optional} help={fields.email.help} class="sm:col-span-2">
-              <input id="rfq-email" class="lc-input" type="email" name="email" autocomplete="email" inputmode="email" maxlength="160" dir="ltr" aria-describedby={desc("rfq-email")} data-email />
-            </Field>
-          )
-        }
-      </div>
-    </fieldset>
-
-    {/* ---------- consent + security (always visible) ---------- */}
-    <div class="mt-8 border-t border-charcoal-200 pt-6">
-      <div class="lc-field" data-field="rfq-consent">
-        <div class="flex items-start gap-3">
-          <input id="rfq-consent" class="lc-check" type="checkbox" name="consent" value="yes" required aria-describedby="rfq-consent-error" />
-          <label for="rfq-consent" class="text-[0.9375rem] text-charcoal-700">
-            <Fragment set:html={consentHtml} />
-            <span class="lc-req" aria-hidden="true">*</span>
-          </label>
+        {/* actions — step 1 (JS only) */}
+        <div class="mt-7 flex flex-wrap items-center gap-x-5 gap-y-3" data-actions="1" hidden data-fab-avoid>
+          <Button type="button" size="lg" iconEnd="arrow" data-next class="max-sm:w-full">{f.buttons.next}</Button>
+          <button
+            type="submit"
+            class="lc-skip inline-flex min-h-11 items-center gap-2 text-sm font-bold text-royal-600 underline-offset-4 hover:text-royal-800 hover:underline max-sm:w-full max-sm:justify-center"
+            data-submit
+          >
+            <Icon name="send" size={16} />
+            <span data-submit-label>{f.buttons.sendNow}</span>
+          </button>
         </div>
-        <p id="rfq-consent-error" class="lc-error ms-9" hidden></p>
-      </div>
-
-      <div class="mt-5">
-        <p class="mb-2 text-sm" data-ts-label hidden>
-          <span class="font-semibold text-navy-950">{f.security.label}</span>
-          <span class="text-charcoal-600"> — {f.security.help}</span>
+        {/* actions — step 2 / no-JS */}
+        <div class="mt-7 flex flex-wrap items-center gap-x-5 gap-y-3" data-actions="2" data-fab-avoid>
+          <Button type="submit" size="lg" icon="send" class="max-sm:w-full" data-submit>
+            <span data-submit-label>{f.buttons.submit}</span>
+          </Button>
+          <button
+            type="button"
+            class="inline-flex min-h-11 items-center gap-2 text-sm font-bold text-charcoal-700 hover:text-navy-950 max-sm:w-full max-sm:justify-center"
+            data-back
+            hidden
+          >
+            <Icon name="arrow" size={16} class="-scale-x-100 rtl:scale-x-100" />
+            {f.buttons.back}
+          </button>
+        </div>
+        <p class="mt-5 flex items-start gap-2 text-xs text-charcoal-600">
+          <Icon name="shield" size={16} class="mt-px shrink-0 text-royal-600" />
+          {f.privacyNote}
         </p>
-        <div
-          class="cf-turnstile"
-          data-sitekey={siteKey}
-          data-language={LOCALE_META[locale].turnstile}
-          data-size="flexible"
-          data-appearance="interaction-only"
-          data-callback="lcTsOk"
-          data-error-callback="lcTsErr"
-          data-expired-callback="lcTsExp"
-          data-before-interactive-callback="lcTsShow"
-        >
-        </div>
-        <noscript>
-          <p class="flex gap-2.5 border-s-4 border-signal-500 bg-signal-50 px-4 py-3 text-sm text-charcoal-800">{f.noscript}</p>
-        </noscript>
       </div>
-
-      {/* actions — step 1 (JS only) */}
-      <div class="mt-7 flex flex-wrap items-center gap-x-5 gap-y-3" data-actions="1" hidden data-fab-avoid>
-        <Button type="button" size="lg" iconEnd="arrow" data-next class="max-sm:w-full">{f.buttons.next}</Button>
-        <button type="submit" class="lc-skip inline-flex min-h-11 items-center gap-2 text-sm font-bold text-royal-600 underline-offset-4 hover:text-royal-800 hover:underline max-sm:w-full max-sm:justify-center" data-submit>
-          <Icon name="send" size={16} />
-          <span data-submit-label>{f.buttons.sendNow}</span>
-        </button>
-      </div>
-      {/* actions — step 2 / no-JS */}
-      <div class="mt-7 flex flex-wrap items-center gap-x-5 gap-y-3" data-actions="2" data-fab-avoid>
-        <Button type="submit" size="lg" icon="send" class="max-sm:w-full" data-submit>
-          <span data-submit-label>{f.buttons.submit}</span>
-        </Button>
-        <button type="button" class="inline-flex min-h-11 items-center gap-2 text-sm font-bold text-charcoal-700 hover:text-navy-950 max-sm:w-full max-sm:justify-center" data-back hidden>
-          <Icon name="arrow" size={16} class="-scale-x-100 rtl:scale-x-100" />
-          {f.buttons.back}
-        </button>
-      </div>
-      <p class="mt-5 flex items-start gap-2 text-xs text-charcoal-600">
-        <Icon name="shield" size={16} class="mt-px shrink-0 text-royal-600" />
-        {f.privacyNote}
-      </p>
     </div>
   </div>
 
   {/* ---------- success (JS) ---------- */}
-  <div class="lc-success absolute inset-0 z-10 flex-col items-center justify-center gap-4 bg-white/95 p-8 text-center" data-success role="status" hidden>
+  <div class="lc-success absolute inset-0 z-10 flex-col items-center justify-center gap-4 bg-white/95 p-8 text-center" data-success hidden>
     <span class="lc-success-badge grid size-14 place-items-center rounded-full bg-success-700 text-white"><Icon name="check" size={28} /></span>
-    <p class="type-h4 text-navy-950">{f.sent}</p>
+    <p class="type-h4 text-navy-950 outline-none" tabindex="-1">{f.sent}</p>
   </div>
 </form>
 
-<style is:global>
-  .lc-rfq .lc-hp {
-    position: absolute !important;
-    inline-size: 1px;
-    block-size: 1px;
-    overflow: hidden;
-    clip-path: inset(50%);
-    white-space: nowrap;
-  }
-  html.js .lc-nojs,
-  html:not(.js) .lc-js {
-    display: none;
-  }
-  .lc-rfq fieldset {
-    min-inline-size: 0;
-    border: 0;
-    padding: 0;
-    margin-inline: 0;
-  }
-  .lc-rfq .lc-legend {
-    display: flex;
-    align-items: center;
-    gap: 0.75rem;
-    margin-block-end: 1.25rem;
-    padding: 0;
-    font-size: var(--text-h4);
-    line-height: var(--text-h4--line-height);
-    font-weight: 700;
-    color: var(--color-navy-950);
-    outline: none;
-  }
-  .lc-rfq .lc-label {
-    position: relative;
-    display: flex;
-    flex-wrap: wrap;
-    align-items: baseline;
-    gap: 0.25rem 0.375rem;
-    margin-block-end: 0.5rem;
-    font-size: 0.9375rem;
-    font-weight: 600;
-    color: var(--color-navy-950);
-    transition: color var(--dur-micro) var(--ease-mech);
-  }
-  /* Focused field: the label turns royal and a slant marker switches on in the gutter (no layout change). */
-  .lc-rfq .lc-field:focus-within > .lc-label {
-    color: var(--color-royal-700);
-  }
-  .lc-rfq .lc-field > .lc-label::before {
-    content: "";
-    position: absolute;
-    inset-inline-start: -0.875rem;
-    top: 0.62em;
-    inline-size: 0.5rem;
-    block-size: 3px;
-    background: var(--color-royal-600);
-    transform: skewX(calc(-1 * var(--slant)));
-    transform-origin: 0 50%;
-    scale: 0 1;
-    transition: scale var(--dur-ui) var(--ease-mech);
-  }
-  [dir="rtl"] .lc-rfq .lc-field > .lc-label::before {
-    transform: skewX(var(--slant));
-    transform-origin: 100% 50%;
-  }
-  .lc-rfq .lc-field:focus-within > .lc-label::before {
-    scale: 1 1;
-  }
-  .lc-rfq .lc-req {
-    color: var(--color-danger-700);
-    font-weight: 700;
-  }
-  .lc-rfq .lc-opt {
-    font-size: 0.8125rem;
-    font-weight: 400;
-    color: var(--color-charcoal-600);
-  }
-  .lc-rfq .lc-input {
-    display: block;
-    inline-size: 100%;
-    min-block-size: 3rem;
-    padding: 0.6875rem 0.875rem;
-    font: inherit;
-    font-size: 1rem;
-    line-height: 1.4;
-    color: var(--color-charcoal-900);
-    background-color: var(--color-white);
-    border: 1px solid var(--color-charcoal-300);
-    border-radius: 2px;
-    box-shadow: inset 0 1px 2px rgb(4 14 39 / 0.04);
-    transition:
-      border-color var(--dur-micro) var(--ease-mech),
-      box-shadow var(--dur-micro) var(--ease-mech);
-  }
-  .lc-rfq .lc-input:hover {
-    border-color: var(--color-charcoal-400);
-  }
-  .lc-rfq .lc-input:focus {
-    outline: none;
-    border-color: var(--color-royal-600);
-    box-shadow: 0 0 0 3px rgb(37 122 224 / 0.25);
-  }
-  .lc-rfq .lc-input[aria-invalid="true"] {
-    border-color: var(--color-danger-700);
-    box-shadow: 0 0 0 3px rgb(229 72 77 / 0.15);
-  }
-  [dir="rtl"] .lc-rfq .lc-input[dir="ltr"] {
-    text-align: right;
-  }
-  .lc-rfq .lc-textarea {
-    min-block-size: 8.5rem;
-    resize: vertical;
-  }
-  .lc-rfq .lc-select {
-    appearance: none;
-    padding-inline-end: 2.75rem;
-    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%230556ad' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");
-    background-repeat: no-repeat;
-    background-size: 1.125rem;
-    background-position: right 0.875rem center;
-  }
-  [dir="rtl"] .lc-rfq .lc-select {
-    background-position: left 0.875rem center;
-  }
-  .lc-rfq .lc-select:has(option[value=""]:checked) {
-    color: var(--color-charcoal-600);
-  }
-  .lc-rfq .lc-select option {
-    color: var(--color-charcoal-900);
-  }
-  .lc-rfq .lc-help {
-    margin-block-start: 0.375rem;
-    font-size: 0.8125rem;
-    color: var(--color-charcoal-600);
-  }
-  .lc-rfq .lc-error {
-    display: flex;
-    align-items: flex-start;
-    gap: 0.375rem;
-    margin-block-start: 0.375rem;
-    font-size: 0.875rem;
-    font-weight: 600;
-    color: var(--color-danger-700);
-  }
-  .lc-rfq .lc-error::before {
-    content: "!";
-    display: inline-grid;
-    flex: none;
-    place-items: center;
-    inline-size: 1.05rem;
-    block-size: 1.05rem;
-    margin-block-start: 0.12rem;
-    border-radius: 999px;
-    background: var(--color-danger-700);
-    color: #fff;
-    font-size: 0.6875rem;
-    font-weight: 800;
-    line-height: 1;
-  }
-  .lc-rfq .lc-error[hidden] {
-    display: none;
-  }
-  .lc-rfq .lc-count {
-    margin-block-start: 0.25rem;
-    font-size: 0.75rem;
-    text-align: end;
-    color: var(--color-charcoal-600);
-    font-variant-numeric: tabular-nums;
-  }
-  .lc-rfq .lc-count[data-over] {
-    color: var(--color-danger-700);
-    font-weight: 700;
-  }
-  .lc-rfq .lc-check {
-    flex: none;
-    inline-size: 1.375rem;
-    block-size: 1.375rem;
-    margin-block-start: 0.125rem;
-    accent-color: var(--color-royal-600);
-    cursor: pointer;
-  }
-  .lc-rfq .lc-check[aria-invalid="true"] {
-    outline: 2px solid var(--color-danger-700);
-    outline-offset: 2px;
-  }
-  .lc-rfq .lc-alert {
-    display: flex;
-    gap: 0.75rem;
-    padding: 1rem 1.125rem;
-    border: 1px solid rgb(180 35 24 / 0.35);
-    border-inline-start-width: 4px;
-    border-inline-start-color: var(--color-danger-700);
-    background: #fdf3f2;
-    color: var(--color-danger-700);
-    outline: none;
-  }
-  .lc-rfq .lc-alert[hidden] {
-    display: none;
-  }
-  .lc-rfq .lc-alert p:not([data-alert-title]),
-  .lc-rfq .lc-alert div {
-    color: var(--color-charcoal-800);
-  }
-  .lc-rfq .lc-alert a {
-    color: var(--color-navy-900);
-  }
-  /* stepper */
-  .lc-rfq .lc-step {
-    color: var(--color-charcoal-600);
-  }
-  /* Stepper: each bar fills from the inline start when its step is reached (a progress bar, not a colour swap). */
-  .lc-rfq .lc-step-bar {
-    position: relative;
-    overflow: hidden;
-    display: block;
-    block-size: 4px;
-    background: var(--color-charcoal-200);
-    transform: skewX(-10deg);
-  }
-  [dir="rtl"] .lc-rfq .lc-step-bar {
-    transform: skewX(10deg);
-  }
-  .lc-rfq .lc-step-bar::after {
-    content: "";
-    position: absolute;
-    inset: 0;
-    background: var(--color-royal-600);
-    transform-origin: 0 50%;
-    scale: 0 1;
-    transition: scale var(--dur-section) var(--ease-emph);
-  }
-  [dir="rtl"] .lc-rfq .lc-step-bar::after {
-    transform-origin: 100% 50%;
-  }
-  .lc-rfq .lc-step {
-    transition: color var(--dur-ui) var(--ease-mech);
-  }
-  .lc-rfq .lc-step[data-active],
-  .lc-rfq .lc-step[data-done] {
-    color: var(--color-navy-950);
-  }
-  .lc-rfq .lc-step[data-active] .lc-step-bar::after,
-  .lc-rfq .lc-step[data-done] .lc-step-bar::after {
-    scale: 1 1;
-  }
-  .lc-rfq[data-enhanced] .lc-step-panel:not([data-active]) {
-    display: none;
-  }
-  .lc-rfq[data-enhanced] .lc-step-panel {
-    margin-block-start: 0;
-  }
-  .lc-rfq .lc-success:not([hidden]) {
-    display: flex;
-  }
-  /* Step change (never on load: data-step-dir only exists after the first goTo): the new step slides in from
-     the side it comes from — next from the inline end, back from the inline start. Success: overlay fades in,
-     the badge docks, the check draws. */
-  @media (prefers-reduced-motion: no-preference) {
-    .lc-rfq {
-      --step-x: 16px;
-    }
-    [dir="rtl"] .lc-rfq {
-      --step-x: -16px;
-    }
-    .lc-rfq[data-step-dir] .lc-step-panel[data-active] {
-      animation: lc-step-in var(--dur-page) var(--ease-emph) both;
-    }
-    .lc-rfq[data-step-dir="prev"] .lc-step-panel[data-active] {
-      --step-x-from: calc(-1 * var(--step-x));
-    }
-    @keyframes lc-step-in {
-      from {
-        opacity: 0;
-        transform: translateX(var(--step-x-from, var(--step-x)));
-      }
-    }
-    .lc-rfq .lc-success:not([hidden]) {
-      animation: lc-success-in var(--dur-ui) var(--ease-mech) both;
-    }
-    .lc-rfq .lc-success:not([hidden]) .lc-success-badge {
-      animation: lc-badge-in var(--dur-section) var(--ease-emph) 60ms both;
-    }
-    .lc-rfq .lc-success:not([hidden]) .lc-success-badge path {
-      stroke-dasharray: 24;
-      animation: lc-check-draw 0.42s var(--ease-inout) 0.22s both;
-    }
-    @keyframes lc-success-in {
-      from {
-        opacity: 0;
-      }
-    }
-    @keyframes lc-badge-in {
-      from {
-        opacity: 0;
-        scale: 0.6;
-      }
-    }
-    @keyframes lc-check-draw {
-      from {
-        stroke-dashoffset: 24;
-      }
-    }
-  }
-  .lc-rfq[data-sending] [data-submit] {
-    pointer-events: none;
-    opacity: 0.75;
-  }
-</style>
-
 <script>
-  type Code = "invalid" | "verification" | "send" | "unknown";
-  interface I18n {
-    validation: Record<string, string>;
-    errors: Record<string, string>;
-    counter: string;
-    sending: string;
-    submit: string;
-    sendNow: string;
-    max: number;
-    thanks: string;
-  }
-  declare global {
-    interface Window {
-      lcTurnstile?: { token: string };
-      turnstile?: { reset: (el?: string | HTMLElement) => void };
-    }
-  }
+  import { enhance } from "~/scripts/rfq-form";
 
   const form = document.querySelector<HTMLFormElement>("form[data-rfq]");
   if (form) enhance(form);
-
-  function enhance(form: HTMLFormElement) {
-    const i18n = JSON.parse(form.dataset.i18n ?? "{}") as I18n;
-    const $ = <T extends Element = HTMLElement>(sel: string) => form.querySelector<T>(sel);
-    const $$ = <T extends Element = HTMLElement>(sel: string) => [...form.querySelectorAll<T>(sel)];
-    const fmt = (s: string, v: Record<string, string | number>) => s.replace(/\{(\w+)\}/g, (_, k) => String(v[k] ?? `{${k}}`));
-
-    const panels = $$<HTMLFieldSetElement>("[data-step]");
-    const tabs = $$("[data-step-tab]");
-    const actions1 = $("[data-actions='1']")!;
-    const actions2 = $("[data-actions='2']")!;
-    const back = $<HTMLButtonElement>("[data-back]")!;
-    const live = $("[data-step-live]")!;
-    const alertBox = $("[data-alert]")!;
-    const message = $<HTMLTextAreaElement>("[data-message]")!;
-    const count = $("[data-count]")!;
-    const success = $("[data-success]")!;
-    let step = 1;
-    let submitted = false;
-    let sending = false;
-
-    /* ---------- progressive enhancement: steps, JS validation ---------- */
-    form.noValidate = true;
-    form.setAttribute("data-enhanced", "");
-    $("[data-stepper]")!.hidden = false;
-    message.required = false;
-
-    // Context: the page that sent the visitor here, and ?service= / ?industry= / ?location= preselection.
-    const params = new URLSearchParams(location.search);
-    const pageField = $<HTMLInputElement>("[data-page-field]")!;
-    try {
-      const ref = document.referrer ? new URL(document.referrer) : null;
-      pageField.value = ref && ref.origin === location.origin && ref.pathname !== location.pathname ? ref.pathname : location.pathname + location.search;
-    } catch {
-      /* keep the server-rendered value */
-    }
-    const preselect = (name: string, value: string | null) => {
-      const sel = $<HTMLSelectElement>(`select[name='${name}']`);
-      if (sel && value && [...sel.options].some((o) => o.value === value)) sel.value = value;
-    };
-    preselect("service", params.get("service"));
-    preselect("industry", params.get("industry"));
-    preselect("location", params.get("location"));
-
-    /* ---------- validation ---------- */
-    const toLatinDigits = (s: string) =>
-      s.replace(/[٠-٩]/g, (d) => String(d.charCodeAt(0) - 0x0660)).replace(/[۰-۹]/g, (d) => String(d.charCodeAt(0) - 0x06f0));
-    const EMAIL = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/;
-
-    function check(el: HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement): string {
-      const v = el.type === "checkbox" ? "" : el.value.trim();
-      if (el.type === "checkbox") return (el as HTMLInputElement).checked || !el.required ? "" : i18n.validation.consent!;
-      if (el.name === "phone") {
-        if (!v) return i18n.validation.required!;
-        const digits = toLatinDigits(v).replace(/[\s().\-–]/g, "");
-        return /^(\+|00)?\d{8,15}$/.test(digits) ? "" : i18n.validation.phone!;
-      }
-      if (el.name === "email") {
-        if (!v) return el.required ? i18n.validation.required! : "";
-        return EMAIL.test(v) ? "" : i18n.validation.email!;
-      }
-      if (el.name === "message") return v.length > i18n.max ? fmt(i18n.validation.messageTooLong!, { max: i18n.max }) : "";
-      if (!el.required) return "";
-      if (el instanceof HTMLSelectElement) return v ? "" : i18n.validation.select!;
-      if (el.name === "name") return v.length >= 2 ? "" : i18n.validation.name!;
-      return v ? "" : i18n.validation.required!;
-    }
-
-    function show(el: HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement, msg: string) {
-      const err = form.querySelector<HTMLElement>(`#${el.id}-error`);
-      el.setAttribute("aria-invalid", msg ? "true" : "false");
-      if (err) {
-        err.textContent = msg;
-        err.hidden = !msg;
-      }
-    }
-
-    const controls = (scope: ParentNode) =>
-      [...scope.querySelectorAll<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>("input:not([type=hidden]):not([name=company_website]), select, textarea")];
-
-    function validate(scope: ParentNode) {
-      const bad: (HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement)[] = [];
-      for (const el of controls(scope)) {
-        const msg = check(el);
-        show(el, msg);
-        if (msg) bad.push(el);
-      }
-      return bad;
-    }
-
-    // Live re-validation once a field has been visited (or after a submit attempt).
-    for (const el of controls(form)) {
-      el.addEventListener("blur", () => {
-        if (el.name === "phone" && el.value) el.value = toLatinDigits(el.value);
-        if (submitted || el.value.trim()) show(el, check(el));
-      });
-      el.addEventListener(el instanceof HTMLSelectElement || el.type === "checkbox" ? "change" : "input", () => {
-        if (el.getAttribute("aria-invalid") === "true") show(el, check(el));
-      });
-    }
-
-    // Character counter for the description (only shown near the limit).
-    message.addEventListener("input", () => {
-      const n = message.value.length;
-      count.hidden = n < i18n.max * 0.8;
-      count.textContent = `${n} / ${i18n.max}`;
-      count.toggleAttribute("data-over", n > i18n.max);
-    });
-
-    /* ---------- alert panel ---------- */
-    function alertShow(title: string, text: string, fallback: boolean) {
-      $("[data-alert-title]")!.textContent = title;
-      $("[data-alert-text]")!.textContent = text;
-      $("[data-alert-fallback]")!.hidden = !fallback;
-      alertBox.hidden = false;
-    }
-    const alertHide = () => (alertBox.hidden = true);
-    function serverError(code: string) {
-      const c = (["invalid", "verification", "send", "unknown"].includes(code) ? code : "unknown") as Code;
-      alertShow(i18n.errors.title!, i18n.errors[c]!, true);
-      alertBox.focus({ preventScroll: true });
-      alertBox.scrollIntoView({ behavior: matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth", block: "center" });
-    }
-
-    /* ---------- steps ---------- */
-    function goTo(n: number, focus = true) {
-      if (n !== step) form.dataset.stepDir = n > step ? "next" : "prev"; // motion only (CSS), never on load
-      step = n;
-      panels.forEach((p) => p.toggleAttribute("data-active", Number(p.dataset.step) === n));
-      tabs.forEach((tab) => {
-        const i = Number(tab.dataset.stepTab);
-        tab.toggleAttribute("data-active", i === n);
-        tab.toggleAttribute("data-done", i < n);
-      });
-      actions1.hidden = n !== 1;
-      actions2.hidden = n !== 2;
-      back.hidden = n !== 2;
-      live.textContent = fmt(i18n.counter, { current: n, total: 2 });
-      if (focus) {
-        const legend = panels[n - 1]?.querySelector<HTMLElement>("legend");
-        legend?.focus({ preventScroll: true });
-        form.scrollIntoView({ behavior: matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth", block: "start" });
-      }
-    }
-    goTo(1, false);
-
-    $("[data-next]")!.addEventListener("click", () => {
-      const bad = validate(panels[0]!);
-      if (bad.length) {
-        alertShow(i18n.validation.summary!, "", false);
-        bad[0]!.focus();
-        return;
-      }
-      alertHide();
-      goTo(2);
-    });
-    back.addEventListener("click", () => goTo(1));
-
-    /* ---------- submit ---------- */
-    const waitForToken = async (ms: number) => {
-      const field = () => form.querySelector<HTMLInputElement>("input[name='cf-turnstile-response']");
-      const start = Date.now();
-      while (!field()?.value && !window.lcTurnstile?.token && Date.now() - start < ms) await new Promise((r) => setTimeout(r, 200));
-    };
-    const setSending = (on: boolean) => {
-      sending = on;
-      form.toggleAttribute("data-sending", on);
-      $$("[data-submit-label]").forEach((l, i) => (l.textContent = on ? i18n.sending : i === 0 ? i18n.sendNow : i18n.submit));
-      $$("[data-submit]").forEach((b) => b.setAttribute("aria-disabled", String(on)));
-    };
-
-    form.addEventListener("submit", async (e) => {
-      e.preventDefault();
-      if (sending) return;
-      submitted = true;
-      const phone = $<HTMLInputElement>("[data-phone]")!;
-      phone.value = toLatinDigits(phone.value);
-
-      const bad = validate(form);
-      if (bad.length) {
-        const first = bad[0]!;
-        const inStep = Number(first.closest<HTMLElement>("[data-step]")?.dataset.step ?? step);
-        if (first.closest("[data-step]") && inStep !== step) goTo(inStep, false);
-        alertShow(i18n.validation.summary!, "", false);
-        first.focus();
-        return;
-      }
-      alertHide();
-      setSending(true);
-      await waitForToken(8000);
-
-      const data = new FormData(form);
-      if (!String(data.get("message") ?? "").trim()) {
-        // The Worker requires a description: compose one from the selections when the visitor skipped step 2.
-        const label = (name: string) => {
-          const sel = form.querySelector<HTMLSelectElement>(`select[name='${name}']`);
-          return sel?.value ? sel.selectedOptions[0]?.textContent?.trim() : "";
-        };
-        data.set("message", ["service", "industry", "timeline"].map(label).filter(Boolean).join(" · ") || "—");
-      }
-
-      let res: Response | undefined;
-      let json: { ok?: boolean; error?: string } | null = null;
-      try {
-        res = await fetch(form.action, { method: "POST", body: data, headers: { Accept: "application/json" } });
-        json = await res.json().catch(() => null);
-      } catch {
-        setSending(false);
-        serverError("send");
-        window.turnstile?.reset();
-        return;
-      }
-      if (json?.ok) {
-        success.hidden = false;
-        setTimeout(() => location.assign(i18n.thanks), 700);
-        return;
-      }
-      setSending(false);
-      serverError(json?.error ?? (res && res.status >= 500 ? "send" : "unknown"));
-      window.turnstile?.reset();
-    });
-
-    /* ---------- ?error= from the no-JS round trip ---------- */
-    const err = params.get("error");
-    if (err) {
-      serverError(err);
-    }
-  }
 </script>

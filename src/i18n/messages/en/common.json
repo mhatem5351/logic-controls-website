@@ -41,12 +41,17 @@
     "phone": "Phone",
     "whatsapp": "WhatsApp",
     "email": "Email",
-    "address": "Address",
-    "openInMaps": "Open in maps"
+    "openInMaps": "Open in maps",
+    "projectFacts": "Project facts",
+    "allRelatedProjects": "All related projects",
+    "fromSite": "From the site",
+    "callEngineer": "Call an engineer",
+    "panelsBuilt": "Panels we have built",
+    "referenceTitle": "Talk to a past client",
+    "referenceText": "We can arrange a reference call with a plant we have worked for, with their permission.",
+    "referenceCta": "Ask for a reference"
   },
   "breadcrumbs": {
-    "label": "Breadcrumb",
-    "home": "Home",
     "services": "Services",
     "industries": "Industries",
     "projects": "Projects",
@@ -138,10 +143,6 @@
       "title": "Tell us about your machine or line",
       "text": "Send a short description and a few photos. An engineer will review it and reply with questions or a quote."
     },
-    "service": {
-      "title": "Need this for your plant?",
-      "text": "Describe the machine or process and attach photos. We will tell you what we need to prepare a quote."
-    },
     "industry": {
       "title": "Running a similar plant?",
       "text": "Tell us which machine or process you want to automate, upgrade or fix. We work across Greater Cairo and Egypt's industrial zones."
@@ -159,7 +160,7 @@
     "eyebrow": "Who you will work with",
     "title": "Engineers, not resellers",
     "text": "Mohammed Tarek Aboalsafa, our founder and automation engineer, has more than four years of experience designing, programming and commissioning PLC, HMI and SCADA systems for food and beverage, pharmaceutical and other plants.",
-    "cta": "Meet the team"
+    "cta": "Meet our founder"
   },
   "whatsapp": {
     "default": "Hello Logic Controls, I would like to talk to an engineer about an automation project.",
@@ -168,7 +169,9 @@
     "industry": "Hello Logic Controls, I am contacting you from the {industry} page about an automation project.",
     "project": "Hello Logic Controls, I saw the case study \"{project}\" and have a similar machine.",
     "foreign": "Hello Logic Controls, we are setting up a factory in Egypt and need a local automation partner.",
-    "drawings": "Hello Logic Controls, I am sending drawings and photos for a quote."
+    "oem": "Hello Logic Controls, we are a machine builder exporting machines to Egypt and need local commissioning and service support.",
+    "drawings": "Hello Logic Controls, I am sending drawings and photos for a quote.",
+    "stopped": "Hello Logic Controls, my machine is stopped and I need troubleshooting help. Machine and brand:"
   },
   "zones": {
     "title": "Where we work",
@@ -226,8 +229,9 @@
       "distance": "About {km} km from our base (straight line)",
       "cta": "Plan a project in {zone}",
       "homeCta": "Contact our team",
-      "close": "Close",
-      "selected": "{zone} selected",
+      "selectedPin": "{zone} selected. The details are below the map.",
+      "closeDetails": "Close zone details",
+      "keys": "Arrow keys move between the zones.",
       "short": {
         "obour": "Obour City",
         "badr": "Badr City",
@@ -245,8 +249,7 @@
   },
   "company": {
     "tagline": "PLC control systems and machine automation for factories in Egypt",
-    "addressLine": "6th of October City, Giza, Egypt",
-    "footerAbout": "Industrial automation engineers in 6th of October City. We design control panels, program PLCs, HMIs and SCADA, and commission machines and process lines across Egypt."
+    "addressLine": "6th of October City, Giza, Egypt"
   },
   "notes": {
     "brands": "Brand names and trademarks belong to their owners. Listing a brand means we program and integrate its products. It does not mean a partnership.",

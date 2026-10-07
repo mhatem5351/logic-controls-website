@@ -1,0 +1,118 @@
+---
+/**
+ * "Copy address" button for the main email address (UX: mailto does nothing visible on desktops without a mail
+ * client, common with webmail users — the main zh channel). Copies SITE.email to the clipboard and confirms in place
+ * ("Address copied", also announced through a polite live region); falls back to selecting the address text when the
+ * Clipboard API is unavailable. Rendered only when JavaScript runs (html.js), since it does nothing without it.
+ *
+ * tone: "dark" (navy surfaces: footer, drawer, FAB panel) · "light"
+ */
+import { getMessages, type Locale } from "~/i18n";
+import { SITE } from "~/data/site";
+
+interface Props {
+  locale: Locale;
+  tone?: "dark" | "light";
+  /** Show the label next to the icon (default) or icon only (label stays the accessible name). */
+  iconOnly?: boolean;
+  class?: string;
+}
+const { locale, tone = "dark", iconOnly = false, class: className } = Astro.props;
+const t = getMessages(locale).ui.email;
+---
+
+<button
+  type="button"
+  class:list={[
+    "lc-copy inline-flex min-h-8 shrink-0 items-center gap-1.5 border px-2 text-xs font-semibold transition-colors",
+    tone === "dark"
+      ? "border-white/20 text-navy-100 hover:border-white/50 hover:text-white"
+      : "border-charcoal-300 text-navy-800 hover:border-royal-600 hover:text-royal-700",
+    className,
+  ]}
+  data-copy={SITE.email}
+  data-copied={t.copied}
+  title={iconOnly ? t.copy : undefined}
+>
+  <svg class="lc-copy-i" viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false">
+    <rect x="8" y="8" width="13" height="13" rx="2"></rect><path d="M4 16a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2"></path>
+  </svg>
+  <svg class="lc-copy-ok" viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false">
+    <path d="M20 6 9 17l-5-5"></path>
+  </svg>
+  <span class:list={["lc-copy-label", iconOnly && "sr-only"]}>{t.copy}</span>
+</button>
+
+<style>
+  .lc-copy {
+    -webkit-tap-highlight-color: transparent;
+  }
+  :global(html:not(.js)) .lc-copy {
+    display: none;
+  }
+  .lc-copy-ok,
+  .lc-copy[data-done] .lc-copy-i {
+    display: none;
+  }
+  .lc-copy[data-done] .lc-copy-ok {
+    display: block;
+    color: #2bd47d;
+  }
+  @media (pointer: coarse) {
+    .lc-copy {
+      min-height: 2.75rem;
+      padding-inline: 0.75rem;
+    }
+  }
+</style>
+
+<script>
+  // One delegated handler for every copy button on the page.
+  let live: HTMLElement | null = null;
+  const announce = (msg: string) => {
+    if (!live) {
+      live = document.createElement("p");
+      live.className = "sr-only";
+      live.setAttribute("aria-live", "polite");
+      document.body.append(live);
+    }
+    live.textContent = "";
+    requestAnimationFrame(() => live && (live.textContent = msg));
+  };
+  const legacyCopy = (text: string) => {
+    const ta = document.createElement("textarea");
+    ta.value = text;
+    ta.setAttribute("readonly", "");
+    ta.style.cssText = "position:fixed;inset-inline-start:-9999px;top:0;opacity:0";
+    document.body.append(ta);
+    ta.select();
+    let ok = false;
+    try {
+      ok = document.execCommand("copy");
+    } catch {}
+    ta.remove();
+    return ok;
+  };
+  document.addEventListener("click", async (event) => {
+    const btn = (event.target as Element | null)?.closest<HTMLButtonElement>("button[data-copy]");
+    if (!btn) return;
+    const text = btn.dataset.copy ?? "";
+    let ok: boolean;
+    try {
+      await navigator.clipboard.writeText(text);
+      ok = true;
+    } catch {
+      ok = legacyCopy(text);
+    }
+    if (!ok) return;
+    const label = btn.querySelector<HTMLElement>(".lc-copy-label");
+    const before = label?.textContent ?? "";
+    btn.setAttribute("data-done", "");
+    if (label) label.textContent = btn.dataset.copied ?? before;
+    announce(btn.dataset.copied ?? "");
+    window.setTimeout(() => {
+      btn.removeAttribute("data-done");
+      if (label) label.textContent = before;
+    }, 2400);
+  });
+</script>

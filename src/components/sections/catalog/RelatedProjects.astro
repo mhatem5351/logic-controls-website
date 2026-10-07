@@ -9,7 +9,7 @@ import Section from "~/components/Section.astro";
 import SectionHeading from "~/components/SectionHeading.astro";
 import Button from "~/components/Button.astro";
 import ProjectCard from "./ProjectCard.astro";
-import { html } from "./catalog";
+import { html } from "~/lib/text";
 
 interface Props {
   locale: Locale;
@@ -26,26 +26,32 @@ interface Props {
 }
 const { locale, projects, title, eyebrow, index, lead, all, limit = 3, variant = "light", id = "related-projects" } = Astro.props;
 const list = projects.slice(0, limit);
-const cols = list.length >= 3 ? "sm:grid-cols-2 lg:grid-cols-3" : "sm:grid-cols-2";
+/* 3+ cards: 1 → 2 → 3 columns with a centred last row (no lone card beside an empty half on tablets). */
+const cols = list.length >= 3 ? "lc-grid-projects" : "grid sm:grid-cols-2";
 ---
 
 {
   list.length > 0 && (
     <Section variant={variant} id={id} aria-labelledby={`${id}-title`}>
       <div class="flex flex-wrap items-end justify-between gap-x-10 gap-y-6">
-        <SectionHeading id={`${id}-title`} index={index} eyebrow={eyebrow} title={html(title, locale)} lead={lead ? html(lead, locale) : undefined} />
+        <SectionHeading id={`${id}-title`} index={index} eyebrow={eyebrow} title={html(locale, title)} lead={lead ? html(locale, lead) : undefined} />
         {all && (
           <Button href={all.href} variant="ghost" class="shrink-0">
             {all.label}
+            {/* The count reads "All projects (15)" to screen readers and crawlers, not "All projects15". */}
             {all.count != null && (
-              <span class="ms-1 inline-grid min-w-7 place-items-center bg-royal-50 px-1.5 py-0.5 font-mono text-xs text-royal-700 ltr" dir="ltr">
-                {all.count}
-              </span>
+              <>
+                <span class="sr-only"> (</span>
+                <span class="ms-1 inline-grid min-w-7 place-items-center bg-royal-50 px-1.5 py-0.5 font-mono text-xs text-royal-700 ltr" dir="ltr">
+                  {all.count}
+                </span>
+                <span class="sr-only">)</span>
+              </>
             )}
           </Button>
         )}
       </div>
-      <ul role="list" class:list={["mt-12 grid gap-x-8 gap-y-14", cols, list.length < 3 && "lg:max-w-5xl"]}>
+      <ul role="list" class:list={["mt-12 gap-x-8 gap-y-14", cols, list.length < 3 && "lg:max-w-5xl"]}>
         {list.map((p) => (
           <li>
             <ProjectCard project={p} locale={locale} />

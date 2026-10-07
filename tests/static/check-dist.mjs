@@ -33,7 +33,9 @@ const problems = [];
 const seen = new Set();
 const problem = (type, where, detail = "") => {
   const key = `${type}\0${where}\0${detail}`;
-  if (!seen.has(key)) seen.add(key), problems.push({ type, where, detail });
+  if (seen.has(key)) return;
+  seen.add(key);
+  problems.push({ type, where, detail });
 };
 
 /* ------------------------------------------------------------------ files */
@@ -177,7 +179,8 @@ for (const [path, { root, ids }] of pages) {
       if (isLinkAlt && attr === "href") continue;
       const v = el.getAttribute(attr);
       if (!v) continue;
-      const parts = attr.includes("srcset") ? v.split(",").map((s) => s.trim().split(/\s+/)[0]) : [v];
+      // a data: URI candidate (e.g. the 1×1 placeholder source of a <picture>) contains a comma: never split it
+      const parts = attr.includes("srcset") ? (v.trim().startsWith("data:") ? [] : v.split(",").map((s) => s.trim().split(/\s+/)[0])) : [v];
       for (const p of parts) if (p && !p.startsWith("data:") && !p.startsWith("#")) refs.add(p);
     }
   }

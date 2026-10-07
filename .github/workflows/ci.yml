@@ -43,6 +43,11 @@ jobs:
       - name: Install dependencies
         run: npm ci --no-audit --no-fund
 
+      # ESLint (src, tests, worker, scripts; ~3 s) and the Worker's own type-check (astro check excludes worker/).
+      # Prettier is not gated here: the codebase predates it (`npm run format:check` is available locally).
+      - name: Lint + worker typecheck
+        run: npm run lint && npx tsc -p worker
+
       # Astro's image + font cache (node_modules/.astro): ~800 AVIF/WebP/JPEG variants take minutes to encode cold.
       # Astro keys entries by content, so any older cache is a safe starting point (restore-keys).
       - name: Restore Astro asset cache

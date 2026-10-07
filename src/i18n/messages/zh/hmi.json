@@ -19,15 +19,23 @@
       }
     ],
     "ctaQuestion": "想为您的设备配一套这样的 HMI？",
-    "cta": "获取报价",
-    "try": "试一试：按“启动”，等待进入“出料”，再按“模拟故障”。"
+    "cta": "获取报价"
   },
   "caption": "模拟 10.1″ 操作面板，参照 ISA-101 高性能 HMI 原则设计：一切正常时为灰色，仅异常状态使用彩色，可触摸的元素为蓝色。",
   "a11y": {
     "panel": "交互式巴氏杀菌机 HMI 仿真",
     "mimic": "工艺流程图：原料罐、平衡罐、进料泵、含热回收段、加热段和冷却段的板式换热器、热水回路、保温管、回流阀及储罐。实时数值列于工艺面板中。",
     "trend": "最近 60 秒的温度趋势",
-    "led": "面板状态指示灯"
+    "state": "状态",
+    "sim": "仿真，按 3 倍实际速度运行"
+  },
+  "tour": {
+    "label": "试一试",
+    "start": "按“启动”",
+    "forward": "等待进入“出料”",
+    "fault": "按“模拟故障”",
+    "ack": "确认报警",
+    "done": "已完成"
   },
   "status": {
     "unit": "HTST-01 巴氏杀菌机",
@@ -61,8 +69,7 @@
     "steam": "蒸汽",
     "iceWater": "冰水",
     "cipSupply": "CIP 供液",
-    "drain": "排放",
-    "locked": "联锁"
+    "drain": "排放"
   },
   "kpi": {
     "title": "工艺",
@@ -75,9 +82,7 @@
     "flow": "流量",
     "hw": "热水",
     "valve": "蒸汽阀",
-    "outlet": "产品出口",
-    "batch": "批次",
-    "forwarded": "已出料"
+    "batch": "批次"
   },
   "recipe": {
     "title": "配方",
@@ -92,7 +97,9 @@
     "temp": "TT-102 ≥ {limit} °C",
     "check": "持续 {s} s（确认时间）",
     "dp": "热回收段压差：杀菌侧 > 原料侧",
-    "hold": "保持时间 ≥ {hold} s"
+    "hold": "保持时间 ≥ {hold} s",
+    "met": "已满足",
+    "notMet": "未满足"
   },
   "controls": {
     "run": "运行",
@@ -146,7 +153,10 @@
     "evRecipe": "配方已切换：{arg}",
     "evCip": "CIP 程序已启动",
     "evCipDone": "CIP 程序已完成",
-    "evCipAbort": "CIP 程序已中止"
+    "evCipAbort": "CIP 程序已中止",
+    "srcSeq": "顺控",
+    "srcMode": "模式",
+    "srcRcp": "配方"
   },
   "msg": {
     "idle": "按“启动”运行巴氏杀菌机。",
@@ -161,7 +171,14 @@
     "acked": "报警已确认。",
     "fdvFwd": "FDV 出料。",
     "fdvDiv": "FDV 回流。",
-    "alarm": "{prio}优先级报警：{text}"
+    "alarm": "{prio}优先级报警：{text}",
+    "press": "按{key}运行巴氏杀菌机。",
+    "faultEta": "蒸汽压力下降。温度低于限值的产品约 {s} s 后到达 TT-102。",
+    "recoveredAck": "温度已恢复，产品重新出料。请按“确认”清除报警。",
+    "allClear": "所有报警均已确认。批次 {batch} 运行正常。",
+    "faultNeedsRun": "请先启动生产：该故障模拟的是设备运行中蒸汽供应中断。",
+    "faultInCip": "CIP 清洗期间无法模拟故障。",
+    "noAlarms": "没有需要确认的报警。"
   },
   "cip": {
     "title": "CIP 程序",
@@ -170,7 +187,8 @@
     "caustic": "碱洗",
     "rinse": "中间冲洗",
     "acid": "酸洗",
-    "final": "最终冲洗"
+    "final": "最终冲洗",
+    "done": "已完成"
   },
   "loop": {
     "eyebrow": "自动化的工作原理",

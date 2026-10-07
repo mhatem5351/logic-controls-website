@@ -1,0 +1,131 @@
+---
+/**
+ * "On this page" bar for long decision pages (foreign manufacturers, technologies): numbered anchor chips to the
+ * page's sections, placed right under the hero.
+ *  - One row at every width (swipeable / scrollable when the chips do not fit; the focused or current chip is
+ *    scrolled into view), so the bar never grows taller than ~3.5rem.
+ *  - ≥1024px: sticks under the header while the page scrolls; the section being read is marked (aria-current,
+ *    bold + underline, not colour alone). Phones: the floating "back to top" button returns to it.
+ * Anchor jumps land below the header and the bar (scroll-padding on <html> while the bar exists).
+ */
+import { getMessages, type Locale } from "~/i18n";
+import { pad2 } from "~/lib/format";
+
+interface Item {
+  /** Target element id (a section). */
+  id: string;
+  label: string;
+}
+interface Props {
+  locale: Locale;
+  items: Item[];
+  class?: string;
+}
+const { locale, items, class: className } = Astro.props;
+const title = getMessages(locale).common.labels.onThisPage as string;
+---
+
+<nav aria-label={title} class:list={["lc-toc-bar border-b border-charcoal-200 bg-white/95", className]} data-page-toc>
+  <div class="wrap flex items-center gap-4">
+    <ol role="list" class="lc-toc-row -mx-(--spacing-gutter) flex min-w-0 flex-1 gap-1.5 overflow-x-auto px-(--spacing-gutter) py-2.5">
+      {
+        items.map((item, i) => (
+          <li class="shrink-0">
+            <a
+              href={`#${item.id}`}
+              data-toc-target={item.id}
+              class="lc-toc-chip inline-flex min-h-10 items-center gap-2 border border-charcoal-200 bg-white px-3 text-sm font-semibold whitespace-nowrap text-navy-900 transition-colors hover:border-royal-600 hover:text-royal-700 lg:min-h-9 lg:px-2.5 lg:text-[0.8125rem]"
+            >
+              <span class="font-mono text-xs font-medium text-royal-700 ltr" dir="ltr" aria-hidden="true">
+                {pad2(i + 1)}
+              </span>
+              {item.label}
+            </a>
+          </li>
+        ))
+      }
+    </ol>
+  </div>
+</nav>
+
+<style>
+  .lc-toc-row {
+    scrollbar-width: none;
+    scroll-padding-inline: var(--spacing-gutter);
+    mask-image: linear-gradient(to right, transparent, #000 var(--spacing-gutter), #000 calc(100% - var(--spacing-gutter)), transparent);
+  }
+  .lc-toc-row::-webkit-scrollbar {
+    display: none;
+  }
+  .lc-toc-chip[aria-current] {
+    border-color: var(--color-royal-600);
+    background: var(--color-royal-50);
+    color: var(--color-navy-950);
+    text-decoration: underline;
+    text-decoration-color: var(--color-royal-600);
+    text-decoration-thickness: 2px;
+    text-underline-offset: 0.35em;
+  }
+  @media (pointer: coarse) {
+    .lc-toc-chip {
+      min-height: 2.75rem;
+    }
+  }
+  @media (min-width: 64rem) {
+    .lc-toc-bar {
+      position: sticky;
+      top: var(--header-h);
+      z-index: 40;
+      backdrop-filter: blur(10px);
+    }
+    :global(html:has(.lc-toc-bar)) {
+      scroll-padding-top: calc(var(--header-h) + 4.5rem);
+    }
+  }
+</style>
+
+<script>
+  document.querySelectorAll<HTMLElement>("[data-page-toc]").forEach((bar) => {
+    const links = [...bar.querySelectorAll<HTMLAnchorElement>("[data-toc-target]")];
+    const targets = links.map((a) => document.getElementById(a.dataset.tocTarget ?? ""));
+    const row = bar.querySelector<HTMLElement>(".lc-toc-row");
+    // Keyboard: keep the focused chip in view inside the swipeable row.
+    row?.addEventListener("focusin", (e) => (e.target as HTMLElement).scrollIntoView({ block: "nearest", inline: "nearest" }));
+    // Scroll-spy (desktop, where the bar is sticky): the last section whose top has passed 35% of the viewport.
+    const desktop = matchMedia("(min-width: 64rem)");
+    let ticking = false;
+    let current = -2;
+    const update = () => {
+      ticking = false;
+      let idx = -1;
+      if (desktop.matches) {
+        const line = window.innerHeight * 0.35;
+        targets.forEach((el, i) => {
+          if (el && el.getBoundingClientRect().top <= line) idx = i;
+        });
+      }
+      if (idx === current) return;
+      current = idx;
+      links.forEach((a, i) => (i === idx ? a.setAttribute("aria-current", "location") : a.removeAttribute("aria-current")));
+      // Keep the current chip visible inside the row (no page scroll: the row scrolls horizontally only).
+      const cur = links[idx];
+      if (cur && row && row.scrollWidth > row.clientWidth) {
+        const r = cur.getBoundingClientRect();
+        const box = row.getBoundingClientRect();
+        if (r.left < box.left || r.right > box.right) row.scrollBy({ left: r.left - box.left - box.width / 3, behavior: matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth" });
+      }
+    };
+    addEventListener(
+      "scroll",
+      () => {
+        if (!ticking) {
+          ticking = true;
+          requestAnimationFrame(update);
+        }
+      },
+      { passive: true },
+    );
+    desktop.addEventListener("change", update);
+    update();
+  });
+</script>

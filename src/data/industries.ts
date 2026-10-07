@@ -34,7 +34,3 @@ export const INDUSTRIES: readonly IndustryData[] = [
   { slug: "commercial-laundry", icon: "washing-machine", services: ["machine-automation", "plc-hmi-programming", "process-control", "maintenance-support"] },
   { slug: "test-equipment", icon: "gauge", services: ["machine-automation", "scada-data-logging", "plc-hmi-programming", "control-panels"] },
 ];
-
-export function getIndustry(slug: string): IndustryData | undefined {
-  return INDUSTRIES.find((i) => i.slug === slug);
-}

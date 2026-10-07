@@ -56,7 +56,7 @@ const leds = (x: number) => `M${x} 199V237M${x + 8} 199V237`;
     @keyframes phL{0%,18.75%{transform:scaleY(.18)}81.25%{transform:scaleY(1)}100%{transform:scaleY(.18)}}
     @keyframes phB{0%,50%{opacity:1}51%,100%{opacity:.15}}
     .lca-ph .fl2{stroke:var(--i-w);stroke-width:2;stroke-dasharray:3 5;animation:lca-fw .6s linear infinite}
-    @media (prefers-reduced-motion:reduce){.lca-ph .tm{transform:scaleX(.6)}.lca-ph .lv{transform:scaleY(.7)}}
+    @media (prefers-reduced-motion:reduce){.lca-ph .tm{transform:scaleX(.6)}.lca-ph .lv{transform:scaleY(.7)}}.lca-ph:is([data-play=rest],[data-motion=off] *) .tm{transform:scaleX(.6)}.lca-ph:is([data-play=rest],[data-motion=off] *) .lv{transform:scaleY(.7)}
   </style>
 
   <!-- shadows -->

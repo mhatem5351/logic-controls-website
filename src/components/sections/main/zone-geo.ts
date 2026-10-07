@@ -23,6 +23,9 @@ export const PIN: Record<ZoneSlug, [number, number]> = {
 };
 export const BASE = PIN["6th-of-october"];
 
+/** Pin dot radius, map units (the home base is drawn larger). Used by ZoneMap (SVG), ZonesBlock (CSS) and the script. */
+export const PIN_R = { home: 8.5, zone: 7 } as const;
+
 /** Side of a pin's square hit area, in map units (≈ 24px on a 330px-wide phone map, capped at 44px in CSS). */
 export const HIT = 28;
 /**
@@ -33,6 +36,16 @@ export const HIT_ANCHOR: Partial<Record<ZoneSlug, [number, number]>> = {
   obour: [0.57, 0.5],
   badr: [0.21, 0.46],
   "10th-of-ramadan": [0.46, 0.75],
+};
+/**
+ * Below HIT_NARROW px of map width, 28 map units are less than the 24px floor the CSS clamps the squares to, so the
+ * cluster squares are pushed further apart (checked at 272px, the map on a 320px phone: no overlaps).
+ */
+export const HIT_NARROW = 336;
+export const HIT_ANCHOR_NARROW: Partial<Record<ZoneSlug, [number, number]>> = {
+  obour: [0.78, 0.5],
+  badr: [0.08, 0.32],
+  "10th-of-ramadan": [0.42, 0.96],
 };
 
 const toLatLon = ([x, y]: [number, number]) => [31.8 - y / 100, x / 86.6 + 28.8].map((d) => (d * Math.PI) / 180);

@@ -72,7 +72,7 @@
       "navTitle": "Pharmaceutical",
       "summary": "Coating machines with SCADA, formulation recipes and user log-in, plus bottle printing and packaging machines for pharma lines.",
       "seoTitle": "Pharmaceutical Machine Automation in Egypt | Logic Controls",
-      "seoDescription": "SCADA and PLC control for tablet coating, bottle printing and packaging machines in Egyptian pharma plants. Recipes, alarms, user access and records.",
+      "seoDescription": "SCADA and PLC control for tablet coating, bottle printing and packaging machines in Egyptian pharma plants: recipes, alarms, user log-in, records.",
       "h1": "Automation for pharmaceutical production",
       "intro": [
         "Pharma production needs repeatable processes and documentation. We build control systems with formulation recipes, user access and alarm history, so every batch runs the same way and leaves a record.",
@@ -227,28 +227,28 @@
       "navTitle": "Building materials",
       "summary": "Concrete batching plants with weighing, dosing, mixing sequences, mix recipes and SCADA monitoring.",
       "seoTitle": "Concrete Batching Plant Automation in Egypt | Logic Controls",
-      "seoDescription": "PLC and SCADA control for concrete batching plants in Egypt: dosing of cement, aggregates, water and additives, mix recipes, monitoring and alarms.",
+      "seoDescription": "PLC and SCADA control for concrete batching plants in Egypt: dosing of cement, aggregates, water and additives, mix recipes, alarms.",
       "h1": "Automation for concrete batching plants",
       "intro": [
         "A batching plant must produce the same mix, batch after batch. Weighing accuracy, discharge timing and mixing time decide concrete quality and material cost.",
-        "We delivered a concrete batching control system on a Siemens S7-1200 PLC with WinCC Professional SCADA: dosing of cement, aggregates, water and additives, automatic batching and mixing sequences, and recipe management for different mixes."
+        "We delivered a concrete batching control system on a Siemens S7-1200 PLC with WinCC Professional SCADA. It covers dosing of cement, aggregates, water and additives, automatic batching and mixing sequences, and recipe management for different mixes."
       ],
       "needs": [
         {
           "title": "Accurate dosing",
-          "text": "Target weights for each material, with automatic dosing and discharge."
+          "text": "Target weights for each material, with automatic dosing and discharge, so every batch gets the quantities in its recipe."
         },
         {
           "title": "Mix recipes",
-          "text": "Each concrete mix stored with its materials, weights and mixing time."
+          "text": "Each concrete mix stored with its materials, weights and mixing time, so the operator selects a mix instead of typing values."
         },
         {
           "title": "Plant overview",
-          "text": "A SCADA view of bins, hoppers, conveyors and mixer status."
+          "text": "A SCADA view of bins, hoppers, conveyors and mixer status, with live values and timers, so the operator sees where each batch is."
         },
         {
           "title": "Clear alarms",
-          "text": "Faults shown with plain messages, so the operator knows what to check."
+          "text": "Faults shown with plain messages, so the operator knows what to check before the next batch starts."
         }
       ],
       "applications": [
@@ -265,6 +265,10 @@
         {
           "q": "Can the system save batch records?",
           "a": "Batch data can be logged on the SCADA. The records and reports you need are defined for each project."
+        },
+        {
+          "q": "What do you need to quote a batching plant upgrade?",
+          "a": "The number of materials and scales, the bins, hoppers and mixer, the existing PLC or SCADA if there is one, and photos of the control room, the panel and the plant. An engineer then replies with questions or arranges a site visit."
         }
       ],
       "cta": {
@@ -276,7 +280,7 @@
       "title": "Hotels and commercial laundry",
       "navTitle": "Commercial laundry",
       "summary": "Washer-extractor controls with editable wash programs, water level, temperature and chemical dosing.",
-      "seoTitle": "Laundry Washer Control Systems in Egypt | Logic Controls",
+      "seoTitle": "Hotel Laundry Machine Controls in Egypt | Logic Controls",
       "seoDescription": "PLC and HMI control for hotel and commercial washer-extractors in Egypt: wash programs, water level, temperature, chemical dosing and alarms.",
       "h1": "Control systems for hotel and commercial laundry machines",
       "intro": [
@@ -336,19 +340,19 @@
       "needs": [
         {
           "title": "Repeatable tests",
-          "text": "The same test sequence and limits every time."
+          "text": "The same test sequence and limits every time, so results from different shifts and operators can be compared."
         },
         {
           "title": "Clear readings",
-          "text": "Live values and bar graphs on the HMI."
+          "text": "Live values and bar graphs on the HMI, so the operator can follow each reading while the test runs."
         },
         {
           "title": "Automatic reports",
-          "text": "Results saved with every test, for quality control and traceability."
+          "text": "Results saved with every test for quality control and traceability, without writing them down by hand."
         },
         {
           "title": "Documentation",
-          "text": "Records that your customers and inspectors can review."
+          "text": "Records that your customers and inspectors can review, in the format agreed for the project."
         }
       ],
       "applications": [
@@ -365,6 +369,10 @@
         {
           "q": "Do you build the mechanical test rig?",
           "a": "No. We supply the control system, instrument integration, HMI and reports. The mechanical rig comes from you or a machine builder."
+        },
+        {
+          "q": "What do you need to quote a test rig?",
+          "a": "The test sequence, the values you measure with their ranges and units, the sensors on the rig, and the report you need after each test. Photos of the rig and of any existing panel help us reply faster."
         }
       ],
       "cta": {

@@ -1,8 +1,9 @@
 ---
 /**
  * Foreign manufacturers (investor landing page; the key page for /zh/ and /tr/ visitors).
- * Hero → what a new plant needs (need → how we close the gap) → services → when to involve us →
- * standards & documentation → experience with imported lines (+ founder strip) → languages → zones → FAQ → CTA.
+ * Hero → "On this page" bar → what a new plant needs (need → how we close the gap) → services → for machine builders
+ * (OEMs who need a local commissioning / service team) → when to involve us → standards & documentation → experience
+ * with imported lines (+ founder strip) → languages → zones → FAQ → CTA. Section indices follow what is rendered.
  * Hero CTAs: quote + "Email an engineer" (documents and formal requests travel by email for foreign teams);
  * WhatsApp stays in the closing band.
  */
@@ -20,9 +21,10 @@ import FAQ from "~/components/FAQ.astro";
 import CtaBand from "~/components/CtaBand.astro";
 import ZonesBlock from "~/components/sections/main/ZonesBlock.astro";
 import FounderStrip from "~/components/sections/main/FounderStrip.astro";
+import PageToc from "~/components/sections/main/PageToc.astro";
 import { html, emphasize } from "~/components/sections/main/rich";
 import { getMessages, localeStaticPaths, localePath, LOCALE_META, type Locale } from "~/i18n";
-import { SITE } from "~/data/site";
+import { absUrl, graph, service, webPage } from "~/lib/jsonld";
 import { STATS } from "~/data/stats";
 import { href, whatsappLink, mailtoLink, prefersEmail } from "~/components/nav";
 import heroImage from "~/assets/projects/tablet-coating-scada/machine.jpg";
@@ -36,6 +38,38 @@ const f = t.foreign;
 const c = t.common;
 const email = prefersEmail(locale);
 const quoteHref = `${href(locale, "contact")}?service=new-factory#quote`;
+const PATH = "foreign-manufacturers";
+/* Machine builders (OEMs) exporting to Egypt: a local commissioning / service team on their behalf (foreign.oem). */
+const oem = f.oem;
+const oemQuote = `${href(locale, "contact")}?service=oem-partner#quote`;
+const oemMessage = c.whatsapp.oem;
+const oemIcons: IconName[] = ["check", "users", "hmi", "wrench"];
+
+/* Section numbers follow what is rendered. */
+let n = 0;
+const idx = () => String(++n).padStart(2, "0");
+const I = {
+  needs: idx(),
+  services: idx(),
+  oem: oem ? idx() : "",
+  timeline: idx(),
+  standards: idx(),
+  proof: idx(),
+  languages: idx(),
+  zones: idx(),
+  faq: idx(),
+};
+const toc = [
+  { id: "needs", label: f.eyebrows.needs },
+  { id: "services", label: c.labels.services },
+  ...(oem ? [{ id: "oem", label: oem.eyebrow }] : []),
+  { id: "timeline", label: f.eyebrows.timeline },
+  { id: "standards", label: f.eyebrows.standards },
+  { id: "proof", label: f.eyebrows.proof },
+  { id: "languages", label: f.eyebrows.languages },
+  { id: "zones", label: c.labels.location },
+  { id: "faq", label: c.labels.faq },
+];
 const caseSlug = "anaerobic-waste-treatment-commissioning";
 const caseItem = t.projects.items[caseSlug];
 const caseAlts = (caseItem?.imageAlts ?? {}) as Record<string, string>;
@@ -49,23 +83,25 @@ const EMPHASIS: Record<Locale, string> = {
 };
 const needIcons: IconName[] = ["users", "gear", "hmi", "box", "file", "wrench"];
 const serviceIcons: IconName[] = ["gear", "traces", "check", "hmi", "bolt", "box", "users", "shield"];
+/* Each "what we do for new factories" item links to the service page that covers it (foreign.services.items order). */
+const serviceLinks = [
+  "services/testing-commissioning",
+  "services/testing-commissioning",
+  "services/testing-commissioning",
+  "services/plc-hmi-programming",
+  "services/control-panels",
+  "services/maintenance-support",
+  "services/maintenance-support",
+  "services/maintenance-support",
+];
 const stepIcons: IconName[] = ["file", "check", "panel", "gauge", "wrench"];
 const proof = STATS.map((s) => ({ value: s.value, label: c.stats[s.key].label }));
 
-const url = new URL(localePath(locale, "foreign-manufacturers"), SITE.url).href;
-const jsonLd = {
-  "@context": "https://schema.org",
-  "@type": "Service",
-  "@id": `${url}#service`,
-  name: f.hero.title,
-  description: f.seo.description,
-  url,
-  inLanguage: LOCALE_META[locale].htmlLang,
-  serviceType: "Commissioning, HMI localization and automation support for new factories",
-  provider: { "@id": `${SITE.url}/#organization` },
-  areaServed: { "@type": "Country", name: "Egypt" },
-  audience: { "@type": "BusinessAudience", audienceType: "Manufacturers setting up or relocating a factory in Egypt" },
-};
+/* Structured data (src/lib/jsonld.ts): the page + the service for manufacturers setting up in Egypt (localized). */
+const jsonLd = graph(
+  webPage(locale, { path: "foreign-manufacturers", name: f.seo.title, description: f.seo.description, mainEntity: { "@id": `${absUrl(localePath(locale, "foreign-manufacturers"))}#service` } }),
+  service(locale, { path: "foreign-manufacturers", name: f.hero.title, serviceType: f.seo.title, description: f.seo.description, audience: f.hero.eyebrow }),
+);
 ---
 
 <BaseLayout locale={locale} title={f.seo.title} description={f.seo.description} path="foreign-manufacturers" heroDark jsonLd={jsonLd} whatsappMessage={c.whatsapp.foreign}>
@@ -80,7 +116,7 @@ const jsonLd = {
     imageAlt={heroAlt}
     priority
     primary={{ label: f.hero.ctaPrimary, href: quoteHref }}
-    secondary={{ label: t.ui.cta.emailEngineer, href: mailtoLink(t.ui.email.subject) }}
+    secondary={{ label: t.ui.cta.emailEngineer, href: mailtoLink(undefined, { locale, topic: t.ui.nav.foreign, path: PATH }) }}
   >
     <Breadcrumbs slot="breadcrumbs" locale={locale} items={[{ label: c.breadcrumbs.foreign }]} />
     <ul role="list" class="lc-rise mt-9 grid max-w-xl gap-2.5 border-t border-white/10 pt-6" style="--i:3" data-fab-avoid>
@@ -119,9 +155,11 @@ const jsonLd = {
     </dl>
   </Section>
 
+  <PageToc locale={locale} items={toc} />
+
   {/* ---------- 01 what a new plant needs: need → how we close the gap ---------- */}
   <Section id="needs" aria-labelledby="needs-title">
-    <SectionHeading id="needs-title" index="01" eyebrow={f.eyebrows.needs} title={html(locale, f.needs.title)} lead={html(locale, f.needs.intro)} />
+    <SectionHeading id="needs-title" index={I.needs} eyebrow={f.eyebrows.needs} title={html(locale, f.needs.title)} lead={html(locale, f.needs.intro)} />
     <div class="mt-12 hidden grid-cols-[minmax(0,5fr)_4rem_minmax(0,7fr)] gap-6 border-b-2 border-navy-950 pb-3 lg:grid" aria-hidden="true">
       <p class="type-label text-charcoal-600">{f.needs.columns.need}</p>
       <span></span>
@@ -153,27 +191,77 @@ const jsonLd = {
 
   {/* ---------- 02 services for new factories ---------- */}
   <Section variant="muted" id="services" aria-labelledby="services-title">
-    <SectionHeading id="services-title" index="02" eyebrow={c.labels.services} title={html(locale, f.services.title)} />
+    <SectionHeading id="services-title" index={I.services} eyebrow={c.labels.services} title={html(locale, f.services.title)} />
     <ul role="list" class="mt-12 grid gap-px overflow-hidden border border-charcoal-200 bg-charcoal-200 sm:grid-cols-2 lg:grid-cols-4">
       {
         f.services.items.map((s, i) => (
-          <li class="group relative bg-white p-6 transition-colors hover:bg-royal-50/40 sm:p-7">
+          <li class="group relative bg-white p-6 transition-colors hover:bg-royal-50/40 has-[a:focus-visible]:z-10 has-[a:focus-visible]:outline-2 has-[a:focus-visible]:-outline-offset-2 has-[a:focus-visible]:outline-(--focus) sm:p-7">
             <span aria-hidden="true" class="absolute -top-px start-6 h-1 w-8 skew-x-[-10deg] bg-royal-600 transition-[width] duration-300 group-hover:w-14 rtl:skew-x-[10deg] sm:start-7" />
             <div class="flex items-center justify-between">
               <Icon name={serviceIcons[i] ?? "check"} size={26} class="text-royal-600" />
               <span aria-hidden="true" class="font-mono text-xs text-charcoal-600 ltr" dir="ltr">{String(i + 1).padStart(2, "0")}</span>
             </div>
-            <h3 class="mt-5 type-h4 text-navy-950" set:html={html(locale, s.title)} />
+            <h3 class="mt-5 type-h4 text-navy-950">
+              {serviceLinks[i] ? (
+                <a href={href(locale, serviceLinks[i])} class="lc-stretch after:absolute after:inset-0 after:content-[''] group-hover:text-royal-700" set:html={html(locale, s.title)} />
+              ) : (
+                <span set:html={html(locale, s.title)} />
+              )}
+            </h3>
             <p class="mt-2 text-[0.9375rem] text-charcoal-600" set:html={html(locale, s.text)} />
+            {serviceLinks[i] && (
+              <Icon name="arrow" size={16} class="mt-4 text-royal-600 transition-transform group-hover:translate-x-1 rtl:group-hover:-translate-x-1" />
+            )}
           </li>
         ))
       }
     </ul>
   </Section>
 
+  {/* ---------- for machine builders (OEMs): commissioning and support on their behalf ---------- */}
+  {
+    oem && (
+      <Section id="oem" aria-labelledby="oem-title">
+        <div class="grid items-start gap-10 lg:grid-cols-12 lg:gap-14">
+          <div class="lg:col-span-5">
+            <SectionHeading id="oem-title" index={I.oem} eyebrow={oem.eyebrow} title={html(locale, oem.title)} lead={html(locale, oem.intro)} />
+            <div class="mt-8 flex flex-wrap gap-3">
+              <Button href={oemQuote} iconEnd="arrow" class="max-sm:w-full">{oem.cta}</Button>
+              {
+                email ? (
+                  <Button href={mailtoLink(undefined, { locale, topic: oem.eyebrow, path: PATH })} variant="secondary" icon="mail" iconClass="text-royal-600" class="max-sm:w-full">
+                    {t.ui.cta.emailEngineer}
+                  </Button>
+                ) : (
+                  <Button href={whatsappLink(oemMessage)} variant="secondary" icon="whatsapp" iconClass="text-whatsapp-700" external class="max-sm:w-full">
+                    {t.ui.cta.whatsapp}
+                  </Button>
+                )
+              }
+            </div>
+          </div>
+          <ol role="list" class="relative grid gap-px overflow-hidden border border-charcoal-200 bg-charcoal-200 sm:grid-cols-2 lg:col-span-7">
+            {oem.items.map((item, i) => (
+              <li class="relative bg-white p-6 sm:p-7">
+                <div class="flex items-center justify-between">
+                  <span class="chamfer inline-grid size-11 place-items-center bg-navy-950 text-royal-300 [--chamfer:9px]" aria-hidden="true">
+                    <Icon name={oemIcons[i] ?? "check"} size={22} />
+                  </span>
+                  <span aria-hidden="true" class="font-mono text-xs text-charcoal-600 ltr" dir="ltr">{String(i + 1).padStart(2, "0")}</span>
+                </div>
+                <h3 class="mt-5 type-h4 text-navy-950" set:html={html(locale, item.title)} />
+                <p class="mt-2 text-[0.9375rem] text-charcoal-600" set:html={html(locale, item.text)} />
+              </li>
+            ))}
+          </ol>
+        </div>
+      </Section>
+    )
+  }
+
   {/* ---------- 03 when to involve us ---------- */}
   <Section id="timeline" aria-labelledby="timeline-title">
-    <SectionHeading id="timeline-title" index="03" eyebrow={f.eyebrows.timeline} title={html(locale, f.timeline.title)} lead={html(locale, f.timeline.intro)} />
+    <SectionHeading id="timeline-title" index={I.timeline} eyebrow={f.eyebrows.timeline} title={html(locale, f.timeline.title)} lead={html(locale, f.timeline.intro)} />
     <ProcessSteps class="mt-14" locale={locale} steps={f.timeline.steps.map((s, i) => ({ title: s.title, text: s.text, icon: stepIcons[i] }))} />
   </Section>
 
@@ -181,7 +269,7 @@ const jsonLd = {
   <Section variant="dark" angle="both" id="standards" aria-labelledby="standards-title">
     <div class="grid items-start gap-12 lg:grid-cols-12">
       <div class="lg:col-span-6">
-        <SectionHeading id="standards-title" index="04" eyebrow={f.eyebrows.standards} title={html(locale, f.standards.title)} />
+        <SectionHeading id="standards-title" index={I.standards} eyebrow={f.eyebrows.standards} title={html(locale, f.standards.title)} />
         <div class="mt-6 space-y-4 text-navy-200">
           {f.standards.paragraphs.map((p) => <p set:html={html(locale, p)} />)}
         </div>
@@ -219,7 +307,7 @@ const jsonLd = {
         </div>
       </div>
       <div class="lg:col-span-6 max-lg:pt-6">
-        <SectionHeading id="proof-title" index="05" eyebrow={f.eyebrows.proof} title={html(locale, f.proof.title)} />
+        <SectionHeading id="proof-title" index={I.proof} eyebrow={f.eyebrows.proof} title={html(locale, f.proof.title)} />
         <div class="mt-6 space-y-4 text-charcoal-700">
           {f.proof.paragraphs.map((p) => <p set:html={html(locale, p)} />)}
         </div>
@@ -235,6 +323,19 @@ const jsonLd = {
             </a>
           )
         }
+        {/* The one third-party proof an anonymised portfolio can offer: a reference call (with the client's permission). */}
+        <div class="relative mt-6 border border-charcoal-200 bg-white p-6">
+          <span aria-hidden="true" class="absolute -top-px start-6 h-1 w-14 skew-x-[-10deg] bg-royal-600 rtl:skew-x-[10deg]" />
+          <p class="flex items-center gap-2.5 type-h4 text-navy-950">
+            <Icon name="users" size={20} class="shrink-0 text-royal-600" />
+            {c.labels.referenceTitle}
+          </p>
+          <p class="mt-2 text-[0.9375rem] leading-relaxed text-charcoal-700">{c.labels.referenceText}</p>
+          <a href={`${href(locale, "contact")}?service=other#quote`} class="group mt-4 inline-flex min-h-6 items-center gap-2 text-sm font-bold text-royal-600 hover:text-royal-800">
+            {c.labels.referenceCta}
+            <Icon name="arrow" size={16} class="transition-transform group-hover:translate-x-1 rtl:group-hover:-translate-x-1" />
+          </a>
+        </div>
       </div>
     </div>
     <LogoWall locale={locale} class="mt-20 [&_li]:text-charcoal-600" />
@@ -245,7 +346,7 @@ const jsonLd = {
   <Section variant="muted" id="languages" aria-labelledby="languages-title">
     <div class="grid gap-10 lg:grid-cols-12 lg:gap-14">
       <div class="lg:col-span-5">
-        <SectionHeading id="languages-title" index="06" eyebrow={f.eyebrows.languages} title={html(locale, f.languages.title)} />
+        <SectionHeading id="languages-title" index={I.languages} eyebrow={f.eyebrows.languages} title={html(locale, f.languages.title)} />
         <p class="mt-6 text-charcoal-700" set:html={html(locale, f.languages.text)} />
       </div>
       <ul role="list" class="grid content-start gap-4 sm:grid-cols-2 lg:col-span-7">
@@ -266,7 +367,7 @@ const jsonLd = {
 
   {/* ---------- 07 zones ---------- */}
   <Section id="zones" aria-labelledby="zones-title">
-    <SectionHeading id="zones-title" index="07" eyebrow={c.labels.location} title={html(locale, c.zones.title)} lead={html(locale, c.zones.intro)} />
+    <SectionHeading id="zones-title" index={I.zones} eyebrow={c.labels.location} title={html(locale, c.zones.title)} lead={html(locale, c.zones.intro)} />
     <ZonesBlock locale={locale} class="mt-12" />
   </Section>
 
@@ -275,7 +376,7 @@ const jsonLd = {
     <div class="grid gap-10 lg:grid-cols-12 lg:gap-14">
       <div class="lg:col-span-4">
         <div class="lg:sticky lg:top-[calc(var(--header-h)+2rem)]">
-          <SectionHeading id="faq-title" index="08" eyebrow={c.labels.faq} title={html(locale, f.faq.title)} />
+          <SectionHeading id="faq-title" index={I.faq} eyebrow={c.labels.faq} title={html(locale, f.faq.title)} />
           <Button href={quoteHref} variant="secondary" iconEnd="arrow" class="mt-8">{f.hero.ctaPrimary}</Button>
         </div>
       </div>

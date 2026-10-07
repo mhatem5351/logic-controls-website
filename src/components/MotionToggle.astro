@@ -1,0 +1,105 @@
+---
+/**
+ * "Pause animations" switch (WCAG 2.2.2): one toggle button that stops every decorative loop site-wide.
+ *   <MotionToggle />                    footer row (default)
+ *   <MotionToggle variant="drawer" />   mobile drawer (full width)
+ *
+ * State lives on <html data-motion="off"> (set before first paint by BaseLayout, persisted in localStorage) — see
+ * src/scripts/motion/motion-pref.ts for the contract. The label never changes; aria-pressed="true" means paused.
+ * When the OS asks for reduced motion, motion is already off: the button shows pressed, is aria-disabled and says why.
+ * Every instance on the page stays in sync.
+ */
+import { getMessages, type Locale } from "~/i18n";
+import { uid } from "./uid";
+
+interface Props {
+  variant?: "footer" | "drawer";
+  locale?: Locale;
+  class?: string;
+}
+const { variant = "footer", class: className } = Astro.props;
+const locale = (Astro.props.locale ?? Astro.currentLocale ?? "en") as Locale;
+const t = getMessages(locale).ui.motion;
+const note = uid("lc-mt");
+---
+
+<button
+  type="button"
+  class:list={[
+    "lc-motion-toggle inline-flex min-h-11 items-center gap-2.5 border border-white/15 px-3 text-start text-navy-100 transition-colors hover:border-white/40 hover:text-white",
+    variant === "drawer" && "w-full",
+    className,
+  ]}
+  data-motion-toggle
+  data-variant={variant}
+  aria-pressed="false"
+>
+  <span class="lc-mt-icon grid size-4 shrink-0 place-items-center" aria-hidden="true">
+    <svg class="lc-mt-pause" viewBox="0 0 16 16" width="16" height="16" fill="currentColor"><rect x="3.5" y="2.5" width="3" height="11" rx=".6"></rect><rect x="9.5" y="2.5" width="3" height="11" rx=".6"></rect></svg>
+    <svg class="lc-mt-play" viewBox="0 0 16 16" width="16" height="16" fill="currentColor"><path d="M4.5 2.9a.8.8 0 0 1 1.2-.7l8 4.9a1 1 0 0 1 0 1.8l-8 4.9a.8.8 0 0 1-1.2-.7z"></path></svg>
+  </span>
+  <span class="lc-mt-label">{t.pause}</span>
+  <span id={note} class="sr-only" data-mt-note hidden>{t.systemReduced}</span>
+</button>
+
+<style>
+  /* Icon follows the state from the first frame (the attribute is set before paint); aria-pressed follows on init. */
+  .lc-mt-icon > svg {
+    grid-area: 1 / 1;
+  }
+  .lc-mt-play,
+  :global(:root[data-motion="off"]) .lc-mt-pause {
+    display: none;
+  }
+  :global(:root[data-motion="off"]) .lc-mt-play {
+    display: block;
+  }
+  .lc-motion-toggle[aria-pressed="true"] {
+    border-color: rgb(255 176 43 / 0.45);
+  }
+  .lc-motion-toggle[aria-pressed="true"] .lc-mt-icon {
+    color: var(--color-signal-300);
+  }
+  .lc-motion-toggle[aria-disabled="true"] {
+    cursor: default;
+  }
+  .lc-motion-toggle:focus-visible {
+    outline: 2px solid var(--color-signal-400);
+    outline-offset: 2px;
+  }
+  /* The play triangle points along the reading direction. */
+  :global([dir="rtl"]) .lc-mt-play {
+    scale: -1 1;
+  }
+</style>
+
+<script>
+  import { motionOff, systemReduced, setMotionOff, onMotionChange } from "~/scripts/motion/motion-pref";
+
+  const buttons = document.querySelectorAll<HTMLButtonElement>("[data-motion-toggle]");
+  const sync = () => {
+    const off = motionOff();
+    const locked = systemReduced();
+    for (const b of buttons) {
+      b.setAttribute("aria-pressed", String(off));
+      const note = b.querySelector<HTMLElement>("[data-mt-note]");
+      if (locked) {
+        b.setAttribute("aria-disabled", "true");
+        if (note) b.setAttribute("aria-describedby", note.id);
+        b.title = note?.textContent ?? "";
+      } else {
+        b.removeAttribute("aria-disabled");
+        b.removeAttribute("aria-describedby");
+        b.removeAttribute("title");
+      }
+    }
+  };
+  for (const b of buttons) {
+    b.addEventListener("click", () => {
+      if (systemReduced()) return;
+      setMotionOff(!motionOff());
+    });
+  }
+  onMotionChange(sync);
+  sync();
+</script>

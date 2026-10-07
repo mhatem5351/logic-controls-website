@@ -121,6 +121,15 @@ export class Pasteurizer {
   get producing(): boolean {
     return this.running && this.cip < 0;
   }
+  /**
+   * Simulated seconds until the most downstream under-limit product in the holding tube reaches TT-102 at the outlet
+   * (0 = it is there, -1 = none in the tube or no flow). Drives the "reaches TT-102 in ~N s" line during a fault.
+   */
+  coldEta(limit = this.R.limit): number {
+    if (this.q <= 50) return -1;
+    for (let i = CELLS - 1; i >= 0; i--) if (this.tube[i] < limit) return ((CELLS - 1 - i) * CELL_L) / (this.q / 3600);
+    return -1;
+  }
   /** Holding-tube temperatures resampled to n segments (inlet → outlet), for the mimic colouring. */
   tubeSegments(n: number): number[] {
     const out: number[] = [];

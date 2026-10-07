@@ -18,8 +18,8 @@ import RelatedProjects from "~/components/sections/catalog/RelatedProjects.astro
 import LinkTiles from "~/components/sections/catalog/LinkTiles.astro";
 import {
   brandsIn,
-  html,
   industryCopy,
+  projectCopy,
   projectsFor,
   projectsForIndustry,
   quoteHref,
@@ -27,6 +27,8 @@ import {
   serviceCopy,
   serviceIcon,
 } from "~/components/sections/catalog/catalog";
+import { html } from "~/lib/text";
+import { absUrl, orgRef, graph, itemList, webPage } from "~/lib/jsonld";
 import { fmt } from "~/components/nav";
 import { LOCALES, getMessages, localePath, type Locale } from "~/i18n";
 import { INDUSTRIES, INDUSTRY_SLUGS, type IndustrySlug } from "~/data/industries";
@@ -44,6 +46,12 @@ const data = INDUSTRIES.find((i) => i.slug === slug)!;
 const path = `industries/${slug}`;
 
 const related = projectsFor(locale, projectsForIndustry(slug));
+const RELATED_LIMIT = 6;
+/* "All related projects (n)" only when the filtered list has more than the cards shown; otherwise the full portfolio. */
+const allLink =
+  related.length > RELATED_LIMIT
+    ? { href: `${localePath(locale, "projects")}?industry=${slug}`, label: L.allRelatedProjects, count: related.length }
+    : { href: localePath(locale, "projects"), label: L.allProjects, count: projectsFor(locale).length };
 const services = data.services.filter((s) => serviceCopy(locale, s));
 const brands = brandsIn(related);
 const wa = fmt(m.common.whatsapp.industry, { industry: item.title });
@@ -51,14 +59,29 @@ const quote = quoteHref(locale, { industry: slug });
 
 const order = ["needs", "applications", related.length > 0 && "projects", "services", "faq"].filter(Boolean) as string[];
 const bg = (key: string) => (order.indexOf(key) % 2 === 0 ? "light" : "muted") as "light" | "muted";
+
+/* The industry hub as a collection page (src/lib/jsonld.ts): what it is about, who provides it, the case studies it collects. */
+const jsonLd = graph({
+  ...webPage(locale, {
+    type: "CollectionPage",
+    path,
+    name: item.seoTitle,
+    description: item.seoDescription,
+    about: { "@type": "Thing", name: item.title },
+    mainEntity: related.length
+      ? itemList(item.title, related.map((pr) => ({ name: projectCopy(locale, pr.slug)?.cardTitle ?? pr.slug, url: absUrl(localePath(locale, `projects/${pr.slug}`)) })))
+      : undefined,
+  }),
+  provider: orgRef(),
+});
 ---
 
-<BaseLayout locale={locale} title={item.seoTitle} description={item.seoDescription} path={path} heroDark whatsappMessage={wa}>
+<BaseLayout locale={locale} title={item.seoTitle} description={item.seoDescription} path={path} heroDark jsonLd={jsonLd} whatsappMessage={wa}>
   <Hero
     locale={locale}
     size="page"
-    title={html(item.h1, locale)}
-    lead={html(item.intro[0] ?? item.summary, locale)}
+    title={html(locale, item.h1)}
+    lead={html(locale, item.intro[0] ?? item.summary)}
     chips={brands.length ? brands : undefined}
     primary={{ label: m.ui.cta.quote, href: quote }}
     secondary={secondaryCta(locale, wa)}
@@ -73,8 +96,8 @@ const bg = (key: string) => (order.indexOf(key) % 2 === 0 ? "light" : "muted") a
     <div class="grid gap-12 lg:grid-cols-[minmax(0,5fr)_minmax(0,8fr)] lg:gap-20">
       <SectionHeading
         id="needs-title"
-        title={html(L.needs, locale)}
-        lead={item.intro.length > 1 ? html(item.intro.slice(1).join(" "), locale) : undefined}
+        title={html(locale, L.needs)}
+        lead={item.intro.length > 1 ? html(locale, item.intro.slice(1).join(" ")) : undefined}
         class="self-start lg:sticky lg:top-[calc(var(--header-h)+2rem)]"
       />
       <FeatureGrid items={item.needs} locale={locale} columns={2} />
@@ -84,7 +107,7 @@ const bg = (key: string) => (order.indexOf(key) % 2 === 0 ? "light" : "muted") a
   {/* Machines and processes we automate */}
   <Section variant={bg("applications")} id="applications" aria-labelledby="applications-title">
     <div class="grid gap-10 lg:grid-cols-[minmax(0,5fr)_minmax(0,8fr)] lg:gap-20">
-      <SectionHeading id="applications-title" title={html(L.applications, locale)} class="self-start" />
+      <SectionHeading id="applications-title" title={html(locale, L.applications)} class="self-start" />
       <SpecList items={item.applications} locale={locale} marker="index" columns={2} ruled class="border-t border-charcoal-200" />
     </div>
   </Section>
@@ -92,15 +115,15 @@ const bg = (key: string) => (order.indexOf(key) % 2 === 0 ? "light" : "muted") a
   <RelatedProjects
     locale={locale}
     projects={related}
-    limit={6}
+    limit={RELATED_LIMIT}
     title={L.relatedProjects}
     variant={related.length ? bg("projects") : "light"}
-    all={{ href: `${localePath(locale, "projects")}?industry=${slug}`, label: L.allProjects, count: related.length }}
+    all={allLink}
   />
 
   {/* Relevant services */}
   <Section variant={bg("services")} id="services" aria-labelledby="services-title">
-    <SectionHeading id="services-title" title={html(L.relatedServices, locale)} />
+    <SectionHeading id="services-title" title={html(locale, L.relatedServices)} />
     <LinkTiles
       class="mt-10"
       columns={2}
@@ -114,15 +137,15 @@ const bg = (key: string) => (order.indexOf(key) % 2 === 0 ? "light" : "muted") a
   {/* FAQ */}
   <Section variant={bg("faq")} id="faq" aria-labelledby="faq-title">
     <div class="grid gap-10 lg:grid-cols-[minmax(0,5fr)_minmax(0,8fr)] lg:gap-20">
-      <SectionHeading id="faq-title" title={html(L.faq, locale)} class="self-start" />
-      <FAQ items={item.faq.map((f) => ({ q: f.q, a: html(f.a, locale) }))} openFirst />
+      <SectionHeading id="faq-title" title={html(locale, L.faq)} class="self-start" />
+      <FAQ items={item.faq.map((f) => ({ q: f.q, a: html(locale, f.a) }))} openFirst />
     </div>
   </Section>
 
   <CtaBand
     locale={locale}
     eyebrow={item.navTitle}
-    title={html(item.cta.title, locale)}
+    title={html(locale, item.cta.title)}
     text={item.cta.text}
     primary={{ label: m.ui.cta.quote, href: quote }}
     secondary={secondaryCta(locale, wa)}

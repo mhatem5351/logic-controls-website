@@ -6,16 +6,23 @@
  *   variant "compact": panel + caption/CTA only (for service pages that already have their own heading).
  * - tone: "light" (default, for white / light-grey bands) or "dark" (navy bands) — only affects the text
  *   around the panel; the panel itself is the same device in both.
- * - The panel is a static, fully-rendered SVG/HTML snapshot until the visitor presses a button
- *   (~6 KB gz script, no libraries). It pauses offscreen / in hidden tabs and respects reduced motion.
- * - The HMI screen is always LTR (process diagrams are), but every label is localised.
+ * - The panel is a static, fully-rendered SVG/HTML snapshot until the visitor presses a button. A ~1 KB bootstrap
+ *   (below) fits the mimic to its width and loads the controller (~8 KB gz) only when the panel comes within ~800px of
+ *   the viewport, or on the first touch / focus inside it. It pauses offscreen / in hidden tabs, and with reduced
+ *   motion or the site's pause switch (html[data-motion="off"]) the flowing / spinning / blinking turn into static
+ *   indicators while the simulation itself still runs on request.
+ * - A four-step "Try it" checklist above the screen (Start → Forward → Simulate fault → Acknowledge) ticks itself as
+ *   the visitor plays; the next step's key carries an amber lamp.
+ * - The HMI screen is always LTR (process diagrams are), but every label is localised. DOM order = focus order:
+ *   status bar → mimic → message → command bar → faceplate → trend / alarms (the desktop grid only places them).
  */
-import type enHmi from "~/i18n/messages/en/hmi.json";
 import { getMessages, localePath, LOCALE_META, type Locale } from "~/i18n";
+import { colon, html } from "~/lib/text";
 import BrandMark from "~/components/BrandMark.astro";
 import { uid } from "~/components/uid";
 import { RECIPES } from "~/scripts/motion/hmi-sim";
 import { iso } from "~/scripts/motion/hmi-bidi";
+import { fmt1, keyStops, KEY_T0, KEY_T1 } from "~/scripts/motion/hmi-fmt";
 import hmiCss from "./hmi-demo.css?url";
 
 interface Props {
@@ -29,19 +36,23 @@ interface Props {
 }
 
 const { locale, variant = "full", tone = "light", headingLevel = 2, id, class: className } = Astro.props;
-const t = getMessages(locale).hmi as typeof enHmi;
+const t = getMessages(locale).hmi;
 const H = headingLevel === 3 ? "h3" : "h2";
 const dir = LOCALE_META[locale].dir; // natural-language blocks inside the (always LTR) screen follow the page
 const u = uid("hmi");
 const quote = `${localePath(locale, "contact")}#quote`;
 const R = RECIPES.milk;
+const n1 = (v: number) => fmt1(v, locale);
+/** Separator before a visually hidden state word ("TT-102 ≥ 72.0 °C, not met"). */
+const comma = locale === "ar" ? "، " : locale === "zh" ? "，" : ", ";
 
-// Mode chip in the status bar (hmi.mode.*; falls back to the classic HMI abbreviations).
-const modeT = (t as { mode?: { auto?: string; manual?: string } }).mode;
-const mode = { auto: modeT?.auto ?? "AUTO", manual: modeT?.manual ?? "MAN" };
+const mode = { auto: t.mode.auto, manual: t.mode.manual };
 
 // Strings the runtime needs (keeps the intro/loop copy out of the attribute).
 const runtime = {
+  lang: locale,
+  colon: colon(locale),
+  comma,
   status: t.status,
   mode,
   mimic: { forward: t.mimic.forward, divert: t.mimic.divert, storage: t.mimic.storage, drain: t.mimic.drain },
@@ -51,7 +62,14 @@ const runtime = {
   alarms: t.alarms,
   msg: t.msg,
   cip: t.cip,
+  controls: { start: t.controls.start, ack: t.controls.ack },
+  tour: { done: t.tour.done },
 };
+
+// The idle message with the Start key drawn as a key cap ("Press [▶ Start] to run the pasteurizer.").
+const esc = (s: string) => s.replace(/[&<>"]/g, (c) => `&#${c.charCodeAt(0)};`);
+const startKey = `<span class="hs-key"><svg viewBox="0 0 16 16" aria-hidden="true"><path d="M4.5 3l8 5-8 5z"/></svg>${esc(t.controls.start)}</span>`;
+const pressHtml = esc(iso(t.msg.press)).replace("{key}", startKey);
 
 // Holding tube, inlet → outlet, split into segments so the product temperature can travel along it.
 const HOLD: [string, number][] = [
@@ -95,6 +113,11 @@ const TAGS = [
   tag(520, 368, "TT", "201"),
   tag(792, 378, "PT", "201"),
 ];
+// Product temperature key: cool (below the recipe's legal limit) | warm (at / above it), with a tick at the limit.
+const KEY_W = 104;
+const keyX = (v: number) => (((v - KEY_T0) / (KEY_T1 - KEY_T0)) * KEY_W).toFixed(1);
+const stops = keyStops(R.limit);
+const STEPS = ["start", "forward", "fault", "ack"] as const;
 ---
 
 <div
@@ -105,9 +128,10 @@ const TAGS = [
 >
   {/* The demo's stylesheet, here instead of <head> (it is below the fold on most pages): an in-body stylesheet does not
       hold up the first paint of the page above it. The inline script after it makes every browser pause parsing
-      until the sheet has loaded (script-blocking style sheet), so the demo is never shown unstyled. */}
+      until the sheet has loaded (script-blocking style sheet), so the demo is never shown unstyled. Kept on purpose
+      (CODE-44): the alternative (preload + swap) needs an inline handler or a placeholder that shifts layout. */}
   <link rel="stylesheet" href={hmiCss} />
-  <script is:inline>0</script>
+  <script is:inline>/* parser waits here for the stylesheet above */</script>
   {
     variant === "full" && (
       <header class="lc-hmi-intro">
@@ -116,8 +140,8 @@ const TAGS = [
             <span class="slant-bar" aria-hidden="true" />
             {t.intro.eyebrow}
           </p>
-          <H class="type-h2 lc-hmi-title">{t.intro.title}</H>
-          <p class="type-lead lc-hmi-lead">{t.intro.lead}</p>
+          <H class="type-h2 lc-hmi-title" set:html={html(locale, t.intro.title)} />
+          <p class="type-lead lc-hmi-lead" set:html={html(locale, t.intro.lead)} />
         </div>
         <div class="lc-hmi-seeing">
           <p class="type-label">{t.intro.seeing}</p>
@@ -132,7 +156,7 @@ const TAGS = [
                   </svg>
                 </span>
                 <span>
-                  <strong>{b.title}</strong> {b.text}
+                  <strong set:html={html(locale, b.title)} /> <Fragment set:html={html(locale, b.text)} />
                 </span>
               </li>
             ))}
@@ -142,9 +166,23 @@ const TAGS = [
     )
   }
 
-  <figure class="lc-hmi" data-hmi data-i18n={JSON.stringify(runtime)} aria-labelledby={`${u}-cap`}>
-    <p class="lc-hmi-try"><span class="lc-led" aria-hidden="true"></span>{t.intro.try}</p>
-    <div class="lc-hmi-dev">
+  <figure class="lc-hmi" data-hmi data-fresh data-i18n={JSON.stringify(runtime)} aria-labelledby={`${u}-cap`}>
+    <!-- "Try it": four steps that tick as the visitor plays (hmi-demo.ts) -->
+    <div class="lc-hmi-tour" data-tour>
+      <p class="lc-hmi-tour-h" id={`${u}-tour`}><span class="lc-led" aria-hidden="true"></span>{t.tour.label}</p>
+      <ol aria-labelledby={`${u}-tour`}>
+        {
+          STEPS.map((k, i) => (
+            <li data-step={k}>
+              <span class="lc-hmi-stepn" aria-hidden="true">{i + 1}</span>
+              <span>{t.tour[k]}</span>
+              <span class="lc-hmi-sr" data-step-st />
+            </li>
+          ))
+        }
+      </ol>
+    </div>
+    <div class="lc-hmi-dev" data-fab-avoid>
       <div
         class="lc-hmi-screen"
         dir="ltr"
@@ -165,27 +203,28 @@ const TAGS = [
           </div>
           <div class="hs-unit"><span dir="auto">{t.status.unit}</span><span class="hs-screen" dir="auto">{t.status.screen}</span></div>
           <div class="hs-right">
-            <span class="hs-chip hs-mode" data-v="mode">{mode.auto}</span>
-            <span class="hs-chip hs-state" data-v="state">{t.status.ready}</span>
-            <span class="hs-chip hs-alm" data-v="almCount" title={t.alarms.unacked}>0</span>
-            <span class="hs-sim">{t.status.sim}</span>
+            <span class="hs-chip hs-mode"><span class="lc-hmi-sr">{t.controls.mode}{colon(locale)}</span><span data-v="mode">{mode.auto}</span></span>
+            <span class="hs-chip hs-state"><span class="lc-hmi-sr">{t.a11y.state}{colon(locale)}</span><span data-v="state">{t.status.ready}</span></span>
+            <span class="hs-chip hs-alm"><span data-v="almCount">0</span><span class="lc-hmi-sr"> {t.alarms.unacked}</span></span>
+            <span class="hs-sim"><span aria-hidden="true">{t.status.sim}</span><span class="lc-hmi-sr">{t.a11y.sim}</span></span>
             <time class="hs-clock" data-v="clock">--:--:--</time>
           </div>
         </div>
 
-        <!-- process mimic -->
+        <!-- process mimic (hmi-fit.ts crops the viewBox to the heating / holding / FDV core on narrow screens) -->
         <div class="hs-mimic">
           <svg viewBox="0 0 840 432" role="img" aria-label={t.a11y.mimic} focusable="false">
             <defs>
               <pattern id={`${u}-pl`} width="4.5" height="8" patternUnits="userSpaceOnUse">
                 <rect width="2.2" height="8" class="m-plate" />
               </pattern>
-              <linearGradient id={`${u}-tg`}>
-                <stop offset="0" stop-color="rgb(95,136,184)" />
-                <stop offset="0.38" stop-color="rgb(150,157,170)" />
-                <stop offset="0.72" stop-color="rgb(196,152,104)" />
-                <stop offset="1" stop-color="rgb(206,104,58)" />
+              <linearGradient id={`${u}-tg`} data-key-grad>
+                {stops.map(([o, c]) => <stop offset={o.toFixed(3)} stop-color={c} />)}
               </linearGradient>
+              <!-- flow-direction chevron, drawn only when the marching dashes stop (reduced motion / pause switch) -->
+              <marker id={`${u}-arr`} viewBox="0 0 10 10" refX="6" refY="5" markerWidth="10" markerHeight="10" markerUnits="userSpaceOnUse" orient="auto">
+                <path class="m-arrp" d="M2.5 1.5L7 5l-4.5 3.5" />
+              </marker>
               <clipPath id={`${u}-raw`}><rect x="24" y="98" width="66" height="162" rx="9" /></clipPath>
               <clipPath id={`${u}-sto`}><rect x="746" y="236" width="60" height="94" rx="6" /></clipPath>
             </defs>
@@ -208,8 +247,8 @@ const TAGS = [
               {holdSegs.map((s) => <path d={s.d} />)}
             </g>
             <g class="m-flow">
-              {PIPES.map(([k, d]) => <path d={d} data-p={k} />)}
-              {holdSegs.map((s) => <path d={s.d} data-p="hold" data-a={s.a} data-b={s.b} />)}
+              {PIPES.map(([k, d]) => <path d={d} data-p={k} marker-end={`url(#${u}-arr)`} />)}
+              {holdSegs.map((s) => <path d={s.d} data-p="hold" data-a={s.a} data-b={s.b} marker-end={`url(#${u}-arr)`} />)}
             </g>
 
             <!-- plate heat exchanger -->
@@ -271,7 +310,7 @@ const TAGS = [
                   <g transform={`translate(${g.x} ${g.y})`}>
                     <circle r="11" />
                     <text y="-1.5">{g.a}</text>
-                    <text y="7">{g.n}</text>
+                    <text y="7.5">{g.n}</text>
                   </g>
                 ))
               }
@@ -279,57 +318,88 @@ const TAGS = [
 
             <!-- readouts -->
             <g class="m-ro">
-              <g transform="translate(36 166)"><rect width="42" height="17" rx="2" /><text x="38" y="12.5"><tspan data-v="rawLvl">82.0</tspan> %</text></g>
-              <g transform="translate(157 222)"><rect width="42" height="17" rx="2" /><text x="38" y="12.5"><tspan data-v="btLvl">50.0</tspan> %</text></g>
-              <g transform="translate(752 280)"><rect width="48" height="17" rx="2" /><text x="44" y="12.5"><tspan data-v="stoLvl">18.0</tspan> %</text></g>
-              <g transform="translate(240 268)"><rect width="66" height="17" rx="2" /><text x="62" y="12.5"><tspan data-v="flow">0</tspan> L/h</text></g>
-              <g transform="translate(352 152)" data-alm-ro="TT-101"><rect width="62" height="17" rx="2" /><text x="58" y="12.5"><tspan data-v="th">24.0</tspan> °C</text></g>
-              <g transform="translate(640 55)" data-alm-ro="TT-102"><rect width="62" height="17" rx="2" /><text x="58" y="12.5"><tspan data-v="tt102">24.0</tspan> °C</text></g>
-              <g transform="translate(642 228)"><rect width="56" height="17" rx="2" /><text x="52" y="12.5"><tspan data-v="tout">6.0</tspan> °C</text></g>
-              <g transform="translate(534 360)"><rect width="56" height="17" rx="2" /><text x="52" y="12.5"><tspan data-v="thw">70.0</tspan> °C</text></g>
-              <g transform="translate(718 370)" data-alm-ro="PT-201"><rect width="62" height="17" rx="2" /><text x="58" y="12.5"><tspan data-v="steam">3.0</tspan> bar</text></g>
-              <g transform="translate(716 410)"><rect width="50" height="15" rx="2" /><text x="46" y="11.5"><tspan data-v="valve">0</tspan> %</text></g>
+              <g transform="translate(34 166)"><rect width="46" height="17" rx="2" /><text x="42" y="12.5"><tspan data-v="rawLvl">{n1(82)}</tspan> %</text></g>
+              <g transform="translate(155 222)"><rect width="46" height="17" rx="2" /><text x="42" y="12.5"><tspan data-v="btLvl">{n1(50)}</tspan> %</text></g>
+              <g transform="translate(750 280)"><rect width="52" height="17" rx="2" /><text x="48" y="12.5"><tspan data-v="stoLvl">{n1(18)}</tspan> %</text></g>
+              <g transform="translate(238 268)"><rect width="70" height="17" rx="2" /><text x="66" y="12.5"><tspan data-v="flow">0</tspan> L/h</text></g>
+              <g transform="translate(350 152)" data-alm-ro="TT-101"><rect width="64" height="17" rx="2" /><text x="60" y="12.5"><tspan data-v="th">{n1(24)}</tspan> °C</text></g>
+              <g transform="translate(638 55)" data-alm-ro="TT-102"><rect width="64" height="17" rx="2" /><text x="60" y="12.5"><tspan data-v="tt102">{n1(24)}</tspan> °C</text></g>
+              <g transform="translate(640 228)"><rect width="58" height="17" rx="2" /><text x="54" y="12.5"><tspan data-v="tout">{n1(6)}</tspan> °C</text></g>
+              <g transform="translate(532 360)"><rect width="58" height="17" rx="2" /><text x="54" y="12.5"><tspan data-v="thw">{n1(70)}</tspan> °C</text></g>
+              <g transform="translate(716 370)" data-alm-ro="PT-201"><rect width="64" height="17" rx="2" /><text x="60" y="12.5"><tspan data-v="steam">{n1(3)}</tspan> bar</text></g>
+              <g transform="translate(714 410)"><rect width="52" height="16" rx="2" /><text x="48" y="12"><tspan data-v="valve">0</tspan> %</text></g>
             </g>
 
-            <!-- alarm indicators next to readouts (ISA-101: shape + colour + number) -->
-            <g class="m-alm" data-p="3" data-alm-ind="TT-101" transform="translate(340 160)"><path d="M0-8L8 0 0 8-8 0z" /><text y="3.5">3</text></g>
-            <g class="m-alm" data-p="1" data-alm-ind="TT-102" transform="translate(628 63)"><path d="M-7-7h14v14h-14z" /><text y="3.5">1</text></g>
-            <g class="m-alm" data-p="2" data-alm-ind="PT-201" transform="translate(818 378)"><path d="M0-8l8 14h-16z" /><text y="4.5">2</text></g>
+            <!-- alarm indicators next to readouts (ISA-101: shape + colour + number; filled = unacknowledged) -->
+            <g class="m-alm" data-p="3" data-alm-ind="TT-101" transform="translate(338 160)"><g class="m-almi"><path d="M0-8L8 0 0 8-8 0z" /><text y="3.5">3</text></g></g>
+            <g class="m-alm" data-p="1" data-alm-ind="TT-102" transform="translate(626 63)"><g class="m-almi"><path d="M-7-7h14v14h-14z" /><text y="3.5">1</text></g></g>
+            <g class="m-alm" data-p="2" data-alm-ind="PT-201" transform="translate(818 378)"><g class="m-almi"><path d="M0-8l8 14h-16z" /><text y="4.5">2</text></g></g>
 
-            <!-- product temperature colour key -->
-            <g class="m-key" transform="translate(24 410)">
-              <rect width="88" height="5" rx="2.5" fill={`url(#${u}-tg)`} />
-              <text x="0" y="17">4 °C</text>
-              <text x="88" y="17" class="m-e">85 °C</text>
+            <!-- product temperature colour key (cool below the legal limit, warm at / above it) -->
+            <g class="m-key" transform="translate(296 408)">
+              <rect width={KEY_W} height="5" rx="2.5" fill={`url(#${u}-tg)`} />
+              <g class="m-key-lim" transform={`translate(${keyX(R.limit)} 0)`}>
+                <path d="M0-3v11" />
+                <text y="-5" data-v="keyLim">{R.limit}</text>
+              </g>
+              <text x="0" y="17">{KEY_T0} °C</text>
+              <text x={KEY_W} y="17" class="m-e">{KEY_T1} °C</text>
             </g>
 
             <!-- labels -->
             <g class="m-lbl">
               <text x="57" y="86">{t.mimic.raw}</text>
-              <text x="57" y="74" class="m-tagtx">T-101</text>
+              <text x="57" y="73" class="m-tagtx">T-101</text>
               <text x="110" y="268" class="m-tagtx">LV-101</text>
               <text x="212" y="290" class="m-tagtx m-s">B-101</text>
               <text x="146" y="314" class="m-e">{t.mimic.balance}</text>
               <text x="232" y="370">{t.mimic.feedPump}</text>
-              <text x="232" y="381" class="m-tagtx">P-101</text>
+              <text x="232" y="382" class="m-tagtx">P-101</text>
               <text x="412" y="342" class="m-e">{t.mimic.phe}</text>
               <text x="590" y="105">{t.mimic.holding}</text>
-              <text x="590" y="118" class="m-holdv"><tspan data-v="hold">0.0</tspan> s</text>
+              <text x="590" y="118" class="m-holdv"><tspan data-v="hold">{n1(0)}</tspan> s</text>
               <text x="760" y="134" class="m-tagtx">FDV-101</text>
-              <text x="760" y="147" class="m-fdvst" data-v="fdvTxt">{t.mimic.divert}</text>
+              <text x="760" y="148" class="m-fdvst" data-v="fdvTxt">{t.mimic.divert}</text>
               <text x="520" y="33" class="m-dir">{t.mimic.forward} ←</text>
               <text x="480" y="16" class="m-dir">{t.mimic.divert} ←</text>
               <text x="776" y="350" data-v="outLbl">{t.mimic.storage}</text>
-              <text x="776" y="360" class="m-tagtx">T-301</text>
-              <text x="455" y="418">{t.mimic.hwPump}</text>
+              <text x="776" y="361" class="m-tagtx">T-301</text>
+              <text x="455" y="420">{t.mimic.hwPump}</text>
               <text x="638" y="356" class="m-s">{t.mimic.hotWater}</text>
               <text x="548" y="328" class="m-s">{t.mimic.iceWater}</text>
               <text x="834" y="424" class="m-e">{t.mimic.steam}</text>
               <text x="700" y="378" class="m-tagtx">TCV-201</text>
               <text x="178" y="203" class="m-cipl">{t.mimic.cipSupply}</text>
             </g>
-
           </svg>
+        </div>
+
+        <!-- operator message line -->
+        <p class="hs-msg" dir={dir}><span data-msg set:html={pressHtml} /></p>
+
+        <!-- command bar (function keys) -->
+        <div class="hs-cmd">
+          <div class="hs-seg hs-run" role="group" aria-label={t.controls.run}>
+            <button type="button" data-c="start" aria-pressed="false" data-next>
+              <svg viewBox="0 0 16 16" aria-hidden="true"><path d="M4.5 3l8 5-8 5z" /></svg>{t.controls.start}
+            </button>
+            <button type="button" data-c="stop" aria-pressed="true">
+              <svg viewBox="0 0 16 16" aria-hidden="true"><rect x="4" y="4" width="8" height="8" rx="1" /></svg>{t.controls.stop}
+            </button>
+          </div>
+          <div class="hs-seg" role="group" aria-label={t.controls.mode}>
+            <button type="button" data-c="auto" aria-pressed="true">{t.controls.auto}</button>
+            <button type="button" data-c="manual" aria-pressed="false">{t.controls.manual}</button>
+          </div>
+          <button type="button" class="hs-btn" data-c="cip" aria-pressed="false">
+            <svg viewBox="0 0 16 16" aria-hidden="true"><path d="M8 2c2.6 3 4 5 4 7a4 4 0 0 1-8 0c0-2 1.4-4 4-7z" /></svg>{t.controls.cip}
+          </button>
+          <button type="button" class="hs-btn hs-fault" data-c="fault" aria-pressed="false" aria-disabled="true">
+            <svg viewBox="0 0 16 16" aria-hidden="true"><path d="M9.5 1.5L3.5 9h4l-1 5.5 6-7.5h-4z" /></svg>{t.controls.fault}
+          </button>
+          <button type="button" class="hs-btn hs-ack" data-c="ack" aria-disabled="true">
+            <svg viewBox="0 0 16 16" aria-hidden="true"><path d="M8 2.2a4 4 0 0 0-4 4V9l-1.4 2.2h10.8L12 9V6.2a4 4 0 0 0-4-4zM6.4 13a1.6 1.6 0 0 0 3.2 0" /></svg>{t.controls.ack}
+          </button>
         </div>
 
         <!-- process / recipe / manual faceplate -->
@@ -340,7 +410,7 @@ const TAGS = [
               <span class="hs-fdv"><span class="hs-tag">FDV</span> <b data-v="fdvTxt">{t.mimic.divert}</b></span>
             </div>
             <div class="hs-big" data-alm-ro="TT-102">
-              <span class="hs-bigv" data-v="tt102">24.0</span><span class="hs-u">°C</span>
+              <span class="hs-bigv" data-v="tt102">{n1(24)}</span><span class="hs-u">°C</span>
               <span class="hs-almi" aria-hidden="true">1</span>
             </div>
             <div class="hs-ai" aria-hidden="true">
@@ -350,19 +420,24 @@ const TAGS = [
               <span class="hs-ai-ptr"></span>
             </div>
             <div class="hs-sub" dir="auto">
-              {t.kpi.limit} <b data-v="limit" dir="ltr">≥ {R.limit.toFixed(1)} °C</b> · {t.kpi.min} <b data-v="minHold" dir="ltr">{R.hold} s</b>
+              {t.kpi.limit} <b data-v="limit" dir="ltr">≥ {n1(R.limit)} °C</b> · {t.kpi.min} <b data-v="minHold" dir="ltr">{R.hold} s</b>
             </div>
+            <!-- the cause, while the steam supply is down: reacts within a second of "Simulate fault" -->
+            <p class="hs-cause" dir="ltr">
+              <span><span class="hs-tag">PT-201</span> <b data-v="steam">{n1(3)}</b> bar<span class="hs-dn" aria-hidden="true"></span></span>
+              <span><span class="hs-tag">TT-101</span> <b data-v="th">{n1(24)}</b> °C<span class="hs-dn" aria-hidden="true"></span></span>
+            </p>
           </section>
           <dl class="hs-grid">
             <div data-alm-ro="TT-101">
               <dt><span class="hs-tag">TT-101</span> {t.kpi.tt101}</dt>
-              <dd><span data-v="th">24.0</span> °C <small>{t.kpi.sp} <span data-v="sp">{R.sp.toFixed(1)}</span></small></dd>
+              <dd><span data-v="th">{n1(24)}</span> °C <small>{t.kpi.sp} <span data-v="sp">{n1(R.sp)}</span></small></dd>
             </div>
-            <div><dt>{t.kpi.hold}</dt><dd><span data-v="hold">0.0</span> s</dd></div>
+            <div><dt>{t.kpi.hold}</dt><dd><span data-v="hold">{n1(0)}</span> s</dd></div>
             <div><dt><span class="hs-tag">FT-101</span> {t.kpi.flow}</dt><dd><span data-v="flow">0</span> L/h</dd></div>
-            <div><dt><span class="hs-tag">TT-201</span> {t.kpi.hw}</dt><dd><span data-v="thw">70.0</span> °C</dd></div>
+            <div><dt><span class="hs-tag">TT-201</span> {t.kpi.hw}</dt><dd><span data-v="thw">{n1(70)}</span> °C</dd></div>
             <div><dt><span class="hs-tag">TCV-201</span> {t.kpi.valve}</dt><dd><span data-v="valve">0</span> %</dd></div>
-            <div><dt>{t.kpi.batch} <span data-v="batch" class="hs-tag">B-1041</span></dt><dd><span data-v="litres">0.0</span> L</dd></div>
+            <div><dt>{t.kpi.batch} <span data-v="batch" class="hs-tag">B-1041</span></dt><dd><span data-v="litres">{n1(0)}</span> L</dd></div>
           </dl>
 
           <div class="hs-box hs-recipe" dir={dir}>
@@ -377,10 +452,10 @@ const TAGS = [
           <div class="hs-box hs-perm" dir={dir}>
             <p class="hs-h">{t.perm.title} <span class="hs-permst" data-v="permSt">{t.perm.blocked}</span></p>
             <ul>
-              <li data-perm="temp"><i aria-hidden="true"></i><span data-v="permTemp">{iso(t.perm.temp.replace("{limit}", R.limit.toFixed(1)))}</span></li>
-              <li data-perm="check"><i aria-hidden="true"></i><span data-v="permCheck">{iso(t.perm.check.replace("{s}", "2"))}</span></li>
-              <li data-perm="dp"><i aria-hidden="true"></i><span>{t.perm.dp}</span></li>
-              <li data-perm="hold"><i aria-hidden="true"></i><span data-v="permHold">{iso(t.perm.hold.replace("{hold}", String(R.hold)))}</span></li>
+              <li data-perm="temp"><i aria-hidden="true"></i><span data-v="permTemp">{iso(t.perm.temp.replace("{limit}", n1(R.limit)))}</span><span class="lc-hmi-sr" data-perm-st>{comma}{t.perm.notMet}</span></li>
+              <li data-perm="check"><i aria-hidden="true"></i><span data-v="permCheck">{iso(t.perm.check.replace("{s}", "2"))}</span><span class="lc-hmi-sr" data-perm-st>{comma}{t.perm.notMet}</span></li>
+              <li data-perm="dp"><i aria-hidden="true"></i><span>{t.perm.dp}</span><span class="lc-hmi-sr" data-perm-st>{comma}{t.perm.notMet}</span></li>
+              <li data-perm="hold"><i aria-hidden="true"></i><span data-v="permHold">{iso(t.perm.hold.replace("{hold}", String(R.hold)))}</span><span class="lc-hmi-sr" data-perm-st>{comma}{t.perm.notMet}</span></li>
             </ul>
           </div>
 
@@ -390,7 +465,7 @@ const TAGS = [
               <span class="hs-rl">{t.controls.sp}</span>
               <div class="hs-step">
                 <button type="button" data-c="spDown" aria-label={t.controls.spDown}>−</button>
-                <span class="hs-stepv" dir="ltr"><span data-v="sp">{R.sp.toFixed(1)}</span> °C</span>
+                <span class="hs-stepv" dir="ltr"><span data-v="sp">{n1(R.sp)}</span> °C</span>
                 <button type="button" data-c="spUp" aria-label={t.controls.spUp}>+</button>
               </div>
             </div>
@@ -410,70 +485,53 @@ const TAGS = [
                 <li data-ph={i}>
                   <span>{t.cip[k]}</span>
                   <i />
+                  <span class="lc-hmi-sr" data-ph-st />
                 </li>
               ))}
             </ol>
           </div>
         </div>
 
-        <!-- operator message line -->
-        <p class="hs-msg" data-v="msg" dir={dir}>{t.msg.idle}</p>
-
-        <!-- trend + alarm list -->
+        <!-- trend + alarm summary -->
         <div class="hs-low">
-        <div class="hs-trend" data-open="true">
-          <div class="hs-th" dir={dir}>
-            <button type="button" class="hs-tgl" aria-expanded="true" aria-controls={`${u}-trend`} data-c="trend">
-              <span>{t.trend.title}</span> <small>{iso(t.trend.window)}</small>
-            </button>
-            <span class="hs-legend" aria-hidden="true">
-              <i class="lg-pv"></i>TT-102 <i class="lg-th"></i>TT-101 <i class="lg-sp"></i>{t.trend.sp} <i class="lg-lim"></i>{t.trend.limit}
-            </span>
+          <div class="hs-trend" data-open="true">
+            <div class="hs-th" dir={dir}>
+              <button type="button" class="hs-tgl" aria-expanded="true" aria-controls={`${u}-trend`} data-c="trend">
+                <span>{t.trend.title}</span> <small>{iso(t.trend.window)}</small>
+              </button>
+              <span class="hs-legend" aria-hidden="true">
+                <i class="lg-pv"></i>TT-102 <i class="lg-th"></i>TT-101 <i class="lg-sp"></i>{t.trend.sp} <i class="lg-lim"></i>{t.trend.limit}
+              </span>
+            </div>
+            <div class="hs-plot" id={`${u}-trend`}>
+              <span class="hs-y" data-y="0"></span><span class="hs-y" data-y="1"></span><span class="hs-y" data-y="2"></span>
+              <svg viewBox="0 0 600 100" preserveAspectRatio="none" role="img" aria-label={t.a11y.trend}>
+                <path class="tr-grid" d="M0 0H600M0 50H600M0 100H600M150 0V100M300 0V100M450 0V100" />
+                <path class="tr-lim" d="" />
+                <path class="tr-sp" d="" />
+                <path class="tr-th" d="" />
+                <path class="tr-pv" d="" />
+              </svg>
+            </div>
           </div>
-          <div class="hs-plot" id={`${u}-trend`}>
-            <span class="hs-y" data-y="0"></span><span class="hs-y" data-y="1"></span><span class="hs-y" data-y="2"></span>
-            <svg viewBox="0 0 600 100" preserveAspectRatio="none" role="img" aria-label={t.a11y.trend}>
-              <path class="tr-grid" d="M0 0H600M0 50H600M0 100H600M150 0V100M300 0V100M450 0V100" />
-              <path class="tr-lim" d="" />
-              <path class="tr-sp" d="" />
-              <path class="tr-th" d="" />
-              <path class="tr-pv" d="" />
-            </svg>
+          <div class="hs-alarms" dir={dir}>
+            <p class="hs-ah" id={`${u}-alm`}>{t.alarms.title}</p>
+            <!-- alarm summary: a table (priority, time, tag, message, state), laid out as a compact list -->
+            <div class="hs-alist" role="table" aria-labelledby={`${u}-alm`}>
+              <div class="lc-hmi-sr" role="rowgroup">
+                <div role="row">
+                  <span role="columnheader">{t.alarms.prio}</span>
+                  <span role="columnheader">{t.alarms.time}</span>
+                  <span role="columnheader">{t.alarms.tag}</span>
+                  <span role="columnheader">{t.alarms.message}</span>
+                  <span role="columnheader">{t.alarms.state}</span>
+                </div>
+              </div>
+              <div role="rowgroup" data-rows>
+                <div role="row" class="hs-empty"><span role="cell" aria-colspan="5">{t.alarms.empty}</span></div>
+              </div>
+            </div>
           </div>
-        </div>
-        <div class="hs-alarms" dir={dir}>
-          <div class="hs-ah">
-            <span>{t.alarms.title}</span>
-          </div>
-          <ol class="hs-alist" aria-label={t.alarms.title}>
-            <li class="hs-empty">{t.alarms.empty}</li>
-          </ol>
-        </div>
-        </div>
-
-        <!-- command bar (function keys) -->
-        <div class="hs-cmd">
-          <div class="hs-seg hs-run" role="group" aria-label={t.controls.run}>
-            <button type="button" data-c="start" aria-pressed="false">
-              <svg viewBox="0 0 16 16" aria-hidden="true"><path d="M4.5 3l8 5-8 5z" /></svg>{t.controls.start}
-            </button>
-            <button type="button" data-c="stop" aria-pressed="true">
-              <svg viewBox="0 0 16 16" aria-hidden="true"><rect x="4" y="4" width="8" height="8" rx="1" /></svg>{t.controls.stop}
-            </button>
-          </div>
-          <div class="hs-seg" role="group" aria-label={t.controls.mode}>
-            <button type="button" data-c="auto" aria-pressed="true">{t.controls.auto}</button>
-            <button type="button" data-c="manual" aria-pressed="false">{t.controls.manual}</button>
-          </div>
-          <button type="button" class="hs-btn" data-c="cip" aria-pressed="false">
-            <svg viewBox="0 0 16 16" aria-hidden="true"><path d="M8 2c2.6 3 4 5 4 7a4 4 0 0 1-8 0c0-2 1.4-4 4-7z" /></svg>{t.controls.cip}
-          </button>
-          <button type="button" class="hs-btn hs-fault" data-c="fault" aria-pressed="false">
-            <svg viewBox="0 0 16 16" aria-hidden="true"><path d="M9.5 1.5L3.5 9h4l-1 5.5 6-7.5h-4z" /></svg>{t.controls.fault}
-          </button>
-          <button type="button" class="hs-btn hs-ack" data-c="ack" aria-disabled="true">
-            <svg viewBox="0 0 16 16" aria-hidden="true"><path d="M8 2.2a4 4 0 0 0-4 4V9l-1.4 2.2h10.8L12 9V6.2a4 4 0 0 0-4-4zM6.4 13a1.6 1.6 0 0 0 3.2 0" /></svg>{t.controls.ack}
-          </button>
         </div>
       </div>
       <div class="lc-hmi-glass" aria-hidden="true"></div>
@@ -500,6 +558,38 @@ const TAGS = [
 </div>
 
 <script>
-  import { initHmi } from "~/scripts/motion/hmi-demo";
-  document.querySelectorAll<HTMLElement>("[data-hmi]").forEach(initHmi);
+  // Bootstrap (~1 KB): fit the mimic now, load the controller only when the panel is near the viewport or touched.
+  import { fitMimic } from "~/scripts/motion/hmi-fit";
+
+  type Mod = typeof import("~/scripts/motion/hmi-demo");
+  let mod: Promise<Mod> | undefined;
+  const load = () => (mod ??= import("~/scripts/motion/hmi-demo"));
+  const boot = (fig: HTMLElement) => load().then((m) => m.initHmi(fig));
+
+  for (const fig of document.querySelectorAll<HTMLElement>("[data-hmi]")) {
+    fitMimic(fig);
+    // a press that arrives before the controller: load it, then replay the press
+    const early = (e: Event) => {
+      if (fig.dataset.ready) return;
+      const b = (e.target as Element).closest<HTMLButtonElement>("button[data-c]");
+      if (e.type === "click" && b) {
+        e.stopPropagation();
+        boot(fig).then(() => b.click());
+      } else boot(fig);
+    };
+    fig.addEventListener("click", early, true);
+    fig.addEventListener("focusin", early);
+    fig.addEventListener("pointerdown", early, { passive: true });
+    if ("IntersectionObserver" in window) {
+      const io = new IntersectionObserver(
+        (es) => {
+          if (!es.some((e) => e.isIntersecting)) return;
+          io.disconnect();
+          boot(fig);
+        },
+        { rootMargin: "800px 0px" },
+      );
+      io.observe(fig);
+    } else boot(fig);
+  }
 </script>

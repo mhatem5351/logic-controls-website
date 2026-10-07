@@ -22,7 +22,7 @@ interface Props {
 const { locale, projects } = Astro.props;
 const m = getMessages(locale);
 const F = m.common.filters;
-const labels = (m.projects as { labels?: { countOne?: string } }).labels;
+const labels = m.projects.labels;
 
 const has = (key: "industries" | "services", v: string) => projects.filter((p) => (p[key] as readonly string[]).includes(v)).length;
 const groups = [
@@ -46,7 +46,7 @@ const chip =
   "group inline-flex min-h-10 shrink-0 items-center gap-2 whitespace-nowrap border border-charcoal-300 bg-white px-3.5 text-sm font-semibold text-navy-900 transition-colors hover:border-royal-600 hover:text-royal-700 aria-pressed:border-navy-950 aria-pressed:bg-navy-950 aria-pressed:text-white data-zero:border-dashed data-zero:text-charcoal-600";
 ---
 
-<div class="lc-pf" data-pf data-count-one={labels?.countOne ?? F.count} data-count-other={F.count}>
+<div class="lc-pf" data-pf data-count-one={labels.countOne} data-count-other={F.count}>
   <div data-pf-controls class="lc-pf-controls border-y border-charcoal-200 py-5 sm:py-6">
     <h2 class="sr-only">{F.label}</h2>
     <div class="grid gap-5">
@@ -97,10 +97,10 @@ const chip =
     </button>
   </div>
 
-  <ul role="list" data-pf-grid class="mt-8 grid gap-x-8 gap-y-14 sm:grid-cols-2 lg:grid-cols-3">
+  <ul role="list" data-pf-grid class="lc-grid-projects mt-8 gap-x-8 gap-y-14">
     {
       projects.map((p) => (
-        <li data-pf-item data-industry={p.industries.join(" ")} data-service={p.services.join(" ")}>
+        <li data-pf-item data-industry={p.industries.join(" ")} data-service={p.services.join(" ")} style="view-transition-class: lc-pf">
           <ProjectCard project={p} locale={locale} headingLevel="h3" />
         </li>
       ))
@@ -133,18 +133,18 @@ const chip =
 
 <script is:inline>
   (function () {
-    var root = document.currentScript && document.currentScript.previousElementSibling;
+    let root = document.currentScript && document.currentScript.previousElementSibling;
     while (root && !root.hasAttribute("data-pf")) root = root.previousElementSibling;
     if (!root) return;
-    var items = Array.prototype.slice.call(root.querySelectorAll("[data-pf-item]"));
-    var buttons = Array.prototype.slice.call(root.querySelectorAll("[data-pf-key]"));
-    var countEl = root.querySelector("[data-pf-count]");
-    var reset = root.querySelector("[data-pf-reset]");
-    var resetAlt = root.querySelector("[data-pf-reset-alt]");
-    var empty = root.querySelector("[data-pf-empty]");
-    var keys = ["industry", "service"];
-    var state = { industry: "", service: "" };
-    var valid = { industry: {}, service: {} };
+    const items = Array.prototype.slice.call(root.querySelectorAll("[data-pf-item]"));
+    const buttons = Array.prototype.slice.call(root.querySelectorAll("[data-pf-key]"));
+    const countEl = root.querySelector("[data-pf-count]");
+    const reset = root.querySelector("[data-pf-reset]");
+    const resetAlt = root.querySelector("[data-pf-reset-alt]");
+    const empty = root.querySelector("[data-pf-empty]");
+    const keys = ["industry", "service"];
+    const state = { industry: "", service: "" };
+    const valid = { industry: {}, service: {} };
     buttons.forEach(function (b) { if (b.dataset.pfValue) valid[b.dataset.pfKey][b.dataset.pfValue] = true; });
 
     function tags(el, key) { return (el.getAttribute("data-" + key) || "").split(" "); }
@@ -152,51 +152,75 @@ const chip =
       return keys.every(function (k) { return !s[k] || tags(el, k).indexOf(s[k]) !== -1; });
     }
     function label(n) {
-      var tpl = n === 1 ? root.dataset.countOne : root.dataset.countOther;
+      const tpl = n === 1 ? root.dataset.countOne : root.dataset.countOther;
       return (tpl || "{count}").replace("{count}", String(n));
     }
+    const grid = root.querySelector("[data-pf-grid]");
+    if (grid) grid.setAttribute("data-managed", "");
     function apply() {
-      var n = 0;
+      const shown = [];
       items.forEach(function (el) {
-        var ok = matches(el, state);
+        const ok = matches(el, state);
         el.hidden = !ok;
-        if (ok) n++;
+        el.removeAttribute("data-c2");
+        el.removeAttribute("data-c3");
+        if (ok) shown.push(el);
       });
+      const n = shown.length;
+      // Centre an incomplete last row (lc-grid-projects): 2-up → a lone last card; 3-up → the last one or two.
+      if (n % 2 === 1 && n > 1) shown[n - 1].setAttribute("data-c2", "");
+      if (n % 3 === 1 && n > 1) shown[n - 1].setAttribute("data-c3", "1");
+      if (n % 3 === 2 && n > 2) shown[n - 2].setAttribute("data-c3", "2");
       if (countEl) countEl.textContent = label(n);
       if (empty) empty.hidden = n > 0;
-      var active = !!(state.industry || state.service);
+      const active = !!(state.industry || state.service);
       if (reset) reset.hidden = !active;
       buttons.forEach(function (b) {
-        var k = b.dataset.pfKey, v = b.dataset.pfValue || "";
+        const k = b.dataset.pfKey, v = b.dataset.pfValue || "";
         b.setAttribute("aria-pressed", String(state[k] === v));
         // How many projects this option would show, given the other filter.
-        var probe = { industry: state.industry, service: state.service };
+        const probe = { industry: state.industry, service: state.service };
         probe[k] = v;
-        var c = items.filter(function (el) { return matches(el, probe); }).length;
-        var badge = b.querySelector("[data-pf-n]");
+        const c = items.filter(function (el) { return matches(el, probe); }).length;
+        const badge = b.querySelector("[data-pf-n]");
         if (badge) badge.textContent = String(c);
         if (c === 0 && state[k] !== v) b.setAttribute("data-zero", ""); else b.removeAttribute("data-zero");
       });
     }
     function sync() {
-      var url = new URL(location.href);
+      const url = new URL(location.href);
       keys.forEach(function (k) { if (state[k]) url.searchParams.set(k, state[k]); else url.searchParams.delete(k); });
       history.replaceState(history.state, "", url.pathname + url.search + url.hash);
     }
-    var q = new URLSearchParams(location.search);
-    keys.forEach(function (k) { var v = q.get(k); if (v && valid[k][v]) state[k] = v; });
+    const q = new URLSearchParams(location.search);
+    keys.forEach(function (k) { const v = q.get(k); if (v && valid[k][v]) state[k] = v; });
     apply();
+
+    // Filter changes animate as a same-document view transition (cards that stay glide to their new cell, the others
+    // fade; CSS in motion.css, `view-transition-class: lc-pf`). Names are set only for the transition, so the cards
+    // never join a page-to-page transition. Instant when motion is off (html[data-motion="off"] / reduced motion).
+    function animated(fn) {
+      const still = document.documentElement.dataset.motion === "off" || matchMedia("(prefers-reduced-motion: reduce)").matches;
+      if (!document.startViewTransition || still) { fn(); return; }
+      items.forEach(function (el, i) { el.style.viewTransitionName = "lc-pf-" + i; });
+      const done = function () { items.forEach(function (el) { el.style.viewTransitionName = ""; }); };
+      try {
+        const t = document.startViewTransition(fn);
+        t.finished.then(done, done);
+        if (t.ready) t.ready.catch(function () {});
+      } catch (e) { done(); fn(); }
+    }
 
     buttons.forEach(function (b) {
       b.addEventListener("click", function () {
-        var k = b.dataset.pfKey, v = b.dataset.pfValue || "";
+        const k = b.dataset.pfKey, v = b.dataset.pfValue || "";
         state[k] = state[k] === v ? "" : v;
-        apply();
+        animated(apply);
         sync();
       });
     });
-    function clear() { state.industry = ""; state.service = ""; apply(); sync(); }
-    if (reset) reset.addEventListener("click", function () { clear(); var first = root.querySelector("[data-pf-key]"); if (first) first.focus(); });
-    if (resetAlt) resetAlt.addEventListener("click", function () { clear(); var first = root.querySelector("[data-pf-key]"); if (first) first.focus(); });
+    function clear() { state.industry = ""; state.service = ""; animated(apply); sync(); }
+    if (reset) reset.addEventListener("click", function () { clear(); const first = root.querySelector("[data-pf-key]"); if (first) first.focus(); });
+    if (resetAlt) resetAlt.addEventListener("click", function () { clear(); const first = root.querySelector("[data-pf-key]"); if (first) first.focus(); });
   })();
 </script>

@@ -7,7 +7,7 @@
 interface Props {
   as?: "section" | "div" | "aside";
   variant?: "light" | "muted" | "dark";
-  angle?: "top" | "bottom" | "both";
+  angle?: "top" | "both";
   /** Faint technical grid (dark: default on; muted: default on). */
   grid?: boolean;
   /** Skip the inner .wrap container (full-bleed content). */
@@ -39,7 +39,7 @@ const surface = {
   muted: "bg-navy-50 text-charcoal-800",
   dark: "on-dark bg-navy-950 text-navy-100",
 }[variant];
-const angleClass = angle ? { top: "angle-top", bottom: "angle-bottom", both: "angle-both" }[angle] : undefined;
+const angleClass = angle ? { top: "angle-top", both: "angle-both" }[angle] : undefined;
 const gridClass = grid ? (variant === "dark" ? "bg-blueprint" : "bg-blueprint-light") : "";
 ---
 

@@ -1,10 +1,12 @@
 ---
 /**
  * Home — dual-path entry (factories in Egypt / setting up in Egypt). Section order: src/i18n/CONTENT.md §4.
- * Hero → platforms → two doors → recent work → services → live HMI demo → industries → why us (+ founder strip) →
+ * Hero → platforms → two doors → recent work → services → industries → live HMI demo → why us (+ founder strip) →
  * how we work → commissioning case for foreign manufacturers → zones → FAQ → closing CTA with the quote checklist.
- * Phones (< 768px) get compact service rows, industry tiles and a swipeable row of case studies instead of the
- * full illustrated cards, so the page stays about half as tall without dropping any section.
+ * Services and industries sit next to each other (a buyer scanning the offer is not interrupted by the demo); light
+ * and tinted bands alternate. Phones (< 768px) get compact service rows, industry tiles, a one-screen teaser of the
+ * HMI demo (expands in place) and the first four FAQs (the rest one tap away); phones and tablets (< 1024px) get a
+ * swipeable row of case studies with a position cue instead of the full grid.
  */
 import { Picture } from "astro:assets";
 import BaseLayout from "~/layouts/BaseLayout.astro";
@@ -21,19 +23,24 @@ import HmiDemo from "~/components/motion/HmiDemo.astro";
 import ServiceArt from "~/components/illustrations/ServiceArt.astro";
 import IndustryArt from "~/components/illustrations/IndustryArt.astro";
 import AudienceDoors from "~/components/sections/main/AudienceDoors.astro";
+import DemoTeaser from "~/components/sections/main/DemoTeaser.astro";
+import ProjectCard from "~/components/sections/catalog/ProjectCard.astro";
+import CopyEmail from "~/components/CopyEmail.astro";
 import ZonesBlock from "~/components/sections/main/ZonesBlock.astro";
 import QuoteCta from "~/components/sections/main/QuoteCta.astro";
 import FounderStrip from "~/components/sections/main/FounderStrip.astro";
 import Chips from "~/components/Chips.astro";
 import { html, emphasize } from "~/components/sections/main/rich";
-import { keepCodes, serviceIcon, industryIcon } from "~/components/sections/catalog/catalog";
-import { getMessages, localeStaticPaths, LOCALES, LOCALE_META, type Locale } from "~/i18n";
-import { SITE } from "~/data/site";
+import { serviceIcon, industryIcon } from "~/components/sections/catalog/catalog";
+import { plain } from "~/lib/text";
+import { getMessages, localeStaticPaths, type Locale } from "~/i18n";
+import { ORG_ID, graph, organization, webPage, website } from "~/lib/jsonld";
 import { STATS } from "~/data/stats";
 import { SERVICE_SLUGS } from "~/data/services";
 import { INDUSTRY_SLUGS } from "~/data/industries";
 import { PROJECTS, featuredProjects, getProject } from "~/data/projects";
-import { href, FOREIGN_PATH, whatsappLink, prefersEmail } from "~/components/nav";
+import { href, FOREIGN_PATH, whatsappLink, mailtoLink, prefersEmail, fmt } from "~/components/nav";
+import { HOME_HERO_PRELOAD, HOME_HERO_VIDEO } from "~/components/hero-media";
 import arabicHmi from "~/assets/projects/shampoo-filling-delta-wecon/hmi-arabic.jpg";
 import caseHmi from "~/assets/projects/anaerobic-waste-treatment-commissioning/hmi.jpg";
 import casePanel from "~/assets/projects/anaerobic-waste-treatment-commissioning/panel.jpg";
@@ -58,12 +65,9 @@ const projects = featuredProjects();
 const projectCount = PROJECTS.length;
 
 /* Hero proof: lead with delivered projects and the published case studies (count from the data), then years and
-   industries. Until common.stats.caseStudies exists, fall back to the four standard figures. */
+   industries. */
 const stat = (key: (typeof STATS)[number]["key"]) => ({ value: STATS.find((s) => s.key === key)?.value ?? "", label: c.stats[key].label });
-const caseStudiesLabel = (c.stats as Record<string, { label?: string } | undefined>).caseStudies?.label;
-const heroProof = caseStudiesLabel
-  ? [stat("projects"), { value: String(projectCount), label: caseStudiesLabel }, stat("experience"), stat("industries")]
-  : [stat("projects"), stat("experience"), stat("platforms"), stat("industries")];
+const heroProof = [stat("projects"), { value: String(projectCount), label: c.stats.caseStudies.label }, stat("experience"), stat("industries")];
 
 /* Commissioning case framed for foreign manufacturers (imported line, Siemens S7-200 SMART + MCGS HMI). */
 const caseSlug = "anaerobic-waste-treatment-commissioning";
@@ -74,80 +78,23 @@ const caseItem = t.projects.items[caseSlug as keyof typeof t.projects.items] as
 const caseService = t.services.items["testing-commissioning"]?.navTitle;
 
 const whyIcons: IconName[] = ["users", "layers", "hmi", "shield"];
+const oemTitle = t.foreign.oem.title;
+/* FAQ on phones: the first four, the rest one tap away (UX: the page was ~19 screens tall). */
+const FAQ_MOBILE = 4;
+/* How we work on phones: the first three steps, the rest one tap away. */
+const STEPS_MOBILE = 3;
 const processIcons: IconName[] = ["map-pin", "file", "panel", "check", "gauge", "users"];
 
-/* Desktop only: there the poster is the visible media panel (LCP). Below 1024px it is a dimmed backdrop in its small
-   variant (Hero.astro), and a high-priority preload would only compete with the CSS and fonts the H1 needs. */
-const poster = { href: "/media/hero-filling-poster-v2.webp", media: "(min-width: 1024px)" };
+/* Desktop only: there the poster is the visible media panel (LCP). Below 1024px it is a band after the CTAs in its
+   small variants (Hero.astro / hero-media.ts), and a preload would only compete with the CSS and fonts the H1 needs. */
+const poster = HOME_HERO_PRELOAD;
 
-/* ---------- structured data: Organization + LocalBusiness (ProfessionalService) + WebSite ---------- */
-const orgId = `${SITE.url}/#organization`;
-const address = {
-  "@type": "PostalAddress",
-  addressLocality: SITE.address.locality,
-  addressRegion: SITE.address.region,
-  addressCountry: SITE.address.country,
-};
-const areaServed = { "@type": "Country", name: "Egypt" };
-const founder = { "@type": "Person", name: "Mohammed Tarek Aboalsafa", jobTitle: "Founder & Automation Engineer" };
-const alternateName = ["Logic Controls Egypt", "لوجيك كنترولز"];
-const jsonLd = {
-  "@context": "https://schema.org",
-  "@graph": [
-    {
-      "@type": "Organization",
-      "@id": orgId,
-      name: SITE.name,
-      alternateName,
-      url: SITE.url,
-      logo: { "@type": "ImageObject", url: `${SITE.url}/icon-512.png`, width: 512, height: 512 },
-      image: `${SITE.url}/og-default.png`,
-      description: t.seo.organizationDescription,
-      email: SITE.email,
-      telephone: SITE.phone.tel,
-      founder,
-      address,
-      areaServed,
-      sameAs: [SITE.facebook],
-      contactPoint: {
-        "@type": "ContactPoint",
-        contactType: "sales",
-        telephone: SITE.phone.tel,
-        email: SITE.email,
-        areaServed: "EG",
-        availableLanguage: ["Arabic", "English"],
-      },
-    },
-    {
-      "@type": "ProfessionalService",
-      "@id": `${SITE.url}/#localbusiness`,
-      name: SITE.name,
-      alternateName,
-      url: new URL(`/${locale}/`, SITE.url).href,
-      image: `${SITE.url}/og-default.png`,
-      logo: `${SITE.url}/icon-512.png`,
-      description: t.seo.organizationDescription,
-      telephone: SITE.phone.tel,
-      email: SITE.email,
-      address,
-      geo: { "@type": "GeoCoordinates", latitude: SITE.geo.lat, longitude: SITE.geo.lng },
-      areaServed,
-      founder,
-      parentOrganization: { "@id": orgId },
-      sameAs: [SITE.facebook],
-      knowsAbout: ["PLC programming", "HMI", "SCADA", "Control panels", "Machine automation", "Industrial automation"],
-    },
-    {
-      "@type": "WebSite",
-      "@id": `${SITE.url}/#website`,
-      url: `${SITE.url}/`,
-      name: SITE.name,
-      alternateName,
-      inLanguage: LOCALES.map((l) => LOCALE_META[l].htmlLang),
-      publisher: { "@id": orgId },
-    },
-  ],
-};
+/* ---------- structured data (src/lib/jsonld.ts): the one company node (ProfessionalService) + WebSite + this page ---------- */
+const jsonLd = graph(
+  organization(locale),
+  website(),
+  webPage(locale, { path: "", name: h.seo.title, description: h.seo.description, about: { "@id": ORG_ID } }),
+);
 ---
 
 <BaseLayout
@@ -167,7 +114,7 @@ const jsonLd = {
     chips={[h.hero.eyebrow]}
     titleSize="fit"
     priority
-    video={{ src: "/media/hero-filling-v2.mp4", poster: "/media/hero-filling-poster-v2.webp", posterSmall: "/media/hero-filling-poster-640-v2.webp" }}
+    video={HOME_HERO_VIDEO}
     primary={{ label: h.hero.ctaPrimary, href: href(locale, "contact/#quote") }}
     secondary={email ? undefined : { label: h.hero.ctaSecondary, href: whatsappLink(c.whatsapp.default) }}
     proof={heroProof}
@@ -194,7 +141,7 @@ const jsonLd = {
   </Hero>
 
   {/* ---------- platforms + two doors ---------- */}
-  <Section compact class="pt-12 sm:pt-14" aria-label={c.platforms.title}>
+  <Section compact class="pt-12 sm:pt-14">
     <div class="grid items-center gap-8 lg:grid-cols-12 lg:gap-12">
       <div class="lg:col-span-4">
         <p class="flex items-center gap-3 type-label text-royal-700">
@@ -208,7 +155,7 @@ const jsonLd = {
     </div>
   </Section>
 
-  <Section class="pt-6 sm:pt-8" aria-labelledby="who-title">
+  <Section class="pt-6 sm:pt-8">
     <h2 id="who-title" class="mb-6 flex items-center gap-3 type-label text-charcoal-600">
       <span class="slant-bar text-royal-600" aria-hidden="true"></span>
       {h.audiences.title}
@@ -216,59 +163,37 @@ const jsonLd = {
     <AudienceDoors locale={locale} foreignFirst={investorFirst} />
   </Section>
 
-  {/* ---------- recent work (featured case studies; a swipeable row on phones) ---------- */}
+  {/* ---------- recent work (featured case studies; a swipeable row with a position cue below 1024px) ---------- */}
   <Section variant="muted" id="projects" aria-labelledby="projects-title">
     <div class="flex flex-wrap items-end justify-between gap-6">
       <SectionHeading id="projects-title" index="01" eyebrow={c.labels.featuredProjects} title={html(locale, h.projects.title)} lead={html(locale, h.projects.intro)} />
       <Button href={href(locale, "projects")} variant="secondary" iconEnd="arrow">
-        {h.projects.cta}
-        <span class="ms-1 font-mono text-xs text-charcoal-600 ltr" dir="ltr">({projectCount})</span>
+        {h.projects.cta}{" "}
+        <span class="font-mono text-xs text-charcoal-600 ltr" dir="ltr">({projectCount})</span>
       </Button>
     </div>
     <ul
       role="list"
-      class="lc-snap -mx-(--spacing-gutter) mt-8 flex snap-x snap-mandatory gap-4 overflow-x-auto px-(--spacing-gutter) pt-2 pb-4 scroll-px-(--spacing-gutter) md:mx-0 md:mt-12 md:grid md:grid-cols-2 md:gap-x-6 md:gap-y-12 md:overflow-visible md:p-0 lg:grid-cols-3"
+      class="lc-snap -mx-(--spacing-gutter) mt-8 flex snap-x snap-mandatory gap-4 overflow-x-auto px-(--spacing-gutter) pt-2 pb-4 scroll-px-(--spacing-gutter) md:mt-10 md:gap-6 lg:mx-0 lg:mt-12 lg:grid lg:grid-cols-3 lg:gap-x-6 lg:gap-y-12 lg:overflow-visible lg:p-0"
+      data-snap
     >
       {
-        projects.map((p, i) => {
-          const item = t.projects.items[p.slug as keyof typeof t.projects.items];
-          if (!item) return null;
-          const alts = item.imageAlts as Record<string, string>;
-          const industry = t.industries.items[p.industries[0]!];
-          return (
-            <li class:list={["w-[84%] max-w-sm shrink-0 snap-start md:w-auto md:max-w-none", i === 2 && "md:max-lg:col-span-2 md:max-lg:mx-auto md:max-lg:w-1/2"]}>
-              <Card
-                variant="project"
-                title={item.cardTitle}
-                text={item.summary}
-                href={href(locale, `projects/${p.slug}`)}
-                meta={[industry?.navTitle ?? "", String(p.year)].filter(Boolean)}
-                tags={p.technologies.slice(0, 2)}
-                cta={c.labels.readCaseStudy}
-              >
-                <Fragment slot="media">
-                  <Picture
-                    src={p.cover.image}
-                    alt={alts[p.cover.key] ?? ""}
-                    formats={["avif", "webp"]}
-                    widths={[400, 640, 900]}
-                    sizes="(min-width: 1024px) 33vw, (min-width: 768px) 50vw, 84vw"
-                    layout="full-width"
-                    class="size-full object-cover transition duration-700 group-hover:scale-[1.04]"
-                  />
-                  {p.video && (
-                    <span class="absolute start-4 bottom-4 inline-flex items-center gap-2 bg-navy-950/85 px-2.5 py-1.5 text-xs font-semibold text-white backdrop-blur-sm">
-                      <Icon name="play" size={14} class="text-signal-400" />
-                      {c.labels.video}
-                    </span>
-                  )}
-                </Fragment>
-              </Card>
-            </li>
-          );
-        })
+        projects.map((p) => (
+          <li class="flex w-[84%] max-w-sm shrink-0 snap-start md:w-[46%] md:max-w-none lg:w-auto [&>*]:w-full">
+            <ProjectCard
+              project={p}
+              locale={locale}
+              maxTags={2}
+              sizes="(min-width: 1280px) 400px, (min-width: 1024px) calc((100vw - 7rem) / 3), (min-width: 768px) 46vw, min(84vw, 24rem)"
+            />
+          </li>
+        ))
       }
     </ul>
+    <div class="lc-snap-dots mt-1 flex items-center justify-center gap-2 lg:hidden" aria-hidden="true" data-snap-dots>
+      {projects.map((_, i) => <span class:list={["h-1.5 w-6 bg-charcoal-300 transition-colors", i === 0 && "bg-royal-600"]} />)}
+      <span class="ms-2 font-mono text-xs text-charcoal-600 ltr" dir="ltr" data-snap-count>1 / {projects.length}</span>
+    </div>
     <p class="mt-6 flex items-start gap-2.5 text-sm text-charcoal-600 md:mt-10">
       <Icon name="shield" size={18} class="mt-0.5 shrink-0 text-royal-600" />
       {c.notes.anonymised}
@@ -292,11 +217,11 @@ const jsonLd = {
               </span>
               <div class="min-w-0 flex-1">
                 <h3 class="type-h4 text-navy-950">
-                  <a href={href(locale, `services/${slug}`)} class="after:absolute after:inset-0 after:content-[''] focus-visible:outline-none">
-                    {keepCodes(s.navTitle, locale)}
+                  <a href={href(locale, `services/${slug}`)} class="lc-stretch after:absolute after:inset-0 after:content-['']">
+                    {plain(locale, s.navTitle)}
                   </a>
                 </h3>
-                <p class="mt-0.5 line-clamp-2 text-sm text-charcoal-600">{keepCodes(s.summary, locale)}</p>
+                <p class="mt-0.5 line-clamp-2 text-sm text-charcoal-600">{plain(locale, s.summary)}</p>
               </div>
               <Icon name="chevron-right" size={18} class="shrink-0 text-royal-600" />
             </li>
@@ -304,7 +229,7 @@ const jsonLd = {
         })
       }
     </ul>
-    <ul role="list" class="mt-12 hidden gap-5 md:grid md:grid-cols-2 lg:grid-cols-4">
+    <ul role="list" class="lc-grid-services mt-12 hidden md:grid">
       {
         SERVICE_SLUGS.map((slug) => {
           const s = t.services.items[slug];
@@ -312,9 +237,7 @@ const jsonLd = {
             <li>
               <Card variant="service" title={s.title} text={s.summary} href={href(locale, `services/${slug}`)} cta={c.labels.learnMore}>
                 <Fragment slot="media">
-                  <div class="-mx-2 -mt-2 overflow-hidden border border-charcoal-200/70 bg-navy-50/60 sm:-mx-3 sm:-mt-3">
-                    <ServiceArt slug={slug} variant="light" />
-                  </div>
+                  <ServiceArt slug={slug} />
                 </Fragment>
               </Card>
             </li>
@@ -325,13 +248,8 @@ const jsonLd = {
     <Button href={href(locale, "services")} variant="secondary" iconEnd="arrow" class="mt-6 md:hidden">{h.services.cta}</Button>
   </Section>
 
-  {/* ---------- live HMI demo ---------- */}
-  <Section variant="dark" angle="both" id="hmi-demo" aria-label={t.hmi.intro.title}>
-    <HmiDemo locale={locale} tone="dark" />
-  </Section>
-
   {/* ---------- industries (compact tiles on phones, illustrated cards from 768px) ---------- */}
-  <Section id="industries" aria-labelledby="industries-title">
+  <Section variant="muted" id="industries" aria-labelledby="industries-title">
     <div class="flex flex-wrap items-end justify-between gap-6">
       <SectionHeading id="industries-title" index="03" eyebrow={c.labels.industries} title={html(locale, h.industries.title)} lead={html(locale, h.industries.intro)} />
       <Button href={href(locale, "industries")} variant="secondary" iconEnd="arrow" class="max-md:hidden">{h.industries.cta}</Button>
@@ -345,7 +263,7 @@ const jsonLd = {
               <Icon name={industryIcon(slug)} size={20} />
             </span>
             <h3 class="text-[0.9375rem] leading-snug font-bold text-white">
-              <a href={href(locale, `industries/${slug}`)} class="after:absolute after:inset-0 after:content-[''] focus-visible:outline-none">
+              <a href={href(locale, `industries/${slug}`)} class="lc-stretch after:absolute after:inset-0 after:content-['']">
                 {t.industries.items[slug].navTitle}
               </a>
             </h3>
@@ -357,22 +275,22 @@ const jsonLd = {
           <Icon name="plus" size={20} />
         </span>
         <h3 class="text-[0.9375rem] leading-snug font-bold text-navy-950">
-          <a href={`${href(locale, "contact")}?industry=other#quote`} class="after:absolute after:inset-0 after:content-[''] focus-visible:outline-none">
+          <a href={`${href(locale, "contact")}?industry=other#quote`} class="lc-stretch after:absolute after:inset-0 after:content-['']">
             {t.contact.form.fields.industry.options.other}
           </a>
         </h3>
       </li>
     </ul>
-    <ul role="list" class="mt-12 hidden gap-5 md:grid md:grid-cols-2 lg:grid-cols-4">
+    <ul role="list" class="lc-grid-industries mt-12 hidden md:grid">
       {
         INDUSTRY_SLUGS.map((slug) => {
           const ind = t.industries.items[slug];
           return (
             <li>
-              <Card variant="industry" title={ind.title} text={ind.summary} href={href(locale, `industries/${slug}`)} cta={c.labels.viewIndustry} class="h-full">
+              <Card variant="industry" title={ind.title} text={ind.summary} href={href(locale, `industries/${slug}`)} cta={c.labels.viewIndustry}>
                 <Fragment slot="media">
-                  <div class="absolute inset-x-0 top-0 px-3 pt-3">
-                    <IndustryArt slug={slug} variant="dark" />
+                  <div class="relative flex justify-center pt-5">
+                    <IndustryArt slug={slug} variant="dark" size="86%" />
                   </div>
                 </Fragment>
               </Card>
@@ -387,7 +305,7 @@ const jsonLd = {
           </span>
           <div class="mt-10">
             <h3 class="type-h3 text-navy-950">
-              <a href={`${href(locale, "contact")}?industry=other#quote`} class="after:absolute after:inset-0 after:content-[''] focus-visible:outline-none">
+              <a href={`${href(locale, "contact")}?industry=other#quote`} class="lc-stretch after:absolute after:inset-0 after:content-['']">
                 {t.contact.form.fields.industry.options.other}
               </a>
             </h3>
@@ -403,8 +321,15 @@ const jsonLd = {
     <Button href={href(locale, "industries")} variant="secondary" iconEnd="arrow" class="mt-6 md:hidden">{h.industries.cta}</Button>
   </Section>
 
+  {/* ---------- live HMI demo (one-screen teaser on phones, expands in place) ---------- */}
+  <Section variant="dark" angle="both" id="hmi-demo">
+    <DemoTeaser locale={locale} class="[--teaser-h:42rem]">
+      <HmiDemo locale={locale} tone="dark" />
+    </DemoTeaser>
+  </Section>
+
   {/* ---------- why us + founder ---------- */}
-  <Section variant="muted" aria-labelledby="why-title">
+  <Section id="why">
     <div class="grid gap-10 lg:grid-cols-12 lg:gap-14">
       <div class="lg:col-span-5">
         <SectionHeading id="why-title" index="04" eyebrow={t.about.why.title} title={html(locale, h.why.title)} swoosh />
@@ -428,7 +353,7 @@ const jsonLd = {
           </div>
           <figcaption class="mt-3 flex items-center gap-2 text-sm text-charcoal-600">
             <Icon name="hmi" size={18} class="text-royal-600" />
-            {t.projects.items["shampoo-filling-delta-wecon"]?.cardTitle}
+            <span set:html={html(locale, t.projects.items["shampoo-filling-delta-wecon"].cardTitle)} />
           </figcaption>
         </figure>
       </div>
@@ -453,9 +378,19 @@ const jsonLd = {
   </Section>
 
   {/* ---------- how we work ---------- */}
-  <Section id="process" aria-labelledby="process-title">
+  <Section variant="muted" id="process">
     <SectionHeading id="process-title" index="05" eyebrow={t.services.index.processEyebrow} title={html(locale, c.process.title)} lead={html(locale, c.process.intro)} />
-    <ProcessSteps class="mt-10 max-lg:gap-7 md:mt-14" locale={locale} steps={c.process.steps.map((s, i) => ({ ...s, icon: processIcons[i] }))} />
+    <div data-cap data-capped class="lc-cap-steps">
+      <ProcessSteps class="mt-10 max-lg:gap-7 md:mt-14" locale={locale} steps={c.process.steps.map((s, i) => ({ ...s, icon: processIcons[i] }))} />
+      {
+        c.process.steps.length > STEPS_MOBILE && (
+          <button type="button" class="lc-cap-more lc-btn mt-8 md:hidden" data-variant="secondary" aria-expanded="false">
+            <span class="lc-btn-label">{fmt(t.ui.process.more, { count: c.process.steps.length })}</span>
+            <Icon name="chevron-down" size={18} />
+          </button>
+        )
+      }
+    </div>
   </Section>
 
   {/* ---------- for foreign manufacturers: a commissioning case (the top-bar link and the second door carry the
@@ -480,8 +415,8 @@ const jsonLd = {
               </div>
               <div class="px-5 pt-4 pb-5">
                 <h3 class="type-h4 text-white">
-                  <a href={href(locale, `projects/${caseSlug}`)} class="after:absolute after:inset-0 after:z-10 after:content-[''] focus-visible:outline-none">
-                    {keepCodes(caseItem.cardTitle, locale)}
+                  <a href={href(locale, `projects/${caseSlug}`)} class="lc-stretch after:absolute after:inset-0 after:z-10 after:content-['']">
+                    {plain(locale, caseItem.cardTitle)}
                   </a>
                 </h3>
                 <ul role="list" class="mt-3 grid gap-2 sm:grid-cols-3 sm:gap-4">
@@ -500,8 +435,17 @@ const jsonLd = {
             </article>
           )
         }
-        <div class="mt-8 flex flex-wrap gap-3">
+        <div class="mt-8 flex flex-wrap items-center gap-x-6 gap-y-3">
           <Button href={href(locale, FOREIGN_PATH)} size="lg" iconEnd="arrow" class="max-sm:w-full">{h.foreignBand.cta}</Button>
+          {
+            /* zh / tr: machine builders exporting to Egypt are a core audience — straight to their block. */
+            investorFirst && oemTitle && (
+              <a href={`${href(locale, FOREIGN_PATH)}#oem`} class="group inline-flex min-h-11 items-center gap-2 font-semibold text-signal-300 transition-colors hover:text-white">
+                {oemTitle}
+                <Icon name="arrow" size={16} class="transition-transform group-hover:translate-x-0.5 rtl:group-hover:-translate-x-0.5" />
+              </a>
+            )
+          }
         </div>
       </div>
       {
@@ -536,15 +480,28 @@ const jsonLd = {
           <div class="mt-6 flex flex-col items-start gap-3 lg:mt-8">
             {
               email ? (
-                <Button href={`mailto:${SITE.email}`} variant="secondary" icon="mail" iconClass="text-royal-600">{t.ui.cta.emailEngineer}</Button>
+                <div class="flex flex-wrap items-center gap-3">
+                  <Button href={mailtoLink(undefined, { locale, path: "" })} variant="secondary" icon="mail" iconClass="text-royal-600">{t.ui.cta.emailEngineer}</Button>
+                  <CopyEmail locale={locale} tone="light" />
+                </div>
               ) : (
-                <Button href={whatsappLink(c.whatsapp.default)} variant="secondary" icon="whatsapp" iconClass="text-[#128c4a]" external>{t.ui.cta.whatsapp}</Button>
+                <Button href={whatsappLink(c.whatsapp.default)} variant="secondary" icon="whatsapp" iconClass="text-whatsapp-700" external>{t.ui.cta.whatsapp}</Button>
               )
             }
           </div>
         </div>
       </div>
-      <FAQ class="lg:col-span-8" items={h.faq.items.map((f) => ({ q: f.q, a: html(locale, f.a) }))} openFirst />
+      <div class="lc-cap-faq lg:col-span-8" data-cap data-capped>
+        <FAQ items={h.faq.items.map((f) => ({ q: f.q, a: html(locale, f.a) }))} openFirst />
+        {
+          h.faq.items.length > FAQ_MOBILE && (
+            <button type="button" class="lc-cap-more lc-btn mt-6 md:hidden" data-variant="secondary" aria-expanded="false">
+              <span class="lc-btn-label">{fmt(t.ui.faq.more, { count: h.faq.items.length })}</span>
+              <Icon name="chevron-down" size={18} />
+            </button>
+          )
+        }
+      </div>
     </div>
   </Section>
 
@@ -552,14 +509,9 @@ const jsonLd = {
 </BaseLayout>
 
 <style>
-  /* Phones: the case studies are a swipeable row. Its own scroll box would freeze the scroll-driven card reveal
-     (motion.css §4), so cards in the row simply sit in place. */
-  @media (max-width: 47.99rem) {
-    /* The playable panel shows interlocks, alarms and trends by itself; on phones the three explanatory points
-       above it are left out (they stay on tablets and desktops). */
-    #hmi-demo :global(.lc-hmi-seeing) {
-      display: none;
-    }
+  /* Phones and tablets: the case studies are a swipeable row. Its own scroll box would freeze the scroll-driven card
+     reveal (motion.css §4), so cards in the row simply sit in place. */
+  @media (max-width: 63.99rem) {
     .lc-snap :global(.lc-reveal) {
       animation: none;
     }
@@ -568,4 +520,76 @@ const jsonLd = {
       scrollbar-color: var(--color-charcoal-300) transparent;
     }
   }
+  @media (max-width: 47.99rem) {
+    /* The playable panel shows interlocks, alarms and trends by itself; on phones the three explanatory points
+       above it are left out (they stay on tablets and desktops). */
+    #hmi-demo :global(.lc-hmi-seeing) {
+      display: none;
+    }
+    /* FAQ: first four questions; How we work: first three steps — the rest behind "Show all…" (with JS; all of
+       them without). */
+    :global(html.js) .lc-cap-faq[data-capped] :global(details:nth-of-type(n + 5)),
+    :global(html.js) .lc-cap-steps[data-capped] :global(.lc-steps > li:nth-child(n + 4)) {
+      display: none;
+    }
+    /* the last visible step's rail would point at nothing */
+    :global(html.js) .lc-cap-steps[data-capped] :global(.lc-steps > li:nth-child(3) .lc-step-rail) {
+      display: none;
+    }
+  }
+  :global(html:not(.js)) .lc-cap-more,
+  [data-cap]:not([data-capped]) .lc-cap-more {
+    display: none;
+  }
 </style>
+
+<script>
+  /* Swipeable case-study row: keep the focused card fully in view (Chromium does not scroll a partly visible
+     element inside a scroller), and show which card is in view (dots + "2 / 3", decorative). */
+  document.querySelectorAll<HTMLElement>("[data-snap]").forEach((row) => {
+    const items = [...row.children] as HTMLElement[];
+    const reduce = matchMedia("(prefers-reduced-motion: reduce)");
+    row.addEventListener("focusin", (e) => {
+      const li = (e.target as HTMLElement).closest("li");
+      if (li && row.scrollWidth > row.clientWidth) li.scrollIntoView({ block: "nearest", inline: "start", behavior: reduce.matches ? "auto" : "smooth" });
+    });
+    const dots = row.parentElement?.querySelector<HTMLElement>("[data-snap-dots]");
+    const marks = dots ? ([...dots.children].filter((el) => !el.hasAttribute("data-snap-count")) as HTMLElement[]) : [];
+    const count = dots?.querySelector<HTMLElement>("[data-snap-count]");
+    if (!dots || !("IntersectionObserver" in window)) return;
+    const seen = new Map<Element, number>();
+    const io = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((en) => seen.set(en.target, en.intersectionRatio));
+        let best = 0;
+        items.forEach((el, i) => {
+          if ((seen.get(el) ?? 0) > (seen.get(items[best]!) ?? 0)) best = i;
+        });
+        marks.forEach((m, i) => {
+          m.classList.toggle("bg-royal-600", i === best);
+          m.classList.toggle("bg-charcoal-300", i !== best);
+        });
+        if (count) count.textContent = `${best + 1} / ${items.length}`;
+      },
+      { root: row, threshold: [0, 0.25, 0.5, 0.75, 1] },
+    );
+    items.forEach((el) => io.observe(el));
+  });
+
+  /* Phones: "Show all questions / steps" reveals the rest in place and moves focus to the first item revealed. */
+  document.querySelectorAll<HTMLElement>("[data-cap]").forEach((box) => {
+    const btn = box.querySelector<HTMLButtonElement>(".lc-cap-more");
+    btn?.addEventListener("click", () => {
+      const hidden = [...box.querySelectorAll<HTMLElement>("details, .lc-steps > li")].filter((el) => el.offsetParent === null);
+      box.removeAttribute("data-capped");
+      btn.setAttribute("aria-expanded", "true");
+      const first = hidden[0];
+      const summary = first?.querySelector<HTMLElement>(":scope > summary");
+      if (summary) summary.focus();
+      else if (first) {
+        first.tabIndex = -1;
+        first.focus();
+      }
+    });
+  });
+</script>

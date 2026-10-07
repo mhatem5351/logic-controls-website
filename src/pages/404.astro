@@ -1,38 +1,50 @@
 ---
-// Multilingual 404 (served by Workers static assets for any unknown path). One page, four languages.
+/**
+ * Multilingual 404 (served by Workers static assets for any unknown path). One static page, four languages.
+ * Without JS the four language cards show in a fixed order (English first). A tiny inline script picks the visitor's
+ * language — the URL's first segment (/zh/…), else the `lang` cookie the language switcher sets, else the browser
+ * language — moves that card first at full width (the others become a compact row: title + homepage link), and sets
+ * <html lang> and the tab title to match. <html dir> stays ltr: every card carries its own lang/dir (the Arabic card is
+ * RTL), and an RTL root would mirror the arrows inside the LTR cards (Tailwind `rtl:` matches any [dir=rtl] ancestor). Every card ends with a direct line to an engineer (phone, WhatsApp —
+ * email first on /zh/, where WhatsApp is blocked — and email).
+ */
 import BaseLayout from "~/layouts/BaseLayout.astro";
 import Logo from "~/components/Logo.astro";
 import Icon from "~/components/Icon.astro";
 import CircuitTraces from "~/components/CircuitTraces.astro";
 import { Font } from "astro:assets";
 import { LOCALES, LOCALE_META, getMessages, localePath } from "~/i18n";
-import { QUOTE_PATH, href } from "~/components/nav";
+import { SITE, whatsappLink } from "~/data/site";
+import { QUOTE_PATH, href, mailtoLink, prefersEmail } from "~/components/nav";
 
-/* Each language block: message, homepage link, then the three pages people most often look for (ui.notFound.links,
-   falling back to the nav labels) so a broken link never ends the visit. */
-interface NotFoundLinks {
-  title?: string;
-  services?: string;
-  projects?: string;
-  quote?: string;
-}
-const blocks = (["ar", "en", "zh", "tr"] as const)
-  .filter((l) => LOCALES.includes(l))
-  .map((l) => {
-    const ui = getMessages(l).ui;
-    const nf = ui.notFound as typeof ui.notFound & { links?: NotFoundLinks };
-    return {
-      locale: l,
-      meta: LOCALE_META[l],
-      t: nf,
-      linksTitle: nf.links?.title,
-      links: [
-        { label: nf.links?.services ?? ui.nav.services, href: localePath(l, "services") },
-        { label: nf.links?.projects ?? ui.nav.projects, href: localePath(l, "projects") },
-        { label: nf.links?.quote ?? ui.cta.quote, href: href(l, QUOTE_PATH) },
-      ],
-    };
-  });
+/* Each language block: message, homepage link, the three pages people most often look for (ui.notFound.links) so a
+   broken link never ends the visit, then the contact line. */
+const ORDER = ["en", "ar", "zh", "tr"] as const;
+const blocks = ORDER.filter((l) => LOCALES.includes(l)).map((l) => {
+  const m = getMessages(l);
+  const ui = m.ui;
+  const nf = ui.notFound;
+  const email = { icon: "mail" as const, label: ui.cta.emailEngineer, href: mailtoLink(ui.email.subject) };
+  const whatsapp = { icon: "whatsapp" as const, label: ui.cta.whatsapp, href: whatsappLink() };
+  return {
+    locale: l,
+    meta: LOCALE_META[l],
+    t: nf,
+    docTitle: `${nf.title} | ${SITE.name}`,
+    linksTitle: nf.links.title,
+    links: [
+      { label: nf.links.services, href: localePath(l, "services") },
+      { label: nf.links.projects, href: localePath(l, "projects") },
+      { label: nf.links.quote, href: href(l, QUOTE_PATH) },
+    ],
+    call: { label: m.common.labels.callEngineer, number: SITE.phone.display, href: `tel:${SITE.phone.tel}` },
+    channels: prefersEmail(l) ? [email] : [whatsapp, email],
+  };
+});
+/* Language codes the script may pick, and their direction (kept in sync with LOCALE_META). */
+const dirs = Object.fromEntries(blocks.map((b) => [b.locale, b.meta.dir]));
+const langs = Object.fromEntries(blocks.map((b) => [b.locale, b.meta.htmlLang]));
+const pick = `(()=>{var D=${JSON.stringify(dirs)},H=${JSON.stringify(langs)},s=(location.pathname.split("/")[1]||"").toLowerCase().slice(0,2),c=(document.cookie.match(/(?:^|; )lang=([a-z]{2})/)||[])[1],n=((navigator.languages||[])[0]||navigator.language||"").slice(0,2).toLowerCase(),k=[s,c,n].find(function(x){return x in D}),u=document.getElementById("nf-list"),li=k&&u.querySelector('[data-l="'+k+'"]');if(!li)return;u.prepend(li);u.dataset.picked="";li.dataset.primary="";document.title=li.dataset.title;document.documentElement.lang=H[k]})()`;
 ---
 
 <BaseLayout locale="en" title="404 — Page not found" path="404" noindex alternates={false} canonical={false} chrome={false}>
@@ -44,16 +56,16 @@ const blocks = (["ar", "en", "zh", "tr"] as const)
       <a href="/" class="self-start" aria-label="Logic Controls">
         <Logo variant="dark" width={150} alt="" loading="eager" />
       </a>
-      <div class="my-auto py-14">
-        <h1 class="font-mono text-[clamp(4.5rem,14vw,10rem)] leading-none font-semibold tracking-tight text-white/90">
+      <div class="my-auto py-12">
+        <h1 lang="en" dir="ltr" class="text-[clamp(4.5rem,14vw,10rem)] leading-none font-extrabold tracking-tight text-white/90 italic">
           4<span class="text-signal-400">0</span>4
         </h1>
-        <ul role="list" class="mt-10 grid gap-px overflow-hidden border border-white/10 bg-white/10 sm:grid-cols-2">
+        <ul id="nf-list" role="list" class="nf-list mt-10 grid gap-px overflow-hidden border border-white/10 bg-white/10 sm:grid-cols-2">
           {
-            blocks.map(({ locale, meta, t, linksTitle, links }) => (
-              <li lang={meta.htmlLang} dir={meta.dir} class="flex flex-col bg-navy-950 p-6 sm:p-8">
+            blocks.map(({ locale, meta, t, docTitle, linksTitle, links, call, channels }) => (
+              <li lang={meta.htmlLang} dir={meta.dir} data-l={locale} data-title={docTitle} class="nf-card flex flex-col bg-navy-950 p-6 sm:p-8">
                 <h2 class="type-h3 text-white">{t.title}</h2>
-                <p class="mt-2 text-navy-200">{t.body}</p>
+                <p class="nf-more mt-2 text-navy-200">{t.body}</p>
                 <a
                   href={localePath(locale)}
                   hreflang={meta.hreflang}
@@ -62,8 +74,8 @@ const blocks = (["ar", "en", "zh", "tr"] as const)
                   {t.home}
                   <Icon name="arrow" size={18} class="transition-transform group-hover:translate-x-0.5 rtl:group-hover:-translate-x-0.5" />
                 </a>
-                <nav aria-label={linksTitle ?? t.title} class="mt-auto border-t border-white/10 pt-4">
-                  {linksTitle && <p class="mb-2 type-label text-navy-300">{linksTitle}</p>}
+                <nav aria-label={linksTitle} class="nf-more mt-auto border-t border-white/10 pt-4">
+                  <p class="mb-2 type-label text-navy-300">{linksTitle}</p>
                   <ul role="list" class="flex flex-wrap gap-x-5 gap-y-1">
                     {links.map((l) => (
                       <li>
@@ -74,11 +86,47 @@ const blocks = (["ar", "en", "zh", "tr"] as const)
                     ))}
                   </ul>
                 </nav>
+                <ul role="list" class="nf-more mt-4 flex flex-wrap gap-x-5 gap-y-1 border-t border-white/10 pt-4 text-sm">
+                  <li>
+                    <a href={call.href} class="lc-tel-label inline-flex min-h-10 items-center gap-2 font-semibold text-navy-100 hover:text-white">
+                      <Icon name="phone" size={16} class="text-royal-300" />
+                      <span>{call.label}</span>
+                      <span class="ltr" dir="ltr">{call.number}</span>
+                    </a>
+                  </li>
+                  {channels.map((ch) => (
+                    <li>
+                      <a href={ch.href} class="inline-flex min-h-10 items-center gap-2 font-semibold text-navy-100 hover:text-white" {...(ch.icon === "whatsapp" ? { target: "_blank", rel: "noopener" } : {})}>
+                        <Icon name={ch.icon} size={16} class={ch.icon === "whatsapp" ? "text-whatsapp-500" : "text-royal-300"} />
+                        {ch.label}
+                      </a>
+                    </li>
+                  ))}
+                </ul>
               </li>
             ))
           }
         </ul>
+        <script is:inline set:html={pick} />
       </div>
     </div>
   </div>
 </BaseLayout>
+
+<style>
+  /* After the script picked a language: that card spans the row, the others show title + homepage link only. */
+  @media (min-width: 40rem) {
+    .nf-list[data-picked] {
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+    }
+    .nf-list[data-picked] > [data-primary] {
+      grid-column: 1 / -1;
+    }
+  }
+  .nf-list[data-picked] > .nf-card:not([data-primary]) .nf-more {
+    display: none;
+  }
+  .nf-list[data-picked] > .nf-card:not([data-primary]) {
+    padding-block: 1.25rem;
+  }
+</style>

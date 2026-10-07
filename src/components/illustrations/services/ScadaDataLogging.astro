@@ -20,7 +20,7 @@ const css =
   ".lca-sc .al{animation:scA 8s step-end infinite}@keyframes scA{0%,56%{opacity:0}58%,66%,74%,82%{opacity:1}62%,70%,78%,86%,100%{opacity:0}}" +
   ".lca-sc .bl{animation:scB .889s step-end calc(var(--s) * 1s + .444s) infinite}@keyframes scB{0%,35%{opacity:1}36%,100%{opacity:.15}}" +
   ".lca-sc .fl2{stroke:var(--i-w);stroke-width:1.5;stroke-dasharray:2 4;animation:lca-fw .9s linear infinite}" +
-  "@media (prefers-reduced-motion:reduce){.lca-sc .l1,.lca-sc .l2{transform:scaleY(.6)}}";
+  "@media (prefers-reduced-motion:reduce){.lca-sc .l1,.lca-sc .l2{transform:scaleY(.6)}}.lca-sc:is([data-play=rest],[data-motion=off] *) .l1,.lca-sc:is([data-play=rest],[data-motion=off] *) .l2{transform:scaleY(.6)}";
 const field = ["M308 199V190L302 184H280", "M340 183V172L328 160H280", "M372 167V148L360 136H280"];
 const rings = [[308, 204], [340, 188], [372, 172]];
 ---

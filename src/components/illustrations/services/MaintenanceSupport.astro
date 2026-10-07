@@ -48,7 +48,7 @@ const css =
   ".lca-mt .p.rp{animation:mtP 8s linear infinite}@keyframes mtP{0%,56.25%{stroke-dashoffset:14}66%,100%{stroke-dashoffset:-102}}" +
   ".lca-mt .nd.rp,.lca-mt .pg.rp{transform-box:fill-box;transform-origin:center;animation:mtQ 8s ease-out infinite}" +
   "@keyframes mtQ{0%,64.5%{opacity:0;transform:scale(1)}65%{opacity:1;transform:scale(1)}78%,100%{opacity:0;transform:scale(2.4)}}" +
-  "@media (prefers-reduced-motion:reduce){.lca-mt .nl{transform:rotate(55deg)}.lca-mt .rf,.lca-mt .wn{opacity:0}}";
+  "@media (prefers-reduced-motion:reduce){.lca-mt .nl{transform:rotate(55deg)}.lca-mt .rf,.lca-mt .wn{opacity:0}}.lca-mt:is([data-play=rest],[data-motion=off] *) .nl{transform:rotate(55deg)}.lca-mt:is([data-play=rest],[data-motion=off] *) .rf,.lca-mt:is([data-play=rest],[data-motion=off] *) .wn{opacity:0}";
 ---
 
 <Frame {...p} uid={u} name="mt">

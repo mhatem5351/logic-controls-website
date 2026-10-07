@@ -19,15 +19,23 @@
       }
     ],
     "ctaQuestion": "Want an HMI like this for your machine?",
-    "cta": "Request a quote",
-    "try": "Try it: press Start, wait for Forward, then Simulate fault."
+    "cta": "Request a quote"
   },
   "caption": "Simulated 10.1″ operator panel designed following ISA-101 high-performance HMI principles: gray when all is normal, color only for abnormal states, blue for what you can touch.",
   "a11y": {
     "panel": "Interactive pasteurizer HMI simulation",
     "mimic": "Process diagram: raw tank, balance tank, feed pump, plate heat exchanger with regeneration, heating and cooling sections, hot-water loop, holding tube, flow-diversion valve and storage tank. Live values are listed in the process panel.",
     "trend": "Temperature trend for the last 60 seconds",
-    "led": "Panel status lights"
+    "state": "Status",
+    "sim": "Simulation at 3× real time"
+  },
+  "tour": {
+    "label": "Try it",
+    "start": "Press Start",
+    "forward": "Wait for Forward",
+    "fault": "Simulate a fault",
+    "ack": "Acknowledge the alarms",
+    "done": "done"
   },
   "status": {
     "unit": "HTST-01 Pasteurizer",
@@ -61,8 +69,7 @@
     "steam": "Steam",
     "iceWater": "Ice water",
     "cipSupply": "CIP supply",
-    "drain": "To drain",
-    "locked": "Interlock"
+    "drain": "To drain"
   },
   "kpi": {
     "title": "Process",
@@ -75,9 +82,7 @@
     "flow": "Flow",
     "hw": "Hot water",
     "valve": "Steam valve",
-    "outlet": "Product out",
-    "batch": "Batch",
-    "forwarded": "Forwarded"
+    "batch": "Batch"
   },
   "recipe": {
     "title": "Recipe",
@@ -92,7 +97,9 @@
     "temp": "TT-102 ≥ {limit} °C",
     "check": "Held for {s} s (check time)",
     "dp": "Regen ΔP: pasteurized > raw",
-    "hold": "Holding time ≥ {hold} s"
+    "hold": "Holding time ≥ {hold} s",
+    "met": "met",
+    "notMet": "not met"
   },
   "controls": {
     "run": "Run",
@@ -146,7 +153,10 @@
     "evRecipe": "Recipe changed: {arg}",
     "evCip": "CIP cycle started",
     "evCipDone": "CIP cycle complete",
-    "evCipAbort": "CIP cycle aborted"
+    "evCipAbort": "CIP cycle aborted",
+    "srcSeq": "SEQ",
+    "srcMode": "MODE",
+    "srcRcp": "RCP"
   },
   "msg": {
     "idle": "Press Start to run the pasteurizer.",
@@ -161,7 +171,14 @@
     "acked": "Alarms acknowledged.",
     "fdvFwd": "FDV forward.",
     "fdvDiv": "FDV divert.",
-    "alarm": "{prio} priority alarm: {text}"
+    "alarm": "{prio} priority alarm: {text}",
+    "press": "Press {key} to run the pasteurizer.",
+    "faultEta": "Steam pressure dropped. Under-temperature product reaches TT-102 in about {s} s.",
+    "recoveredAck": "Temperature recovered: product goes forward again. Press Acknowledge to clear the alarms.",
+    "allClear": "All alarms acknowledged. Batch {batch} is running normally.",
+    "faultNeedsRun": "Start production first: the fault simulates a steam supply failure while the plant runs.",
+    "faultInCip": "The fault simulation is not available during CIP cleaning.",
+    "noAlarms": "No alarms to acknowledge."
   },
   "cip": {
     "title": "CIP program",
@@ -170,7 +187,8 @@
     "caustic": "Caustic wash",
     "rinse": "Intermediate rinse",
     "acid": "Acid wash",
-    "final": "Final rinse"
+    "final": "Final rinse",
+    "done": "done"
   },
   "loop": {
     "eyebrow": "How automation works",

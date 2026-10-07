@@ -1,0 +1,34 @@
+---
+/**
+ * Lazy illustration slot: an empty, correctly sized `.lca` box (same 4:3 — or viewBox — aspect, palette and classes as
+ * the art, so nothing shifts) that src/scripts/motion/lazy-art.ts fills with the real <svg> from a cached, language-
+ * neutral fragment (/en/art/<kind>/, src/pages/[lang]/art/[kind].astro) once it comes within ~1000px of the viewport.
+ * Art inside `display: none` (e.g. the home page's desktop-only card grids on phones) never loads.
+ * Used by ServiceArt / IndustryArt / FactoryLine when `lazy` (their default for decorative art). Without JS the box
+ * stays empty (the art is decorative).
+ */
+import type { ArtProps } from "./types";
+import { ART_VERSION } from "./art-version";
+
+interface Props extends ArtProps {
+  /** "<kind>/<slug>", e.g. "services/control-panels". */
+  src: string;
+  viewBox?: string;
+}
+
+const { src, variant, size, class: cls, viewBox = "0 0 400 300" } = Astro.props;
+const [, , w = 400, h = 300] = viewBox.split(/\s+/).map(Number);
+const style =
+  [
+    size != null && `inline-size:${typeof size === "number" ? `${size}px` : size}`,
+    Math.abs(w / h - 4 / 3) > 0.01 && `aspect-ratio:${w}/${h}`,
+  ]
+    .filter(Boolean)
+    .join(";") || undefined;
+---
+
+<svg class:list={["lca", cls]} viewBox={viewBox} data-art-src={src} data-art-v={ART_VERSION} data-variant={variant} style={style} aria-hidden="true"></svg>
+
+<script>
+  import "~/scripts/motion/lazy-art";
+</script>

@@ -8,6 +8,7 @@
  */
 import type { ServiceSlug } from "~/data/services";
 import type { ArtProps } from "./types";
+import LazyArt from "./LazyArt.astro";
 import ControlPanels from "./services/ControlPanels.astro";
 import PlcHmiProgramming from "./services/PlcHmiProgramming.astro";
 import MachineAutomation from "./services/MachineAutomation.astro";
@@ -19,6 +20,12 @@ import MaintenanceSupport from "./services/MaintenanceSupport.astro";
 
 interface Props extends ArtProps {
   slug: ServiceSlug;
+  /**
+   * Render an empty, correctly sized slot that loads the art from the shared, cached fragment when it nears the
+   * viewport (LazyArt.astro). Default: true for decorative art (no `label`) — card grids; false for labelled art.
+   * Pass false where the art is part of the first screen (detail heroes, HeroArt).
+   */
+  lazy?: boolean;
 }
 
 const ART = {
@@ -32,8 +39,8 @@ const ART = {
   "maintenance-support": MaintenanceSupport,
 } satisfies Record<ServiceSlug, unknown>;
 
-const { slug, ...rest } = Astro.props;
+const { slug, lazy = !Astro.props.label, ...rest } = Astro.props;
 const Art = ART[slug];
 ---
 
-{Art && <Art {...rest} />}
+{lazy ? <LazyArt src={`services/${slug}`} {...rest} /> : Art && <Art {...rest} />}

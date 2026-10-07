@@ -1,0 +1,18 @@
+# Generated / vendored / not ours
+dist/
+.astro/
+.wrangler/
+node_modules/
+public/
+research/
+client-data/
+test-results/
+playwright-report/
+blob-report/
+.lighthouseci/
+.playwright-mcp/
+package-lock.json
+# Translations are edited by the content workflow (check-i18n validates them); reformatting would churn 56 files
+src/i18n/messages/
+# Prose: reflowing Markdown makes noisy diffs
+*.md

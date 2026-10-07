@@ -2,7 +2,7 @@
   "index": {
     "seo": {
       "title": "Industrial Automation Services in Egypt | Logic Controls",
-      "description": "Control panels, PLC and HMI programming, machine automation and retrofits, process control, SCADA, commissioning and support for plants in Egypt."
+      "description": "Control panels, PLC/HMI programming, machine automation, retrofits, process control, SCADA, commissioning and support for plants in Egypt."
     },
     "h1": "Automation services, from design to start-up",
     "intro": [
@@ -48,8 +48,12 @@
           "a": "Drawings are part of every delivery. Program files, passwords and ownership are written into the quote, so you know before you order what you will receive."
         },
         {
+          "q": "What does the price of a control system depend on?",
+          "a": "On the number of inputs and outputs, the PLC and HMI platform, the panel size and components, how much programming and testing is needed, and where the site is. Send a short description and photos, and an engineer replies with questions, a site visit or a quote."
+        },
+        {
           "q": "Do you hold certifications such as UL or CE?",
-          "a": "No. We design following IEC 60204-1 and IEC 61439 practice, and we document our work. We do not issue UL listing or CE marking."
+          "a": "No. We design following {link:services/control-panels|IEC 60204-1 and IEC 61439 practice}, and we document our work. We do not issue UL listing or CE marking."
         }
       ]
     }
@@ -60,7 +64,7 @@
       "navTitle": "Control panels",
       "summary": "Schematics, I/O lists and PLC control panels, designed, assembled, wired and tested for your machine or process.",
       "seoTitle": "Control Panel Design & Assembly in Egypt | Logic Controls",
-      "seoDescription": "PLC control panels designed, wired and tested for machines and process lines in Egypt. Schematics, I/O list and bill of materials included.",
+      "seoDescription": "PLC control panels for machines and process lines in Egypt, designed in EPLAN, wired, labeled and tested before delivery. Drawings included.",
       "h1": "Electrical design and PLC control panels",
       "intro": [
         "A control panel is only as good as its drawings. We start with the electrical design: power distribution, motor circuits, safety circuits and the full I/O list. Then we assemble, wire and label the panel and test it before it reaches your site.",
@@ -112,7 +116,7 @@
         },
         {
           "q": "Which brands do you use inside the panel?",
-          "a": "It depends on your budget and preference. Recent panels used a Siemens S7-1200 PLC with Yaskawa drives, and a Delta PLC with an LS Electric drive, Schneider Electric circuit breakers and a MEAN WELL power supply."
+          "a": "We choose them with you, based on your budget, your preference and the spare parts available in Egypt. Recent panels used a Siemens S7-1200 PLC with Yaskawa drives, and a Delta PLC with an LS Electric drive, Schneider Electric circuit breakers and a MEAN WELL power supply."
         },
         {
           "q": "Do your panels follow a standard?",
@@ -120,7 +124,7 @@
         },
         {
           "q": "How long does a panel take?",
-          "a": "It depends on the size of the panel and on component availability. We give a delivery date in the quote, after the design is agreed."
+          "a": "We give a delivery date in the quote, after the design is agreed. The date depends mainly on the size of the panel and on component availability."
         }
       ],
       "cta": {
@@ -133,7 +137,7 @@
       "navTitle": "PLC and HMI programming",
       "summary": "Clear, commented PLC logic and HMI screens for Siemens, Schneider Electric, Delta, LS Electric and Wecon, in Arabic, English or both.",
       "seoTitle": "PLC & HMI Programming in Egypt | Logic Controls",
-      "seoDescription": "PLC programming and HMI screen design for Siemens, Delta, LS Electric, Schneider Electric and Wecon. Sequences, interlocks, alarms, recipes, Arabic HMIs.",
+      "seoDescription": "PLC programming and HMI design in Egypt for Siemens, Delta, LS Electric, Schneider Electric and Wecon: sequences, interlocks, Arabic screens.",
       "h1": "PLC programming and HMI design",
       "intro": [
         "Good PLC code can be read by the next engineer. We write structured logic for machine sequences, interlocks, alarms and recipes, and comment it so your maintenance team can follow it.",
@@ -193,7 +197,7 @@
         },
         {
           "q": "Can you move a machine from one PLC brand to another?",
-          "a": "Yes. This is common when spare parts for the old PLC are hard to find. See our machine retrofit service."
+          "a": "Yes. This is common when spare parts for the old PLC are hard to find. See our {link:services/machine-retrofits|machine retrofit service}."
         }
       ],
       "cta": {
@@ -205,8 +209,8 @@
       "title": "Machine automation, drives and motion",
       "navTitle": "Machine automation",
       "summary": "Complete control systems for filling, labeling, printing, washing and test machines: PLC, HMI, VFDs, stepper and motion control.",
-      "seoTitle": "Machine Automation & Motion Control | Logic Controls Egypt",
-      "seoDescription": "Control systems for filling, labeling, printing and washing machines in Egypt: PLC, HMI, VFDs, stepper and motion control. For plants and machine builders.",
+      "seoTitle": "Machine Automation & Motion Control in Egypt | Logic Controls",
+      "seoDescription": "Control systems for filling, labeling, printing and washing machines in Egypt: PLC, HMI, drives and motion control, for plants and machine builders.",
       "h1": "Machine automation, drives and motion control",
       "intro": [
         "We automate single machines: fillers, labelers, bottle printers, washers and test rigs. One team handles the control design, the drives and the program, so the machine works as one system.",
@@ -275,7 +279,7 @@
       "navTitle": "Machine retrofits",
       "summary": "Keep a good machine and replace its old controls: new PLC, HMI, drives and motion control, documented and tested, with a planned changeover.",
       "seoTitle": "Machine Retrofit & PLC Upgrade in Egypt | Logic Controls",
-      "seoDescription": "Upgrade old machines instead of replacing them: new PLC, HMI, drives and motion control, with drawings and testing. Retrofit services across Egypt.",
+      "seoDescription": "Keep the machine, replace the controls: new PLC, HMI, drives and motion control, tested before the shutdown. Machine retrofits across Egypt.",
       "h1": "Machine retrofits and control-system upgrades",
       "intro": [
         "Many machines are mechanically sound but their controls are not: obsolete PLCs, missing programs, relay logic, worn wiring or spare parts that are no longer sold. Replacing the whole machine is expensive. Replacing the controls usually costs far less.",
@@ -327,7 +331,7 @@
         },
         {
           "q": "How long will the machine be stopped?",
-          "a": "It depends on the machine. We prepare and test the new panel and program before the shutdown, so the on-site work is mainly installation, I/O checks and start-up. We agree the plan with you in advance."
+          "a": "As short a time as possible. We prepare and test the new panel and program before the shutdown, so the on-site work is mainly installation, I/O checks and start-up. The exact stop depends on the machine, and we agree the plan with you in advance."
         },
         {
           "q": "Can you retrofit an imported machine?",
@@ -400,7 +404,7 @@
         },
         {
           "q": "Can you add CIP to an existing process?",
-          "a": "Often, yes, if the valves and pumps allow it. CIP can run inside the machine program, as in our pasteurizer projects, or as a separate sequence."
+          "a": "Often, yes, if the valves and pumps allow it. CIP can run inside the machine program, as in our {link:projects/pasteurizer-cip-recipes|pasteurizer projects}, or as a separate sequence."
         }
       ],
       "cta": {
@@ -530,7 +534,7 @@
       "faq": [
         {
           "q": "Can you commission equipment you did not build?",
-          "a": "Yes. Our waste treatment project at a food and beverage plant was commissioning only: instrument checks, I/O tests, logic validation, start-up and punch-list closure."
+          "a": "Yes. Our {link:projects/anaerobic-waste-treatment-commissioning|waste treatment project} at a food and beverage plant was commissioning only: instrument checks, I/O tests, logic validation, start-up and punch-list closure."
         },
         {
           "q": "Do you work with the machine builder's engineers?",
@@ -538,7 +542,7 @@
         },
         {
           "q": "How long does commissioning take?",
-          "a": "It depends on the number of I/O points, the process and how ready the site is. We estimate it in the quote and confirm it after a site visit."
+          "a": "We estimate it in the quote and confirm it after a site visit. The time depends on the number of I/O points, the process and how ready the site is."
         }
       ],
       "cta": {
@@ -551,7 +555,7 @@
       "navTitle": "Maintenance and support",
       "summary": "Breakdown troubleshooting, program changes, preventive maintenance, operator training and help sourcing spare parts in Egypt.",
       "seoTitle": "Automation Maintenance & Support in Egypt | Logic Controls",
-      "seoDescription": "Troubleshooting of PLC, HMI and drive faults, preventive maintenance, program changes, operator training and spare-parts sourcing for plants in Egypt.",
+      "seoDescription": "PLC, HMI and drive troubleshooting, preventive maintenance, program changes, training and spare-parts sourcing for plants in Egypt.",
       "h1": "Troubleshooting, maintenance and support",
       "intro": [
         "A stopped machine costs money every hour. We find control faults methodically, using PLC diagnostics, I/O status, drive fault codes and wiring checks, and we fix the cause, not only the symptom.",
@@ -599,7 +603,7 @@
       "faq": [
         {
           "q": "How fast can you respond to a breakdown?",
-          "a": "It depends on your location and on the support agreement. Response times are agreed per site and written into the agreement. For urgent help, call us or send a WhatsApp message."
+          "a": "Call us or send a WhatsApp message: an engineer discusses the fault with you and agrees the next step, remotely or on site. Response times for planned support are agreed per site and written into the support agreement."
         },
         {
           "q": "Do you keep spare parts in stock?",

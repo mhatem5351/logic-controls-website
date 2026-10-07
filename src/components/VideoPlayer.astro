@@ -2,13 +2,24 @@
 /**
  * Click-to-play self-hosted video (no third-party embeds — works from mainland China).
  * Native <video controls preload="none"> underneath; a branded play overlay is added on top and removed on play.
- * Captions-ready: pass `tracks` (WebVTT). Vertical (9:16) reels are centred at a phone-like width.
+ *
+ * - Poster: a lazy, responsive <img> under the (transparent until it plays) video, not the `poster` attribute,
+ *   which browsers fetch at high priority on page load even when the player is far below the fold. Sibling files
+ *   `<name>-480.webp` / `<name>-800.webp` next to a string poster are picked up automatically.
+ * - Phones (< 768px) get `<name>-480p.mp4` when that file exists next to `src` (about half the data).
+ * - Text alternative (WCAG 1.2.1 / 1.2.3): `description` (case studies pass projects.json `videoDescription`), shown
+ *   under the player and referenced by the play button and the video (aria-describedby).
+ * - Captions-ready: pass `tracks` (WebVTT). Vertical (9:16) reels are centred at a phone-like width.
  */
+import { existsSync } from "node:fs";
+import { join } from "node:path";
 import type { ImageMetadata } from "astro";
 import { getImage } from "astro:assets";
+import sharp from "sharp";
 import { getMessages, type Locale } from "~/i18n";
 import Icon from "./Icon.astro";
 import { fmt } from "./nav";
+import { uid } from "./uid";
 
 interface Track {
   src: string;
@@ -25,6 +36,8 @@ interface Props {
   aspect?: "16/9" | "9/16" | "4/3" | "1/1";
   /** Optional visible caption under the player. */
   caption?: string;
+  /** What the video shows, in words (text alternative), shown under the player. */
+  description?: string;
   /** e.g. "0:42" — shown on the overlay. */
   duration?: string;
   tracks?: Track[];
@@ -34,23 +47,71 @@ interface Props {
 const locale = (Astro.props.locale ?? Astro.currentLocale ?? "en") as Locale;
 const t = getMessages(locale).ui;
 const { src, poster, title, aspect = "16/9", caption, duration, tracks = [], class: className } = Astro.props;
-const posterUrl = typeof poster === "string" ? poster : (await getImage({ src: poster, width: 1280, format: "webp" })).src;
 const vertical = aspect === "9/16";
+
+/** A sibling file in public/ (build-time check), as its URL, or undefined. */
+const sibling = (url: string) => (url.startsWith("/") && existsSync(join(process.cwd(), "public", url)) ? url : undefined);
+
+const description = Astro.props.description;
+const descId = description ? uid("lc-vd") : undefined;
+const small = sibling(src.replace(/\.mp4$/, "-480p.mp4"));
+
+const sizes = vertical ? "(min-width: 640px) 24rem, 90vw" : "(min-width: 1024px) 64rem, 100vw";
+let posterSrc: string;
+let posterSet: string | undefined;
+if (typeof poster === "string") {
+  posterSrc = poster;
+  /* Siblings "<poster>-480" / "-800" name the long edge (a portrait poster's -800 is 450 px wide), so read the real
+     pixel widths at build time for the srcset descriptors. */
+  const width = async (url: string) => (await sharp(join(process.cwd(), "public", url)).metadata()).width;
+  const files = [480, 800].map((n) => sibling(poster.replace(/\.(webp|jpg|png)$/, `-${n}.$1`))).filter((u): u is string => !!u);
+  if (files.length && sibling(poster)) {
+    const all = await Promise.all([...files, poster].map(async (u) => `${u} ${await width(u)}w`));
+    posterSet = all.join(", ");
+  }
+} else {
+  const widths = [...new Set([480, 800, 1280].map((w) => Math.min(w, poster.width)))];
+  const imgs = await Promise.all(widths.map((w) => getImage({ src: poster, width: w, format: "webp" })));
+  posterSrc = imgs[imgs.length - 1]!.src;
+  posterSet = imgs.map((img, i) => `${img.src} ${widths[i]}w`).join(", ");
+}
 ---
 
 <figure class:list={["lc-video", vertical && "mx-auto w-full max-w-sm", className]}>
   <div class="chamfer-lg relative overflow-hidden bg-navy-950" style={`aspect-ratio: ${aspect}`}>
-    <video class="absolute inset-0 size-full bg-navy-950 object-cover" controls preload="none" playsinline poster={posterUrl} title={title}>
-      <source src={src} type="video/mp4" />
+    <img
+      src={posterSrc}
+      srcset={posterSet}
+      sizes={posterSet ? sizes : undefined}
+      alt=""
+      loading="lazy"
+      decoding="async"
+      class="absolute inset-0 size-full object-cover"
+    />
+    <video
+      class="absolute inset-0 size-full object-cover"
+      controls
+      preload="none"
+      playsinline
+      title={title}
+      aria-describedby={descId}
+    >
+      {/* full size first with a media query: browsers that ignore `media` on <source> still get the full file */}
+      {small && <source src={src} type="video/mp4" media="(min-width: 768px)" />}
+      <source src={small ?? src} type="video/mp4" />
       {tracks.map((tr) => <track kind={tr.kind ?? "captions"} src={tr.src} srclang={tr.srclang} label={tr.label} default={tr.default} />)}
     </video>
     <div class="lc-video-overlay absolute inset-0 hidden">
       <button
         type="button"
-        class="lc-video-play group grid size-full cursor-pointer place-items-center bg-[radial-gradient(circle,rgb(4_14_39/0.15),rgb(4_14_39/0.55))] text-white"
+        class="lc-video-play group grid size-full cursor-pointer place-items-center bg-[radial-gradient(circle,rgb(4_14_39/0.15),rgb(4_14_39/0.55))] text-white focus-visible:outline-hidden"
         aria-label={fmt(t.video.playNamed, { title })}
+        aria-describedby={descId}
       >
-        <span class="relative grid size-20 place-items-center rounded-full border border-white/40 bg-navy-950/60 backdrop-blur-sm transition duration-300 group-hover:scale-105 group-hover:border-signal-300 group-hover:bg-royal-600 sm:size-24">
+        {/* the focus ring goes on the disc: the chamfered, overflow-hidden box would clip an outline on the button */}
+        <span
+          class="relative grid size-20 place-items-center rounded-full border border-white/40 bg-navy-950/60 outline-offset-4 outline-signal-400 backdrop-blur-sm transition duration-300 group-hover:scale-105 group-hover:border-signal-300 group-hover:bg-royal-600 group-focus-visible:scale-105 group-focus-visible:border-signal-300 group-focus-visible:bg-royal-600 group-focus-visible:outline-2 group-focus-visible:outline-solid sm:size-24"
+        >
           <span class="absolute -inset-2 rounded-full border border-white/15" aria-hidden="true"></span>
           <Icon name="play" size={30} class="translate-x-0.5 text-white" />
         </span>
@@ -64,7 +125,18 @@ const vertical = aspect === "9/16";
       }
     </div>
   </div>
-  {caption && <figcaption class="mt-3 text-sm text-charcoal-600 in-[.on-dark]:text-navy-200">{caption}</figcaption>}
+  {
+    (caption || description) && (
+      <figcaption class="mt-3 text-sm text-charcoal-600 on-dark:text-navy-200">
+        {caption && <span class="block">{caption}</span>}
+        {description && (
+          <span id={descId} class:list={["block max-w-prose", caption && "mt-1.5"]}>
+            {description}
+          </span>
+        )}
+      </figcaption>
+    )
+  }
 </figure>
 
 <style>

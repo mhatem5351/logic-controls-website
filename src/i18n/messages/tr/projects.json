@@ -2,9 +2,9 @@
   "index": {
     "seo": {
       "title": "Mısır'da Otomasyon Projeleri ve Uygulamalar | Logic Controls",
-      "description": "Mısır'da tasarlayıp programladığımız ve devreye aldığımız kontrol sistemleri: pastörizatör, tablet kaplama, dolum, etiketleme, beton santrali ve dahası."
+      "description": "Mısır'da tasarladığımız, programladığımız ve devreye aldığımız kontrol sistemleri: pastörizatör, tablet kaplama, dolum, etiketleme, beton santrali."
     },
-    "h1": "Projeler",
+    "h1": "Mısır'daki otomasyon projelerimiz",
     "intro": [
       "Mısır'daki tesisler için tasarladığımız, programladığımız ve devreye aldığımız kontrol sistemleri. Her proje sayfası ihtiyacı, iş kapsamımızı ve kullanılan teknolojiyi gösterir.",
       "Sizinkine benzer bir makine bulmak için sektöre veya hizmete göre filtreleyin."
@@ -27,10 +27,10 @@
       "client": "İçecek üreticisi",
       "summary": "Bir içecek tesisinin şurup hazırlama bölümü için eksiksiz kontrol sistemi: Siemens S7-1200 PLC, tank başında SIMATIC HMI, pompa hızı için iki Yaskawa frekans invertörü ve jet karıştırma tanklarının otomatik dolumu ve sirkülasyonu.",
       "seoTitle": "Şurup Jet Karıştırma | Siemens S7-1200",
-      "seoDescription": "Proje: Mısır'da bir içecek tesisinde şurup jet karıştırma sistemi kontrolü. Siemens S7-1200 PLC, SIMATIC HMI, Yaskawa VFD'ler, CIP hazır kilitlemesi.",
-      "challenge": "Bir içecek tesisinin şurup hazırlama prosesi için eksiksiz bir kontrol sistemine ihtiyacı vardı. Radyal jet karıştırma sisteminin (Radial Jet Mixing System) karıştırma tanklarını doldurması, şurubu kontrollü pompa hızında belirlenen süre boyunca sirküle etmesi ve tesisin CIP (yerinde temizlik) sistemiyle birlikte çalışması; tüm bunların da tank başındaki bir ekrandan yönetilmesi gerekiyordu.",
+      "seoDescription": "Mısır'da bir içecek tesisi için şurup jet karıştırma kontrolü: Siemens S7-1200 PLC, SIMATIC HMI, iki Yaskawa pompa sürücüsü, CIP hazır kilitlemesi.",
+      "challenge": "Bir içecek tesisinin şurup hazırlama prosesi için eksiksiz bir kontrol sistemine ihtiyacı vardı. Radyal jet karıştırma sisteminin (Radial Jet Mixing System) karıştırma tanklarını doldurması ve şurubu kontrollü pompa hızında belirlenen süre boyunca sirküle etmesi gerekiyordu. Sistemin ayrıca tesisin CIP (yerinde temizlik) sistemiyle birlikte çalışması ve tümünün tank başındaki bir ekrandan yönetilmesi gerekiyordu.",
       "solution": [
-        "Kontrol sistemini I/O modülleriyle birlikte bir Siemens S7-1200 PLC ve iki Yaskawa frekans invertörü etrafında tasarladık; tank başına, acil stop butonlu paslanmaz çelik bir kutu içinde Siemens SIMATIC HMI yerleştirdik. PLC proses sekansını otomatik modda çalıştırıyor: jet karıştırma tankının dolumu, süre set değerine göre sirkülasyon ve proses vanalarının kontrolü.",
+        "Kontrol sistemini I/O modülleriyle birlikte bir Siemens S7-1200 PLC ve iki Yaskawa frekans invertörü etrafında tasarladık. Tank başına, acil stop butonlu paslanmaz çelik bir kutu içinde Siemens SIMATIC HMI yerleştirdik. PLC proses sekansını otomatik modda çalıştırıyor: jet karıştırma tankının dolumu, süre set değerine göre sirkülasyon ve proses vanalarının kontrolü.",
         "Frekans invertörleri pompa hızını kontrol ediyor; hızın set değeri ve gerçek değeri, anlık tank seviyesiyle birlikte HMI'da görünüyor. CIP hazır durumu bir kilitleme olarak kullanılıyor ve ekranda gösteriliyor; alarmlar HMI üzerinden sıfırlanıyor.",
         "Bir basınç şalteri dahil saha enstrümanlarını ve I/O noktalarını entegre ettik; ardından sistemi test edip devreye aldık ve prosesi sahada optimize ettik."
       ],
@@ -52,18 +52,44 @@
         "İki Yaskawa VFD ile pompa hızı",
         "CIP hazır kilitlemesi"
       ],
+      "facts": [
+        {
+          "label": "Sistem",
+          "value": "İçecek şurubu için radyal jet karıştırma sistemi"
+        },
+        {
+          "label": "Kapsamımız",
+          "value": "Tasarım, otomasyon panosu, programlama, I/O entegrasyonu, test ve devreye alma"
+        },
+        {
+          "label": "PLC",
+          "value": "I/O modüllü Siemens S7-1200"
+        },
+        {
+          "label": "HMI",
+          "value": "Tank başında, paslanmaz çelik kutu içinde Siemens SIMATIC HMI"
+        },
+        {
+          "label": "Sürücüler",
+          "value": "Pompa hızı için 2 Yaskawa VFD"
+        },
+        {
+          "label": "Tesis bağlantısı",
+          "value": "Kilitleme olarak kullanılan CIP hazır durumu"
+        }
+      ],
       "imageAlts": {
         "hmi": "Acil stop butonlu paslanmaz çelik kutuda Siemens SIMATIC HMI; jet karıştırma tankını, vanaları, pompa hızının set ve gerçek değerini ve sirkülasyon süresini gösteriyor",
         "panel": "İki Yaskawa sürücü, I/O modüllü Siemens S7-1200 PLC, güç kaynağı, devre kesiciler, röleler, klemensler ve basınç şalteri bulunan kumanda panosu"
       }
     },
     "shampoo-filling-ls-wecon": {
-      "title": "Şampuan dolum makinesi: kontrol sistemi tasarımı ve uygulaması",
+      "title": "Şampuan dolum hattı: tasarımdan üretimde ilk çalıştırmaya LS PLC kontrolü",
       "cardTitle": "LS PLC ve Wecon HMI ile şampuan dolum makinesi",
       "client": "Kişisel bakım ürünleri üreticisi",
       "summary": "Bir şampuan dolum makinesi için komple kontrol sistemi: elektrik ve otomasyon tasarımı, LS PLC programı, Wecon HMI ve gerçek üretim koşullarında devreye alma.",
-      "seoTitle": "Şampuan Dolum Makinesi | LS PLC, Wecon HMI",
-      "seoDescription": "Proje: Mısır'da bir şampuan dolum makinesi için kontrol sistemi. LS PLC, Wecon HMI, besleme-dolum-tahliye sekansı, I/O testleri ve devreye alma.",
+      "seoTitle": "LS PLC ile Şampuan Dolum Hattı",
+      "seoDescription": "Mısır'da LS PLC ve Wecon HMI ile şampuan dolum makinesi: tek besleme-dolum-tahliye sekansı, I/O testleri, üretimde devreye alma. Videolu.",
       "challenge": "Makinenin şişeleri tek ve güvenilir bir sekansta besleyecek, dolduracak ve tahliye edecek; hassas dolum ve hat operatörleri için kolay kullanım sağlayacak komple bir kontrol sistemine ihtiyacı vardı.",
       "solution": [
         "Elektrik ve otomasyon sistemini tasarladık, makinenin her aşaması için LS PLC'yi programladık ve operatör arayüzünü bir Wecon HMI üzerinde oluşturduk. Sekans şişe beslemeyi, dolumu ve tahliyeyi kontrol ediyor; manuel ve otomatik modlar, alarmlar, kilitlemeler ve makine durum ekranı içeriyor.",
@@ -81,16 +107,43 @@
         "Üretim koşullarında test ve devreye alma",
         "Dolum hassasiyeti için parametre ayarı"
       ],
-      "result": "Makine, hassas dolum ve kararlı çalışmayla tam otomatik çevrimini tamamlıyor; operatörler makineyi HMI'dan kontrol ediyor ve izliyor.",
+      "result": "Makine artık şişeleri tek bir otomatik çevrimde besliyor, dolduruyor ve tahliye ediyor; dolum parametreleri devreye alma sırasında ayarlandı. Operatörler manuel ve otomatik mod arasında geçiş yapıyor, alarmları ve makine durumunu HMI'dan izliyor.",
       "highlights": [
         "Tek sekansta besleme, dolum ve tahliye",
         "Manuel ve otomatik modlar",
         "Dolum hassasiyeti için ayarlandı"
       ],
+      "facts": [
+        {
+          "label": "Makine",
+          "value": "Şampuan dolum makinesi: şişe besleme, dolum ve tahliye"
+        },
+        {
+          "label": "Kapsamımız",
+          "value": "Elektrik ve otomasyon tasarımı, programlama, I/O testleri ve devreye alma"
+        },
+        {
+          "label": "PLC",
+          "value": "LS Electric PLC"
+        },
+        {
+          "label": "HMI",
+          "value": "Wecon HMI"
+        },
+        {
+          "label": "Çalışma modları",
+          "value": "Manuel ve otomatik"
+        },
+        {
+          "label": "Devreye alma",
+          "value": "Üretim koşullarında, dolum hassasiyeti için parametre ayarıyla"
+        }
+      ],
       "imageAlts": {
         "cover": "Konveyördeki mavi şişelere şampuan dolduran dört nozullu dolum istasyonu"
       },
-      "videoTitle": "Şampuan dolum makinesi üretimde çalışırken"
+      "videoTitle": "Şampuan dolum makinesi üretimde çalışırken",
+      "videoDescription": "Mavi şampuan şişeleri konveyörde dört nozullu dolum istasyonuna giriyor, dolduruluyor ve ilerliyor. Operatör ekranı ve butonlar makinenin üzerinde."
     },
     "bottle-printing-motion-retrofit": {
       "title": "Şişe baskı makinesi: hareket kontrolüyle modernizasyon",
@@ -98,10 +151,10 @@
       "client": "İlaç ve kozmetik ambalajı üreticisi",
       "summary": "Eski bir şişe baskı makinesinin kontrol sistemini, makineyi değiştirmeden hassasiyeti ve güvenilirliği artırmak için PLC ve hareket kontrol sistemiyle yeniledik.",
       "seoTitle": "Şişe Baskı Retrofiti ve Hareket Kontrolü",
-      "seoDescription": "Proje: Mısır'da eski bir şişe baskı makinesi PLC ve hareket kontrolüne geçirildi. Senkronize konumlandırma, hareket ayarı, I/O testleri, devreye alma.",
+      "seoDescription": "Mısır'da eski bir şişe baskı makinesi PLC ve hareket kontrolüne geçirildi: senkronize şişe konumlandırma, yeni lojik, I/O testleri, devreye alma.",
       "challenge": "İlaç ve kozmetik şişelerine baskı yapan eski bir makinenin daha iyi baskı hassasiyetine, daha yüksek güvenilirliğe ve daha verimli üretime ihtiyacı vardı. Makine sahibi mevcut makineyi korumak ve kullanım ömrünü uzatmak istiyordu.",
       "solution": [
-        "Kontrol sisteminin tamamını hareket kontrollü bir PLC sistemine yükselttik. Makine hareketlerini, her şişenin baskı için hassas şekilde konumlanmasını sağlayacak biçimde programlayıp senkronize ettik; kontrol lojiğini ve çalışma sekansını yeniden düzenledik ve hızlı, hassas çalışma için hareket parametrelerini ayarladık.",
+        "Kontrol sisteminin tamamını hareket kontrollü bir PLC sistemine yükselttik. Makine hareketlerini, her şişenin baskı için hassas şekilde konumlanmasını sağlayacak biçimde programlayıp senkronize ettik. Kontrol lojiğini ve çalışma sekansını da yeniden düzenledik ve hızlı, hassas çalışma için hareket parametrelerini ayarladık.",
         "Gerçek çalışma koşullarında devreye almadan önce tüm saha cihazları ve kontrol sinyalleri test edildi."
       ],
       "scope": [
@@ -112,16 +165,39 @@
         "Tüm saha cihazlarının ve kontrol sinyallerinin I/O testleri",
         "Gerçek çalışma koşullarında test ve devreye alma"
       ],
-      "result": "Mevcut makine, modern bir PLC ve hareket kontrol sistemiyle üretime devam ediyor; makine değiştirilmeden güvenilirlik ve verimlilik arttı.",
+      "result": "Makine değiştirilmek yerine üretimde kaldı. Her şişe artık senkronize hareket kontrolüyle baskı için konumlanıyor ve makine yeni bir kontrol lojiği ve çalışma sekansıyla çalışıyor.",
       "highlights": [
         "Eski makine üretimde tutuldu",
         "Senkronize şişe konumlandırma",
         "Hız ve hassasiyet için ayarlandı"
       ],
+      "facts": [
+        {
+          "label": "Makine",
+          "value": "İlaç ve kozmetik şişeleri için şişe baskı makinesi"
+        },
+        {
+          "label": "Proje türü",
+          "value": "Kontrol sistemi modernizasyonu (retrofit): makine korundu"
+        },
+        {
+          "label": "Kontrolör",
+          "value": "Hareket kontrollü PLC"
+        },
+        {
+          "label": "Hareket kontrolü",
+          "value": "Her şişenin baskı için senkronize konumlandırılması"
+        },
+        {
+          "label": "Kapsamımız",
+          "value": "Hareket programlama, yeni kontrol lojiği ve sekans, I/O testleri ve devreye alma"
+        }
+      ],
       "imageAlts": {
         "cover": "Konveyörlü ve şeffaf şişeleri tutan makaralı fikstürlere sahip şişe baskı makinesi"
       },
-      "videoTitle": "Kontrol sistemi yenilendikten sonra şişe baskı makinesi"
+      "videoTitle": "Kontrol sistemi yenilendikten sonra şişe baskı makinesi",
+      "videoDescription": "Şeffaf şişeler konveyörle besleniyor ve makaralarda tutuluyor. Her şişe baskı eleğinin altında dönerken basılıyor; basılan şişeler yeşil bir ışığın altından geçerek bir kasaya düşüyor. Video, basılı bir şişenin yakın çekimiyle bitiyor."
     },
     "anaerobic-waste-treatment-commissioning": {
       "title": "Atık arıtma sistemi: bir gıda ve içecek tesisinde test ve devreye alma",
@@ -129,10 +205,10 @@
       "client": "Gıda ve içecek üreticisi",
       "summary": "Anaerobik atık arıtma sisteminin test ve devreye alınması: enstrüman ve I/O kontrolleri, lojik ve kilitleme doğrulaması, kademeli ilk çalıştırma ve eksik listesinin kapatılması.",
       "seoTitle": "Atık Arıtma Sistemi Devreye Alma, Mısır",
-      "seoDescription": "Proje: Mısır'da bir gıda ve içecek tesisinde anaerobik atık arıtma sisteminin test ve devreye alınması. I/O testleri, kilitlemeler, ilk çalıştırma.",
+      "seoDescription": "Mısır'da bir gıda ve içecek tesisinde anaerobik atık arıtma sisteminin test ve devreye alınması: I/O testleri, kilitlemeler, kademeli ilk çalıştırma.",
       "challenge": "Anaerobik reaktöre dayalı bir atık işleme sisteminin, bir gıda ve içecek tesisinde sürekli çalışmaya alınması gerekiyordu. Önce enstrümanların, kablajın, kontrol lojiğinin ve güvenlik fonksiyonlarının tamamının doğrulanması şarttı.",
       "solution": [
-        "Kapsamımız test ve devreye almaydı. Saha enstrümanlarını ve elektrik bağlantılarını doğruladık, saha ile kontrol sistemi (MCGS HMI'lı bir Siemens S7-200 SMART PLC) arasındaki her I/O sinyalini test ettik, kontrol lojiğini ve çalışma sekanslarını doğruladık, güvenlik kilitlemelerini ve koruma fonksiyonlarını test ettik.",
+        "Kapsamımız test ve devreye almaydı. Saha enstrümanlarını ve elektrik bağlantılarını doğruladık. Ardından saha ile kontrol sistemi arasındaki her I/O sinyalini test ettik; kontrol sistemi, MCGS HMI'lı bir Siemens S7-200 SMART PLC'ydi. Kontrol lojiğini ve çalışma sekanslarını da doğruladık, güvenlik kilitlemelerini ve koruma fonksiyonlarını test ettik.",
         "Ardından sistemi gerçek çalışma koşullarında kademeli olarak devreye aldık, çalışma parametrelerini ayarladık ve devreye alma bulgularını giderdik."
       ],
       "scope": [
@@ -150,21 +226,47 @@
         "Her I/O sinyali test edildi",
         "Gerçek koşullarda kademeli ilk çalıştırma"
       ],
+      "facts": [
+        {
+          "label": "Sistem",
+          "value": "Anaerobik atık arıtma sistemi: reaktör, pompalar, karıştırıcılar ve gaz hattı"
+        },
+        {
+          "label": "Kapsamımız",
+          "value": "Yalnızca test ve devreye alma"
+        },
+        {
+          "label": "PLC",
+          "value": "EM genişleme modüllü Siemens S7-200 SMART"
+        },
+        {
+          "label": "HMI",
+          "value": "MCGS HMI"
+        },
+        {
+          "label": "Ağ",
+          "value": "Endüstriyel Ethernet switch"
+        },
+        {
+          "label": "Teslim",
+          "value": "Tüm devreye alma bulguları kapatıldı"
+        }
+      ],
       "imageAlts": {
         "hmi": "Pompalar, karıştırıcılar, gaz hattı ve analizör değerleriyle anaerobik reaktör prosesini gösteren MCGS dokunmatik ekran",
         "panel": "Siemens PLC ve genişleme modülleri, güç kaynağı, Ethernet switch, röleler ve kontaktörler bulunan kumanda panosu"
       }
     },
     "commercial-laundry-washer-control": {
-      "title": "Programlanabilir reçeteli ve dozajlamalı çamaşır makinesi kontrol sistemi",
+      "title": "Çamaşır makinesi kontrolü: kumaş ve kirlilik derecesine göre reçeteler, deterjan dozajı",
       "cardTitle": "Wecon PLC ve HMI ile çamaşır makinesi kontrolü",
       "client": "Otel çamaşırhanesi",
       "summary": "Bir çamaşır makinesi için Wecon PLC ve HMI kontrol sistemi: kumaş tipine ve kirlilik derecesine göre programlar, otomatik su alma, yıkama, durulama ve sıkma; su, sıcaklık ve dozaj kontrolü.",
-      "seoTitle": "Çamaşır Makinesi Kontrolü | Wecon PLC/HMI",
-      "seoDescription": "Proje: Mısır'da bir otel çamaşırhanesindeki çamaşır makinesi için Wecon PLC ve HMI kontrolü. Yıkama reçeteleri, su seviyesi, sıcaklık, dozaj, alarmlar.",
+      "seoTitle": "Çamaşır Makinesi: Reçete ve Dozaj Kontrolü",
+      "seoDescription": "Mısır'da Wecon PLC ve HMI ile çamaşır makinesi kontrolü: kumaş ve kirlilik derecesine göre reçeteler, su, sıcaklık ve deterjan dozajı. Videolu.",
       "challenge": "Otel ve endüstriyel çamaşırhaneler pek çok farklı tekstil ürünü yıkar. Makinenin her kumaş tipi ve kirlilik derecesi için programlara; su, sıcaklık ve deterjanın hassas kontrolüne; suyu ve enerjiyi dikkatli kullanan verimli ve güvenilir bir çalışmaya ihtiyacı vardı.",
       "solution": [
-        "Kontrol sistemini Wecon PLC ve Wecon HMI üzerinde kurduk. Program su alma, yıkama, durulama ve sıkmayı otomatik olarak yönetiyor; su seviyesini, sıcaklığı ve deterjan dozajını kontrol ediyor. Programlanabilir birden fazla reçete farklı kumaşları ve kirlilik derecelerini kapsıyor.",
+        "Su alma, yıkama, durulama ve sıkma artık otomatik çalışıyor; program su seviyesini, sıcaklığı ve deterjan dozajını kontrol ediyor. Programlanabilir birden fazla reçete farklı kumaşları ve kirlilik derecelerini kapsıyor. Kontrol sistemi Wecon PLC ve Wecon HMI üzerinde çalışıyor.",
         "HMI anlık durumu, alarmları ve arıza mesajlarını gösteriyor; güvenlik kilitlemeleri operatörü ve makineyi koruyor; sistem performans takibi için çalışma verilerini kaydediyor. Program, montajdan önce atölyede HMI üzerinde çalıştırılarak kontrol edildi."
       ],
       "scope": [
@@ -183,21 +285,48 @@
         "Su, sıcaklık ve dozaj kontrolü",
         "Alarmlar ve veri kaydı"
       ],
+      "facts": [
+        {
+          "label": "Makine",
+          "value": "Bir otel çamaşırhanesindeki çamaşır makinesi"
+        },
+        {
+          "label": "Kapsamımız",
+          "value": "PLC programı ve HMI ekranları; montajdan önce atölyede kontrol edildi"
+        },
+        {
+          "label": "PLC",
+          "value": "Wecon PLC"
+        },
+        {
+          "label": "HMI",
+          "value": "Wecon HMI"
+        },
+        {
+          "label": "Yıkama programları",
+          "value": "Kumaş tipine ve kirlilik derecesine göre birden fazla reçete"
+        },
+        {
+          "label": "Kontrol edilenler",
+          "value": "Su seviyesi, sıcaklık ve deterjan dozajı"
+        }
+      ],
       "imageAlts": {
         "hmi": "Tambur yönü, kapı kilidi, su seviyesi, kimyasal girişleri ve adım zamanlayıcılarıyla bir yıkama programını çalıştıran Wecon dokunmatik ekran"
       },
-      "videoTitle": "Wecon HMI üzerinde çalışan çamaşır makinesi programı"
+      "videoTitle": "Wecon HMI üzerinde çalışan çamaşır makinesi programı",
+      "videoDescription": "Wecon HMI, montajdan önce atölyede bir yıkama programını çalıştırıyor. Ekran durulama adımından boşaltma adımına geçiyor. Tambur yönünü, kapı kilidini, su seviyesini, beş kimyasal girişi, buharı, sıcak ve soğuk suyu, sıcaklığı ve adım ve program zamanlayıcılarını gösteriyor."
     },
     "pasteurizer-cip-recipes": {
       "title": "CIP, reçeteler ve akış yönlendirmeli pastörizatör kontrol sistemi",
       "cardTitle": "Wecon PLC ve HMI ile CIP'li ve reçeteli pastörizatör",
       "client": "Gıda ve süt ürünleri işletmesi",
       "summary": "Wecon PLC ve HMI ile pastörizatörün otomatik kontrolü: sıcaklık ve bekletme süresi kontrolü, debi ayarı, ürün reçeteleri, CIP ve yeterince işlenmemiş ürünün makineden çıkmasını engelleyen kilitlemeler.",
-      "seoTitle": "CIP ve Reçeteli Pastörizatör Kontrolü",
-      "seoDescription": "Proje: Mısır'da Wecon PLC ve HMI ile pastörizatör otomasyonu. Sıcaklık ve bekletme süresi, akış yönlendirme kilitlemesi, CIP, reçeteler, veri kaydı.",
+      "seoTitle": "Pastörizatör: Akış Yönlendirme ve CIP",
+      "seoDescription": "Mısır'da pastörizatör otomasyonu: akış yönlendirme kilitlemesi düşük sıcaklıktaki ürünü geri çevirir; CIP, ürün reçeteleri ve veri kaydı.",
       "challenge": "Pastörizatörün her ürün için doğru sıcaklığı ve bekletme süresini sağlaması, ısı dağılımını homojen tutması ve pastörizasyon koşullarını sağlamamış ürünü asla çıkışa vermemesi gerekiyordu. Ayrıca yerinde temizlik (CIP) ve birden fazla ürün için kolay kullanım gerekiyordu.",
       "solution": [
-        "Kontrol sistemini Wecon PLC ve Wecon HMI üzerinde kurduk. PLC her ürün için sıcaklığı ve bekletme süresini kontrol ediyor, ürün debisini ayarlıyor ve besleme, ana ve ısıtma pompalarını zamanlı başlatma ve durdurma gecikmeleriyle çalıştırıyor. Sıcaklık, oransal kontrol ve ayarlanabilir darbe (pulse) ayarlarıyla tutuluyor.",
+        "PLC artık her ürüne kendi sıcaklığını ve bekletme süresini veriyor; sıcaklığı oransal kontrol ve ayarlanabilir darbe (pulse) ayarlarıyla tutuyor. PLC ayrıca ürün debisini ayarlıyor ve besleme, ana ve ısıtma pompalarını zamanlı başlatma ve durdurma gecikmeleriyle çalıştırıyor. Sistem Wecon LX3V PLC ve Wecon HMI üzerinde çalışıyor.",
         "Ayarlanabilir anahtarlama noktaları ve bir emniyet sıcaklığına sahip akış yönlendirme vanası (FDV) lojiği, düşük sıcaklıktaki ürünün çıkışa verilmesini engelliyor. HMI'da manuel ve otomatik çalışma, CIP, ayarlar, reçeteler ve alarmlar için ekranlar bulunuyor; sistem performans analizi için üretim verilerini kaydediyor."
       ],
       "scope": [
@@ -210,11 +339,37 @@
         "Pompa başlatma ve durdurma gecikmeleri",
         "Veri kaydı ve üretim takibi"
       ],
-      "result": "Her ürün kendi set sıcaklığında ve süresinde pastörize ediliyor, yeterince işlenmemiş ürün otomatik olarak geri çevriliyor ve operatörler üretimi ve CIP çevrimlerini tek bir HMI'dan yönetiyor. Sistem, daha az manuel müdahaleyle ürün kalitesinin iyileşmesine, firenin azalmasına ve sağlık standartlarına uyumun desteklenmesine yardımcı oldu.",
+      "result": "Her ürün kendi set sıcaklığında ve süresinde pastörize ediliyor, yeterince işlenmemiş ürün otomatik olarak geri çevriliyor ve operatörler üretimi ve CIP çevrimlerini tek bir HMI'dan yönetiyor. Üretim verileri performans analizi için kaydediliyor.",
       "highlights": [
         "Akış yönlendirme kilitlemesi",
         "Programa entegre CIP",
         "Her ürün için reçeteler"
+      ],
+      "facts": [
+        {
+          "label": "Makine",
+          "value": "Akış yönlendirme vanası (FDV) ve CIP sistemi olan pastörizatör"
+        },
+        {
+          "label": "Kapsamımız",
+          "value": "PLC programı ve HMI ekranları"
+        },
+        {
+          "label": "PLC",
+          "value": "Wecon LX3V"
+        },
+        {
+          "label": "HMI",
+          "value": "Wecon HMI: Manuel, Otomatik, CIP, Ayarlar, Reçeteler ve Alarmlar ekranları"
+        },
+        {
+          "label": "Ürün güvenliği",
+          "value": "Ayarlanabilir anahtarlama noktaları ve emniyet sıcaklığı olan akış yönlendirme kilitlemesi"
+        },
+        {
+          "label": "Kayıtlar",
+          "value": "Üretim verisi kaydı"
+        }
       ],
       "imageAlts": {
         "hmi": "Paslanmaz çelik kumanda panosu üzerindeki Wecon HMI; pastörizatör prosesini ve Manuel, Otomatik, CIP, Ayarlar, Reçeteler ve Alarmlar sekmelerini gösteriyor",
@@ -229,10 +384,10 @@
       "client": "Ambalaj hattına sahip üretici",
       "summary": "Delta PLC ve Wecon HMI ile bir etiketleme makinesi için kontrol sistemi: step motorla etiket bırakma, hat senkronizasyonu, ürün reçeteleri ve eksik etiket algılama.",
       "seoTitle": "Etiketleme Makinesi | Delta PLC, Wecon HMI",
-      "seoDescription": "Proje: Mısır'da etiketleme makinesi; Delta PLC, Wecon HMI, Schneider Electric step motor sürücüleri. Hat senkronizasyonu, reçeteler, eksik etiket algılama.",
+      "seoDescription": "Mısır'da Delta PLC ve Wecon HMI ile etiketleme makinesi: step motorla etiket bırakma, hat senkronizasyonu, reçeteler, eksik etiket algılama.",
       "challenge": "Etiketleme makinesinin etiketleri hat hızında hassas şekilde yerleştirmesi, farklı ürün boyutları ve etiket formatlarıyla çalışabilmesi ve eksik ya da kaymış etiketleri ürünler ilerlemeden önce yakalaması gerekiyordu.",
       "solution": [
-        "Kontrol sistemini Delta PLC ve Wecon HMI üzerinde kurduk. PLC, Schneider Electric step motor sürücüleri ve bir Altivar frekans invertörü kullanarak etiketleme hızını ve konumunu kontrol ediyor ve etiketleme makinesini üretim hattıyla senkronize ediyor.",
+        "Etiketleme makinesi artık üretim hattıyla senkronize çalışıyor. PLC, Schneider Electric step motor sürücüleri ve bir Altivar frekans invertörü kullanarak etiketleme hızını ve konumunu kontrol ediyor. Kontrol sistemi Delta DVP PLC ve Wecon HMI üzerine kurulu.",
         "Etiket boyu, bırakma uzunluğu, hızlar, stoper ve step motor gecikmeleri dahil ürün ayarları, HMI'daki bir ürün tablosunda saklanıyor. Sensörler şişeleri, etiketleri ve stoper konumunu algılıyor; sistem eksik veya kaymış etiketleri işaretliyor. HMI anlık durumu ve alarmları gösteriyor, sistem üretim verilerini kaydediyor."
       ],
       "scope": [
@@ -245,11 +400,37 @@
         "Eksik ve kaymış etiket algılama",
         "Veri kaydı ve üretim takibi"
       ],
-      "result": "Etiketleme makinesi farklı ürünleri kayıtlı ayarlarla çalıştırıyor. Sistem etiketleme hassasiyetinin artmasına, ürün firesinin azalmasına ve manuel müdahalenin düşmesine yardımcı oldu.",
+      "result": "Etiketleme makinesi kayıtlı ayarları yükleyerek ürünler arasında geçiş yapıyor, etiketleri hatla senkronize yerleştiriyor ve eksik ya da kaymış etiketleri ürünler ilerlemeden önce işaretliyor.",
       "highlights": [
         "Step motorla etiket bırakma",
         "HMI'da ürün reçeteleri",
         "Eksik etiket algılama"
+      ],
+      "facts": [
+        {
+          "label": "Makine",
+          "value": "Bir ambalaj hattındaki etiketleme makinesi"
+        },
+        {
+          "label": "Kapsamımız",
+          "value": "PLC programı ve HMI ekranları"
+        },
+        {
+          "label": "PLC",
+          "value": "Delta DVP"
+        },
+        {
+          "label": "HMI",
+          "value": "Wecon HMI: Ana, Ayarlar, Kalibrasyon ve Alarmlar ekranları"
+        },
+        {
+          "label": "Sürücüler",
+          "value": "Schneider Electric step motor sürücüleri ve bir Altivar VFD"
+        },
+        {
+          "label": "Etiket kontrolü",
+          "value": "Eksik ve kaymış etiket algılama"
+        }
       ],
       "imageAlts": {
         "hmi": "Etiketleme makinesinin Wecon HMI ana ekranı: etiket boyu, bırakma uzunluğu, hız, sensör durumu ile Başlat, Durdur ve Sıfırla butonları",
@@ -263,10 +444,10 @@
       "client": "Zeytin işleme tesisi",
       "summary": "LS PLC ve HMI ile bir zeytin otoklavı için otomatik sterilizasyon kontrolü: sıcaklık, basınç ve süre set değerli çok aşamalı çevrimler, alarmlar ve izlenebilir kayıtlar.",
       "seoTitle": "Zeytin Otoklavı Sterilizasyonu | LS PLC",
-      "seoDescription": "Proje: Mısır'da LS PLC ve HMI ile zeytin otoklavı sterilizasyon kontrolü. Her aşama için sıcaklık, basınç ve süre; alarmlar ve izlenebilirlik.",
+      "seoDescription": "Mısır'da LS PLC ve HMI ile zeytin otoklavı sterilizasyon kontrolü: her aşama için süre, sıcaklık ve basınç; alarmlar ve izlenebilir kayıtlar.",
       "challenge": "Sterilizasyonun her zeytin türü ve parti büyüklüğü için doğru sıcaklığa, basınca ve süreye her çevrimde ulaşması ve bunları koruması, her çevrimin de kalite güvencesi için kayıt bırakması gerekiyordu.",
       "solution": [
-        "Kontrol sistemini bir LS PLC ve HMI üzerinde kurduk. Her sterilizasyon programı aşamalar halinde çalışıyor; ekranda süre, sıcaklık ve basınç set değerleri ile anlık değerler görünüyor.",
+        "Her sterilizasyon programı artık aşamalar halinde çalışıyor; her aşamanın süre, sıcaklık ve basınç set değerleri var ve anlık değerler ekranda görünüyor. Kontrolör genişleme modüllü bir LS PLC; sistem bir HMI üzerinden kullanılıyor.",
         "PLC buharı, suyu, havayı, basınç dengelemeyi, pompayı, su alma ve boşaltmayı kontrol ediyor ve kapı durumunu izliyor. Programlar farklı zeytin türlerini ve parti büyüklüklerini kapsıyor, alarmlar HMI'da görünüyor ve çevrim verileri izlenebilirlik için kaydediliyor."
       ],
       "scope": [
@@ -279,11 +460,37 @@
         "Kapı durumu izleme",
         "Alarmlar, veri kaydı ve izlenebilirlik"
       ],
-      "result": "Sistem sterilizasyonun daha tekrarlanabilir hale gelmesine ve manuel müdahalenin azalmasına yardımcı oldu; güvenli ve kalitesi istikrarlı zeytin üretimini destekliyor, çevrim kayıtları da kalite güvencesine katkı sağlıyor.",
+      "result": "Her zeytin türü ve parti büyüklüğünün kendi aşamalı programı var; PLC her aşamada süreyi, sıcaklığı ve basıncı koruyor ve her çevrim kalite güvencesi için kaydediliyor.",
       "highlights": [
         "Çok aşamalı çevrimler",
         "Sıcaklık, basınç ve süre set değerleri",
         "İzlenebilir çevrim kayıtları"
+      ],
+      "facts": [
+        {
+          "label": "Makine",
+          "value": "Yatay zeytin sterilizasyon otoklavı"
+        },
+        {
+          "label": "Kapsamımız",
+          "value": "PLC programı ve HMI ekranları"
+        },
+        {
+          "label": "PLC",
+          "value": "Genişleme modüllü LS Electric"
+        },
+        {
+          "label": "Kontrol edilenler",
+          "value": "Buhar, su, hava, basınç dengeleme, pompa, su alma ve boşaltma"
+        },
+        {
+          "label": "Programlar",
+          "value": "Her zeytin türü ve parti büyüklüğü için aşamalı programlar"
+        },
+        {
+          "label": "Kayıtlar",
+          "value": "İzlenebilirlik için kaydedilen çevrim verileri"
+        }
       ],
       "imageAlts": {
         "machine": "İşleme salonunda yuvarlak paslanmaz çelik kapaklı yatay zeytin sterilizasyon otoklavı",
@@ -297,10 +504,10 @@
       "client": "Beton üreticisi",
       "summary": "Siemens S7-1200 PLC ve WinCC Professional SCADA ile otomatik dozaj ve karıştırma: çimento, agrega, su ve katkı maddesi dozajlama ve farklı karışımlar için reçeteler.",
       "seoTitle": "Beton Santrali Otomasyonu | S7-1200, WinCC",
-      "seoDescription": "Proje: Mısır'da Siemens S7-1200 ve WinCC Professional SCADA ile beton santrali kontrolü. Malzeme dozajlama, karıştırma sekansları, karışım reçeteleri.",
+      "seoDescription": "Mısır'da Siemens S7-1200 ve WinCC SCADA ile beton santrali kontrolü: her malzeme tartılarak dozajlanır, karışım reçeteleri, otomatik karıştırma.",
       "challenge": "Beton santralinin her malzemeyi hassas şekilde dozajlaması, her partide aynı karışım kalitesini sağlaması ve operatöre tüm santrali gösteren bir ekran sunması gerekiyordu.",
       "solution": [
-        "Kontrol sistemini Siemens S7-1200 PLC ve WinCC Professional SCADA üzerinde kurduk. PLC çimentoyu, agregaları, suyu ve katkı maddelerini hedef ağırlıklarına göre dozajlıyor ve dozaj ile karıştırma sekanslarını otomatik olarak çalıştırıyor.",
+        "Her malzeme artık hedef ağırlığına göre dozajlanıyor: çimento, agrega, su ve katkı maddeleri. PLC dozaj ve karıştırma sekanslarını otomatik olarak çalıştırıyor. Kontrol sistemi Siemens S7-1200 PLC ve WinCC Professional SCADA üzerine kurulu.",
         "Operatörler karışım reçetelerini seçip yönetiyor; santrali de bunkerleri, tartım haznelerini, konveyörleri ve mikseri canlı değerler, zamanlayıcılar ve alarmlarla gösteren SCADA genel görünümünden takip ediyor."
       ],
       "scope": [
@@ -311,11 +518,37 @@
         "Beton karışımları için reçete yönetimi",
         "Anlık izleme ve alarmlar"
       ],
-      "result": "Sistem üretim tutarlılığının artmasına, malzeme firesinin azalmasına ve santralin daha verimli ve güvenilir hale gelmesine yardımcı oldu.",
+      "result": "Her karışım kayıtlı reçetesine göre tartılarak dozajlanıyor; dozaj ve karıştırma otomatik çalışıyor. Operatör tüm santrali canlı değerler, zamanlayıcılar ve alarmlarla tek bir SCADA ekranından izliyor.",
       "highlights": [
         "Her malzeme için tartım ve dozajlama",
         "Karışım reçeteleri",
         "SCADA ile santral genel görünümü"
+      ],
+      "facts": [
+        {
+          "label": "Santral",
+          "value": "Üç agrega bunkerli beton santrali"
+        },
+        {
+          "label": "Kapsamımız",
+          "value": "PLC programı ve SCADA ekranları"
+        },
+        {
+          "label": "PLC",
+          "value": "Siemens S7-1200"
+        },
+        {
+          "label": "SCADA",
+          "value": "Siemens WinCC Professional"
+        },
+        {
+          "label": "Dozajlanan malzemeler",
+          "value": "Çimento, agrega, su ve katkı maddeleri"
+        },
+        {
+          "label": "Reçeteler",
+          "value": "Operatörlerin yönettiği beton karışım reçeteleri"
+        }
       ],
       "imageAlts": {
         "scada": "Üç agrega bunkeri, çimento, su ve katkı tartım hazneleri, konveyörler ve mikser zamanlayıcılarını gösteren beton santrali SCADA ekranı"
@@ -327,10 +560,10 @@
       "client": "İlaç üreticisi",
       "summary": "Bir tablet film kaplama makinesi için Siemens S7-1200 ve WinCC Professional SCADA kontrolü: püskürtme debisi, tambur hızı, hava sıcaklığı, proses süresi ve formülasyon reçeteleri.",
       "seoTitle": "Tablet Kaplama SCADA | S7-1200 ve WinCC",
-      "seoDescription": "Proje: Mısır'da ilaç tesisi için tablet kaplama makinesi kontrolü. Siemens S7-1200, WinCC Professional SCADA, reçeteler, kullanıcı girişi, alarm geçmişi.",
+      "seoDescription": "Mısır'da bir ilaç tesisi için Siemens S7-1200 ve WinCC SCADA ile tablet kaplama makinesi: reçeteler, kullanıcı girişi, alarm geçmişi, kayıtlar.",
       "challenge": "Tablet kaplama kalitesi püskürtme debisine, tambur hızına, hava sıcaklığına ve proses süresine bağlıdır. Makinenin bunların her birinin hassas kontrolüne, her formülasyon için ayarlara ve ilaç üretiminin gerektirdiği proses görünürlüğüne ve kayıtlara ihtiyacı vardı.",
       "solution": [
-        "Kontrol sistemini Siemens S7-1200 PLC ve WinCC Professional SCADA üzerinde kurduk. SCADA genel görünümü egzozu, kaplama tamburunu, kaplama solüsyonu tankını ve hava işleme ünitesini; değişken hızlı fanların ve tamburun hızlarını, damper konumlarını, giriş ve çıkış sıcaklıklarını ve çevrim süresini gösteriyor.",
+        "Operatörler artık kaplama makinesinin tamamını tek bir SCADA genel görünümünden izliyor: egzoz, kaplama tamburu, kaplama solüsyonu tankı ve hava işleme ünitesi. Ekran; değişken hızlı fanların ve tamburun hızlarını, damper konumlarını, giriş ve çıkış sıcaklıklarını ve çevrim süresini gösteriyor. Makineyi bir Siemens S7-1200 PLC yönetiyor, SCADA olarak WinCC Professional kullanılıyor.",
         "Operatörler her formülasyon için bir reçete seçiyor, kullanıcı adıyla giriş yapıyor ve tarih, saat ve süre bilgisini içeren alarm listesini görüyor."
       ],
       "scope": [
@@ -342,11 +575,37 @@
         "Her formülasyon için reçeteler",
         "Kullanıcı girişi ve alarm geçmişi"
       ],
-      "result": "Sistem kaplama tutarlılığının ve proses güvenilirliğinin artmasına yardımcı oldu ve tesisin ilaç kalitesi ve dokümantasyon standartlarını destekliyor.",
+      "result": "Her formülasyon kendi reçetesiyle çalışıyor, operatörler kullanıcı adıyla giriş yapıyor ve her alarm tarih, saat ve süresiyle tesisin kayıtları için listeleniyor.",
       "highlights": [
         "Her formülasyon için reçeteler",
         "Kullanıcı girişi",
         "Tüm prosesin SCADA görünümü"
+      ],
+      "facts": [
+        {
+          "label": "Makine",
+          "value": "Tablet film kaplama makinesi"
+        },
+        {
+          "label": "Kapsamımız",
+          "value": "PLC programı ve SCADA ekranları"
+        },
+        {
+          "label": "PLC",
+          "value": "Siemens S7-1200"
+        },
+        {
+          "label": "SCADA",
+          "value": "Panel PC üzerinde Siemens WinCC Professional"
+        },
+        {
+          "label": "Sürücüler",
+          "value": "Tambur, üfleyici, egzoz ve hava işleme ünitesi için VFD'ler"
+        },
+        {
+          "label": "Erişim ve kayıtlar",
+          "value": "Kullanıcı girişi, her formülasyon için reçete, alarm geçmişi"
+        }
       ],
       "imageAlts": {
         "machine": "İlaç temiz odasında püskürtme tabancası kolu ve egzoz kanalı bulunan paslanmaz çelik tablet kaplama tamburu",
@@ -354,12 +613,12 @@
       }
     },
     "shampoo-filling-delta-wecon": {
-      "title": "Şampuan dolum makinesi: Delta PLC ile pano imalatı ve otomasyon",
+      "title": "Dört nozullu şampuan dolum makinesi: yeni otomasyon panosu, Delta PLC ve Arapça HMI",
       "cardTitle": "Delta PLC ve Wecon HMI ile şampuan dolum makinesi",
       "client": "Kişisel bakım ürünleri üreticisi",
       "summary": "Dört nozullu bir şampuan dolum makinesi için yeni otomasyon panosu ve kontrol sistemi: Delta PLC, Arapça ekranlı Wecon HMI ve LS Electric VFD; dolum hacmi, hız ve sekans kontrolüyle.",
-      "seoTitle": "Şampuan Dolum Makinesi | Delta, Arapça HMI",
-      "seoDescription": "Proje: Mısır'da dört nozullu şampuan dolum makinesi için yeni pano ve otomasyon sistemi. Delta PLC, Arapça Wecon HMI, LS Electric M100 VFD.",
+      "seoTitle": "Şampuan Dolum Makinesi Panosu ve Arapça HMI",
+      "seoDescription": "Mısır'da dört nozullu şampuan dolum makinesi için yeni otomasyon panosu: Delta PLC, Arapça Wecon HMI, LS Electric sürücü, şişe boyu ayarları.",
       "challenge": "Dolum makinesinin hassas dolum hacimleri, minimum fire ve kısa ürün değişim süreleriyle farklı şişe boyutlarında ve ürünlerde çalışması gerekiyordu; operatörlerin de Arapça ekranlara ihtiyacı vardı.",
       "solution": [
         "Otomasyon panosunu I/O genişleme modüllü bir Delta DVP PLC, LS Electric M100 VFD, MEAN WELL güç kaynağı, röleler ve klemenslerle kurduk. PLC dolum hacmini, hızı ve dolum sekansını; tank ve stoper sensörleri, dört nozulun ayrı ayrı kontrolü ve bir ürün sayacıyla yönetiyor.",
@@ -375,11 +634,37 @@
         "Ürün sayacı",
         "Farklı şişe boyutları için ayarlar"
       ],
-      "result": "Sistem üretim hassasiyetinin artmasına; manuel müdahalenin, firenin ve duruşların azalmasına yardımcı oldu ve şişe boyutları ile ürünler arasında geçişi kolaylaştırdı.",
+      "result": "Operatörler dolum makinesini Arapça ekranlardan kullanıyor ve dört nozulun her birini ayrı ayrı kontrol ediyor. Her şişe boyutu ve ürün için ayarları HMI'dan değiştiriyorlar; ürün sayacı ekranda görünüyor.",
       "highlights": [
         "Arapça HMI",
         "Dört nozul ayrı ayrı kontrol ediliyor",
         "Hızlı şişe boyutu değişimi"
+      ],
+      "facts": [
+        {
+          "label": "Makine",
+          "value": "Dört nozullu pistonlu dolum makinesi"
+        },
+        {
+          "label": "Kapsamımız",
+          "value": "Yeni otomasyon panosu, PLC programı ve Arapça HMI"
+        },
+        {
+          "label": "PLC",
+          "value": "I/O genişlemeli Delta DVP-12SC"
+        },
+        {
+          "label": "HMI",
+          "value": "Arapça ekranlı Wecon HMI"
+        },
+        {
+          "label": "Sürücü",
+          "value": "LS Electric M100 VFD"
+        },
+        {
+          "label": "Pano",
+          "value": "MEAN WELL güç kaynağı, röleler ve klemensler"
+        }
       ],
       "imageAlts": {
         "panel": "LS Electric M100 sürücü, güç kaynağı, Delta PLC, devre kesiciler ve iki sıra röle bulunan, kablajı yeni yapılmış kumanda panosu",
@@ -393,10 +678,10 @@
       "client": "Süt ürünleri üreticisi",
       "summary": "Bir peynir pişirme makinesi için Wecon PLC ve HMI kontrolü: her peynir türü için adım reçetelerinde belirlenen sıcaklık, pişirme süresi ve iki karıştırıcı motorun hızı ve yönü.",
       "seoTitle": "Adım Reçeteli Peynir Pişirme Otomasyonu",
-      "seoDescription": "Proje: Mısır'da Wecon PLC ve HMI ile peynir pişirme makinesi kontrolü. Süre, motor hızı ve yönü içeren altı adımlı reçeteler; sıcaklık ve vana kontrolü.",
+      "seoDescription": "Mısır'da Wecon PLC ve HMI ile peynir pişirme makinesi: süre, motor hızı ve yönü içeren altı adımlı reçeteler; sıcaklık ve vana kontrolü.",
       "challenge": "Peynirin dokusu ve lezzeti sıcaklığa, pişirme süresine ve karıştırmaya bağlıdır. Her peynir türünün kendi ayarlarına ihtiyacı vardı ve operatörlerin bu ayarları her partide aynı şekilde uygulaması gerekiyordu.",
       "solution": [
-        "Kontrol sistemini I/O genişleme modüllü bir Wecon PLC ve Wecon HMI üzerinde kurduk. Her programda altı adım var; her adımın kendi süresi ile iki karıştırıcı motorun yönü ve hızı tanımlı, hız kontrolü için bir VEICHI VFD kullanılıyor.",
+        "Her peynir türünün artık altı adımlı kendi programı var; her adım kendi süresini ve iki karıştırıcı motorun yönünü ve hızını belirliyor. Hız kontrolünü bir VEICHI VFD sağlıyor; sistem I/O genişleme modüllü bir Wecon PLC ve Wecon HMI üzerinde çalışıyor.",
         "PLC pişirme sıcaklığını set değerine göre kontrol ediyor ve buhar, çift ceket ve boşaltma vanalarını çalıştırıyor. Programlar numara ve adla kaydediliyor ve her peynir türü için yükleniyor."
       ],
       "scope": [
@@ -409,11 +694,37 @@
         "Buhar, ceket ve boşaltma vanası kontrolü",
         "Her peynir türü için programlar"
       ],
-      "result": "Sistem hassas proses kontrolü ve tutarlı ürün kalitesi sağlıyor; farklı peynir türlerine ve üretim ihtiyaçlarına göre kolayca ayarlanabiliyor.",
+      "result": "Her peynir türü, numarası ve adıyla çağrılan kendi kayıtlı programıyla pişiriliyor; böylece her parti aynı sıcaklık, süre ve karıştırma adımlarını izliyor.",
       "highlights": [
         "Altı adımlı reçeteler",
         "İki motor: hız ve yön",
         "Her peynir türü için programlar"
+      ],
+      "facts": [
+        {
+          "label": "Makine",
+          "value": "Çift ceketli, iki karıştırıcı motorlu peynir pişirme makinesi"
+        },
+        {
+          "label": "Kapsamımız",
+          "value": "PLC programı ve HMI reçete ekranı"
+        },
+        {
+          "label": "PLC",
+          "value": "I/O genişlemeli Wecon PLC"
+        },
+        {
+          "label": "HMI",
+          "value": "Wecon HMI"
+        },
+        {
+          "label": "Sürücü",
+          "value": "VEICHI VFD"
+        },
+        {
+          "label": "Reçeteler",
+          "value": "Program başına 6 adım: süre ile iki motorun yönü ve hızı"
+        }
       ],
       "imageAlts": {
         "hmi": "Her adımda süre ile iki motorun yönü ve hızını içeren altı adımlı HMI reçete tablosu; sıcaklık set değeri ve vana durumu",
@@ -421,15 +732,15 @@
       }
     },
     "milk-pasteurizer": {
-      "title": "Süt pastörizasyon makinesi: sıcaklık, süre ve aşama kontrolü",
+      "title": "Plakalı eşanjörlü süt pastörizatörü: aşama, sıcaklık ve süre kontrolü",
       "cardTitle": "Wecon PLC ve HMI ile süt pastörizatörü",
       "client": "Süt ürünleri üreticisi",
       "summary": "Plakalı eşanjörlü bir süt pastörizatörü için Wecon PLC ve HMI kontrolü: gıda güvenliği gereksinimlerine göre kontrol edilen sıcaklık, süre ve proses aşamaları ile ayarlanabilir parametreler.",
-      "seoTitle": "Süt Pastörizatörü Kontrolü | Wecon PLC/HMI",
-      "seoDescription": "Proje: Mısır'da Wecon PLC ve HMI ile süt pastörizasyon makinesi kontrolü. Sıcaklık, süre ve aşama kontrolü, CIP modu, ayarlanabilir parametreler.",
+      "seoTitle": "Plakalı Eşanjörlü Süt Pastörizatörü",
+      "seoDescription": "Mısır'da plakalı eşanjörlü süt pastörizatörü, Wecon PLC ve HMI ile: her aşama için sıcaklık ve süre, CIP modu, operatör ayarları.",
       "challenge": "Süt her çalışmada doğru sıcaklıkta ve sürede pastörize edilmelidir. Makinenin her proses aşamasının güvenilir kontrolüne ve operatörlerin farklı üretim ihtiyaçlarına göre ayarlayabileceği parametrelere ihtiyacı vardı.",
       "solution": [
-        "Kontrol sistemini I/O genişleme modüllü bir Wecon PLC ve Wecon HMI üzerinde kurduk. HMI, çiğ süt besleme pompası ve denge tankından plakalı eşanjöre ve sıcak su devresine kadar prosesi; pastörizasyon, çıkış, giriş ve sıcak su sıcaklıklarını ve giriş set değerini gösteriyor.",
+        "HMI artık pastörizatörün tamamını, çiğ süt besleme pompası ve denge tankından plakalı eşanjöre ve sıcak su devresine kadar gösteriyor. Ekranda pastörizasyon, çıkış, giriş ve sıcak su sıcaklıkları ile giriş set değeri yer alıyor. Sistem I/O genişleme modüllü bir Wecon PLC ve Wecon HMI üzerinde çalışıyor.",
         "Manuel, otomatik, CIP ve ayar ekranları sayesinde operatörler makineyi çalıştırabiliyor, temizleyebiliyor ve ayarlayabiliyor."
       ],
       "scope": [
@@ -441,11 +752,37 @@
         "Manuel, otomatik ve CIP modları",
         "Ayarlanabilir proses parametreleri"
       ],
-      "result": "Sistem proses kararlılığının artmasına, insan hatasının azalmasına ve güvenli, kalitesi istikrarlı süt üretiminin desteklenmesine yardımcı oldu.",
+      "result": "Operatörler pastörizatörü tek bir Wecon HMI'dan çalıştırıyor, temizliyor (CIP) ve ayarlıyor; her aşamanın sıcaklığı ve süresi PLC kontrolünde.",
       "highlights": [
         "Plakalı eşanjör kontrolü",
         "CIP modu",
         "Ayarlanabilir parametreler"
+      ],
+      "facts": [
+        {
+          "label": "Makine",
+          "value": "Plakalı eşanjörlü, denge tanklı ve sıcak su devreli süt pastörizatörü"
+        },
+        {
+          "label": "Kapsamımız",
+          "value": "PLC programı ve HMI ekranları"
+        },
+        {
+          "label": "PLC",
+          "value": "I/O genişlemeli Wecon PLC"
+        },
+        {
+          "label": "HMI",
+          "value": "Proses genel görünümlü Wecon HMI"
+        },
+        {
+          "label": "Pompalar",
+          "value": "Besleme, ana ve ısıtma pompaları"
+        },
+        {
+          "label": "Çalışma modları",
+          "value": "Manuel, otomatik ve CIP"
+        }
       ],
       "imageAlts": {
         "hmi": "Besleme pompası, denge tankı, plakalı eşanjör, sıcak su devresi ve sıcaklık değerlerini gösteren süt pastörizatörü HMI ekranı",
@@ -458,10 +795,10 @@
       "client": "Endüstriyel müşteri",
       "summary": "Sıkma (make) ve sökme (break) değerlerini kaydeden ve kalite kontrol ile izlenebilirlik için test raporlarını otomatik oluşturan bir boru test makinesi için Wecon PLC ve HMI kontrolü.",
       "seoTitle": "Otomatik Raporlu Boru Test Makinesi",
-      "seoDescription": "Proje: Mısır'da Wecon PLC ve HMI ile boru test makinesi. Tekrarlanabilir testler, ft·lb ve psi cinsinden sıkma/sökme değerleri, otomatik raporlar.",
+      "seoDescription": "Mısır'da Wecon PLC ve HMI ile boru test makinesi: ft·lb ve psi cinsinden sıkma ve sökme değerleri, canlı bar grafikler, otomatik raporlar.",
       "challenge": "Boru testlerinin doğru, güvenilir ve tekrarlanabilir olması ve her sonucun, elle kayıt tutmaya gerek kalmadan kalite kontrol ve izlenebilirlik için belgelenmesi gerekiyordu.",
       "solution": [
-        "Kontrol sistemini Wecon PLC ve Wecon HMI üzerinde kurduk. HMI, sıkma (make) ve sökme (break) değerlerini ft·lb cinsinden, karşılık gelen basınçla birlikte psi cinsinden gösteriyor; bar grafikler canlı ölçümleri gösteriyor.",
+        "Test düzeneği artık sıkma (make) ve sökme (break) değerlerini ft·lb cinsinden, karşılık gelen basınçla birlikte psi cinsinden gösteriyor; canlı ölçümler bar grafiklerle izleniyor. Kontrol sistemi Wecon PLC ve Wecon HMI üzerinde çalışıyor.",
         "Sistem, her testin sıkma ve sökme değerlerini içeren test raporlarını otomatik olarak oluşturuyor."
       ],
       "scope": [
@@ -472,26 +809,52 @@
         "Otomatik test raporu oluşturma",
         "Kalite kontrol ve izlenebilirlik için veriler"
       ],
-      "result": "Test düzeneği tekrarlanabilir sonuçlar veriyor ve sıkma ile sökme değerlerini içeren raporları otomatik olarak oluşturuyor; bu da kalite kontrol, izlenebilirlik ve dokümantasyon gereksinimlerini destekliyor.",
+      "result": "Her test, sıkma ve sökme değerlerini içeren otomatik bir rapor oluşturuyor; böylece kalite kontrol her testin kaydını elle yazmadan saklıyor.",
       "highlights": [
         "Sıkma ve sökme (make/break) değerleri",
         "Otomatik test raporları",
         "İzlenebilir kalite kayıtları"
+      ],
+      "facts": [
+        {
+          "label": "Makine",
+          "value": "Boru sıkma (make) ve sökme (break) test makinesi"
+        },
+        {
+          "label": "Kapsamımız",
+          "value": "PLC programı, HMI ekranları ve test raporları"
+        },
+        {
+          "label": "PLC",
+          "value": "Wecon PLC"
+        },
+        {
+          "label": "HMI",
+          "value": "Canlı bar grafikli Wecon HMI"
+        },
+        {
+          "label": "Ölçülen değerler",
+          "value": "ft·lb cinsinden sıkma ve sökme, psi cinsinden basınç"
+        },
+        {
+          "label": "Raporlar",
+          "value": "Her test için otomatik oluşturulur"
+        }
       ],
       "imageAlts": {
         "hmi": "ft·lb ve psi cinsinden sıkma ve sökme değerleri ile bar grafik göstergeleri bulunan HMI test ekranı"
       }
     },
     "hotel-washer-extractor-control": {
-      "title": "Otel yıkama-sıkma makinesi: Wecon PLC ve HMI ile esnek yıkama programları",
+      "title": "Otel yıkama-sıkma makinesi: beş kimyasal girişli 15 adımlı program editörü",
       "cardTitle": "Wecon PLC ve HMI ile otel yıkama-sıkma makinesi",
       "client": "Otel çamaşırhanesi",
       "summary": "Otel çamaşır makineleri için Wecon PLC ve HMI kontrolü; havlu, çarşaf, üniforma ve diğer tekstil ürünleri için 15 adımlı program editörüyle.",
-      "seoTitle": "Otel Yıkama-Sıkma Makinesi | Wecon PLC",
-      "seoDescription": "Proje: Mısır'da Wecon PLC ve HMI ile otel çamaşır makinesi kontrolü. 15 adımlı program editörü, beş kimyasal giriş, seviye ve sıcaklık kontrolü.",
+      "seoTitle": "Yıkama-Sıkma Makinesi: 15 Adımlı Program",
+      "seoDescription": "Mısır'da Wecon PLC ve HMI ile otel yıkama-sıkma makinesi: 15 adımlı program editörü, beş kimyasal giriş, seviye ve sıcaklık kontrolü.",
       "challenge": "Bir otel çamaşırhanesinde havlular, çarşaflar ve üniformalar yıkanır ve her biri farklı bir yıkama gerektirir. Makinelerin, personelin kolayca değiştirebileceği esnek programlara, tutarlı sonuçlara ve daha az el emeğine ihtiyacı vardı.",
       "solution": [
-        "Kontrol sistemini Wecon PLC ve Wecon HMI üzerinde kurduk. Program editörü ön yıkama, yıkama, durulama, boşaltma ve sıkma gibi en fazla 15 adım içeriyor; her adımın kendi süresi, su seviyesi, sıcak veya soğuk su seçimi, sıcaklığı ve beş kimyasal giriş arasından seçimi var.",
+        "Çamaşırhane personeli artık HMI'da ön yıkama, yıkama, durulama, boşaltma ve sıkma gibi en fazla 15 adımlı yıkama programları oluşturuyor. Her adımda süre, su seviyesi, sıcak veya soğuk su, sıcaklık ve beş kimyasal girişten hangilerinin kullanılacağı ayrı ayrı belirlenir. Sistem Wecon PLC ve Wecon HMI üzerinde çalışıyor.",
         "Ana ekran tambur yönünü, kapı kilidini, su seviyesini, buhar, boşaltma ve kimyasal durumunu, adım ve program zamanlayıcılarıyla birlikte gösteriyor."
       ],
       "scope": [
@@ -503,11 +866,37 @@
         "Tambur yönü ve kapı kilidi durumu",
         "Adım ve program zamanlayıcıları"
       ],
-      "result": "Sistem çalışma verimliliğinin artmasına, manuel müdahalenin azalmasına, zaman ve kaynak tasarrufuna ve her yıkamada tutarlı kalite sağlanmasına yardımcı oldu.",
+      "result": "Çamaşırhane personeli yıkama programlarını HMI'da kendisi oluşturup değiştiriyor; program başına en fazla 15 adım var ve her tekstil türü her seferinde kendi programıyla yıkanıyor.",
       "highlights": [
         "15 adımlı program editörü",
         "Beş kimyasal giriş",
         "Her tekstil türü için programlar"
+      ],
+      "facts": [
+        {
+          "label": "Makine",
+          "value": "Otel çamaşırhanesinde önden yüklemeli yıkama-sıkma makinesi"
+        },
+        {
+          "label": "Kapsamımız",
+          "value": "PLC programı ve HMI ekranları"
+        },
+        {
+          "label": "PLC",
+          "value": "Wecon PLC"
+        },
+        {
+          "label": "HMI",
+          "value": "Program editörlü Wecon HMI"
+        },
+        {
+          "label": "Program editörü",
+          "value": "Program başına en fazla 15 adım"
+        },
+        {
+          "label": "Kimyasal girişler",
+          "value": "5"
+        }
       ],
       "imageAlts": {
         "machine": "Otel çamaşırhanesinde önden yüklemeli paslanmaz çelik yıkama-sıkma makinesi",

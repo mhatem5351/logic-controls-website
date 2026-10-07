@@ -1,10 +1,20 @@
 ---
 /**
- * <head> SEO block: title template, description, canonical, hreflang alternates (+ x-default),
- * content-language, Open Graph / Twitter, theme-color, robots and JSON-LD.
+ * <head> SEO block: title template, description, canonical, hreflang alternates (+ x-default), robots,
+ * Open Graph / Twitter (with the generated per-page, per-locale 1200×630 card — src/lib/og.ts) and JSON-LD
+ * (built with src/lib/jsonld.ts).
+ *
+ * - Title: "<page title> | <brand>" unless the title already names the brand; the home page uses its own title.
+ * - Arabic: a title or description whose first strong character is Latin ("Logic Controls | …") gets a leading
+ *   RIGHT-TO-LEFT MARK, so plain-text surfaces that guess direction from the first letter (WhatsApp / Telegram link
+ *   previews, tab strips, share sheets) lay it out right-to-left instead of scrambling it.
+ * - og:image: the page's card (or the locale's default card), then an extra image the page passes (case-study cover).
+ * - og:type is "article" when the JSON-LD has an Article (case studies), with its publication dates.
  */
 import { LOCALES, LOCALE_META, getMessages, localePath, type Locale } from "~/i18n";
 import { SITE } from "~/data/site";
+import { cleanText } from "~/lib/text";
+import { ogCard, ogDefault } from "~/lib/og";
 
 interface Props {
   locale: Locale;
@@ -18,10 +28,13 @@ interface Props {
   alternates?: boolean;
   /** Emit <link rel="canonical"> and og:url (disable for 404). */
   canonical?: boolean;
-  /** Absolute or root-relative image URL for social cards (1200×630). */
+  /** An extra social image (absolute or root-relative), emitted after the page's generated card. */
   ogImage?: string;
   /** Pixel size of `ogImage` (default 1200×630). */
   ogImageSize?: { width: number; height: number };
+  /** Alt text of `ogImage` (default: the page title). */
+  ogImageAlt?: string;
+  /** Override the inferred og:type ("article" when the JSON-LD has an Article). */
   ogType?: "website" | "article";
   /** One JSON-LD object or an array of objects. */
   jsonLd?: Record<string, unknown> | Array<Record<string, unknown>>;
@@ -35,9 +48,10 @@ const {
   noindex = false,
   alternates = true,
   canonical: withCanonical = true,
-  ogImage = "/og-default.png",
+  ogImage,
   ogImageSize = { width: 1200, height: 630 },
-  ogType = "website",
+  ogImageAlt,
+  ogType,
   jsonLd,
 } = Astro.props;
 
@@ -45,40 +59,66 @@ const t = getMessages(locale);
 const meta = LOCALE_META[locale];
 const isHome = path.replace(/^\/+|\/+$/g, "") === "";
 const brand = t.seo.siteName;
-const fullTitle = !title ? t.seo.defaultTitle : title.includes(brand) ? title : `${title} | ${brand}`;
-const desc = description ?? t.seo.defaultDescription;
+/** RLM before RTL text that would otherwise start with a Latin letter (I18N-07). */
+const rtlSafe = (s: string) => (meta.dir === "rtl" && /^[^\p{L}]*[A-Za-z\u00C0-\u024F]/u.test(s) ? `\u200F${s}` : s);
+const plainTitle = !title ? t.seo.defaultTitle : title.includes(brand) ? title : `${title} | ${brand}`;
+const fullTitle = rtlSafe(plainTitle);
+const desc = rtlSafe(description ?? t.seo.defaultDescription);
 const abs = (p: string) => new URL(p, SITE.url).href;
 const canonical = abs(localePath(locale, path));
 const xDefault = isHome ? abs("/") : abs(localePath("en", path));
-const image = abs(ogImage);
+
+/* Social images: the generated card first (WhatsApp / Facebook / LinkedIn use the first), then the page's own image. */
+const card = ogCard(locale, path) ?? ogDefault(locale);
+const images = [
+  { url: abs(card.url), width: card.width, height: card.height, type: card.type, alt: cleanText(card.alt) },
+  ...(ogImage ? [{ url: abs(ogImage), ...ogImageSize, type: undefined, alt: cleanText(ogImageAlt ?? plainTitle) }] : []),
+];
+
 const ld = jsonLd ? (Array.isArray(jsonLd) ? jsonLd : [jsonLd]) : [];
 const ldJson = (o: unknown) => JSON.stringify(o).replace(/</g, "\\u003c");
+/** The Article node of the page's JSON-LD (case studies), if any. */
+const nodes = ld.flatMap((o) => (Array.isArray(o["@graph"]) ? (o["@graph"] as Record<string, unknown>[]) : [o]));
+const articleNode = nodes.find((n) => n["@type"] === "Article");
+const type = ogType ?? (articleNode ? "article" : "website");
+const published = typeof articleNode?.datePublished === "string" ? articleNode.datePublished : undefined;
+const modified = typeof articleNode?.dateModified === "string" ? articleNode.dateModified : undefined;
 ---
 
 <title>{fullTitle}</title>
 <meta name="description" content={desc} />
 {withCanonical && <link rel="canonical" href={canonical} />}
-<meta http-equiv="content-language" content={meta.htmlLang} />
-{noindex && <meta name="robots" content="noindex, follow" />}
+<meta name="robots" content={noindex ? "noindex, follow" : "max-image-preview:large"} />
 {
   alternates &&
     LOCALES.map((l) => <link rel="alternate" hreflang={LOCALE_META[l].hreflang} href={abs(localePath(l, path))} />)
 }
 {alternates && <link rel="alternate" hreflang="x-default" href={xDefault} />}
 
-<meta property="og:type" content={ogType} />
+<meta property="og:type" content={type} />
 <meta property="og:site_name" content={brand} />
 <meta property="og:title" content={fullTitle} />
 <meta property="og:description" content={desc} />
 {withCanonical && <meta property="og:url" content={canonical} />}
-<meta property="og:image" content={image} />
-<meta property="og:image:width" content={String(ogImageSize.width)} />
-<meta property="og:image:height" content={String(ogImageSize.height)} />
+{
+  images.map((img) => (
+    <>
+      <meta property="og:image" content={img.url} />
+      {img.type && <meta property="og:image:type" content={img.type} />}
+      <meta property="og:image:width" content={String(img.width)} />
+      <meta property="og:image:height" content={String(img.height)} />
+      <meta property="og:image:alt" content={img.alt} />
+    </>
+  ))
+}
 <meta property="og:locale" content={meta.og} />
 {alternates && LOCALES.filter((l) => l !== locale).map((l) => <meta property="og:locale:alternate" content={LOCALE_META[l].og} />)}
+{type === "article" && published && <meta property="article:published_time" content={published} />}
+{type === "article" && modified && <meta property="article:modified_time" content={modified} />}
 <meta name="twitter:card" content="summary_large_image" />
 <meta name="twitter:title" content={fullTitle} />
 <meta name="twitter:description" content={desc} />
-<meta name="twitter:image" content={image} />
+<meta name="twitter:image" content={images[0]!.url} />
+<meta name="twitter:image:alt" content={images[0]!.alt} />
 
 {ld.map((o) => <script type="application/ld+json" set:html={ldJson(o)} />)}

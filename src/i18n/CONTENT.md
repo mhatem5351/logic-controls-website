@@ -1,6 +1,6 @@
 # Content guide (page-builder + transcreators)
 
-English (`messages/en/`) is the single source of truth. `ar/`, `zh/`, `tr/` currently hold **verbatim English copies** of every namespace except `ui.json` (owned by the design agent). Translators replace them, keeping the same keys and array lengths (`node scripts/check-i18n.mjs` enforces this).
+English (`messages/en/`) is the single source of truth. `ar/`, `zh/`, `tr/` hold full native transcreations of every namespace (not word-for-word translations). Any change to English must be mirrored in all three, keeping the same keys and array lengths (`node scripts/check-i18n.mjs` enforces this).
 
 All strings are plain text: no HTML, no Markdown. Paragraphs are arrays. Render brand, model and protocol names exactly as written (LTR inside RTL, wrap in `<bdi>`).
 
@@ -26,7 +26,10 @@ All strings are plain text: no HTML, no Markdown. Paragraphs are arrays. Render 
 
 - `services.items[slug]`: `title`, `navTitle`, `summary` (cards), `seoTitle`, `seoDescription`, `h1`, `intro[]`, `capabilities[] {title,text}`, `deliverables[]`, `situations[]`, `faq[] {q,a}`, `cta {title,text}`
 - `industries.items[slug]`: `title`, `navTitle`, `summary`, `seoTitle`, `seoDescription`, `h1`, `intro[]`, `needs[] {title,text}`, `applications[]`, `faq[] {q,a}`, `cta {title,text}`
-- `projects.items[slug]`: `title` (H1), `cardTitle` (cards), `client` (anonymised), `summary`, `seoTitle`, `seoDescription`, `challenge`, `solution[]` (2–3 paragraphs; same count in every locale), `scope[]`, `result`, `highlights[3]` ("At a glance" chips), `imageAlts{key}`, plus `videoTitle` **only** on projects with a video.
+- `projects.items[slug]`: `title` (H1), `cardTitle` (cards), `client` (anonymised), `summary`, `seoTitle`, `seoDescription`, `challenge`, `solution[]` (2–3 paragraphs; same count in every locale), `scope[]`, `result`, `highlights[3]` ("At a glance" chips), `facts[] {label, value}` ("Project facts" table, 5–6 rows, same row count in every locale), `imageAlts{key}`, plus `videoTitle` and `videoDescription` **only** on projects with a video.
+  - `facts` uses only what the copy and `projects.ts` already state: equipment, our scope, PLC, HMI/SCADA, drives, and a figure already in the copy (15 steps, 5 chemical inputs, 6-step recipes, 4 nozzles, 2 VFDs). Never add an I/O count, duration, percentage or result the client has not given. Labels are reused across projects (see `GLOSSARY.md` → Project facts labels).
+  - `videoDescription`: a plain description of what the clip shows (text alternative for viewers who cannot see it). Describe only what is visible; no claims.
+- `foreign.oem` {`eyebrow`, `title`, `intro`, `items[] {title,text}`, `cta`}: block for foreign machine builders (OEMs) who need a local commissioning and service team. CTA → `contact/?service=oem-partner` (need option `contact.form.fields.need.options.oem-partner`), WhatsApp `common.whatsapp.oem`. No partnership, agency or authorization wording.
 
 TypeScript note: `imageAlts` keys differ per project and `videoTitle` is not on every item. Read them with a guard, e.g. `(item.imageAlts as Record<string, string>)[img.key]` and `"videoTitle" in item ? item.videoTitle : undefined`.
 
@@ -35,8 +38,8 @@ TypeScript note: `imageAlts` keys differ per project and `videoTitle` is not on 
 | File | Exports |
 |---|---|
 | `site.ts` (existing) | NAP, phone, email, `whatsappLink(message)`, brands, counts |
-| `services.ts` | `SERVICE_SLUGS` (display order), `SERVICES[] {slug, icon, industries, featuredProjects}`, `getService()` |
-| `industries.ts` | `INDUSTRY_SLUGS`, `INDUSTRIES[] {slug, icon, services}`, `getIndustry()` |
+| `services.ts` | `SERVICE_SLUGS` (display order), `SERVICES[] {slug, icon, industries, featuredProjects}` |
+| `industries.ts` | `INDUSTRY_SLUGS`, `INDUSTRIES[] {slug, icon, services}` |
 | `projects.ts` | `PROJECT_SLUGS`, `PROJECTS[]`, `FEATURED_PROJECT_SLUGS`, `featuredProjects()`, `projectsSorted()`, `projectsByIndustry()`, `projectsByService()`, `relatedProjects()` |
 | `zones.ts` | `ZONES[] {slug, region, sczone?, home?}` → names in `common.zones.items[slug]`, region labels in `common.zones.regions` |
 | `technologies.ts` | `BRANDS[] {slug, name, products[]}` → text in `technologies.brands.items[slug].text`; `PROTOCOLS` |
@@ -65,7 +68,7 @@ WhatsApp links: `whatsappLink(t.common.whatsapp.<key>)` after replacing placehol
 ## 4. Page section order
 
 **Home** (`home.json` unless noted)
-1. Hero: `hero.eyebrow`, H1 `hero.title`, `hero.lead`, `hero.proof`, buttons `hero.ctaPrimary` → `contact/` and `hero.ctaSecondary` → WhatsApp `whatsapp.default`; stats strip from `STATS` + `common.stats`. Suggested hero image: `pasteurizer-cip-recipes/hmi.jpg` (alt `hero.imageAlt`), or the `/media/hero-filling-v2.mp4` loop with its poster.
+1. Hero: `hero.eyebrow`, H1 `hero.title`, `hero.lead`, `hero.proof`, buttons `hero.ctaPrimary` → `contact/` and `hero.ctaSecondary` → WhatsApp `whatsapp.default`; stats strip from `STATS` + `common.stats`. Suggested hero image: `pasteurizer-cip-recipes/hmi.jpg` (alt `hero.imageAlt`), or the `/media/hero-filling-v3.mp4` loop with its poster (see src/components/hero-media.ts).
 2. Platforms strip: `common.platforms` + `SITE.brands` (text or logos) → `technologies/`
 3. Two doors: `audiences.local` → `services/`, `audiences.foreign` → `foreign-manufacturers/`
 4. Services: `services.title/intro`, 8 cards from `services.json items[slug].{title,summary}` in `SERVICE_SLUGS` order
@@ -83,10 +86,10 @@ Services index: `index.h1/intro` → 8 cards → `index.engagement` → `common.
 
 **Industry page**: H1 + `intro` → `needs` → `applications` → related projects (`projectsByIndustry`) → related services (`INDUSTRIES[].services`) → `faq` → `cta`. Index: `index.h1/intro` + 7 cards.
 
-**Case study**: breadcrumb → H1 `title` → meta row (`labels.client` `client` · `labels.industry` · `labels.year` `year` · `labels.location` `common.locations.egypt`) → cover → `highlights` → `challenge` → `solution` → `scope` → tech chips (`technologies[]` from data, `labels.technologiesUsed`) → `result` → video (`videoTitle`) → gallery (`imageAlts`) → related projects (`relatedProjects`) → `ctaBand.project`. Footer notes: `common.notes.anonymised`, `common.notes.photos`; for projects delivered before the company existed (data logic, `year < 2025`) also `common.notes.preFounding` ("Delivered by our engineers before the company was established."). The site shows **no founding year anywhere** (client decision 2026-10-06): never print the threshold year in copy.
+**Case study**: breadcrumb → H1 `title` → meta row (`labels.client` `client` · `labels.industry` · `labels.year` `year` · `labels.location` `common.locations.egypt`) → cover → `highlights` → `challenge` → `solution` → `scope` → tech chips (`technologies[]` from data, `labels.technologiesUsed`) → `result` (+ `facts` table in "At a glance") → video (`videoTitle`, described by `videoDescription`) → gallery (`imageAlts`) → related projects (`relatedProjects`) → `ctaBand.project`. Footer notes: `common.notes.anonymised`, `common.notes.photos`; for projects delivered before the company existed (data logic, `year < 2025`) also `common.notes.preFounding` ("Delivered by our engineers before the company was established."). The site shows **no founding year anywhere** (client decision 2026-10-06): never print the threshold year in copy.
 Projects index: `index.h1/intro` → filters (`common.filters`, by `industries` and `services`) → cards sorted by `projectsSorted()` → `notes.anonymised` + `notes.preFounding`.
 
-**Foreign manufacturers**: hero (+ `chips`) → `needs` → `services` → `timeline` → `standards` → `proof` → `languages` → zones (`common.zones`) → `faq` → `ctaBand.foreign`. Suggested as the hero target for `/zh/` and `/tr/` visitors (link prominently from their home pages).
+**Foreign manufacturers**: hero (+ `chips`) → `needs` → `services` → `timeline` → `standards` → `proof` → `languages` → `oem` (machine builders) → zones (`common.zones`) → `faq` → `ctaBand.foreign`. Suggested as the hero target for `/zh/` and `/tr/` visitors (link prominently from their home pages).
 
 **Technologies**: H1 + `intro` → `brands` (`BRANDS` + `brands.items[slug].text`, product chips with `brands.productsLabel`) → `drives` → `scada` ("Software, SCADA and data": EPLAN Electric P8, WinCC, SQL/OEE) → `networks` → `signals` → `otherBrands` → `choosing` → `common.notes.brands` → `ctaBand.default`.
 
@@ -110,7 +113,12 @@ Projects index: `index.h1/intro` → filters (`common.filters`, by `industries` 
 
 ## 6. SEO
 
-- `seo.title` / `seoTitle` values are complete titles (most already end in "| Logic Controls"). Do not append the site name again. Max 60 characters, descriptions max 155 (English).
+- Titles: `Seo.astro` appends " | Logic Controls" when the brand is not already in the string. So a `seoTitle` without the brand gets 17 characters added: keep that keyword part to about 43 characters in Latin scripts (about 22 CJK characters in Chinese). Rendered titles stay within about 600 px at 20 px Arial (roughly 60 characters). The only suffix is "| Logic Controls" (never "| Logic Controls Egypt" or "| Logic Controls Mısır"); "Egypt" goes in the keyword part.
+- Lead with the service or machine and Egypt; the brand goes last. The home title and `seo.defaultTitle` follow this too ("Control Panels & PLC Automation in Egypt | Logic Controls"). `seo.siteName` stays "Logic Controls" (the JSON-LD site name).
+- Descriptions: start with the machine or service, Egypt and the key feature within about 110 characters. Cap at about 145 characters in English and Turkish (no wider than about 920 px at 14 px Arial) and about 80 characters in Chinese. No label prefix such as "Case study:", "دراسة حالة:", "案例：" or "Proje:": the breadcrumb already says it.
+- H1s say what the page is ("Automation projects and case studies in Egypt", not "Projects"). Nav labels and breadcrumbs stay short.
+- Near-duplicate case studies (two pasteurizers, two laundry washers, two shampoo fillers) must keep different titles, H1s, descriptions and first sentences that name what differs (platform, scope, features). Arabic titles must differ before the pipe, not only after it.
+- Arabic titles and H1s use the terms Egyptian buyers search for where they read naturally: لوحات كنترول، برمجة PLC، أوتوميشن، سكادا، صيانة (see `GLOSSARY.md`). Once per title or H1, never stuffed.
 - `seo.organizationDescription` → JSON-LD `Organization.description`. Use `SITE` for NAP. Add `alternateName: "لوجيك كنترولز"` only if the client approves the Arabic spelling.
 - Keep FAQs visible on the page. FAQPage markup gives no rich result any more (optional).
 
@@ -118,7 +126,7 @@ Projects index: `index.h1/intro` → filters (`common.filters`, by `industries` 
 
 - `src/assets/projects/<slug>/`: chosen photos with clean names. Third-party logos and nameplates are already cropped out or blurred (tablet coater plates and SCADA logo, autoclave door plate, customer logos on the cheese-cooker and pipe-tester HMIs, product brand on the shampoo reel still, OEM nameplate on the printing reel still).
 - Many HMI screenshots are about 800 px wide: use them at card or gallery size, not full-bleed.
-- Videos already exist in `/public/media/` and are referenced from `projects.ts`. Check before launch: the shampoo video shows the product brand on some bottles, and the printing video may show the original machine builder's nameplate (see `video.note`). The laundry video is vertical (540×960).
+- Videos exist in `/public/media/` (the `-v2` files) and are referenced from `projects.ts`. The product brand on the shampoo bottles and the machine builder's nameplate on the printing machine are blurred in the `-v2` files. The laundry video is vertical (540×960). Each video has a `videoDescription` text alternative. Before adding captions, listen to the shampoo clip: if anyone speaks, it needs WebVTT captions in all four languages; clips with machine noise only can have the audio stripped.
 
 ## 8. Notes for transcreators
 
@@ -133,6 +141,10 @@ Projects index: `index.h1/intro` → filters (`common.filters`, by `industries` 
 
 **Claims that must not change.** "Platforms we program and integrate" (never "partner", "authorized", "certified dealer"). "Designed following IEC 60204-1 and IEC 61439 practice" (never "certified" or "compliant"). No 24/7 promise, no stock or warehouse, no UL/CE certification, no named clients. Chinese and Turkish documents are "on request". Batch control is "structured following ISA-88 principles" (never "ISA-88 certified/compliant"). The founder's past employers are described, never named ("a multinational pharmaceutical plant in Cairo", "an Egyptian manufacturer of engineering training equipment", "a machine-automation company"). Sub-sectors from LinkedIn (chocolate/bakery, oil and liquid-egg fillers, ultrafiltration, wax filling, ampoules, EMS/BMS, purified water, drainage/feed-mill SCADA, cut-to-length, grinding, decal printing) are "our engineers' experience", not Logic Controls case studies.
 
-**Length.** Aim for SEO titles of about 60 characters in Latin scripts and about 30 characters in Chinese; descriptions about 155 and 80 characters. Turkish runs longer: shorten wording rather than cut meaning. Button labels must stay short (2–4 words).
+**Length.** Aim for SEO titles of about 60 characters in Latin scripts and about 30 characters in Chinese (rendered, with the brand); descriptions about 145 and 80 characters (see section 6). Turkish runs longer: shorten wording rather than cut meaning. Button labels must stay short (2–4 words). Keep sentences under about 30 words: split long lists into two sentences or into `scope[]` bullets.
+
+**Answers and results.** FAQ answers open with the answer, then name what it depends on. Never open with "It depends". Prices, durations and response times are given only when the client has confirmed them. Case-study results say what the machine or operators can now do ("Operators run, clean and adjust the pasteurizer from one HMI"), not "helped improve efficiency". Vary the first sentence of `solution[0]`: lead with what the machine now does, not with the PLC brand, which the hero, chips and facts already show.
+
+**Arabic no-break spaces.** Use U+00A0 only after a free-standing "و" or after "الـ" when the next word is Latin ("PLC و\u00a0HMI", "الـ\u00a0PLC"), so the conjunction never ends a line. Never put U+00A0 before "و", "مع" or a "و"-prefixed word ("S7-1200\u00a0و" or "M100\u00a0ومصدر" fuse two codes into one unbreakable run that overflows phones). Compound names that must not break use U+00A0 inside the name: "أبو\u00a0الصفا".
 
 **Spelling (English).** US spelling throughout: labeling, synchronization, localization, authorized.

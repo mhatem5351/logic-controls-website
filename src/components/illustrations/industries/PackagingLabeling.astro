@@ -46,7 +46,7 @@ const tOut = "M340 100V119L328 131H290";
     @keyframes lbPi{0%,66%{stroke-dashoffset:14}82%,100%{stroke-dashoffset:-102}}
     @keyframes lbPo{0%{stroke-dashoffset:14}9%,100%{stroke-dashoffset:-102}}
     @keyframes lbPn{0%,8%{opacity:0;transform:scale(1)}8.5%{opacity:1;transform:scale(1)}24%,100%{opacity:0;transform:scale(2.4)}}
-    @media (prefers-reduced-motion:reduce){.lca-lb .lab{transform:scaleX(.6)}}
+    @media (prefers-reduced-motion:reduce){.lca-lb .lab{transform:scaleX(.6)}}.lca-lb:is([data-play=rest],[data-motion=off] *) .lab{transform:scaleX(.6)}
   </style>
   <defs>
     <path id={`${u}b`} d={body} style="fill:var(--i-f);stroke-width:1.25"></path>

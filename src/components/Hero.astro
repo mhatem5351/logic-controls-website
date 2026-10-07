@@ -2,26 +2,35 @@
 /**
  * Dark-navy hero. Use with <BaseLayout heroDark> so the transparent header sits on top of it.
  *
- * size="home": tall, slanted media panel on the inline-end side (≥1024px), full-bleed poster behind text on
- *              mobile; optional muted background loop that only starts when motion/data/viewport allow.
- * size="page": compact page header for inner pages (breadcrumbs slot, no video).
+ * size="home": tall, slanted media panel on the inline-end side (≥1024px); optional muted background loop that only
+ *              starts when motion, data and viewport allow (≥1024px, after first paint + 2.4 s and an idle moment),
+ *              with a pause button (persisted) that also follows the site-wide "Pause animations" switch.
+ * size="page": page header for inner pages (breadcrumbs slot, no video).
+ * size="compact": index pages (services, industries, projects): page header with tighter spacing, medium buttons and
+ *              the proof figures in the otherwise empty inline-end column (desktop), so the first cards are on screen.
+ * Below 1024px a photo or video poster is shown as a visible band (<HeroBand>) instead of a dimmed backdrop: under the
+ * breadcrumbs on page heroes, after the CTAs on the home hero.
  *
+ * CTAs (contact-cta.ts): form + WhatsApp (zh: email); on Arabic pages WhatsApp comes first and filled.
+ * `urgent` adds a "Machine stopped? Call / WhatsApp now" line under the CTAs.
  * Title accepts simple HTML; wrap the emphasised words in <em> (rendered in royal-300, not slanted twice).
  * Slots: default (extra content under the CTAs), "breadcrumbs", "media" (replaces the video/image panel).
  */
 import type { ImageMetadata } from "astro";
-import { Picture } from "astro:assets";
-import { getMessages, type Locale } from "~/i18n";
+import { getImage } from "astro:assets";
+import { SITE } from "~/data/site";
+import { getMessages, pathWithoutLocale, type Locale } from "~/i18n";
+import { toHtml } from "~/lib/text";
 import Button from "./Button.astro";
 import Chips from "./Chips.astro";
 import CircuitTraces from "./CircuitTraces.astro";
+import HeroBand from "./HeroBand.astro";
 import Icon from "./Icon.astro";
-import { href as lhref, QUOTE_PATH, whatsappLink, mailtoLink, prefersEmail } from "./nav";
+import { contactCta, pageTopic, placeCtas, type Cta } from "./contact-cta";
+import CopyEmail from "./CopyEmail.astro";
+import { BLANK_IMAGE, HERO_PANEL_SIZES, type HeroVideo } from "./hero-media";
+import { href as lhref, QUOTE_PATH, whatsappLink, prefersEmail } from "./nav";
 
-interface Cta {
-  label: string;
-  href: string;
-}
 interface Proof {
   value: string;
   label: string;
@@ -36,13 +45,15 @@ interface Props {
   secondary?: Cta | false;
   /** Static proof figures under the CTAs (never animated). */
   proof?: Proof[];
-  size?: "home" | "page";
-  /** Background loop (muted). `poster` is required and is the LCP image. */
-  video?: { src: string; poster: string; posterSmall?: string; width?: number; height?: number };
+  /** "compact": index pages — tight header so the first cards show on the first screen; proof figures move to the
+   *  empty inline-end side on desktop (hidden on phones); a photo stays a desktop-only panel (no phone band). */
+  size?: "home" | "page" | "compact";
+  /** Background loop (muted). `poster` is required and is the LCP image on desktop (see hero-media.ts). */
+  video?: HeroVideo;
   /** Photo instead of a video. */
   image?: ImageMetadata;
   imageAlt?: string;
-  /** Mark the poster/image as the LCP candidate (fetchpriority="high"). Home page only. */
+  /** fetchpriority="high" on the poster/photo (default: on whenever the hero has a photo or video: it is the LCP). */
   priority?: boolean;
   /** Show the animated circuit traces. */
   traces?: boolean;
@@ -53,42 +64,77 @@ interface Props {
    * tighter vertical rhythm so a long H1 + lead + CTAs + proof figures fit above the fold on a 1440×900 desktop.
    */
   titleSize?: "display" | "fit";
+  /** Page topic for email CTAs (subject "Automation project inquiry: <topic>"); default: the catalogue page's title. */
+  topic?: string;
+  /** "Machine stopped?" call-now line under the CTAs (pages whose visitors may have a stopped line). */
+  urgent?: boolean;
   class?: string;
 }
 
 const locale = (Astro.props.locale ?? Astro.currentLocale ?? "en") as Locale;
-const t = getMessages(locale).ui;
+const m = getMessages(locale);
+const t = m.ui;
 const email = prefersEmail(locale);
+const path = pathWithoutLocale(Astro.url.pathname);
+const mail = { topic: Astro.props.topic ?? pageTopic(locale, path), path };
 const {
   title,
   lead,
   chips,
-  primary = { label: t.cta.quote, href: lhref(locale, QUOTE_PATH) },
-  secondary = email
-    ? { label: t.cta.emailEngineer, href: mailtoLink(t.email.subject) }
-    : { label: t.cta.whatsapp, href: whatsappLink(t.whatsapp.message) },
+  primary = { label: t.cta.quote, href: lhref(locale, QUOTE_PATH), kind: "form" },
+  secondary = contactCta(locale, { whatsapp: t.whatsapp.message, mail }),
   proof = [],
   size = "home",
   video,
   image,
   imageAlt = "",
-  priority = false,
   traces = true,
   angle,
   titleSize = "display",
+  urgent = false,
   class: className,
 } = Astro.props;
 
 const home = size === "home";
 const fit = home && titleSize === "fit";
+/** Long display titles (Turkish runs ~80 characters) step down one size so the CTAs stay above the fold. */
+const longTitle = title.replace(/<[^>]*>/g, "").length > 80;
 const angled = angle ?? home;
 const hasMediaSlot = Astro.slots.has("media");
 const hasMedia = hasMediaSlot || !!video || !!image;
-const secondaryIsWa = secondary && secondary.href.startsWith("https://wa.me");
-/* Below 1024px the poster sits behind the copy under an 85% navy scrim, so phones and tablets get the small file
-   (art direction, not srcset: a 3× phone would otherwise pick the full 1280px poster). BaseLayout preloads the large
-   file for ≥1024px only — keep the breakpoint in sync with the home page's `preloadImage.media`. */
-const POSTER_SMALL_MEDIA = "(max-width: 1023.98px)";
+const priority = Astro.props.priority ?? (!!video || !!image);
+/** Photo/poster shown as a band below 1024px (the slot's art handles its own mobile copy). */
+const band = !hasMediaSlot && (!!video || !!image);
+const ctas = placeCtas(locale, primary, secondary, mail);
+const compact = size === "compact";
+/** The phone band (not on compact heroes: there the cards right below are the imagery). */
+const bandHere = band && !compact;
+
+/* Below 1024px the desktop panel is not rendered (display: none) and must not download either: its <picture> only
+   offers real files to ≥1024px and falls back to a 1×1 data-URI source. BaseLayout preloads the desktop poster for
+   ≥1024px only (hero-media.ts). Pages without the band (media slot) never had a photo here. */
+const WIDE = "(min-width: 1024px)";
+/* object-fit: cover fills the panel (54% / 44% of the viewport wide, the hero's height tall), so the photo renders at
+   max(panel width, hero height × aspect ratio). The hero's height comes from its copy and barely changes with the
+   viewport (measured 1024–1920px: page ~620–890px, compact ~520–580px, home-size ~900–1040px), so below the width
+   where the panel itself wins the rendered size is a fixed number of pixels: e.g. technologies (0.97:1) ~760–860px,
+   about (1.47:1) ~910–940px. A flat 80vw asked for 1152px at 1440 and 1536px at 1920 (2x screens took the largest file). */
+const PANEL_FRAC = home ? 0.54 : 0.44;
+const HERO_H = home ? 940 : compact ? 540 : 760;
+let panelSizes = home ? "100vw" : "80vw";
+if (image) {
+  const px = Math.round(HERO_H * (image.width / image.height));
+  const bp = Math.ceil(px / PANEL_FRAC);
+  panelSizes = bp > 1024 ? `(min-width: ${bp}px) ${Math.round(PANEL_FRAC * 100)}vw, ${px}px` : `${Math.round(PANEL_FRAC * 100)}vw`;
+}
+let photo: { avif: string; webp: string; src: string } | undefined;
+if (image) {
+  const widths = [...new Set([960, 1280, 1600, 2000, 2400].map((w) => Math.min(w, image.width)))];
+  const set = async (format: "avif" | "webp") =>
+    (await Promise.all(widths.map(async (w) => `${(await getImage({ src: image, width: w, format })).src} ${w}w`))).join(", ");
+  const [avif, webp] = await Promise.all([set("avif"), set("webp")]);
+  photo = { avif, webp, src: (await getImage({ src: image, width: Math.min(1280, image.width), format: "webp" })).src };
+}
 ---
 
 <section
@@ -97,32 +143,40 @@ const POSTER_SMALL_MEDIA = "(max-width: 1023.98px)";
   data-angle={angled ? "" : undefined}
   style="margin-block-start: calc(-1 * (var(--header-h) + var(--utility-h)))"
 >
-  {/* ---------- media ---------- */}
+  {/* ---------- media (≥1024px panel; below that, see <HeroBand>) ---------- */}
   {
     hasMedia && (
-      <div class:list={["lc-hero-media absolute inset-0 -z-30", home ? "lg:inset-s-auto lg:w-[54%]" : "lg:inset-s-auto lg:w-[44%]"]}>
+      <div
+        class:list={[
+          "lc-hero-media absolute inset-0 -z-30",
+          band && "max-lg:hidden",
+          home ? "lg:inset-s-auto lg:w-[54%]" : "lg:inset-s-auto lg:w-[44%]",
+        ]}
+      >
         {hasMediaSlot ? (
           <slot name="media" />
         ) : video ? (
           <>
             <picture>
-              {video.posterSmall && <source media={POSTER_SMALL_MEDIA} srcset={video.posterSmall} width={640} height={360} />}
+              {video.posterAvifSrcset && <source media={WIDE} type="image/avif" srcset={video.posterAvifSrcset} sizes={HERO_PANEL_SIZES} />}
+              <source media={WIDE} srcset={video.posterSrcset ?? video.poster} sizes={video.posterSrcset ? HERO_PANEL_SIZES : undefined} />
+              <source srcset={BLANK_IMAGE} />
               <img
                 src={video.poster}
-                width={video.width ?? 1280}
-                height={video.height ?? 720}
+                width={video.width ?? 1920}
+                height={video.height ?? 1080}
                 alt=""
                 loading="eager"
                 decoding="async"
-                fetchpriority={priority && !video.posterSmall ? "high" : "auto"}
+                fetchpriority={priority ? "high" : "auto"}
                 class="absolute inset-0 size-full object-cover"
               />
             </picture>
-            {/* no poster attribute: the image above is the poster (the video stays transparent until it plays), and a
-                poster would make phones — which never play the loop — download the large file */}
+            {/* no poster attribute: the image above is the poster (the video stays transparent until it plays) */}
             <video
-              class="lc-hero-video absolute inset-0 size-full object-cover opacity-0 transition-opacity duration-1000 ease-inout"
+              class="lc-hero-video absolute inset-0 size-full object-cover opacity-0 transition-opacity duration-[1200ms] ease-inout"
               data-src={video.src}
+              data-webm={video.webm}
               muted
               loop
               playsinline
@@ -132,21 +186,26 @@ const POSTER_SMALL_MEDIA = "(max-width: 1023.98px)";
             />
           </>
         ) : (
-          image && (
-            <Picture
-              src={image}
-              alt={imageAlt}
-              formats={["avif", "webp"]}
-              widths={[640, 960, 1280, 1600]}
-              sizes="(min-width: 1024px) 56vw, 100vw"
-              loading="eager"
-              fetchpriority={priority ? "high" : "auto"}
-              layout="full-width"
-              class="absolute inset-0 size-full object-cover"
-            />
+          photo && (
+            <picture>
+              <source media={WIDE} type="image/avif" srcset={photo.avif} sizes={panelSizes} />
+              <source media={WIDE} srcset={photo.webp} sizes={panelSizes} />
+              <source srcset={BLANK_IMAGE} />
+              <img
+                src={photo.src}
+                alt={imageAlt}
+                width={image!.width}
+                height={image!.height}
+                loading="eager"
+                decoding="async"
+                fetchpriority={priority ? "high" : "auto"}
+                class="absolute inset-0 size-full object-cover"
+              />
+            </picture>
           )
         )}
-        {/* contrast overlays: full-strength on mobile (text sits on the media), fading towards the end on desktop */}
+        {/* contrast overlays: full-strength where text sits on the media (no-band pages below 1024px), fading
+            towards the end on desktop */}
         <div class="absolute inset-0 bg-navy-950/85 lg:bg-transparent lg:bg-gradient-to-r lg:from-navy-950 lg:via-navy-950/45 lg:to-navy-950/10 rtl:lg:bg-gradient-to-l" />
         <div class="absolute inset-x-0 bottom-0 h-2/5 bg-gradient-to-t from-navy-950 to-transparent" />
         <div class="absolute inset-0 bg-[linear-gradient(180deg,rgb(4_14_39/0.7),transparent_28%)]" />
@@ -165,13 +224,43 @@ const POSTER_SMALL_MEDIA = "(max-width: 1023.98px)";
 
   {/* ---------- decoration ---------- */}
   <div aria-hidden="true" class="pointer-events-none absolute inset-0 -z-20 bg-[radial-gradient(ellipse_55%_70%_at_10%_20%,rgb(13_37_82/0.95),transparent_70%)] rtl:bg-[radial-gradient(ellipse_55%_70%_at_90%_20%,rgb(13_37_82/0.95),transparent_70%)]" />
-  <div aria-hidden="true" class="pointer-events-none absolute inset-0 -z-10 bg-blueprint [mask-image:linear-gradient(to_bottom,#000_40%,transparent)]" />
+  {/* blueprint grid on the copy side only: never drawn over the photo/video panel (≥1024px) */}
+  <div
+    aria-hidden="true"
+    class:list={[
+      "pointer-events-none absolute inset-0 -z-10 bg-blueprint [mask-image:linear-gradient(to_bottom,#000_40%,transparent)]",
+      band && "lg:[mask-image:linear-gradient(to_right,#000_38%,transparent_50%)] rtl:lg:[mask-image:linear-gradient(to_left,#000_38%,transparent_50%)]",
+    ]}
+  />
   {
     traces && (
       <>
         <CircuitTraces corner="bottom-start" class="-z-10 opacity-90 max-md:origin-bottom-left max-md:scale-[0.62] rtl:max-md:origin-bottom-right" />
         {home && <CircuitTraces corner="top-end" tone="royal" class="-z-10 mt-[calc(var(--header-h)+var(--utility-h))] hidden lg:block" />}
       </>
+    )
+  }
+
+  {/* ---------- pause control for the background loop (WCAG 2.2.2); shown by the script only while the loop may run ---------- */}
+  {
+    video && (
+      <button
+        type="button"
+        class="lc-hero-pause group absolute end-4 z-10 hidden size-11 place-items-center border border-white/30 bg-navy-950/70 text-white backdrop-blur-sm transition-colors hover:border-signal-300 hover:text-signal-200 sm:end-6"
+        style="inset-block-end: calc(var(--angle-h, 0px) + 1.25rem)"
+        aria-pressed="false"
+        data-hero-pause
+        data-fab-avoid
+      >
+        <svg class="group-aria-pressed:hidden" viewBox="0 0 16 16" width="16" height="16" fill="currentColor" aria-hidden="true">
+          <rect x="3.5" y="2.5" width="3" height="11" rx=".6" />
+          <rect x="9.5" y="2.5" width="3" height="11" rx=".6" />
+        </svg>
+        <svg class="hidden group-aria-pressed:block" viewBox="0 0 16 16" width="16" height="16" fill="currentColor" aria-hidden="true">
+          <path d="M4.5 2.9a.8.8 0 0 1 1.2-.7l8 4.9a1 1 0 0 1 0 1.8l-8 4.9a.8.8 0 0 1-1.2-.7z" />
+        </svg>
+        <span class="sr-only">{t.video.pauseLoop}</span>
+      </button>
     )
   }
 
@@ -183,62 +272,117 @@ const POSTER_SMALL_MEDIA = "(max-width: 1023.98px)";
         ? fit
           ? "flex min-h-[min(46rem,100svh)] flex-col justify-center pt-[calc(var(--header-h)+var(--utility-h)+2rem)] pb-28 lg:min-h-[min(47rem,100svh)] lg:pt-[calc(var(--header-h)+var(--utility-h)+1.75rem)] lg:pb-24"
           : "flex min-h-[min(46rem,100svh)] flex-col justify-center pt-[calc(var(--header-h)+var(--utility-h)+3rem)] pb-32 lg:min-h-[47rem] lg:pb-36"
-        : "pt-[calc(var(--header-h)+var(--utility-h)+2.5rem)] pb-24 lg:pb-28",
+        : compact
+          ? "pt-[calc(var(--header-h)+var(--utility-h)+1.5rem)] pb-12 lg:grid lg:grid-cols-[minmax(0,1fr)_auto] lg:items-end lg:gap-16 lg:pt-[calc(var(--header-h)+var(--utility-h)+2rem)] lg:pb-16"
+          : "pt-[calc(var(--header-h)+var(--utility-h)+2.5rem)] pb-24 lg:pb-28",
     ]}
   >
-    <div class:list={["lc-hero-copy", home ? (fit ? "max-w-2xl lg:max-w-[50%]" : "max-w-2xl lg:max-w-[48%]") : "max-w-3xl lg:max-w-[58%]"]}>
-      {Astro.slots.has("breadcrumbs") && (
-        <div class="mb-6">
-          <slot name="breadcrumbs" />
-        </div>
-      )}
-      {chips && chips.length > 0 && <Chips items={chips} joined led class:list={["lc-rise", fit ? "mb-5" : "mb-6"]} />}
-      <h1
-        class:list={[
-          home ? "type-display" : "type-h1",
-          "text-white [&_em]:text-royal-300 [&_em]:[font-style:inherit]",
-        ]}
-        style={fit ? "--text-display: clamp(2.125rem, 1.5rem + 2.25vw, 3.5rem)" : undefined}
-        set:html={title}
-      />
-      {lead && <p class:list={["max-w-xl type-lead text-navy-200", fit ? "mt-5" : "mt-6"]} set:html={lead} />}
+    <div
+      class:list={[
+        "lc-hero-copy",
+        home
+          ? fit
+            ? "max-w-2xl lg:max-w-[50%]"
+            : "max-w-2xl lg:max-w-[48%]"
+          : compact
+            ? hasMedia
+              ? "max-w-3xl lg:max-w-[52%]"
+              : "max-w-3xl"
+            : "max-w-3xl lg:max-w-[58%]",
+      ]}
+    >
       {
-        (primary || secondary) && (
-          <div class:list={["lc-rise flex flex-wrap items-center gap-3", fit ? "mt-8" : "mt-9"]} style="--i:2" data-fab-avoid>
-            {primary && (
-              <Button href={primary.href} size="lg" iconEnd="arrow" class="max-sm:w-full">
-                {primary.label}
-              </Button>
-            )}
-            {secondary && (
+        Astro.slots.has("breadcrumbs") && (
+          <div class={compact ? "mb-4" : "mb-6"}>
+            <slot name="breadcrumbs" />
+          </div>
+        )
+      }
+      {bandHere && !home && <HeroBand image={image} video={video} alt={imageAlt} priority={priority} rise={0} class="mb-7" />}
+      {chips && chips.length > 0 && <Chips items={chips} joined led class:list={["lc-rise", fit ? "mb-5" : compact ? "mb-4" : "mb-6"]} />}
+      <h1
+        class:list={[home ? "type-display" : compact ? "type-h2" : "type-h1", "text-white [&_em]:text-royal-300 [&_em]:[font-style:inherit]"]}
+        style={
+          fit
+            ? longTitle
+              ? "--text-display: clamp(1.875rem, 1.35rem + 1.9vw, 3rem)"
+              : "--text-display: clamp(2.125rem, 0.25rem + 3.6vw, 3.5rem)" /* 1024px: 41px (4 lines in the 50% column), 1440px: 56px */
+            : undefined
+        }
+        set:html={toHtml(locale, title)}
+      />
+      {lead && <p class:list={["type-lead text-navy-200", compact ? "mt-4 max-w-2xl" : fit ? "mt-5 max-w-xl" : "mt-6 max-w-xl"]} set:html={toHtml(locale, lead)} />}
+      {
+        ctas.length > 0 && (
+          <div class:list={["lc-rise flex flex-wrap items-center gap-3", fit ? "mt-8" : compact ? "mt-6" : "mt-9"]} style="--i:2" data-fab-avoid>
+            {ctas.map((c) => (
               <Button
-                href={secondary.href}
-                size="lg"
-                variant="on-dark"
-                icon={secondaryIsWa ? "whatsapp" : "mail"}
-                iconClass={secondaryIsWa ? "text-[#25d366]" : "text-royal-300"}
-                external={secondaryIsWa}
-                class="max-sm:w-full"
+                href={c.cta.href}
+                size={compact ? "md" : "lg"}
+                variant={c.filled ? "primary" : "on-dark"}
+                icon={c.icon}
+                iconEnd={c.iconEnd}
+                iconClass={c.iconClass}
+                external={c.external}
+                class={compact ? undefined : "max-sm:w-full"}
               >
-                {secondary.label}
+                {c.cta.label}
               </Button>
-            )}
+            ))}
           </div>
         )
       }
       {
         email && secondary && (
-          <p class="lc-rise mt-4 text-sm" style="--i:2">
-            <a href={whatsappLink(t.whatsapp.message)} target="_blank" rel="noopener" class="inline-flex min-h-6 items-center gap-2 text-navy-200 underline-offset-4 hover:text-white hover:underline">
-              <Icon name="whatsapp" size={16} class="text-[#25d366]" />
+          <p class="lc-rise mt-4 flex flex-wrap items-center gap-x-5 gap-y-2 text-sm" style="--i:2">
+            {/* email is the main channel here: one tap to copy the address for webmail users */}
+            <CopyEmail locale={locale} tone="dark" />
+            <a
+              href={whatsappLink(t.whatsapp.message)}
+              target="_blank"
+              rel="noopener"
+              class="inline-flex min-h-6 items-center gap-2 text-navy-200 underline-offset-4 hover:text-white hover:underline"
+            >
+              <Icon name="whatsapp" size={16} class="text-whatsapp-500" />
               {t.cta.inEgyptWhatsapp}
+              <span class="sr-only"> ({t.a11y.newTab})</span>
             </a>
           </p>
         )
       }
+      {
+        urgent && (
+          <p class="lc-rise mt-5 flex flex-wrap items-center gap-x-5 gap-y-1 text-sm" style="--i:2">
+            <span class="inline-flex items-center gap-2.5 font-bold text-signal-300">
+              <span class="lc-led" data-blink aria-hidden="true" />
+              {t.urgent.title}
+            </span>
+            <a href={`tel:${SITE.phone.tel}`} class="inline-flex min-h-11 items-center gap-2 font-semibold text-white underline-offset-4 hover:underline">
+              <Icon name="phone" size={16} class="text-royal-300" />
+              {m.common.labels.callEngineer}
+              <span class="ltr text-navy-200" dir="ltr">
+                {SITE.phone.display}
+              </span>
+            </a>
+            {!email && (
+              <a
+                href={whatsappLink(m.common.whatsapp.stopped)}
+                target="_blank"
+                rel="noopener"
+                class="inline-flex min-h-11 items-center gap-2 font-semibold text-white underline-offset-4 hover:underline"
+              >
+                <Icon name="whatsapp" size={16} class="text-whatsapp-500" />
+                {t.urgent.whatsapp}
+                <span class="sr-only"> ({t.a11y.newTab})</span>
+              </a>
+            )}
+          </p>
+        )
+      }
+      {bandHere && home && <HeroBand image={image} video={video} alt={imageAlt} priority={priority} rise={3} class="mt-8" />}
       <slot />
       {
-        proof.length > 0 && (
+        proof.length > 0 && !compact && (
           <dl
             class:list={[
               "lc-rise grid border-t border-white/10 pt-6",
@@ -259,7 +403,9 @@ const POSTER_SMALL_MEDIA = "(max-width: 1023.98px)";
               >
                 <dt class:list={["mt-1 text-sm text-navy-300", locale === "zh" && "break-keep"]}>{p.label}</dt>
                 <dd class="order-first type-stat text-white" style="font-size: clamp(1.5rem, 1.2rem + 1vw, 2rem)">
-                  <span class="ltr" dir="ltr">{p.value}</span>
+                  <span class="ltr" dir="ltr">
+                    {p.value}
+                  </span>
                 </dd>
               </div>
             ))}
@@ -267,6 +413,22 @@ const POSTER_SMALL_MEDIA = "(max-width: 1023.98px)";
         )
       }
     </div>
+    {
+      compact && proof.length > 0 && !hasMedia && (
+        <dl class="lc-rise hidden min-w-[18rem] grid-cols-2 gap-x-10 gap-y-6 border-s border-white/10 ps-10 pb-1 lg:grid" style="--i:3">
+          {proof.map((p) => (
+            <div class="flex flex-col">
+              <dt class:list={["mt-1 text-sm text-navy-300", locale === "zh" && "break-keep"]}>{p.label}</dt>
+              <dd class="order-first type-stat text-white" style="font-size: clamp(1.5rem, 1.2rem + 1vw, 2rem)">
+                <span class="ltr" dir="ltr">
+                  {p.value}
+                </span>
+              </dd>
+            </div>
+          ))}
+        </dl>
+      )
+    }
   </div>
 </section>
 
@@ -295,20 +457,77 @@ const POSTER_SMALL_MEDIA = "(max-width: 1023.98px)";
 </style>
 
 <script>
-  // Start the decorative loop only when it is welcome: no reduced-motion, no Save-Data, viewport ≥ 768px.
+  /*
+   * Decorative background loop. Starts only when welcome: viewport ≥ 1024px (below that the poster is a band and the
+   * loop would play under nothing), no Save-Data / 2G / 3G, site motion on (html[data-motion="off"] covers the
+   * "Pause animations" switch and prefers-reduced-motion), not paused with the hero button (localStorage), on screen.
+   * Timing (MOT-12): first paint + 2.4 s, then an idle moment, then a 1.2 s crossfade from the poster.
+   * AV1 WebM where the browser says it can play it "probably", H.264 MP4 otherwise.
+   */
+  import { motionOff, onMotionChange } from "~/scripts/motion/motion-pref";
+
   const video = document.querySelector<HTMLVideoElement>(".lc-hero-video[data-src]");
+  const button = document.querySelector<HTMLButtonElement>("[data-hero-pause]");
   if (video) {
-    const conn = (navigator as Navigator & { connection?: { saveData?: boolean } }).connection;
-    const allowed =
-      !matchMedia("(prefers-reduced-motion: reduce)").matches && !conn?.saveData && matchMedia("(min-width: 768px)").matches;
-    if (allowed) {
-      video.src = video.dataset.src!;
+    const KEY = "lcHeroVideo";
+    const conn = (navigator as Navigator & { connection?: { saveData?: boolean; effectiveType?: string } }).connection;
+    const slow = !!conn?.saveData || /(^|-)(2g|3g)$/.test(conn?.effectiveType ?? "");
+    const wide = matchMedia("(min-width: 1024px)");
+    const read = () => {
+      try {
+        return localStorage.getItem(KEY) === "paused";
+      } catch {
+        return false;
+      }
+    };
+    let userPaused = read();
+    let visible = true;
+    let started = false;
+
+    const allowed = () => wide.matches && !slow && !motionOff();
+    const start = () => {
+      started = true;
+      const av1 = video.dataset.webm && video.canPlayType('video/webm; codecs="av01.0.08M.08"') === "probably";
+      video.src = av1 ? video.dataset.webm! : video.dataset.src!;
       video.addEventListener("playing", () => video.setAttribute("data-playing", ""), { once: true });
-      // Pause while off-screen to save battery/CPU.
+    };
+    const sync = () => {
+      const on = allowed();
+      if (button) {
+        button.classList.toggle("hidden", !on);
+        button.classList.toggle("grid", on);
+        button.setAttribute("aria-pressed", String(userPaused));
+      }
+      if (on && !userPaused && visible) {
+        if (!started) start();
+        video.play().catch(() => {});
+      } else if (started) video.pause();
+    };
+    const begin = () => {
       new IntersectionObserver(([entry]) => {
-        if (entry?.isIntersecting) video.play().catch(() => {});
-        else video.pause();
+        visible = !!entry?.isIntersecting;
+        sync();
       }).observe(video);
-    }
+      onMotionChange(sync);
+      wide.addEventListener("change", sync);
+      button?.addEventListener("click", () => {
+        userPaused = !userPaused;
+        try {
+          if (userPaused) localStorage.setItem(KEY, "paused");
+          else localStorage.removeItem(KEY);
+        } catch {}
+        sync();
+      });
+      sync();
+    };
+    const schedule = () => {
+      const fcp = performance.getEntriesByName("first-contentful-paint")[0]?.startTime ?? performance.now();
+      setTimeout(
+        () => ("requestIdleCallback" in window ? requestIdleCallback(begin, { timeout: 2000 }) : begin()),
+        Math.max(0, fcp + 2400 - performance.now()),
+      );
+    };
+    if (document.readyState === "complete") schedule();
+    else addEventListener("load", schedule, { once: true });
   }
 </script>

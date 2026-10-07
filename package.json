@@ -10,7 +10,11 @@
     "dev": "astro dev",
     "build": "node scripts/check-i18n.mjs && astro build",
     "preview": "npm run build && wrangler dev",
-    "check": "astro check && node scripts/check-i18n.mjs",
+    "check": "astro check && tsc -p worker && node scripts/check-i18n.mjs",
+    "typecheck:worker": "tsc -p worker",
+    "lint": "eslint .",
+    "format": "prettier --write .",
+    "format:check": "prettier --check .",
     "deploy": "npm run build && wrangler deploy",
     "qa:html": "html-validate \"dist/**/*.html\"",
     "indexnow": "node --env-file=.env scripts/indexnow.mjs",
@@ -33,13 +37,26 @@
     "@astrojs/check": "^0.9.10",
     "@axe-core/playwright": "^4.13.0",
     "@cloudflare/workers-types": "^5.20261006.1",
+    "@eslint/js": "^10.0.1",
     "@playwright/test": "^1.63.0",
+    "eslint": "^10.12.0",
+    "eslint-plugin-astro": "^3.2.1",
+    "eslint-plugin-jsx-a11y-x": "^0.2.0",
+    "globals": "^17.13.0",
     "html-validate": "^11.16.2",
-    "lighthouse": "^13.5.0",
     "node-html-parser": "^9.0.4",
     "playwright": "^1.63.0",
+    "prettier": "^3.9.9",
+    "prettier-plugin-astro": "^1.1.0",
+    "prettier-plugin-tailwindcss": "^0.8.1",
     "typescript": "^6.0.3",
+    "typescript-eslint": "^8.71.1",
     "vitest": "^5.0.3",
     "wrangler": "^4.147.0"
+  },
+  "overrides": {
+    "miniflare": {
+      "sharp": "^0.35.5"
+    }
   }
 }

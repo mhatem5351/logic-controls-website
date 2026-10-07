@@ -38,18 +38,18 @@ const cols = items.length >= 4 ? "lg:grid-cols-4" : items.length === 3 ? "sm:gri
             class:list={[
               "lc-stat relative flex flex-col gap-2 px-4 sm:px-6",
               i > 0 &&
-                "before:absolute before:inset-y-1 before:start-0 before:w-px before:-skew-x-[10deg] before:bg-charcoal-200 rtl:before:skew-x-[10deg] in-[.on-dark]:before:bg-white/15",
+                "before:absolute before:inset-y-1 before:start-0 before:w-px before:-skew-x-[10deg] before:bg-charcoal-200 rtl:before:skew-x-[10deg] on-dark:before:bg-white/15",
               i % 2 === 0 && "max-sm:before:hidden",
             ]}
           >
-            <dt class="text-sm font-medium text-charcoal-600 in-[.on-dark]:text-navy-200">
+            <dt class="lc-stat-label max-w-[15ch] text-sm font-medium text-balance text-charcoal-600 on-dark:text-navy-200">
               {item.label}
-              {item.note && <span class="mt-1 block text-xs text-charcoal-600 in-[.on-dark]:text-navy-300">{item.note}</span>}
+              {item.note && <span class="mt-1 block text-xs text-charcoal-600 on-dark:text-navy-300">{item.note}</span>}
             </dt>
-            <dd class="order-first type-stat text-navy-950 in-[.on-dark]:text-white">
+            <dd class="order-first type-stat text-navy-950 on-dark:text-white">
               <span class="ltr" dir="ltr">
                 {main}
-                {suffix && <span class="text-royal-600 in-[.on-dark]:text-signal-400">{suffix}</span>}
+                {suffix && <span class="text-royal-600 on-dark:text-signal-400">{suffix}</span>}
               </span>
             </dd>
           </div>

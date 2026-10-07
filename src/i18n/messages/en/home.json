@@ -1,16 +1,14 @@
 {
   "seo": {
-    "title": "Logic Controls | PLC & Machine Automation in Egypt",
-    "description": "Control panels, PLC/HMI programming, SCADA and commissioning for food, dairy, pharma, cosmetics and packaging plants in Egypt. 50+ projects delivered."
+    "title": "Control Panels & PLC Automation in Egypt | Logic Controls",
+    "description": "Control panels, PLC/HMI programming, SCADA and commissioning for food, dairy, pharma, cosmetics and packaging plants in Egypt. 50+ projects."
   },
   "hero": {
     "eyebrow": "Industrial automation engineers in 6th of October City, Egypt",
     "title": "Control panels, PLC programming and machine automation for factories in Egypt",
     "lead": "We design the control system, program the PLC, HMI and SCADA, and commission the machine on your floor. For food, dairy, pharma, cosmetics and packaging lines.",
-    "proof": "50+ projects delivered by a team with 4+ years in industrial automation",
     "ctaPrimary": "Request a quote",
-    "ctaSecondary": "WhatsApp an engineer",
-    "imageAlt": "Wecon touch screen on a stainless-steel pasteurizer cabinet, showing the process with Manual, Automatic, CIP, Settings, Recipes and Alarms tabs"
+    "ctaSecondary": "WhatsApp an engineer"
   },
   "audiences": {
     "title": "Who we work with",
@@ -83,11 +81,15 @@
       },
       {
         "q": "Can the HMI screens be in Arabic?",
-        "a": "Yes. We design HMI screens in Arabic, English or both. One of our shampoo filling machines runs on Arabic screens for its local operators."
+        "a": "Yes. We design HMI screens in Arabic, English or both. One of our {link:projects/shampoo-filling-delta-wecon|shampoo filling machines} runs on Arabic screens for its local operators."
       },
       {
         "q": "Do you work outside Greater Cairo?",
         "a": "Yes. We are based in 6th of October City and work across Egypt's industrial zones, including 10th of Ramadan, Sadat City, Borg El Arab and the Suez Canal Economic Zone."
+      },
+      {
+        "q": "What does the price of a control system depend on?",
+        "a": "On the number of inputs and outputs, the PLC and HMI platform, the panel size and components, how much programming and testing is needed, and where the site is. Send a short description and photos, and an engineer replies with questions, a site visit or a quote."
       },
       {
         "q": "How do I get a quote?",

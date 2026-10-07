@@ -1,7 +1,7 @@
 {
   "seo": {
-    "title": "Teklif İsteyin | Logic Controls Mısır",
-    "description": "Mısır'da otomasyon panosu, PLC/HMI programlama, retrofit, SCADA veya devreye alma için teklif isteyin. Detayları form, WhatsApp veya e-postayla gönderin."
+    "title": "Mısır'da Otomasyon Teklifi İsteyin | Logic Controls",
+    "description": "Mısır'da otomasyon panosu, PLC/HMI programlama, retrofit, SCADA veya devreye alma için teklif isteyin: form, WhatsApp veya e-posta."
   },
   "h1": "Teklif isteyin",
   "intro": "Makinenizi veya projenizi anlatın. Her talebi bir mühendis inceler ve sorularıyla, saha ziyareti önerisiyle ya da teklifle size dönüş yapar.",
@@ -13,14 +13,16 @@
       "one": "Bilgileriniz",
       "two": "Proje detayları",
       "counter": "Adım {current} / {total}",
-      "twoNote": "İsteğe bağlı, ancak daha hızlı teklif vermemize yardımcı olur."
+      "twoNote": "İsteğe bağlı, ancak daha hızlı teklif vermemize yardımcı olur.",
+      "done": "tamamlandı"
     },
     "buttons": {
       "next": "Devam",
       "back": "Geri",
       "submit": "Talebi gönder",
       "sending": "Gönderiliyor…",
-      "sendNow": "Atla ve şimdi gönder"
+      "sendNow": "Atla ve şimdi gönder",
+      "retry": "Tekrar deneyin"
     },
     "fields": {
       "name": {
@@ -32,7 +34,7 @@
       },
       "phone": {
         "label": "Cep telefonu veya WhatsApp numarası",
-        "help": "Ülke koduyla birlikte yazın, örneğin +20 10 1234 5678."
+        "help": "Ülke koduyla yazın, örneğin +90 532 000 00 00 veya Mısır için +20 10 1234 5678."
       },
       "email": {
         "label": "E-posta",
@@ -51,6 +53,7 @@
           "testing-commissioning": "Test ve devreye alma",
           "maintenance-support": "Arıza giderme veya bakım",
           "new-factory": "Mısır'da yeni fabrika: komple otomasyon kapsamı",
+          "oem-partner": "Makine üreticisi: makinelerimiz için yerel devreye alma ve servis",
           "other": "Diğer"
         }
       },
@@ -93,6 +96,17 @@
         "label": "Makineyi veya projeyi anlatın",
         "help": "Makine tipi, ne yapması gerektiği, mevcut sorunlar ve biliyorsanız PLC veya HMI markaları."
       },
+      "phoneOptional": {
+        "label": "Telefon numarası",
+        "help": "Ülke koduyla birlikte yazın, örneğin +90 532 123 45 67."
+      },
+      "files": {
+        "label": "Çizimler, fotoğraflar veya dokümanlar",
+        "help": "En fazla {count} dosya, toplam {size}: PDF, JPG, PNG, WebP, ZIP, DWG veya DXF.",
+        "choose": "Dosya seçin",
+        "remove": "{name} dosyasını kaldır",
+        "summary": "{count}/{max} dosya · {size}/{maxSize}"
+      },
       "contactPreference": {
         "label": "Size nasıl ulaşalım?",
         "options": {
@@ -113,9 +127,15 @@
     "privacyNote": "Bilgilerinizi yalnızca bu talebe yanıt vermek için kullanırız. Sizi herhangi bir e-posta listesine eklemeyiz.",
     "sent": "Talebiniz gönderildi. Onay sayfası açılıyor…",
     "noscript": "Güvenlik kontrolü için JavaScript gerekir. Form gönderilmezse bize doğrudan telefon, WhatsApp veya e-postayla ulaşın.",
+    "prefill": {
+      "intro": "Merhaba Logic Controls, bu talebi web sitenizdeki form üzerinden göndermeye çalıştım:",
+      "subject": "Web sitesinden teklif talebi",
+      "files": "Gönderilecek dosyalar: {files}"
+    },
     "security": {
       "label": "Güvenlik kontrolü",
-      "help": "Bu kontrol, formu bir botun değil bir kişinin gönderdiğini doğrular."
+      "help": "Bu kontrol, formu bir botun değil bir kişinin gönderdiğini doğrular.",
+      "waiting": "Güvenlik kontrolü her zamankinden uzun sürüyor. Biraz bekleyin veya aynı talebi başka bir yolla gönderin:"
     }
   },
   "validation": {
@@ -126,7 +146,12 @@
     "select": "Lütfen bir seçenek belirleyin.",
     "consent": "Lütfen bilgilerinizi size yanıt vermek için kullanabileceğimizi onaylayın.",
     "messageTooLong": "Lütfen açıklamayı {max} karakterin altında tutun.",
-    "summary": "Lütfen işaretlenen alanları kontrol edin."
+    "summary": "Lütfen işaretlenen alanları kontrol edin.",
+    "summaryCount": "Lütfen şu alanları kontrol edin ({count}):",
+    "filesType": "Bazı dosyaların türünü kabul edemiyoruz. PDF, JPG, PNG, WebP, ZIP, DWG veya DXF kullanın.",
+    "filesCount": "En fazla {max} dosya seçin. Kalanları talebi gönderdikten sonra iletebilirsiniz.",
+    "filesSize": "Dosyaların toplam boyutu {max} sınırını aşıyor. Bazılarını buradan kaldırın ve talebi gönderdikten sonra iletin: onay sayfasında, e-posta veya WhatsApp ile gönderirken belirteceğiniz bir talep numarası bulunur.",
+    "emailForReply": "Size e-postayla dönebilmemiz için e-posta adresinizi ekleyin."
   },
   "errors": {
     "title": "Talebiniz gönderilemedi",
@@ -134,7 +159,10 @@
     "verification": "Güvenlik kontrolü tamamlanamadı. Lütfen tekrar deneyin veya bize WhatsApp'tan ulaşın.",
     "send": "Teknik bir sorun nedeniyle talebinizi gönderemedik. Lütfen birkaç dakika sonra tekrar deneyin veya bize WhatsApp ya da e-posta ile ulaşın.",
     "unknown": "Bir sorun oluştu. Lütfen tekrar deneyin veya bize WhatsApp ya da e-posta ile ulaşın.",
-    "fallback": "Bize doğrudan da ulaşabilirsiniz:"
+    "fallback": "Bize doğrudan da ulaşabilirsiniz:",
+    "attachments": "Dosyalar eklenemedi. Toplam 4 MB'ı aşmayan en fazla 3 dosya ekleyebilirsiniz (PDF, JPG, PNG, WebP, ZIP, DWG veya DXF). Dosyaları kaldırıp talebi gönderin, ardından dosyaları e-posta veya WhatsApp ile iletin.",
+    "verificationBlocked": "Güvenlik kontrolü yüklenemedi. Bir tarayıcı eklentisi, güvenlik duvarı veya ağınız engelliyor olabilir.",
+    "handover": "Bilgileriniz mesaja kopyalandı, yeniden yazmanız gerekmez."
   },
   "channels": {
     "title": "Bize ulaşmanın diğer yolları",
@@ -144,8 +172,7 @@
     },
     "whatsapp": {
       "label": "WhatsApp",
-      "text": "Fotoğraf, video ve çizimleri doğrudan telefonunuzdan gönderin.",
-      "cta": "Çizimleri WhatsApp'tan gönderin"
+      "text": "Fotoğraf, video ve çizimleri doğrudan telefonunuzdan gönderin."
     },
     "email": {
       "label": "E-posta",
@@ -192,6 +219,13 @@
       "cta": "Çizimleri WhatsApp'tan gönderin"
     },
     "backHome": "Ana sayfaya dön",
-    "seeProjects": "Projelerimizi inceleyin"
+    "seeProjects": "Projelerimizi inceleyin",
+    "ref": {
+      "label": "Talep numaranız",
+      "hint": "Bizi ararken veya ek dosya gönderirken bu numarayı belirtin.",
+      "whatsapp": "Merhaba Logic Controls, web sitesindeki {ref} numaralı talebimle ilgili ek dosya gönderiyorum.",
+      "emailSubject": "Web sitesi talebi {ref}: ek dosyalar"
+    },
+    "handoff": "Merhaba Logic Controls, ben {company} firmasından {name}. Web sitenizden az önce {ref} numaralı talebi ({need}) gönderdim. Çizimler ve fotoğraflar ekte."
   }
 }

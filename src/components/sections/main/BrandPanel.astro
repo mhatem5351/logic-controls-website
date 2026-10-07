@@ -27,7 +27,7 @@ interface Props {
 }
 const { locale, brand, text, productsLabel, index, headingLevel: H = "h3", class: className } = Astro.props;
 /** Product names from data are English; technologies.json → brands.productNames localises the generic words. */
-const productNames = (getMessages(locale).technologies.brands as { productNames?: Record<string, string> }).productNames ?? {};
+const productNames: Record<string, string> = getMessages(locale).technologies.brands.productNames;
 const products = brand.products.map((p) => productNames[p] ?? p);
 
 // Equal-area sizing (same maths as LogoWall): height = sqrt(area / aspect).

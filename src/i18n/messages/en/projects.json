@@ -1,10 +1,10 @@
 {
   "index": {
     "seo": {
-      "title": "Automation Projects & Case Studies | Logic Controls Egypt",
-      "description": "Case studies of control systems we designed, programmed and commissioned in Egypt: pasteurizers, tablet coating, filling, labeling, batching and more."
+      "title": "Automation Projects & Case Studies in Egypt | Logic Controls",
+      "description": "Control systems we designed, programmed and commissioned in Egypt: pasteurizers, tablet coating, filling, labeling, batching plants and more."
     },
-    "h1": "Projects",
+    "h1": "Automation projects and case studies in Egypt",
     "intro": [
       "Control systems we designed, programmed and commissioned for plants in Egypt. Each case study shows the challenge, our scope and the technology used.",
       "Filter by industry or service to find a machine like yours."
@@ -27,10 +27,10 @@
       "client": "Beverage manufacturer",
       "summary": "A complete control system for the syrup preparation of a beverage plant: Siemens S7-1200 PLC, a SIMATIC HMI at the tank, two Yaskawa VFDs for pump speed, and automatic filling and circulation of the jet mixer tanks.",
       "seoTitle": "Syrup Jet Mixing Control | Siemens S7-1200",
-      "seoDescription": "Case study: control of a beverage syrup jet mixing system in Egypt. Siemens S7-1200 PLC, SIMATIC HMI, Yaskawa VFDs, CIP-ready interlock, commissioning.",
-      "challenge": "A beverage plant needed a complete control system for its syrup preparation. The radial jet mixing system had to fill its mixer tanks, circulate the syrup at a controlled pump speed for a set time and work together with the plant's CIP system, all operated from a screen at the tank.",
+      "seoDescription": "Syrup jet mixing control for a beverage plant in Egypt: Siemens S7-1200 PLC, SIMATIC HMI, two Yaskawa pump drives and a CIP-ready interlock.",
+      "challenge": "A beverage plant needed a complete control system for its syrup preparation. The radial jet mixing system had to fill its mixer tanks and circulate the syrup at a controlled pump speed for a set time. It also had to work with the plant's CIP system, all operated from a screen at the tank.",
       "solution": [
-        "We designed the control system around a Siemens S7-1200 PLC with I/O modules and two Yaskawa VFDs, with a Siemens SIMATIC HMI in a stainless-steel enclosure with an emergency stop at the tank. The PLC runs the process sequence in automatic mode: filling of the jet mixer tank, circulation against a time setpoint, and control of the process valves.",
+        "We designed the control system around a Siemens S7-1200 PLC with I/O modules and two Yaskawa VFDs. A Siemens SIMATIC HMI sits at the tank, in a stainless-steel enclosure with an emergency stop. The PLC runs the process sequence in automatic mode: filling of the jet mixer tank, circulation against a time setpoint, and control of the process valves.",
         "The VFDs control pump speed, and the HMI shows the speed setpoint and actual value next to the live tank level. The CIP-ready status is used as an interlock and shown on the screen, and alarms are reset from the HMI.",
         "We integrated the instruments and I/O, including a pressure switch, then tested and commissioned the system and optimized the process on site."
       ],
@@ -52,18 +52,44 @@
         "Pump speed on two Yaskawa VFDs",
         "CIP-ready interlock"
       ],
+      "facts": [
+        {
+          "label": "Equipment",
+          "value": "Radial jet mixing system for beverage syrup"
+        },
+        {
+          "label": "Our scope",
+          "value": "Design, control panel, programming, I/O integration, testing and commissioning"
+        },
+        {
+          "label": "PLC",
+          "value": "Siemens S7-1200 with I/O modules"
+        },
+        {
+          "label": "HMI",
+          "value": "Siemens SIMATIC HMI in a stainless-steel enclosure at the tank"
+        },
+        {
+          "label": "Drives",
+          "value": "2 Yaskawa VFDs for pump speed"
+        },
+        {
+          "label": "Plant interface",
+          "value": "CIP-ready status used as an interlock"
+        }
+      ],
       "imageAlts": {
         "hmi": "Siemens SIMATIC HMI in a stainless-steel enclosure with an emergency stop, showing a jet mixer tank, valves, the pump speed setpoint and actual value, and circulation time",
         "panel": "Control panel with two Yaskawa drives, a Siemens S7-1200 PLC with I/O modules, a power supply, circuit breakers, relays, terminals and a pressure switch"
       }
     },
     "shampoo-filling-ls-wecon": {
-      "title": "Shampoo filling machine: control system design and implementation",
+      "title": "Shampoo filling line: LS PLC control from design to production start-up",
       "cardTitle": "Shampoo filling machine on LS PLC and Wecon HMI",
       "client": "Personal-care manufacturer",
       "summary": "A complete control system for a shampoo filling machine: electrical and automation design, LS PLC program, Wecon HMI and commissioning under real production conditions.",
-      "seoTitle": "Shampoo Filler | LS PLC & Wecon HMI",
-      "seoDescription": "Case study: control system for a shampoo filling machine in Egypt. LS PLC, Wecon HMI, feed-fill-discharge sequence, I/O tests and commissioning.",
+      "seoTitle": "Shampoo Filling Line: Design to Start-Up",
+      "seoDescription": "Shampoo filling machine in Egypt on LS PLC and Wecon HMI: one feed, fill and discharge sequence, I/O tests, commissioning in production. Video.",
       "challenge": "The machine needed a complete control system to feed, fill and discharge bottles in one reliable sequence, with accurate fills and simple operation for the line operators.",
       "solution": [
         "We designed the electrical and automation system, programmed the LS PLC for every stage of the machine and built the operator interface on a Wecon HMI. The sequence controls bottle feeding, filling and discharge, with manual and automatic modes, alarms, interlocks and a machine-status display.",
@@ -81,16 +107,43 @@
         "Testing and commissioning under production conditions",
         "Parameter tuning for filling accuracy"
       ],
-      "result": "The machine runs a complete automatic cycle with accurate filling and stable operation, and operators control and monitor it from the HMI.",
+      "result": "The machine now feeds, fills and discharges bottles in one automatic cycle, with the filling parameters tuned during commissioning. Operators switch between manual and automatic mode and follow alarms and machine status on the HMI.",
       "highlights": [
         "Feed, fill and discharge in one sequence",
         "Manual and automatic modes",
         "Tuned for filling accuracy"
       ],
+      "facts": [
+        {
+          "label": "Equipment",
+          "value": "Shampoo filling machine: bottle feeding, filling and discharge"
+        },
+        {
+          "label": "Our scope",
+          "value": "Electrical and automation design, programming, I/O tests and commissioning"
+        },
+        {
+          "label": "PLC",
+          "value": "LS Electric PLC"
+        },
+        {
+          "label": "HMI",
+          "value": "Wecon HMI"
+        },
+        {
+          "label": "Operating modes",
+          "value": "Manual and automatic"
+        },
+        {
+          "label": "Commissioning",
+          "value": "Under production conditions, with tuning for filling accuracy"
+        }
+      ],
       "imageAlts": {
         "cover": "Four-nozzle filling station dispensing shampoo into blue bottles on a conveyor"
       },
-      "videoTitle": "The shampoo filling machine running in production"
+      "videoTitle": "The shampoo filling machine running in production",
+      "videoDescription": "Blue shampoo bottles move along the conveyor into the four-nozzle filling station, are filled and move on. The operator screen and push buttons are mounted on the machine."
     },
     "bottle-printing-motion-retrofit": {
       "title": "Bottle printing machine: control upgrade with motion control",
@@ -98,10 +151,10 @@
       "client": "Pharmaceutical and cosmetics packaging producer",
       "summary": "We replaced the controls of a legacy bottle printing machine with a PLC and motion-control system, to improve accuracy and reliability without replacing the machine.",
       "seoTitle": "Bottle Printer Retrofit with Motion Control",
-      "seoDescription": "Case study: legacy bottle printing machine upgraded to PLC and motion control in Egypt. Synchronized positioning, motion tuning, I/O tests, commissioning.",
+      "seoDescription": "Legacy bottle printing machine in Egypt upgraded to PLC and motion control: synchronized bottle positioning, new logic, I/O tests, commissioning.",
       "challenge": "A legacy machine that prints pharmaceutical and cosmetic bottles needed better printing accuracy, higher reliability and better production efficiency. The owner wanted to keep the existing machine and extend its service life.",
       "solution": [
-        "We upgraded the complete control system to a PLC with motion control. We programmed and synchronized the machine motion so that each bottle is positioned precisely for printing, reworked the control logic and operating sequence, and tuned the motion parameters for fast and accurate operation.",
+        "We upgraded the complete control system to a PLC with motion control. We programmed and synchronized the machine motion so that each bottle is positioned precisely for printing. We also reworked the control logic and operating sequence, and tuned the motion parameters for fast and accurate operation.",
         "All field devices and control signals were tested before commissioning under real operating conditions."
       ],
       "scope": [
@@ -112,16 +165,39 @@
         "I/O testing of all field devices and control signals",
         "Testing and commissioning under real operating conditions"
       ],
-      "result": "The existing machine stays in production on a modern PLC and motion-control system, with improved reliability and productivity and no machine replacement.",
+      "result": "The machine stays in production instead of being replaced. Each bottle is now positioned for printing by synchronized motion control, and the machine runs on a new control logic and operating sequence.",
       "highlights": [
         "Legacy machine kept in service",
         "Synchronized bottle positioning",
         "Tuned for speed and accuracy"
       ],
+      "facts": [
+        {
+          "label": "Equipment",
+          "value": "Bottle printing machine for pharmaceutical and cosmetic bottles"
+        },
+        {
+          "label": "Project type",
+          "value": "Control upgrade (retrofit): the machine was kept"
+        },
+        {
+          "label": "Controller",
+          "value": "PLC with motion control"
+        },
+        {
+          "label": "Motion",
+          "value": "Synchronized positioning of each bottle for printing"
+        },
+        {
+          "label": "Our scope",
+          "value": "Motion programming, new control logic and sequence, I/O tests and commissioning"
+        }
+      ],
       "imageAlts": {
         "cover": "Bottle printing machine with a conveyor and roller fixtures holding clear bottles"
       },
-      "videoTitle": "The bottle printing machine after the control upgrade"
+      "videoTitle": "The bottle printing machine after the control upgrade",
+      "videoDescription": "Clear bottles are fed along the conveyor and held on rollers. Each bottle turns under the printing screen while it is printed, then the printed bottles pass under a green light into a crate. The clip ends with a close-up of a printed bottle."
     },
     "anaerobic-waste-treatment-commissioning": {
       "title": "Waste treatment system: testing and commissioning at a food and beverage plant",
@@ -129,10 +205,10 @@
       "client": "Food and beverage manufacturer",
       "summary": "Testing and commissioning of an anaerobic waste treatment system: instrument and I/O checks, logic and interlock validation, gradual start-up and punch-list closure.",
       "seoTitle": "Waste Treatment System Commissioning, Egypt",
-      "seoDescription": "Case study: testing and commissioning of an anaerobic waste treatment system at a food and beverage plant in Egypt. I/O tests, interlocks, start-up.",
+      "seoDescription": "Testing and commissioning of an anaerobic waste treatment system at a food and beverage plant in Egypt: I/O tests, interlocks, gradual start-up.",
       "challenge": "A waste processing system built around an anaerobic reactor had to be brought into continuous operation at a food and beverage plant. Instruments, wiring, control logic and safety functions all needed verification first.",
       "solution": [
-        "Our scope was testing and commissioning. We verified the field instruments and electrical connections, tested every I/O signal between the field and the control system (a Siemens S7-200 SMART PLC with an MCGS HMI), validated the control logic and operating sequences, and tested the safety interlocks and protection functions.",
+        "Our scope was testing and commissioning. We verified the field instruments and electrical connections. Then we tested every I/O signal between the field and the control system, a Siemens S7-200 SMART PLC with an MCGS HMI. We also validated the control logic and operating sequences, and tested the safety interlocks and protection functions.",
         "We then started the system up gradually under real operating conditions, tuned the operating parameters and resolved the commissioning observations."
       ],
       "scope": [
@@ -150,21 +226,47 @@
         "Every I/O signal tested",
         "Gradual start-up under real conditions"
       ],
+      "facts": [
+        {
+          "label": "Equipment",
+          "value": "Anaerobic waste treatment system: reactor, pumps, mixers and gas line"
+        },
+        {
+          "label": "Our scope",
+          "value": "Testing and commissioning only"
+        },
+        {
+          "label": "PLC",
+          "value": "Siemens S7-200 SMART with EM expansion modules"
+        },
+        {
+          "label": "HMI",
+          "value": "MCGS HMI"
+        },
+        {
+          "label": "Network",
+          "value": "Industrial Ethernet switch"
+        },
+        {
+          "label": "Handover",
+          "value": "All commissioning observations closed"
+        }
+      ],
       "imageAlts": {
         "hmi": "MCGS touch screen showing the anaerobic reactor process with pumps, mixers, gas line and analyzer readings",
         "panel": "Control panel with a Siemens PLC and expansion modules, power supply, Ethernet switch, relays and contactors"
       }
     },
     "commercial-laundry-washer-control": {
-      "title": "Laundry washer control system with programmable recipes and dosing",
+      "title": "Laundry washer control: recipes by fabric and soil level, with detergent dosing",
       "cardTitle": "Laundry washer control on Wecon PLC and HMI",
       "client": "Hotel laundry",
       "summary": "A Wecon PLC and HMI control system for a laundry washer: programs by fabric type and soil level, automatic fill, wash, rinse and extract, and control of water, temperature and dosing.",
-      "seoTitle": "Laundry Washer Control | Wecon PLC & HMI",
-      "seoDescription": "Case study: Wecon PLC and HMI control for a laundry washer at a hotel laundry in Egypt. Wash recipes, water level, temperature, detergent dosing, alarms.",
+      "seoTitle": "Laundry Washer Recipes & Detergent Dosing",
+      "seoDescription": "Laundry washer control in Egypt on Wecon PLC and HMI: recipes by fabric and soil level, water, temperature and detergent dosing. Video.",
       "challenge": "Hotel and commercial laundries wash many types of linen. The washer needed programs for each fabric type and soil level, precise control of water, temperature and detergent, and efficient, reliable operation that uses water and energy carefully.",
       "solution": [
-        "We implemented the control system on a Wecon PLC and Wecon HMI. The program manages filling, washing, rinsing and extraction automatically and controls water level, temperature and detergent dosing. Multiple programmable recipes cover different fabrics and soil levels.",
+        "Fill, wash, rinse and extract now run automatically, and the program controls water level, temperature and detergent dosing. Multiple programmable recipes cover different fabrics and soil levels. The control system runs on a Wecon PLC with a Wecon HMI.",
         "The HMI shows real-time status, alarms and fault messages, safety interlocks protect the operator and the machine, and the system logs operating data for performance monitoring. Before installation, the program was run and checked on the HMI on the bench."
       ],
       "scope": [
@@ -183,21 +285,48 @@
         "Water, temperature and dosing control",
         "Alarms and data logging"
       ],
+      "facts": [
+        {
+          "label": "Equipment",
+          "value": "Laundry washer at a hotel laundry"
+        },
+        {
+          "label": "Our scope",
+          "value": "PLC program and HMI screens, checked on the bench before installation"
+        },
+        {
+          "label": "PLC",
+          "value": "Wecon PLC"
+        },
+        {
+          "label": "HMI",
+          "value": "Wecon HMI"
+        },
+        {
+          "label": "Wash programs",
+          "value": "Multiple recipes by fabric type and soil level"
+        },
+        {
+          "label": "Controlled",
+          "value": "Water level, temperature and detergent dosing"
+        }
+      ],
       "imageAlts": {
         "hmi": "Wecon touch screen running a washer program with drum direction, door lock, water level, chemical inputs and step timers"
       },
-      "videoTitle": "The laundry washer program running on the Wecon HMI"
+      "videoTitle": "The laundry washer program running on the Wecon HMI",
+      "videoDescription": "The Wecon HMI runs a wash program on the bench before installation. The screen moves from the rinse step to the drain step. It shows drum direction, door lock, water level, five chemical inputs, steam, hot and cold water, temperature, and the step and program timers."
     },
     "pasteurizer-cip-recipes": {
       "title": "Pasteurizer control system with CIP, recipes and flow diversion",
       "cardTitle": "Pasteurizer with CIP and recipes on Wecon PLC and HMI",
       "client": "Food and dairy processor",
       "summary": "Automated control of a pasteurizer on Wecon PLC and HMI: temperature and holding-time control, flow regulation, product recipes, CIP and interlocks that stop under-processed product from leaving the machine.",
-      "seoTitle": "Pasteurizer Control with CIP & Recipes",
-      "seoDescription": "Case study: pasteurizer automation in Egypt on Wecon PLC and HMI. Temperature and holding time, flow-diversion interlock, CIP, recipes, data logging.",
+      "seoTitle": "Pasteurizer Flow-Diversion & CIP Control",
+      "seoDescription": "Pasteurizer automation in Egypt: a flow-diversion interlock holds back under-temperature product, plus CIP, recipes per product and data logging.",
       "challenge": "The pasteurizer had to hold the correct temperature and holding time for each product, keep heat distribution uniform, and never discharge product that had not met pasteurization conditions. It also needed cleaning-in-place and simple operation for several products.",
       "solution": [
-        "We implemented the control system on a Wecon PLC and Wecon HMI. The PLC controls temperature and holding time for each product, regulates product flow, and runs the feed, master and heating pumps with timed start and stop delays. Temperature is held with proportional control and adjustable pulse settings.",
+        "Each product now gets its own temperature and holding time from the PLC, held with proportional control and adjustable pulse settings. The PLC also regulates product flow and runs the feed, master and heating pumps with timed start and stop delays. The system runs on a Wecon LX3V PLC with a Wecon HMI.",
         "Flow-diversion valve (FDV) logic, with adjustable switching points and a safety temperature, prevents under-temperature product from being discharged. The HMI has screens for manual and automatic operation, CIP, settings, recipes and alarms, and the system logs production data for performance analysis."
       ],
       "scope": [
@@ -210,11 +339,37 @@
         "Pump start and stop delays",
         "Data logging and production tracking"
       ],
-      "result": "Each product is pasteurized at its set temperature and time, under-processed product is held back automatically, and operators run production and CIP from one HMI. The system helped improve product quality, reduce waste and support compliance with health standards, with less manual intervention.",
+      "result": "Each product is pasteurized at its set temperature and time, under-processed product is held back automatically, and operators run production and CIP from one HMI. Production data is logged for performance analysis.",
       "highlights": [
         "Flow-diversion interlock",
         "CIP built into the program",
         "Recipes for each product"
+      ],
+      "facts": [
+        {
+          "label": "Equipment",
+          "value": "Pasteurizer with flow-diversion valve (FDV) and CIP"
+        },
+        {
+          "label": "Our scope",
+          "value": "PLC program and HMI screens"
+        },
+        {
+          "label": "PLC",
+          "value": "Wecon LX3V"
+        },
+        {
+          "label": "HMI",
+          "value": "Wecon HMI: Manual, Automatic, CIP, Settings, Recipes and Alarms screens"
+        },
+        {
+          "label": "Product safety",
+          "value": "Flow-diversion interlock with adjustable switching points and a safety temperature"
+        },
+        {
+          "label": "Records",
+          "value": "Production data logging"
+        }
       ],
       "imageAlts": {
         "hmi": "Wecon HMI on a stainless-steel cabinet showing the pasteurizer process, with tabs for Manual, Automatic, CIP, Settings, Recipes and Alarms",
@@ -229,10 +384,10 @@
       "client": "Manufacturer with a packaging line",
       "summary": "A control system for a labeling machine on Delta PLC and Wecon HMI, with stepper-driven label dispensing, line synchronization, product recipes and missing-label detection.",
       "seoTitle": "Labeling Machine | Delta PLC & Wecon HMI",
-      "seoDescription": "Case study: labeling machine control in Egypt on Delta PLC, Wecon HMI and Schneider Electric stepper drives. Line sync, recipes, missing-label detection.",
+      "seoDescription": "Labeling machine control in Egypt on Delta PLC and Wecon HMI: stepper-driven label dispensing, line sync, product recipes, missing-label checks.",
       "challenge": "The labeling machine had to place labels accurately at line speed, handle several product sizes and label formats, and catch missing or misaligned labels before products moved on.",
       "solution": [
-        "We implemented the control system on a Delta PLC with a Wecon HMI. The PLC controls labeling speed and position and synchronizes the labeler with the production line, using Schneider Electric stepper drives and an Altivar variable-speed drive.",
+        "The labeler now runs in step with the production line. The PLC controls labeling speed and position, using Schneider Electric stepper drives and an Altivar variable-speed drive. The control system is built on a Delta DVP PLC with a Wecon HMI.",
         "Product settings, including label length, dispense length, speeds and gate and stepper delays, are stored in a product table on the HMI. Sensors detect bottles, labels and the gate position, and the system flags missing or misaligned labels. The HMI shows real-time status and alarms, and the system logs production data."
       ],
       "scope": [
@@ -245,11 +400,37 @@
         "Missing and misaligned label detection",
         "Data logging and production tracking"
       ],
-      "result": "The labeler runs different products from stored settings. The system helped improve labeling accuracy, reduce product waste and cut manual intervention.",
+      "result": "The labeler switches between products by loading their stored settings, places labels in step with the line, and flags missing or misaligned labels before the products move on.",
       "highlights": [
         "Stepper-driven label dispensing",
         "Product recipes on the HMI",
         "Missing-label detection"
+      ],
+      "facts": [
+        {
+          "label": "Equipment",
+          "value": "Labeling machine on a packaging line"
+        },
+        {
+          "label": "Our scope",
+          "value": "PLC program and HMI screens"
+        },
+        {
+          "label": "PLC",
+          "value": "Delta DVP"
+        },
+        {
+          "label": "HMI",
+          "value": "Wecon HMI: Main, Settings, Calibration and Alarms screens"
+        },
+        {
+          "label": "Drives",
+          "value": "Schneider Electric stepper drives and an Altivar VFD"
+        },
+        {
+          "label": "Label checks",
+          "value": "Missing and misaligned label detection"
+        }
       ],
       "imageAlts": {
         "hmi": "Wecon HMI main screen of the labeling machine with label length, dispense length, speed, sensor status and Start, Stop and Reset buttons",
@@ -263,10 +444,10 @@
       "client": "Olive processor",
       "summary": "Automated sterilization control for an olive autoclave on LS PLC and HMI: multi-phase cycles with temperature, pressure and time setpoints, alarms and traceable records.",
       "seoTitle": "Olive Autoclave Sterilization | LS PLC",
-      "seoDescription": "Case study: sterilization control for an olive autoclave in Egypt on LS PLC and HMI. Temperature, pressure and time per phase, alarms and traceability.",
+      "seoDescription": "Olive autoclave sterilization control in Egypt on LS PLC and HMI: time, temperature and pressure for each phase, alarms, traceable cycle records.",
       "challenge": "Sterilization must reach and hold the right temperature, pressure and time for each olive type and batch size, in every cycle, and each cycle should leave a record for quality assurance.",
       "solution": [
-        "We implemented the control system on an LS PLC with an HMI. Each sterilization program runs in phases, with time, temperature and pressure setpoints and live values on the screen.",
+        "Each sterilization program now runs in phases, with time, temperature and pressure setpoints for every phase and the live values on the screen. The controller is an LS PLC with an expansion module, operated from an HMI.",
         "The PLC controls steam, water, air, pressure compensation, the pump, filling and drain, and monitors the door status. Programs cover different olive types and batch sizes, alarms appear on the HMI, and cycle data is logged for traceability."
       ],
       "scope": [
@@ -279,11 +460,37 @@
         "Door status monitoring",
         "Alarms, data logging and traceability"
       ],
-      "result": "The system helped make sterilization more repeatable, reduce manual intervention and support safe, consistent olive products, with cycle records for quality assurance.",
+      "result": "Each olive type and batch size has its own phase program, the PLC holds time, temperature and pressure through every phase, and each cycle is logged for quality assurance.",
       "highlights": [
         "Multi-phase cycles",
         "Temperature, pressure and time setpoints",
         "Traceable cycle records"
+      ],
+      "facts": [
+        {
+          "label": "Equipment",
+          "value": "Horizontal olive sterilization autoclave"
+        },
+        {
+          "label": "Our scope",
+          "value": "PLC program and HMI screens"
+        },
+        {
+          "label": "PLC",
+          "value": "LS Electric with expansion module"
+        },
+        {
+          "label": "Controlled",
+          "value": "Steam, water, air, pressure compensation, pump, filling and drain"
+        },
+        {
+          "label": "Programs",
+          "value": "Phase programs for each olive type and batch size"
+        },
+        {
+          "label": "Records",
+          "value": "Cycle data logged for traceability"
+        }
       ],
       "imageAlts": {
         "machine": "Horizontal olive sterilization autoclave with a round stainless-steel door in a processing hall",
@@ -297,10 +504,10 @@
       "client": "Concrete producer",
       "summary": "Automated batching and mixing on a Siemens S7-1200 PLC with WinCC Professional SCADA: dosing of cement, aggregates, water and additives, and recipes for different mixes.",
       "seoTitle": "Concrete Batching Plant | S7-1200 & WinCC",
-      "seoDescription": "Case study: concrete batching plant control in Egypt on Siemens S7-1200 and WinCC Professional SCADA. Material dosing, mixing sequences, mix recipes.",
+      "seoDescription": "Concrete batching plant control in Egypt on Siemens S7-1200 and WinCC SCADA: each material dosed by weight, mix recipes, automatic mixing.",
       "challenge": "The batching plant needed accurate dosing of each material and the same mix quality batch after batch, with an operator view of the whole plant.",
       "solution": [
-        "We implemented the control system on a Siemens S7-1200 PLC with WinCC Professional SCADA. The PLC doses cement, aggregates, water and additives to their target weights and runs the batching and mixing sequences automatically.",
+        "Each material is now dosed to its target weight: cement, aggregates, water and additives. The PLC runs the batching and mixing sequences automatically. The control system is built on a Siemens S7-1200 PLC with WinCC Professional SCADA.",
         "Operators select and manage mix recipes and follow the plant on a SCADA overview of bins, hoppers, conveyors and mixer, with live values, timers and alarms."
       ],
       "scope": [
@@ -311,11 +518,37 @@
         "Recipe management for concrete mixes",
         "Real-time monitoring and alarms"
       ],
-      "result": "The system helped improve production consistency, reduce material waste and make the plant more efficient and reliable.",
+      "result": "Each mix is dosed by weight from its stored recipe, and batching and mixing run automatically. The operator follows the whole plant on one SCADA screen, with live values, timers and alarms.",
       "highlights": [
         "Weighing and dosing for each material",
         "Mix recipes",
         "SCADA plant overview"
+      ],
+      "facts": [
+        {
+          "label": "Equipment",
+          "value": "Concrete batching plant with three aggregate bins"
+        },
+        {
+          "label": "Our scope",
+          "value": "PLC program and SCADA screens"
+        },
+        {
+          "label": "PLC",
+          "value": "Siemens S7-1200"
+        },
+        {
+          "label": "SCADA",
+          "value": "Siemens WinCC Professional"
+        },
+        {
+          "label": "Materials dosed",
+          "value": "Cement, aggregates, water and additives"
+        },
+        {
+          "label": "Recipes",
+          "value": "Concrete mix recipes managed by the operators"
+        }
       ],
       "imageAlts": {
         "scada": "SCADA screen of a concrete batching plant with three aggregate bins, cement, water and additive hoppers, conveyors and mixer timers"
@@ -327,10 +560,10 @@
       "client": "Pharmaceutical manufacturer",
       "summary": "Siemens S7-1200 and WinCC Professional SCADA control for a tablet film-coating machine: spray rate, pan speed, air temperature, process time and formulation recipes.",
       "seoTitle": "Tablet Coating SCADA | S7-1200 & WinCC",
-      "seoDescription": "Case study: tablet coating machine control for a pharma plant in Egypt. Siemens S7-1200, WinCC Professional SCADA, recipes, user log-in, alarm history.",
+      "seoDescription": "Tablet coating machine for a pharma plant in Egypt, on Siemens S7-1200 and WinCC SCADA: recipes, user log-in, alarm history and records.",
       "challenge": "Tablet coating quality depends on spray rate, pan speed, air temperature and process time. The machine needed precise control of each, settings for each formulation, and the visibility and records that pharmaceutical production requires.",
       "solution": [
-        "We implemented the control system on a Siemens S7-1200 PLC with WinCC Professional SCADA. The SCADA overview shows the exhaust, coating drum, coating-solution tank and air handling unit, with the speeds of the variable-speed fans and drum, damper positions, inlet and outlet temperatures and cycle time.",
+        "Operators now follow the whole coater on one SCADA overview: exhaust, coating drum, coating-solution tank and air handling unit. The screen shows the speeds of the variable-speed fans and drum, damper positions, inlet and outlet temperatures and cycle time. A Siemens S7-1200 PLC runs the machine, with WinCC Professional as the SCADA.",
         "Operators select a recipe for each formulation, log in with a user name, and see an alarm list with date, time and duration."
       ],
       "scope": [
@@ -342,11 +575,37 @@
         "Recipes for each formulation",
         "User log-in and alarm history"
       ],
-      "result": "The system helped improve coating consistency and process reliability, and supports the plant's pharmaceutical quality and documentation standards.",
+      "result": "Each formulation runs from its own recipe, operators log in with a user name, and every alarm is listed with its date, time and duration for the plant's records.",
       "highlights": [
         "Recipes for each formulation",
         "User log-in",
         "Full SCADA overview"
+      ],
+      "facts": [
+        {
+          "label": "Equipment",
+          "value": "Tablet film-coating machine"
+        },
+        {
+          "label": "Our scope",
+          "value": "PLC program and SCADA screens"
+        },
+        {
+          "label": "PLC",
+          "value": "Siemens S7-1200"
+        },
+        {
+          "label": "SCADA",
+          "value": "Siemens WinCC Professional on a panel PC"
+        },
+        {
+          "label": "Drives",
+          "value": "VFDs for the drum, blower, exhaust and air handling unit"
+        },
+        {
+          "label": "Access and records",
+          "value": "User log-in, recipes for each formulation, alarm history"
+        }
       ],
       "imageAlts": {
         "machine": "Stainless-steel tablet coating drum with spray-gun arm and exhaust duct in a pharmaceutical cleanroom",
@@ -354,12 +613,12 @@
       }
     },
     "shampoo-filling-delta-wecon": {
-      "title": "Shampoo filling machine: control panel and automation on Delta PLC",
+      "title": "Four-nozzle shampoo filler: new control panel, Delta PLC and Arabic HMI",
       "cardTitle": "Shampoo filling machine on Delta PLC and Wecon HMI",
       "client": "Personal-care manufacturer",
       "summary": "A new control panel and automation for a four-nozzle shampoo filler: Delta PLC, Wecon HMI with Arabic screens and an LS Electric VFD, with control of fill volume, speed and sequence.",
-      "seoTitle": "Shampoo Filler | Delta PLC & Arabic HMI",
-      "seoDescription": "Case study: new control panel and automation for a four-nozzle shampoo filling machine in Egypt. Delta PLC, Arabic Wecon HMI, LS Electric M100 VFD.",
+      "seoTitle": "Shampoo Filler Control Panel & Arabic HMI",
+      "seoDescription": "New control panel for a four-nozzle shampoo filling machine in Egypt: Delta PLC, Arabic Wecon HMI, LS Electric drive, settings per bottle size.",
       "challenge": "The filler had to handle several bottle sizes and products with accurate fill volumes, minimal waste and short changeovers, and its operators needed screens in Arabic.",
       "solution": [
         "We built the control panel around a Delta DVP PLC with expansion I/O, an LS Electric M100 VFD, a MEAN WELL power supply, relays and terminals. The PLC controls fill volume, speed and the filling sequence, with tank and gate sensors, individual control of the four nozzles and a product counter.",
@@ -375,11 +634,37 @@
         "Product counter",
         "Settings for different bottle sizes"
       ],
-      "result": "The system helped improve production accuracy and reduce manual intervention, waste and downtime, and made it easy to switch between bottle sizes and products.",
+      "result": "Operators run the filler from Arabic screens and control each of the four nozzles separately. They change the settings for each bottle size and product on the HMI, and a product counter shows on screen.",
       "highlights": [
         "Arabic HMI",
         "Four nozzles controlled individually",
         "Quick bottle-size changes"
+      ],
+      "facts": [
+        {
+          "label": "Equipment",
+          "value": "Four-nozzle piston filling machine"
+        },
+        {
+          "label": "Our scope",
+          "value": "New control panel, PLC program and Arabic HMI"
+        },
+        {
+          "label": "PLC",
+          "value": "Delta DVP-12SC with expansion I/O"
+        },
+        {
+          "label": "HMI",
+          "value": "Wecon HMI with Arabic screens"
+        },
+        {
+          "label": "Drive",
+          "value": "LS Electric M100 VFD"
+        },
+        {
+          "label": "Panel",
+          "value": "MEAN WELL power supply, relays and terminals"
+        }
       ],
       "imageAlts": {
         "panel": "Newly wired control panel with an LS Electric M100 drive, power supply, Delta PLC, circuit breakers and two rows of relays",
@@ -393,10 +678,10 @@
       "client": "Dairy producer",
       "summary": "Wecon PLC and HMI control for a cheese cooker: temperature, cooking time, and the speed and direction of two mixing motors, set for each cheese type in step recipes.",
       "seoTitle": "Cheese Cooker Automation with Step Recipes",
-      "seoDescription": "Case study: cheese cooker control in Egypt on Wecon PLC and HMI. Six-step recipes with time, motor speed and direction, temperature and valve control.",
+      "seoDescription": "Cheese cooker control in Egypt on Wecon PLC and HMI: six-step recipes with time, motor speed and direction, plus temperature and valve control.",
       "challenge": "Cheese texture and taste depend on temperature, cooking time and mixing. Each cheese type needed its own settings, and operators needed to run them the same way in every batch.",
       "solution": [
-        "We implemented the control system on a Wecon PLC with expansion I/O and a Wecon HMI. Each program has six steps, each with its own time and the direction and speed of two mixing motors, with a VEICHI VFD for speed control.",
+        "Each cheese type now has its own six-step program, and every step sets its own time and the direction and speed of two mixing motors. A VEICHI VFD handles speed control, and the system runs on a Wecon PLC with expansion I/O and a Wecon HMI.",
         "The PLC controls the cooking temperature against its setpoint and operates the steam, double-jacket and discharge valves. Programs are saved by number and name and loaded for each cheese type."
       ],
       "scope": [
@@ -409,11 +694,37 @@
         "Steam, jacket and discharge valve control",
         "Programs for each cheese type"
       ],
-      "result": "The system gives precise process control and consistent product quality, and it is easy to adjust for different cheese types and production needs.",
+      "result": "Each cheese type is cooked from its own saved program, called up by number and name, so every batch follows the same temperature, time and mixing steps.",
       "highlights": [
         "Six-step recipes",
         "Two motors: speed and direction",
         "Programs for each cheese type"
+      ],
+      "facts": [
+        {
+          "label": "Equipment",
+          "value": "Cheese cooker with a double jacket and two mixing motors"
+        },
+        {
+          "label": "Our scope",
+          "value": "PLC program and HMI recipe screen"
+        },
+        {
+          "label": "PLC",
+          "value": "Wecon PLC with expansion I/O"
+        },
+        {
+          "label": "HMI",
+          "value": "Wecon HMI"
+        },
+        {
+          "label": "Drive",
+          "value": "VEICHI VFD"
+        },
+        {
+          "label": "Recipes",
+          "value": "6 steps per program: time, direction and speed of both motors"
+        }
       ],
       "imageAlts": {
         "hmi": "HMI recipe table with six steps, each with time, direction and speed for two motors, plus the temperature setpoint and valve status",
@@ -421,15 +732,15 @@
       }
     },
     "milk-pasteurizer": {
-      "title": "Milk pasteurization machine: temperature, time and stage control",
+      "title": "Milk pasteurizer with a plate heat exchanger: stage, temperature and time control",
       "cardTitle": "Milk pasteurizer on Wecon PLC and HMI",
       "client": "Dairy producer",
       "summary": "Wecon PLC and HMI control for a milk pasteurizer with a plate heat exchanger: temperature, time and process stages controlled to food-safety requirements, with adjustable parameters.",
-      "seoTitle": "Milk Pasteurizer Control | Wecon PLC & HMI",
-      "seoDescription": "Case study: milk pasteurization machine control in Egypt on Wecon PLC and HMI. Temperature, time and stage control, CIP mode, adjustable parameters.",
+      "seoTitle": "Milk Pasteurizer with Plate Heat Exchanger",
+      "seoDescription": "Milk pasteurizer with a plate heat exchanger in Egypt, on Wecon PLC and HMI: temperature and time for each stage, CIP mode, operator settings.",
       "challenge": "Milk must be pasteurized at the correct temperature and time on every run. The machine needed reliable control of each process stage, and parameters that operators could adjust for different production needs.",
       "solution": [
-        "We implemented the control system on a Wecon PLC with expansion I/O and a Wecon HMI. The HMI shows the process from the raw-milk feed pump and balance tank through the plate heat exchanger and hot-water loop, with pasteurization, output, input and hot-water temperatures and the inlet setpoint.",
+        "The HMI now shows the whole pasteurizer, from the raw-milk feed pump and balance tank through the plate heat exchanger and hot-water loop. It displays the pasteurization, outlet, inlet and hot-water temperatures and the inlet setpoint. The system runs on a Wecon PLC with expansion I/O and a Wecon HMI.",
         "Manual, automatic, CIP and settings screens let operators run, clean and adjust the machine."
       ],
       "scope": [
@@ -441,11 +752,37 @@
         "Manual, automatic and CIP modes",
         "Adjustable process parameters"
       ],
-      "result": "The system helped improve process stability, reduce human error and support safe, consistent milk production.",
+      "result": "Operators run, clean (CIP) and adjust the pasteurizer from one Wecon HMI, with the temperature and time of every stage under PLC control.",
       "highlights": [
         "Plate heat exchanger control",
         "CIP mode",
         "Adjustable parameters"
+      ],
+      "facts": [
+        {
+          "label": "Equipment",
+          "value": "Milk pasteurizer with plate heat exchanger, balance tank and hot-water loop"
+        },
+        {
+          "label": "Our scope",
+          "value": "PLC program and HMI screens"
+        },
+        {
+          "label": "PLC",
+          "value": "Wecon PLC with expansion I/O"
+        },
+        {
+          "label": "HMI",
+          "value": "Wecon HMI with a process overview"
+        },
+        {
+          "label": "Pumps",
+          "value": "Feed, master and heating pumps"
+        },
+        {
+          "label": "Operating modes",
+          "value": "Manual, automatic and CIP"
+        }
       ],
       "imageAlts": {
         "hmi": "HMI screen of a milk pasteurizer with feed pump, balance tank, plate heat exchanger, hot-water loop and temperature values",
@@ -458,10 +795,10 @@
       "client": "Industrial client",
       "summary": "Wecon PLC and HMI control for a pipe testing machine that records make and break values and generates test reports automatically for quality control and traceability.",
       "seoTitle": "Pipe Testing Machine with Automatic Reports",
-      "seoDescription": "Case study: pipe testing machine control in Egypt on Wecon PLC and HMI. Repeatable tests, make and break values in ft·lb and psi, automatic reports.",
+      "seoDescription": "Pipe testing machine in Egypt on Wecon PLC and HMI: make and break values in ft·lb and psi, live bar graphs and automatic test reports.",
       "challenge": "Pipe tests had to be accurate, reliable and repeatable, and every result had to be documented for quality control and traceability without manual record keeping.",
       "solution": [
-        "We implemented the control system on a Wecon PLC and Wecon HMI. The HMI displays the make and break values in ft·lb with the matching pressure in psi, and bar graphs show live readings.",
+        "The test rig now shows make and break values in ft·lb, with the matching pressure in psi, and bar graphs show the live readings. The control system runs on a Wecon PLC with a Wecon HMI.",
         "The system generates test reports automatically, including the make and break values of each test."
       ],
       "scope": [
@@ -472,26 +809,52 @@
         "Automatic test-report generation",
         "Data for quality control and traceability"
       ],
-      "result": "The rig gives repeatable test results and generates reports with the make and break values automatically, supporting quality control, traceability and documentation requirements.",
+      "result": "Each test produces an automatic report with its make and break values, so quality control keeps a record of every test without writing it by hand.",
       "highlights": [
         "Make and break values",
         "Automatic test reports",
         "Traceable QC records"
+      ],
+      "facts": [
+        {
+          "label": "Equipment",
+          "value": "Pipe make and break test machine"
+        },
+        {
+          "label": "Our scope",
+          "value": "PLC program, HMI screens and test reports"
+        },
+        {
+          "label": "PLC",
+          "value": "Wecon PLC"
+        },
+        {
+          "label": "HMI",
+          "value": "Wecon HMI with live bar graphs"
+        },
+        {
+          "label": "Measured values",
+          "value": "Make and break in ft·lb, pressure in psi"
+        },
+        {
+          "label": "Reports",
+          "value": "Generated automatically for each test"
+        }
       ],
       "imageAlts": {
         "hmi": "HMI test screen with make and break values in ft·lb and psi and bar-graph gauges"
       }
     },
     "hotel-washer-extractor-control": {
-      "title": "Hotel washer-extractor: flexible wash programs on Wecon PLC and HMI",
+      "title": "Hotel washer-extractor: a 15-step wash program editor with five chemical inputs",
       "cardTitle": "Hotel washer-extractor on Wecon PLC and HMI",
       "client": "Hotel laundry",
       "summary": "Wecon PLC and HMI control for hotel washing machines, with a 15-step program editor for towels, bed sheets, uniforms and other items.",
-      "seoTitle": "Hotel Washer-Extractor Control | Wecon PLC",
-      "seoDescription": "Case study: hotel washing machine control in Egypt on Wecon PLC and HMI. 15-step wash program editor, five chemical inputs, level and temperature control.",
+      "seoTitle": "Washer-Extractor 15-Step Program Editor",
+      "seoDescription": "Hotel washer-extractor control in Egypt on Wecon PLC and HMI: a 15-step wash program editor, five chemical inputs, level and temperature control.",
       "challenge": "A hotel laundry washes towels, bed sheets and uniforms, and each needs a different wash. The machines needed flexible programs that staff could change easily, with consistent results and less manual work.",
       "solution": [
-        "We implemented the control system on a Wecon PLC and Wecon HMI. A program editor holds up to 15 steps, such as prewash, wash, rinse, drain and extract, each with its own time, water level, hot or cold water, temperature and selection of five chemical inputs.",
+        "Laundry staff now build wash programs of up to 15 steps on the HMI, such as prewash, wash, rinse, drain and extract. Each step has its own time, water level, hot or cold water, temperature and selection of five chemical inputs. The system runs on a Wecon PLC with a Wecon HMI.",
         "The main screen shows drum direction, door lock, water level, steam, drain and chemical status, with step and program timers."
       ],
       "scope": [
@@ -503,11 +866,37 @@
         "Drum direction and door-lock status",
         "Step and program timers"
       ],
-      "result": "The system helped improve operating efficiency, reduce manual intervention, save time and resources, and keep wash quality consistent for every load.",
+      "result": "Laundry staff build and change wash programs on the HMI themselves, up to 15 steps per program, and each type of linen is washed with its own program every time.",
       "highlights": [
         "15-step program editor",
         "Five chemical inputs",
         "Programs for each linen type"
+      ],
+      "facts": [
+        {
+          "label": "Equipment",
+          "value": "Front-loading washer-extractor at a hotel laundry"
+        },
+        {
+          "label": "Our scope",
+          "value": "PLC program and HMI screens"
+        },
+        {
+          "label": "PLC",
+          "value": "Wecon PLC"
+        },
+        {
+          "label": "HMI",
+          "value": "Wecon HMI with a program editor"
+        },
+        {
+          "label": "Program editor",
+          "value": "Up to 15 steps per program"
+        },
+        {
+          "label": "Chemical inputs",
+          "value": "5"
+        }
       ],
       "imageAlts": {
         "machine": "Stainless-steel front-loading washer-extractor in a hotel laundry room",

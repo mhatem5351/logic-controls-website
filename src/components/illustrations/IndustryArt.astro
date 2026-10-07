@@ -8,6 +8,7 @@
  */
 import type { IndustrySlug } from "~/data/industries";
 import type { ArtProps } from "./types";
+import LazyArt from "./LazyArt.astro";
 import FoodBeverage from "./industries/FoodBeverage.astro";
 import Pharmaceutical from "./industries/Pharmaceutical.astro";
 import CosmeticsPersonalCare from "./industries/CosmeticsPersonalCare.astro";
@@ -18,6 +19,12 @@ import TestEquipment from "./industries/TestEquipment.astro";
 
 interface Props extends ArtProps {
   slug: IndustrySlug;
+  /**
+   * Render an empty, correctly sized slot that loads the art from the shared, cached fragment when it nears the
+   * viewport (LazyArt.astro). Default: true for decorative art (no `label`) — card grids; false for labelled art.
+   * Pass false where the art is part of the first screen (detail heroes, HeroArt).
+   */
+  lazy?: boolean;
 }
 
 const ART = {
@@ -30,8 +37,8 @@ const ART = {
   "test-equipment": TestEquipment,
 } satisfies Record<IndustrySlug, unknown>;
 
-const { slug, ...rest } = Astro.props;
+const { slug, lazy = !Astro.props.label, ...rest } = Astro.props;
 const Art = ART[slug];
 ---
 
-{Art && <Art {...rest} />}
+{lazy ? <LazyArt src={`industries/${slug}`} {...rest} /> : Art && <Art {...rest} />}

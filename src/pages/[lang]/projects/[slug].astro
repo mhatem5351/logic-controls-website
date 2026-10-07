@@ -1,9 +1,10 @@
 ---
 /**
  * Case study (one per locale × project).
- * Hero (cover) → facts row (client · industry · services · location · year) → Challenge → Solution → Scope
- * → Tech stack → Result (+ "At a glance" aside, vertical video beside the text) → video (16:9) → gallery
- * → previous / next → related projects → CTA band.
+ * Hero (cover) → facts row (client · industry · services · location · year) + project facts table (when the copy
+ * has `facts`) → "At a glance" (first in the story's DOM, shown as the sidebar from 1024px) → Challenge → Solution
+ * → Scope → Tech stack → Result → video (16:9) → gallery (without the hero's cover photo) → previous / next
+ * → related projects → CTA band. All case-study H2s share one size (media headings no longer out-rank the story).
  * Below 1024px the media block (film + photos) comes right after the facts row — on a phone the hero photo sits
  * behind the title, so the machine is shown before the story. It is also first in the DOM (reading / tab order
  * match the phone layout); from 1024px `lg:order-last` puts it back after the story. Story headings carry a title
@@ -24,14 +25,10 @@ import TechStack from "~/components/sections/catalog/TechStack.astro";
 import ProjectNav from "~/components/sections/catalog/ProjectNav.astro";
 import RelatedProjects from "~/components/sections/catalog/RelatedProjects.astro";
 import {
-  absUrl,
-  html,
   imageAlt,
   industryCopy,
   isPreFounding,
-  keepCodes,
   orderedServices,
-  orgRef,
   projectCopy,
   projectImages,
   projectsFor,
@@ -39,8 +36,10 @@ import {
   secondaryCta,
   serviceCopy,
 } from "~/components/sections/catalog/catalog";
+import { html, plain } from "~/lib/text";
+import { absUrl, article, graph, webPage } from "~/lib/jsonld";
 import { fmt } from "~/components/nav";
-import { LOCALES, LOCALE_META, getMessages, localePath, type Locale } from "~/i18n";
+import { LOCALES, getMessages, localePath, type Locale } from "~/i18n";
 import { PROJECT_SLUGS, getProject, relatedProjects, type ProjectSlug } from "~/data/projects";
 
 export function getStaticPaths() {
@@ -63,14 +62,24 @@ const services = orderedServices(p.services).filter((s) => serviceCopy(locale, s
 const location = (m.common.locations as Record<string, string>)[p.location] ?? p.location;
 const preFounding = isPreFounding(p);
 
-const images = projectImages(p).map((img) => ({ src: img.image, alt: imageAlt(locale, slug, img.key) }));
 const video = p.video;
 const vertical = !!video && video.height > video.width;
-/* A landscape film with one or two photos: film and photos side by side. Otherwise film, then a full gallery. */
-const sideBySide = !!video && !vertical && images.length <= 2;
-const galleryCols = (
-  sideBySide ? 1 : images.length <= 4 ? images.length : images.length % 3 === 0 ? 3 : images.length % 4 === 0 ? 4 : 3
-) as 1 | 2 | 3 | 4;
+/* Optional short visible captions per photo (projects.json → items[slug].imageCaptions[key]). */
+const captions = (c as { imageCaptions?: Record<string, string> }).imageCaptions ?? {};
+const allImages = projectImages(p).map((img) => ({ key: img.key, src: img.image, alt: imageAlt(locale, slug, img.key), caption: captions[img.key] }));
+/* The cover is already the hero photo, so the gallery shows the other photos. It stays only when it is the case
+   study's one photo and there is no film, so every page keeps at least one photo that opens full size. */
+const otherImages = allImages.filter((img) => img.key !== p.cover.key);
+const images = otherImages.length || video ? otherImages : allImages;
+const landscapeVideo = !!video && !vertical;
+const showMedia = landscapeVideo || images.length > 0;
+/* A landscape film with one or two photos: film and photos side by side. Otherwise film, then the photos:
+   1 → one centred photo · 2 → two up · 3 → a lead photo + two · 4 → 2 × 2 (big enough to read HMI screens) · 5+ → 3 up. */
+const sideBySide = landscapeVideo && images.length > 0 && images.length <= 2;
+const galleryLead = !sideBySide && images.length === 3;
+const galleryCols = (sideBySide ? 1 : images.length === 4 ? 2 : Math.min(images.length, 3)) as 1 | 2 | 3;
+/* Project facts table (projects.json → items[slug].facts: [{ label, value }]); rendered only when present. */
+const facts = ((c as { facts?: { label: string; value: string }[] }).facts ?? []).filter((f) => f && f.label && f.value);
 const videoTitle = c.videoTitle ?? c.cardTitle;
 
 /* Portfolio order (newest first) for previous / next, wrapping around. */
@@ -89,52 +98,36 @@ const og = await getImage({ src: p.cover.image, width: ogW, height: ogH, fit: "c
 const industryName = industryCopy(locale, p.industries[0] ?? "")?.navTitle;
 
 
-const jsonLd = {
-  "@context": "https://schema.org",
-  "@type": "Article",
-  "@id": `${url}#case-study`,
-  headline: c.title.length > 110 ? c.cardTitle : c.title,
-  name: c.cardTitle,
-  description: c.seoDescription,
-  articleSection: m.common.breadcrumbs.projects,
-  inLanguage: LOCALE_META[locale].htmlLang,
-  url,
-  mainEntityOfPage: url,
-  image: [absUrl(og.src)],
-  dateCreated: String(p.year),
-  author: orgRef(),
-  publisher: orgRef(),
-  about: industries.map((i) => industryCopy(locale, i)!.title),
-  keywords: p.technologies.join(", "),
-  contentLocation: { "@type": "Place", name: location },
-  ...(video
-    ? {
-        video: {
-          "@type": "VideoObject",
-          name: videoTitle,
-          description: c.summary,
-          thumbnailUrl: absUrl(video.poster),
-          contentUrl: absUrl(video.src),
-          uploadDate: video.uploadDate,
-        },
-      }
-    : {}),
-};
+/* Structured data (src/lib/jsonld.ts): the page + the case study as Article (publication dates from git, the project
+   year as temporalCoverage, localized industries / technologies, the generated card + the cover, the film). */
+const jsonLd = graph(
+  webPage(locale, { path, name: c.seoTitle, description: c.seoDescription, mainEntity: { "@id": `${url}#case-study` } }),
+  article(locale, {
+    path,
+    project: p,
+    copy: c,
+    coverUrl: absUrl(og.src),
+    industries: industries.map((i) => ({ name: industryCopy(locale, i)!.title, path: `industries/${i}` })),
+    location,
+    section: m.common.breadcrumbs.projects,
+    videoTitle,
+  }),
+);
 ---
 
 <BaseLayout locale={locale} title={c.seoTitle} description={c.seoDescription} path={path} heroDark jsonLd={jsonLd} ogImage={og.src} ogImageSize={{ width: ogW, height: ogH }} whatsappMessage={wa}>
   <Hero
     locale={locale}
     size="page"
-    title={html(c.title, locale)}
-    lead={html(c.summary, locale)}
+    title={html(locale, c.title)}
+    lead={html(locale, c.summary)}
     chips={[industryName, location, String(p.year)].filter((x): x is string => !!x)}
     image={p.cover.image}
     imageAlt={imageAlt(locale, slug, p.cover.key)}
     primary={{ label: m.ui.cta.quote, href: quoteHref(locale) }}
     secondary={secondaryCta(locale, wa)}
   >
-    <Breadcrumbs slot="breadcrumbs" locale={locale} items={[{ label: m.common.breadcrumbs.projects, path: "projects" }, { label: keepCodes(c.cardTitle, locale) }]} />
+    <Breadcrumbs slot="breadcrumbs" locale={locale} items={[{ label: m.common.breadcrumbs.projects, path: "projects" }, { label: plain(locale, c.cardTitle) }]} />
   </Hero>
 
   {/* Facts row */}
@@ -185,92 +178,94 @@ const jsonLd = {
         </p>
       )
     }
+    {
+      facts.length > 0 && (
+        <section aria-labelledby="facts-title" class="mt-8 sm:mt-10">
+          <h2 id="facts-title" class="flex items-center gap-3 type-h4 text-navy-950">
+            <span class="slant-bar text-royal-600" aria-hidden="true" />
+            {L.projectFacts}
+          </h2>
+          {/* Spec-sheet table: hairline cells, label over value; reads in order in both directions. */}
+          <dl class="mt-4 grid gap-px border border-charcoal-200 bg-charcoal-200 sm:grid-cols-2 lg:grid-cols-3">
+            {facts.map((f) => (
+              <div class="flex flex-col gap-1 bg-white px-4 py-3.5 sm:px-5">
+                <dt class="text-sm text-charcoal-600" set:html={html(locale, f.label)} />
+                <dd class="font-semibold text-navy-950" set:html={html(locale, f.value)} />
+              </div>
+            ))}
+            {/* Keep the last row of the table closed: blank cells fill an incomplete row. */}
+            {Array.from({ length: (3 - (facts.length % 3)) % 3 }, () => <div aria-hidden="true" class="hidden bg-white lg:block" />)}
+            {facts.length % 2 === 1 && <div aria-hidden="true" class="hidden bg-white sm:block lg:hidden" />}
+          </dl>
+        </section>
+      )
+    }
   </Section>
 
   <div class="flex flex-col">
-    {/* Media: film (16:9) + photos */}
-    <Section variant="muted" id="media" class="lg:order-last" aria-labelledby={video && !vertical ? "video-title" : "gallery-title"}>
-      {
-        sideBySide && video ? (
-          <>
-            <SectionHeading id="video-title" eyebrow={L.video} title={html(L.watchVideo, locale)} />
-            <div class="mt-8 grid items-start gap-8 lg:grid-cols-[minmax(0,2fr)_minmax(0,1fr)]">
-              <VideoPlayer locale={locale} src={video.src} poster={video.poster} title={videoTitle} aspect="16/9" caption={videoTitle} />
-              <div>
-                <h3 id="gallery-title" class="mb-3 type-label text-charcoal-600">{L.gallery}</h3>
-                <Gallery locale={locale} images={images} columns={images.length === 2 ? 2 : 1} class="lg:[&_ul]:grid-cols-1" />
+    {/* Media: film (16:9) + photos. Headings use the story's H2 size (h3 scale): the media supports the story. */}
+    {
+      showMedia && (
+        <Section variant="muted" id="media" class="lg:order-last" aria-labelledby={landscapeVideo ? "video-title" : "gallery-title"}>
+          {sideBySide && video ? (
+            <>
+              <SectionHeading id="video-title" eyebrow={L.video} title={html(locale, L.watchVideo)} size="h3" />
+              <div class="mt-8 grid items-start gap-8 lg:grid-cols-[minmax(0,2fr)_minmax(0,1fr)]">
+                <VideoPlayer locale={locale} src={video.src} poster={video.poster} title={videoTitle} description={c.videoDescription} aspect="16/9" caption={videoTitle} />
+                <div>
+                  <h3 id="gallery-title" class="mb-3 type-label text-charcoal-600">{L.gallery}</h3>
+                  <Gallery
+                    locale={locale}
+                    images={images}
+                    columns={images.length === 2 ? 2 : 1}
+                    sizes={images.length === 2 ? "(min-width: 1024px) 400px, calc((100vw - 3rem) / 2)" : "(min-width: 1024px) 400px, calc(100vw - 2rem)"}
+                    class="lg:[&_ul]:grid-cols-1"
+                  />
+                </div>
               </div>
-            </div>
-          </>
-        ) : (
-          <>
-            {video && !vertical && (
-              <div class="mb-16 sm:mb-20">
-                <SectionHeading id="video-title" eyebrow={L.video} title={html(L.watchVideo, locale)} />
-                <VideoPlayer locale={locale} src={video.src} poster={video.poster} title={videoTitle} aspect="16/9" caption={videoTitle} class="mt-8 max-w-5xl" />
-              </div>
-            )}
-            <SectionHeading id="gallery-title" eyebrow={c.client} title={html(L.gallery, locale)} />
-            <Gallery locale={locale} images={images} columns={galleryCols} class:list={["mt-8", galleryCols === 1 && "max-w-3xl", images.length >= 2 && "max-sm:[&_ul]:grid-cols-2"]} />
-          </>
-        )
-      }
-      <div class="mt-10 grid gap-3 text-sm text-charcoal-600 sm:grid-cols-2 sm:gap-8">
-        <p class="flex gap-2.5"><Icon name="shield" size={18} class="mt-0.5 shrink-0 text-royal-600" />{m.common.notes.anonymised}</p>
-        <p class="flex gap-2.5"><Icon name="file" size={18} class="mt-0.5 shrink-0 text-royal-600" />{m.common.notes.photos}</p>
-      </div>
-    </Section>
+            </>
+          ) : (
+            <>
+              {landscapeVideo && video && (
+                <div class:list={[images.length > 0 && "mb-16 sm:mb-20"]}>
+                  <SectionHeading id="video-title" eyebrow={L.video} title={html(locale, L.watchVideo)} size="h3" />
+                  <VideoPlayer locale={locale} src={video.src} poster={video.poster} title={videoTitle} description={c.videoDescription} aspect="16/9" caption={videoTitle} class="mt-8 max-w-5xl" />
+                </div>
+              )}
+              {images.length > 0 && (
+                <div class:list={[galleryCols === 1 && "mx-auto max-w-3xl"]}>
+                  <SectionHeading id="gallery-title" eyebrow={L.fromSite} title={html(locale, L.gallery)} size="h3" />
+                  <Gallery locale={locale} images={images} columns={galleryCols} lead={galleryLead} class="mt-8" />
+                </div>
+              )}
+            </>
+          )}
+          <div class:list={["mt-10 grid gap-3 text-sm text-charcoal-600 sm:grid-cols-2 sm:gap-8", !landscapeVideo && galleryCols === 1 && "mx-auto max-w-3xl"]}>
+            <p class="flex gap-2.5"><Icon name="shield" size={18} class="mt-0.5 shrink-0 text-royal-600" />{m.common.notes.anonymised}</p>
+            <p class="flex gap-2.5"><Icon name="file" size={18} class="mt-0.5 shrink-0 text-royal-600" />{m.common.notes.photos}</p>
+          </div>
+        </Section>
+      )
+    }
 
     {/* Story */}
     <Section id="story" class="lg:pt-20!">
       <div class="grid gap-12 lg:grid-cols-[minmax(0,8fr)_minmax(0,4fr)] lg:gap-16">
-        <article class="min-w-0">
-          <section aria-labelledby="challenge-title">
-            <SectionHeading id="challenge-title" title={html(L.challenge, locale)} size="h3" />
-            <p class="mt-5 max-w-prose text-lg/relaxed text-charcoal-700" set:html={html(c.challenge, locale)} />
-          </section>
-
-          <section aria-labelledby="solution-title" class="mt-14">
-            <SectionHeading id="solution-title" title={html(L.solution, locale)} size="h3" />
-            {
-              solution.map((para, i) => (
-                <p class:list={["max-w-prose text-lg/relaxed text-charcoal-700", i === 0 ? "mt-5" : "mt-4"]} set:html={html(para, locale)} />
-              ))
-            }
-          </section>
-
-          <section aria-labelledby="scope-title" class="mt-14">
-            <SectionHeading id="scope-title" title={html(L.scope, locale)} size="h3" />
-            <SpecList items={c.scope} locale={locale} marker="check" columns={2} ruled class="mt-6 border-t border-charcoal-200" />
-          </section>
-
-          <section aria-labelledby="technologies-title" class="mt-14">
-            <SectionHeading id="technologies-title" title={html(L.technologiesUsed, locale)} size="h3" />
-            <TechStack technologies={p.technologies} locale={locale} class="mt-6" />
-          </section>
-
-          <section aria-labelledby="result-title" class="mt-14">
-            <SectionHeading id="result-title" title={html(L.result, locale)} size="h3" />
-            <div class="relative mt-6 border-s-4 border-royal-600 bg-navy-50 px-6 py-6 sm:px-8">
-              <p class="type-lead text-navy-950" set:html={html(c.result, locale)} />
-            </div>
-          </section>
-        </article>
-
-        {/* Below 1024px the aside dissolves into the grid: the reel (with the photos just above) and "At a glance" move above the story. */}
-        <aside class:list={["max-lg:contents lg:flex lg:min-w-0 lg:flex-col lg:gap-8", !vertical && "lg:sticky lg:top-[calc(var(--header-h)+2rem)] lg:self-start"]} aria-labelledby="highlights-title">
+        {/* First in the DOM (the summary is read before the story), the sidebar from 1024px. Below 1024px the aside
+            dissolves into the grid: the reel and "At a glance" move above the story, the reference offer after it. */}
+        <aside class:list={["max-lg:contents lg:col-start-2 lg:row-start-1 lg:flex lg:min-w-0 lg:flex-col lg:gap-8", !vertical && "lg:sticky lg:top-[calc(var(--header-h)+2rem)] lg:self-start"]} aria-labelledby="highlights-title">
           <div class="on-dark relative isolate overflow-hidden bg-navy-950 text-navy-100 max-lg:-order-1">
             <div aria-hidden="true" class="pointer-events-none absolute inset-0 -z-10 bg-blueprint mask-fade-edges"></div>
             <div class="flex items-center gap-3 border-b border-white/10 px-6 py-3.5">
               <span class="lc-led" style="--led:#2bd47d" aria-hidden="true"></span>
-              <h2 id="highlights-title" class="type-label text-navy-100">{L.highlights}</h2>
+              <h2 id="highlights-title" class="type-h4 text-white">{L.highlights}</h2>
             </div>
             <ul role="list" class="divide-y divide-white/10 px-6">
               {
                 c.highlights.map((h) => (
                   <li class="flex items-start gap-3 py-4">
                     <Icon name="check" size={18} class="mt-0.5 text-signal-400" strokeWidth={2.25} />
-                    <span class="font-semibold text-white" set:html={html(h, locale)} />
+                    <span class="font-semibold text-white" set:html={html(locale, h)} />
                   </li>
                 ))
               }
@@ -290,11 +285,58 @@ const jsonLd = {
                   <Icon name="play" size={12} class="text-royal-600" />
                   {L.watchVideo}
                 </p>
-                <VideoPlayer locale={locale} src={video.src} poster={video.poster} title={videoTitle} aspect="9/16" caption={videoTitle} class="max-w-[22rem]" />
+                <VideoPlayer locale={locale} src={video.src} poster={video.poster} title={videoTitle} description={c.videoDescription} aspect="9/16" caption={videoTitle} class="max-w-[22rem]" />
               </div>
             )
           }
+
+          {/* The one third-party proof an anonymised portfolio can offer: a reference call (with the client's permission). */}
+          <div class="relative border border-charcoal-200 bg-white p-6 max-lg:order-last">
+            <span aria-hidden="true" class="absolute -top-px start-6 h-1 w-14 skew-x-[-10deg] bg-royal-600 rtl:skew-x-[10deg]" />
+            <p class="flex items-center gap-2.5 type-h4 text-navy-950">
+              <Icon name="users" size={20} class="shrink-0 text-royal-600" />
+              {L.referenceTitle}
+            </p>
+            <p class="mt-2 text-[0.9375rem] leading-relaxed text-charcoal-700">{L.referenceText}</p>
+            <a href={quoteHref(locale, { service: "other" })} class="group mt-4 inline-flex min-h-6 items-center gap-2 text-sm font-bold text-royal-600 hover:text-royal-800">
+              {L.referenceCta}
+              <Icon name="arrow" size={16} class="transition-transform group-hover:translate-x-1 rtl:group-hover:-translate-x-1" />
+            </a>
+          </div>
         </aside>
+
+        <article class="min-w-0 lg:col-start-1 lg:row-start-1">
+          <section aria-labelledby="challenge-title">
+            <SectionHeading id="challenge-title" title={html(locale, L.challenge)} size="h3" />
+            <p class="mt-5 max-w-[40rem] text-lg/relaxed text-charcoal-700" set:html={html(locale, c.challenge)} />
+          </section>
+
+          <section aria-labelledby="solution-title" class="mt-14">
+            <SectionHeading id="solution-title" title={html(locale, L.solution)} size="h3" />
+            {
+              solution.map((para, i) => (
+                <p class:list={["max-w-[40rem] text-lg/relaxed text-charcoal-700", i === 0 ? "mt-5" : "mt-4"]} set:html={html(locale, para)} />
+              ))
+            }
+          </section>
+
+          <section aria-labelledby="scope-title" class="mt-14">
+            <SectionHeading id="scope-title" title={html(locale, L.scope)} size="h3" />
+            <SpecList items={c.scope} locale={locale} marker="check" columns={2} ruled class="mt-6 border-t border-charcoal-200" />
+          </section>
+
+          <section aria-labelledby="technologies-title" class="mt-14">
+            <SectionHeading id="technologies-title" title={html(locale, L.technologiesUsed)} size="h3" />
+            <TechStack technologies={p.technologies} locale={locale} class="mt-6" />
+          </section>
+
+          <section aria-labelledby="result-title" class="mt-14">
+            <SectionHeading id="result-title" title={html(locale, L.result)} size="h3" />
+            <div class="relative mt-6 border-s-4 border-royal-600 bg-navy-50 px-6 py-6 sm:px-8">
+              <p class="type-lead text-navy-950" set:html={html(locale, c.result)} />
+            </div>
+          </section>
+        </article>
       </div>
     </Section>
   </div>
@@ -308,7 +350,7 @@ const jsonLd = {
 
   <CtaBand
     locale={locale}
-    title={html(m.common.ctaBand.project.title, locale)}
+    title={html(locale, m.common.ctaBand.project.title)}
     text={m.common.ctaBand.project.text}
     primary={{ label: m.ui.cta.quote, href: quoteHref(locale) }}
     secondary={secondaryCta(locale, wa)}

@@ -8,6 +8,7 @@
  */
 import type { HTMLAttributes } from "astro/types";
 import Icon, { type IconName } from "./Icon.astro";
+import { getMessages, type Locale } from "~/i18n";
 
 type Props = {
   href?: string;
@@ -42,6 +43,8 @@ const {
 } = Astro.props;
 
 const iconSize = size === "sm" ? 16 : size === "lg" ? 20 : 18;
+/* External links announce that they open a new tab (the page's locale; English outside the localised routes). */
+const newTab = external && href ? getMessages(((Astro.currentLocale as Locale | undefined) ?? "en") as Locale).ui.a11y.newTab : undefined;
 const Tag = href ? "a" : "button";
 const linkAttrs = href
   ? { href, ...(external ? { target: "_blank", rel: "noopener" } : {}) }
@@ -57,6 +60,6 @@ const linkAttrs = href
   {...rest}
 >
   {icon && <Icon name={icon} size={iconSize} class={iconClass} />}
-  <span class="lc-btn-label"><slot /></span>
+  <span class="lc-btn-label"><slot />{newTab && <span class="sr-only"> ({newTab})</span>}</span>
   {iconEnd && <Icon name={iconEnd} size={iconSize} class="lc-btn-icon-end" />}
 </Tag>

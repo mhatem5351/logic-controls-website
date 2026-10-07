@@ -11,7 +11,7 @@ import { getMessages, type Locale } from "~/i18n";
 import { SITE } from "~/data/site";
 import Icon from "~/components/Icon.astro";
 import { whatsappLink, mailtoLink, prefersEmail } from "~/components/nav";
-import { html } from "./rich";
+import { html, ltr } from "./rich";
 
 interface Props {
   locale: Locale;
@@ -90,7 +90,7 @@ const toggle = (cls: string) => `relative grid shrink-0 place-items-center borde
           class:list={["mt-5 inline-flex min-h-11 items-center gap-3 font-semibold underline-offset-4 hover:underline", dark ? "text-royal-300 hover:text-white" : "mx-5 mb-3 text-royal-700 sm:mx-6"]}
         >
           <Icon name="mail" size={20} class="shrink-0" />
-          <span>{t.contact.channels.email.text}{join(t.contact.channels.email.text)}<span class="ltr" dir="ltr">{SITE.email}</span></span>
+          <span>{t.contact.channels.email.text}{join(t.contact.channels.email.text)}<Fragment set:html={ltr(SITE.email)} /></span>
         </a>
       ) : (
         <a
@@ -99,7 +99,7 @@ const toggle = (cls: string) => `relative grid shrink-0 place-items-center borde
           rel="noopener"
           class:list={["mt-5 inline-flex min-h-11 items-center gap-3 font-semibold underline-offset-4 hover:underline", dark ? "text-navy-100 hover:text-white" : "mx-5 mb-3 text-navy-950 sm:mx-6"]}
         >
-          <Icon name="whatsapp" size={20} class={dark ? "shrink-0 text-[#25d366]" : "shrink-0 text-[#128c4a]"} />
+          <Icon name="whatsapp" size={20} class={dark ? "shrink-0 text-whatsapp-500" : "shrink-0 text-whatsapp-700"} />
           <span>{q.whatsappHint}</span>
           <span class="sr-only">({t.ui.a11y.newTab})</span>
         </a>

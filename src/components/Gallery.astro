@@ -1,11 +1,18 @@
 ---
 /**
- * Responsive image grid with a lightweight <dialog> lightbox (prev/next, arrow keys — mirrored in RTL — Esc, counter).
+ * Responsive image grid with a lightweight <dialog> lightbox.
+ *  - Thumbnails: each link is named by its photo's alt text plus "(image 2 of 4, opens full size)" (visually hidden),
+ *    so a screen reader hears what each photo shows. An optional short `caption` is shown under the thumbnail.
+ *  - Layouts: `columns` 1-4 (two columns on phones from 2 images), or `lead` (3 images: one large + two stacked).
+ *  - Lightbox: the photo always fits the screen (never cropped, never scrolls), caption below it, prev/next buttons,
+ *    arrow keys (mirrored in RTL), swipe on touch, Esc / tap outside the photo to close. Each change is announced
+ *    ("Image 3 of 4: <alt>"); the page behind does not scroll (global.css) and focus returns to the opening thumbnail.
  * Without JS each thumbnail is a plain link to the full-size image.
  */
 import type { ImageMetadata } from "astro";
 import { Picture, getImage } from "astro:assets";
 import { getMessages, type Locale } from "~/i18n";
+import { BLANK_IMAGE } from "./hero-media";
 import Icon from "./Icon.astro";
 import { fmt } from "./nav";
 import { uid } from "./uid";
@@ -13,73 +20,127 @@ import { uid } from "./uid";
 interface Item {
   src: ImageMetadata;
   alt: string;
+  /** Short visible caption (≤ 60 characters); the alt text is used in the lightbox when absent. */
   caption?: string;
 }
 interface Props {
   images: Item[];
   /** 1 = one large image (e.g. a case study with a single photo). */
   columns?: 1 | 2 | 3 | 4;
+  /** One large lead photo with the others stacked beside it (best with 3 images). */
+  lead?: boolean;
   /** "square" crops thumbnails to 1:1, "landscape" to 4:3. */
   crop?: "square" | "landscape";
+  /** Override the thumbnails' `sizes` when the gallery sits in a narrower column. */
+  sizes?: string;
   locale?: Locale;
   class?: string;
 }
 const locale = (Astro.props.locale ?? Astro.currentLocale ?? "en") as Locale;
 const t = getMessages(locale).ui;
-const { images, columns = 3, crop = "landscape", class: className } = Astro.props;
+const { images, columns = 3, lead = false, crop = "landscape", sizes, class: className } = Astro.props;
 const id = uid("gal");
 const full = await Promise.all(images.map((img) => getImage({ src: img.src, width: Math.min(1800, img.src.width), format: "webp", quality: 82 })));
-const grid = { 1: "", 2: "sm:grid-cols-2", 3: "sm:grid-cols-2 lg:grid-cols-3", 4: "grid-cols-2 lg:grid-cols-4" }[columns];
-const thumbWidths = columns === 1 ? [480, 800, 1200] : [320, 480, 720];
-const thumbSizes =
-  columns === 1 ? "(min-width: 768px) 48rem, 100vw" : columns === 4 ? "(min-width: 1024px) 25vw, 50vw" : "(min-width: 1024px) 33vw, (min-width: 640px) 50vw, 100vw";
 const total = images.length;
+const isLead = lead && total >= 3;
+const grid = isLead
+  ? "grid-cols-2 sm:grid-cols-[minmax(0,2fr)_minmax(0,1fr)]"
+  : { 1: "", 2: "grid-cols-2", 3: "grid-cols-2 lg:grid-cols-3", 4: "grid-cols-2 lg:grid-cols-4" }[columns];
+/* Real rendered widths (the site container caps at 78rem): no 2x-oversized downloads on desktop. */
+const SIZES = {
+  1: "(min-width: 768px) 48rem, calc(100vw - 2rem)",
+  2: "(min-width: 1280px) 612px, calc((100vw - 3rem) / 2)",
+  3: "(min-width: 1280px) 405px, (min-width: 1024px) calc((100vw - 7rem) / 3), calc((100vw - 3rem) / 2)",
+  4: "(min-width: 1280px) 300px, (min-width: 1024px) calc((100vw - 8rem) / 4), calc((100vw - 3rem) / 2)",
+  lead: "(min-width: 1280px) 820px, (min-width: 640px) calc((100vw - 5rem) * 0.66), calc(100vw - 2rem)",
+  side: "(min-width: 1280px) 410px, (min-width: 640px) calc((100vw - 5rem) * 0.34), calc((100vw - 3rem) / 2)",
+} as const;
+const thumbSizes = (i: number) => sizes ?? (isLead ? (i === 0 ? SIZES.lead : SIZES.side) : SIZES[columns]);
+/* A 960 step: the 820px lead (1x) and the 410px side photos (2x) take 960w instead of jumping to 1200w. */
+const thumbWidths = [320, 480, 640, 800, 960, 1200];
 ---
 
 <div class:list={["lc-gallery", className]} data-gallery={id}>
   <ul role="list" class:list={["grid gap-3 sm:gap-4", grid]}>
     {
       images.map((img, i) => (
-        <li class="lc-reveal">
+        <li class:list={["lc-reveal min-w-0", isLead && i === 0 && "relative max-sm:col-span-2 sm:row-span-2"]}>
           <a
             href={full[i]!.src}
             data-index={i}
             data-full={full[i]!.src}
-            data-caption={img.caption ?? img.alt}
-            aria-label={fmt(t.gallery.open, { n: i + 1, total })}
-            class:list={["group relative block overflow-hidden bg-navy-950", crop === "square" ? "aspect-square" : "aspect-[4/3]"]}
+            data-caption={img.caption ?? ""}
+            class:list={[
+              "group relative block overflow-hidden bg-navy-950",
+              crop === "square" ? "aspect-square" : "aspect-[4/3]",
+              /* The lead fills the two rows the thumbnails define (out of the flow, so its photo can't stretch them). */
+              isLead && i === 0 && "sm:absolute sm:inset-0 sm:aspect-auto",
+            ]}
           >
             <Picture
               src={img.src}
               alt={img.alt}
               formats={["avif", "webp"]}
               widths={thumbWidths}
-              sizes={thumbSizes}
+              sizes={thumbSizes(i)}
               loading="lazy"
               layout="full-width"
               class="size-full object-cover transition-[scale,opacity] duration-(--dur-section) ease-emph group-hover:scale-[1.04] group-hover:opacity-90"
             />
-            <span aria-hidden="true" class="absolute end-3 top-3 grid size-9 place-items-center bg-navy-950/70 text-white opacity-0 backdrop-blur-sm transition-opacity duration-(--dur-ui) ease-mech group-hover:opacity-100 group-focus-visible:opacity-100">
+            <span class="sr-only"> {fmt(t.gallery.openSuffix, { n: i + 1, total })}</span>
+            <span aria-hidden="true" class="absolute end-3 top-3 grid size-9 place-items-center bg-navy-950/70 text-white opacity-0 backdrop-blur-sm transition-opacity duration-(--dur-ui) ease-mech group-hover:opacity-100 group-focus-visible:opacity-100 [@media(hover:none)]:opacity-100">
               <Icon name="plus" size={18} />
             </span>
           </a>
+          {img.caption && (
+            <p
+              class:list={[
+                "text-sm text-charcoal-700 on-dark:text-navy-200",
+                isLead && i === 0 ? "mt-2 sm:pointer-events-none sm:absolute sm:inset-x-0 sm:bottom-0 sm:m-0 sm:bg-navy-950/80 sm:px-4 sm:py-2.5 sm:text-white" : "mt-2",
+              ]}
+            >
+              {img.caption}
+            </p>
+          )}
         </li>
       ))
     }
   </ul>
 
-  <dialog class="lc-lightbox on-dark m-auto size-full max-h-none max-w-none bg-transparent p-0 text-white backdrop:bg-navy-950/95" aria-label={t.gallery.label}>
-    <div class="grid size-full grid-rows-[auto_1fr_auto]">
-      <div class="flex items-center justify-between px-4 py-3 sm:px-6">
-        <p class="font-mono text-sm text-navy-200 ltr" dir="ltr" aria-live="polite" data-counter></p>
+  <dialog
+    class="lc-lightbox on-dark m-auto size-full max-h-none max-w-none bg-transparent p-0 text-white backdrop:bg-navy-950/95"
+    aria-label={t.gallery.label}
+    data-counter={t.gallery.counter}
+    data-counter-long={t.gallery.counterLong}
+    data-sep={locale === "zh" ? "：" : ": "}
+  >
+    <div class="grid size-full grid-rows-[auto_minmax(0,1fr)] pb-[max(1rem,env(safe-area-inset-bottom))]">
+      <div class="flex items-center justify-between px-4 pt-[max(0.75rem,env(safe-area-inset-top))] pb-3 sm:px-6">
+        <p class="font-mono text-sm text-navy-200" dir="auto" aria-hidden="true" data-counter></p>
         <button type="button" data-close class="inline-flex size-11 items-center justify-center border border-white/25 hover:border-white/60" autofocus>
           <Icon name="close" size={22} />
           <span class="sr-only">{t.gallery.close}</span>
         </button>
       </div>
-      <figure class="relative grid min-h-0 place-items-center px-14 sm:px-20">
-        {/* src is replaced on open; lazy, so the closed (display:none) dialog never downloads it */}
-        <img data-image src={full[0]?.src} alt="" loading="lazy" decoding="async" class="max-h-full max-w-full object-contain" />
+      <figure data-figure class="relative grid min-h-0 grid-rows-[minmax(0,1fr)_auto] gap-3 sm:px-20">
+        {/* The stage has a definite height (grid track), so the photo is fitted inside it: never taller than the
+            screen, never upscaled. src is replaced on open; lazy, so the closed dialog never downloads it. */}
+        <div data-stage class="relative min-h-0 touch-pan-y touch-pinch-zoom">
+          {/* Two layers: the next photo is decoded behind the current one, then they crossfade (instant with motion off). */}
+          {[0, 1].map((layer) => (
+            <img
+              data-image
+              src={layer === 0 ? full[0]?.src : BLANK_IMAGE}
+              alt=""
+              aria-hidden={layer === 1 ? "true" : undefined}
+              loading="lazy"
+              decoding="async"
+              draggable="false"
+              class:list={["absolute inset-0 m-auto max-h-full max-w-full object-contain select-none", layer === 1 && "opacity-0"]}
+              style="transition: opacity var(--dur-ui) var(--ease-mech), scale var(--dur-section) var(--ease-emph)"
+            />
+          ))}
+        </div>
         <button type="button" data-prev class="absolute start-2 top-1/2 inline-flex size-11 -translate-y-1/2 items-center justify-center border border-white/25 bg-navy-950/60 hover:border-white/60 sm:start-4">
           <Icon name="chevron-left" size={24} />
           <span class="sr-only">{t.gallery.prev}</span>
@@ -88,9 +149,11 @@ const total = images.length;
           <Icon name="chevron-right" size={24} />
           <span class="sr-only">{t.gallery.next}</span>
         </button>
-        <figcaption data-caption class="absolute inset-x-0 bottom-0 mx-auto w-fit max-w-[90%] bg-navy-950/85 px-4 py-2 text-center text-sm text-navy-100 empty:hidden"></figcaption>
+        {/* Last child (a figcaption must be first or last); the buttons are absolutely positioned, so it still fills the
+            grid's second row under the stage. */}
+        <figcaption data-caption class="mx-auto max-w-[min(92%,48rem)] px-4 text-center text-sm text-navy-100 empty:hidden"></figcaption>
       </figure>
-      <div class="h-4"></div>
+      <p class="sr-only" aria-live="polite" data-live></p>
     </div>
   </dialog>
 </div>
@@ -100,36 +163,109 @@ const total = images.length;
     const links = [...root.querySelectorAll<HTMLAnchorElement>("a[data-full]")];
     const dialog = root.querySelector<HTMLDialogElement>(".lc-lightbox");
     if (!dialog || !links.length) return;
-    const img = dialog.querySelector<HTMLImageElement>("[data-image]")!;
+    const layers = [...dialog.querySelectorAll<HTMLImageElement>("[data-image]")];
+    let front = 0;
+    let swap = 0;
     const cap = dialog.querySelector<HTMLElement>("[data-caption]")!;
     const counter = dialog.querySelector<HTMLElement>("[data-counter]")!;
+    const live = dialog.querySelector<HTMLElement>("[data-live]")!;
+    const stage = dialog.querySelector<HTMLElement>("[data-stage]")!;
+    const figure = dialog.querySelector<HTMLElement>("[data-figure]")!;
     const rtl = document.documentElement.dir === "rtl";
+    const total = links.length;
+    const fill = (tpl = "", n: number) => tpl.replace("{n}", String(n)).replace("{total}", String(total));
     let index = 0;
-    const show = (i: number) => {
-      index = (i + links.length) % links.length;
+    let opener: HTMLAnchorElement | null = null;
+    const altOf = (a: HTMLAnchorElement) => a.querySelector("img")?.alt ?? "";
+    const announce = () => (live.textContent = `${fill(dialog.dataset.counterLong, index + 1)}${dialog.dataset.sep ?? ": "}${altOf(links[index]!)}`);
+    /* Warm the neighbours so prev / next swap without a blank frame. */
+    const warm = (i: number) => (new Image().src = links[(i + total) % total]!.dataset.full!);
+    const still = () => document.documentElement.dataset.motion === "off" || matchMedia("(prefers-reduced-motion: reduce)").matches;
+    /* Put a photo on the stage: instantly (opening, motion off) or decoded on the back layer, then crossfaded. */
+    const paint = async (src: string, alt: string, fade: boolean) => {
+      const id = ++swap;
+      const cur = layers[front]!;
+      const next = layers[1 - front];
+      if (!fade || !next) {
+        cur.src = src;
+        cur.alt = alt;
+        return;
+      }
+      next.src = src;
+      try {
+        await next.decode();
+      } catch {
+        /* not decodable yet: show it anyway */
+      }
+      if (id !== swap) return; /* a newer swap won */
+      next.alt = alt;
+      next.removeAttribute("aria-hidden");
+      next.style.opacity = "1";
+      cur.style.opacity = "0";
+      cur.alt = "";
+      cur.setAttribute("aria-hidden", "true");
+      front = 1 - front;
+    };
+    const show = (i: number, speak = true, fade = true) => {
+      index = (i + total) % total;
       const a = links[index]!;
-      img.src = a.dataset.full!;
-      img.alt = a.querySelector("img")?.alt ?? "";
-      cap.textContent = a.dataset.caption ?? "";
-      counter.textContent = `${index + 1} / ${links.length}`;
+      const alt = altOf(a);
+      const caption = a.dataset.caption || alt;
+      paint(a.dataset.full!, alt, fade && !still());
+      cap.textContent = caption;
+      /* A caption that only repeats the alt stays visible but is not read a second time. */
+      cap.toggleAttribute("aria-hidden", caption === alt);
+      counter.textContent = fill(dialog.dataset.counter, index + 1);
+      if (speak) announce();
+      if (total > 1) {
+        warm(index + 1);
+        warm(index - 1);
+      }
     };
     links.forEach((a, i) =>
       a.addEventListener("click", (e) => {
         e.preventDefault();
-        show(i);
+        opener = a;
+        live.textContent = "";
+        show(i, false, false);
         dialog.showModal();
+        /* After the dialog's own name, say which photo is open. */
+        setTimeout(announce, 150);
       }),
     );
+    const step = (d: number) => show(index + d);
     dialog.querySelector("[data-close]")?.addEventListener("click", () => dialog.close());
-    dialog.querySelector("[data-prev]")?.addEventListener("click", () => show(index - 1));
-    dialog.querySelector("[data-next]")?.addEventListener("click", () => show(index + 1));
+    dialog.querySelector("[data-prev]")?.addEventListener("click", () => step(-1));
+    dialog.querySelector("[data-next]")?.addEventListener("click", () => step(1));
     dialog.addEventListener("keydown", (e) => {
-      if (e.key === "ArrowRight") show(index + (rtl ? -1 : 1));
-      if (e.key === "ArrowLeft") show(index + (rtl ? 1 : -1));
+      if (e.key === "ArrowRight") step(rtl ? -1 : 1);
+      if (e.key === "ArrowLeft") step(rtl ? 1 : -1);
     });
+    /* Swipe (touch, pen, mouse drag): a mostly horizontal move of 40px+ pages; towards the inline start = next. */
+    let sx = 0;
+    let sy = 0;
+    let pid = -1;
+    let swiped = false;
+    stage.addEventListener("pointerdown", (e) => ((pid = e.pointerId), (sx = e.clientX), (sy = e.clientY)));
+    stage.addEventListener("pointercancel", () => (pid = -1));
+    stage.addEventListener("pointerup", (e) => {
+      if (e.pointerId !== pid) return;
+      pid = -1;
+      const dx = e.clientX - sx;
+      const dy = e.clientY - sy;
+      if (total > 1 && Math.abs(dx) > 40 && Math.abs(dx) > Math.abs(dy)) {
+        swiped = true;
+        step(dx < 0 !== rtl ? 1 : -1);
+      }
+    });
+    /* Tap / click outside the photo (backdrop, stage margins) closes. */
     dialog.addEventListener("click", (e) => {
-      if (e.target === dialog) dialog.close();
+      if (swiped) return void (swiped = false);
+      if (e.target === dialog || e.target === stage || e.target === figure) dialog.close();
     });
-    dialog.addEventListener("close", () => links[index]?.focus());
+    dialog.addEventListener("close", () => {
+      live.textContent = "";
+      (opener ?? links[index])?.focus({ preventScroll: true });
+    });
   });
 </script>

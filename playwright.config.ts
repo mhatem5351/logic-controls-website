@@ -1,8 +1,8 @@
 // End-to-end tests (Playwright Test) against the production build served by the real Worker runtime:
 // `wrangler dev` serves dist/ + worker/index.ts exactly as Cloudflare does (redirects, _headers, 404 page, /api/rfq,
 // send_email written to .wrangler/tmp/email). Port 8788 so it never collides with a `npm run preview` on 8787.
-// Served over https (wrangler's self-signed local certificate) so the production CSP's `upgrade-insecure-requests`
-// and Secure cookies behave as on the live site in every browser (WebKit upgrades http://127.0.0.1 subresources).
+// Served over https (wrangler's self-signed local certificate) so the production headers and Secure cookies behave as
+// on the live site in every browser.
 //
 // Needs: `npm run build` first, and a .dev.vars with Cloudflare's always-pass Turnstile TEST secret
 // (TURNSTILE_SECRET=1x0000000000000000000000000000000AA) — see tests/e2e/global-setup.ts.

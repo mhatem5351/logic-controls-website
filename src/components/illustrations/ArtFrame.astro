@@ -28,7 +28,7 @@ const style =
 const a11y = label ? { role: "img" as const, "aria-label": label } : { "aria-hidden": "true" as const };
 ---
 
-<svg class:list={["lca", `lca-${name}`, cls]} viewBox={viewBox} data-lca data-variant={variant} style={style} {...a11y}>
+<svg class:list={["lca", `lca-${name}`, cls]} viewBox={viewBox} data-lca data-play="rest" data-uid={u} data-variant={variant} style={style} {...a11y}>
   <defs>
     <pattern id={`${u}_g`} width="100" height="100" patternUnits="userSpaceOnUse">
       <path class="lca-g1" d="M20 0V100M40 0V100M60 0V100M80 0V100M0 20H100M0 40H100M0 60H100M0 80H100"></path>
@@ -137,7 +137,6 @@ const a11y = label ? { role: "img" as const, "aria-label": label } : { "aria-hid
     stroke-dasharray: 12 200;
     stroke-dashoffset: 14;
     animation: lca-p var(--t, 4s) var(--d, 0s) linear infinite;
-    transition: stroke-width 0.3s;
   }
   /* Node lights up when the pulse arrives (same --t/--d as its pulse). */
   .lca .nd {
@@ -176,13 +175,18 @@ const a11y = label ? { role: "img" as const, "aria-label": label } : { "aria-hid
   @keyframes lca-sp { to { transform: rotate(1turn); } }
   @keyframes lca-fw { to { stroke-dashoffset: -10; } }
 
-  /* Parent card hover/focus: signal gets a touch bolder (JS also speeds the loop up smoothly). */
-  .group:is(:hover, :focus-within) .lca .p { stroke-width: 3.25; }
-
-  /* Offscreen / hidden tab (set by src/scripts/motion/play-when-visible.ts). */
+  /* Play state (src/scripts/motion/play-when-visible.ts): "1" plays, "0" paused (hidden tab), "rest" (also the
+     server-rendered state) is the still pose below — so is "Pause animations" (html[data-motion="off"]).
+     Loops play two cycles (one in a card grid), at most two pieces at once, and replay on hover / focus. */
   .lca[data-play="0"] * { animation-play-state: paused !important; }
 
-  /* Reduced motion: no animation, show the most informative pose. */
+  /* Still pose: no animation, the most informative frame (outputs on, pulses mid-trace, nodes lit). Reduced motion
+     shows the same pose. Each piece adds its own still rules next to its reduced-motion ones. */
+  .lca:is([data-play="rest"], [data-motion="off"] *) * { animation: none !important; }
+  .lca:is([data-play="rest"], [data-motion="off"] *) .p { stroke-dashoffset: -44; }
+  .lca:is([data-play="rest"], [data-motion="off"] *) .nd { opacity: 1; }
+  .lca:is([data-play="rest"], [data-motion="off"] *) .rmh { opacity: 0 !important; }
+  .lca:is([data-play="rest"], [data-motion="off"] *) .rms { opacity: 1 !important; }
   @media (prefers-reduced-motion: reduce) {
     .lca * { animation: none !important; }
     .lca .p { stroke-dashoffset: -44; }
@@ -195,5 +199,4 @@ const a11y = label ? { role: "img" as const, "aria-label": label } : { "aria-hid
 <script>
   import { playWhenVisible } from "~/scripts/motion/play-when-visible";
   playWhenVisible();
-  document.addEventListener("astro:page-load", () => playWhenVisible());
 </script>

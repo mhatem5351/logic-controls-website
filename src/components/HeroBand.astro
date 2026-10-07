@@ -1,0 +1,66 @@
+---
+/**
+ * <Hero>'s media on phones and tablets (< 1024px): a visible 16:9 band in the copy column instead of a photo hidden
+ * behind an 85% scrim, so the first screen shows the machine. Desktop never downloads it (real files are offered to
+ * < 1024px only, then a 1×1 data-URI source); the desktop panel never downloads on phones the same way (Hero.astro).
+ * Case-study and page heroes place it under the breadcrumbs; the home hero places it after the CTAs.
+ */
+import type { ImageMetadata } from "astro";
+import { getImage } from "astro:assets";
+import { BLANK_IMAGE as BLANK, type HeroVideo } from "./hero-media";
+
+interface Props {
+  image?: ImageMetadata;
+  video?: HeroVideo;
+  alt?: string;
+  priority?: boolean;
+  /** Stagger index for the .lc-rise entrance. */
+  rise?: number;
+  class?: string;
+}
+const { image, video, alt = "", priority = false, rise = 1, class: className } = Astro.props;
+
+const SMALL = "(max-width: 1023.98px)";
+/* Copy column: max-w-2xl (home) / max-w-3xl (page) inside the 1.25–2rem gutters. */
+const sizes = "(min-width: 768px) 42rem, calc(100vw - 2.5rem)";
+
+let avif: string | undefined;
+let webp: string;
+let src: string;
+let width: number;
+let height: number;
+if (image) {
+  const widths = [...new Set([480, 720, 960].map((w) => Math.min(w, image.width)))];
+  const set = async (format: "avif" | "webp") =>
+    (await Promise.all(widths.map(async (w) => `${(await getImage({ src: image, width: w, format })).src} ${w}w`))).join(", ");
+  [avif, webp] = await Promise.all([set("avif"), set("webp")]);
+  src = (await getImage({ src: image, width: Math.min(720, image.width), format: "webp" })).src;
+  width = image.width;
+  height = image.height;
+} else {
+  avif = video?.posterSmallAvif;
+  webp = video?.posterSmall ?? video?.poster ?? "";
+  src = webp.split(",")[0]!.trim().split(" ")[0]!;
+  width = video?.width ?? 1920;
+  height = video?.height ?? 1080;
+}
+---
+
+<div class:list={["lc-hero-band lc-rise chamfer-lg relative aspect-video overflow-hidden bg-navy-900 lg:hidden", className]} style={`--i:${rise}`}>
+  <picture>
+    {avif && <source media={SMALL} type="image/avif" srcset={avif} sizes={sizes} />}
+    <source media={SMALL} srcset={webp} sizes={sizes} />
+    <source srcset={BLANK} />
+    <img
+      src={src}
+      alt={alt}
+      width={width}
+      height={height}
+      loading="eager"
+      decoding="async"
+      fetchpriority={priority ? "high" : "auto"}
+      class="absolute inset-0 size-full object-cover"
+    />
+  </picture>
+  <div aria-hidden="true" class="pointer-events-none absolute inset-0 bg-[linear-gradient(180deg,transparent_55%,rgb(4_14_39/0.5))]"></div>
+</div>

@@ -1,6 +1,7 @@
 ---
 /**
  * Industries overview: hero → one card per industry (animated art) + "not listed?" tile → CTA band.
+ * Listing page: short hero (no stat strip — the project count per industry is on each card) so the cards show early.
  */
 import BaseLayout from "~/layouts/BaseLayout.astro";
 import Hero from "~/components/Hero.astro";
@@ -11,9 +12,10 @@ import Button from "~/components/Button.astro";
 import Icon from "~/components/Icon.astro";
 import CtaBand from "~/components/CtaBand.astro";
 import IndustryArt from "~/components/illustrations/IndustryArt.astro";
-import { absUrl, countLabel, html, industryCopy, industrySlugs, projectsForIndustry, quoteHref, secondaryCta } from "~/components/sections/catalog/catalog";
+import { countLabel, industryCopy, industrySlugs, projectsForIndustry, quoteHref, secondaryCta } from "~/components/sections/catalog/catalog";
+import { html } from "~/lib/text";
+import { absUrl, graph, itemList, webPage } from "~/lib/jsonld";
 import { getMessages, localePath, localeStaticPaths, type Locale } from "~/i18n";
-import { STATS } from "~/data/stats";
 
 export const getStaticPaths = localeStaticPaths;
 const locale = Astro.params.lang as Locale;
@@ -23,49 +25,43 @@ const L = m.common.labels;
 const slugs = industrySlugs(locale);
 const wa = m.common.whatsapp.default;
 const [lead, ...rest] = idx.intro;
-const proof = STATS.filter((st) => st.key === "projects" || st.key === "industries" || st.key === "experience").map((st) => ({
-  value: st.value,
-  label: m.common.stats[st.key].label,
-}));
 
-const jsonLd = {
-  "@context": "https://schema.org",
-  "@type": "ItemList",
-  name: idx.h1,
-  itemListElement: slugs.map((s, i) => ({
-    "@type": "ListItem",
-    position: i + 1,
-    name: industryCopy(locale, s)!.title,
-    url: absUrl(localePath(locale, `industries/${s}`)),
-  })),
-};
+/* Structured data (src/lib/jsonld.ts): CollectionPage with the industries as an ItemList. */
+const jsonLd = graph(
+  webPage(locale, {
+    type: "CollectionPage",
+    path: "industries",
+    name: idx.seo.title,
+    description: idx.seo.description,
+    mainEntity: itemList(idx.h1, slugs.map((s) => ({ name: industryCopy(locale, s)!.title, url: absUrl(localePath(locale, `industries/${s}`)) }))),
+  }),
+);
 ---
 
 <BaseLayout locale={locale} title={idx.seo.title} description={idx.seo.description} path="industries" heroDark jsonLd={jsonLd} whatsappMessage={wa}>
   <Hero
     locale={locale}
-    size="page"
-    title={html(idx.h1, locale)}
-    lead={lead ? html(lead, locale) : undefined}
+    size="compact"
+    title={html(locale, idx.h1)}
+    lead={lead ? html(locale, lead) : undefined}
     primary={{ label: m.ui.cta.quote, href: quoteHref(locale) }}
     secondary={secondaryCta(locale, wa)}
-    proof={proof}
   >
     <Breadcrumbs slot="breadcrumbs" locale={locale} items={[{ label: m.common.breadcrumbs.industries }]} />
   </Hero>
 
-  <Section variant="muted" id="industries" aria-label={m.ui.nav.industries}>
-    <ul role="list" class="grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
+  <Section variant="muted" id="industries" class="pt-10! lg:pt-14!" aria-label={m.ui.nav.industries}>
+    <ul role="list" class="lc-grid-industries">
       {
         slugs.map((s) => {
           const it = industryCopy(locale, s)!;
           const n = projectsForIndustry(s).length;
           return (
             <li>
-              <Card variant="industry" title={it.title} href={localePath(locale, `industries/${s}`)} text={it.summary} cta={L.viewIndustry} headingLevel="h2" class="h-full">
+              <Card variant="industry" title={it.title} href={localePath(locale, `industries/${s}`)} text={it.summary} cta={L.viewIndustry} headingLevel="h2">
                 <Fragment slot="media">
-                  <div class="relative flex justify-center pt-6">
-                    <IndustryArt slug={s} variant="dark" size="80%" />
+                  <div class="relative flex justify-center pt-5">
+                    <IndustryArt slug={s} variant="dark" size="86%" />
                     {n > 0 && (
                       <span class="absolute end-4 top-4 border border-white/15 bg-navy-950/70 px-2 py-1 type-label text-navy-100 backdrop-blur-sm">
                         {countLabel(locale, n)}
@@ -87,7 +83,7 @@ const jsonLd = {
                 <Icon name="plus" size={22} />
               </span>
               <div>
-                <p class="type-h4 text-white" set:html={html(rest.join(" "), locale)} />
+                <p class="type-h4 text-white" set:html={html(locale, rest.join(" "))} />
                 <Button href={quoteHref(locale)} variant="on-dark" iconEnd="arrow" class="mt-6">
                   {L.contactUs}
                 </Button>
@@ -99,5 +95,5 @@ const jsonLd = {
     </ul>
   </Section>
 
-  <CtaBand locale={locale} title={html(m.common.ctaBand.industry.title, locale)} text={m.common.ctaBand.industry.text} secondary={secondaryCta(locale, wa)} />
+  <CtaBand locale={locale} title={html(locale, m.common.ctaBand.industry.title)} text={m.common.ctaBand.industry.text} secondary={secondaryCta(locale, wa)} />
 </BaseLayout>

@@ -1,6 +1,6 @@
 {
   "seo": {
-    "title": "Request a Quote | Logic Controls Egypt",
+    "title": "Request an Automation Quote in Egypt | Logic Controls",
     "description": "Request a quote for control panels, PLC/HMI programming, retrofits, SCADA or commissioning in Egypt. Send details by form, WhatsApp or email."
   },
   "h1": "Request a quote",
@@ -13,14 +13,16 @@
       "one": "Your details",
       "two": "Project details",
       "counter": "Step {current} of {total}",
-      "twoNote": "Optional, but it helps us quote faster."
+      "twoNote": "Optional, but it helps us quote faster.",
+      "done": "completed"
     },
     "buttons": {
       "next": "Continue",
       "back": "Back",
       "submit": "Send request",
       "sending": "Sending…",
-      "sendNow": "Skip and send now"
+      "sendNow": "Skip and send now",
+      "retry": "Try again"
     },
     "fields": {
       "name": {
@@ -32,7 +34,7 @@
       },
       "phone": {
         "label": "Mobile or WhatsApp number",
-        "help": "Include the country code, for example +20 10 1234 5678."
+        "help": "For example +20 10 1234 5678, or your number with its country code."
       },
       "email": {
         "label": "Email",
@@ -51,6 +53,7 @@
           "testing-commissioning": "Testing and commissioning",
           "maintenance-support": "Troubleshooting or maintenance",
           "new-factory": "New factory in Egypt: full automation scope",
+          "oem-partner": "Machine builder: local commissioning and service for our machines",
           "other": "Something else"
         }
       },
@@ -93,6 +96,17 @@
         "label": "Describe the machine or project",
         "help": "Machine type, what it should do, current problems, and PLC or HMI brands if you know them."
       },
+      "phoneOptional": {
+        "label": "Phone number",
+        "help": "Include the country code, for example +20 10 1234 5678."
+      },
+      "files": {
+        "label": "Drawings, photos or documents",
+        "help": "Up to {count} files, {size} in total: PDF, JPG, PNG, WebP, ZIP, DWG or DXF.",
+        "choose": "Choose files",
+        "remove": "Remove {name}",
+        "summary": "{count} of {max} files · {size} of {maxSize}"
+      },
       "contactPreference": {
         "label": "How should we contact you?",
         "options": {
@@ -113,9 +127,15 @@
     "privacyNote": "We use your details only to reply to this request. We do not add you to any mailing list.",
     "sent": "Request sent. Opening the confirmation page…",
     "noscript": "The security check needs JavaScript. If the form does not send, contact us directly by phone, WhatsApp or email.",
+    "prefill": {
+      "intro": "Hello Logic Controls, I tried to send this request through your website form:",
+      "subject": "Quote request from the website",
+      "files": "Files to send: {files}"
+    },
     "security": {
       "label": "Security check",
-      "help": "This check confirms that a person, not a bot, is sending the form."
+      "help": "This check confirms that a person, not a bot, is sending the form.",
+      "waiting": "The security check is taking longer than usual. Please wait a moment, or send the same request another way:"
     }
   },
   "validation": {
@@ -126,7 +146,12 @@
     "select": "Please choose an option.",
     "consent": "Please confirm that we may use your details to reply.",
     "messageTooLong": "Please keep the description under {max} characters.",
-    "summary": "Please check the highlighted fields."
+    "summary": "Please check the highlighted fields.",
+    "summaryCount": "Please check these fields ({count}):",
+    "filesType": "Some files have a type we cannot accept. Use PDF, JPG, PNG, WebP, ZIP, DWG or DXF.",
+    "filesCount": "Please choose up to {max} files. You can send the rest after submitting.",
+    "filesSize": "The files are larger than {max} in total. Remove some here and send them after submitting: the confirmation page gives you a request number to mention by email or WhatsApp.",
+    "emailForReply": "Add your email address so we can reply by email."
   },
   "errors": {
     "title": "Your request was not sent",
@@ -134,7 +159,10 @@
     "verification": "The security check did not complete. Please try again, or contact us on WhatsApp.",
     "send": "We could not send your request because of a technical problem. Please try again in a few minutes, or contact us on WhatsApp or by email.",
     "unknown": "Something went wrong. Please try again, or contact us on WhatsApp or by email.",
-    "fallback": "You can also reach us directly:"
+    "fallback": "You can also reach us directly:",
+    "attachments": "The files could not be attached. You can attach up to 3 files, 4 MB in total (PDF, JPG, PNG, WebP, ZIP, DWG or DXF). Remove them and send the request, then send the files by email or WhatsApp.",
+    "verificationBlocked": "The security check could not load. A browser extension, a firewall or your network may be blocking it.",
+    "handover": "Your details are copied into the message, so you do not need to type them again."
   },
   "channels": {
     "title": "Other ways to reach us",
@@ -144,8 +172,7 @@
     },
     "whatsapp": {
       "label": "WhatsApp",
-      "text": "Send photos, videos and drawings straight from your phone.",
-      "cta": "Send drawings on WhatsApp"
+      "text": "Send photos, videos and drawings straight from your phone."
     },
     "email": {
       "label": "Email",
@@ -192,6 +219,13 @@
       "cta": "Send drawings on WhatsApp"
     },
     "backHome": "Back to home",
-    "seeProjects": "See our projects"
+    "seeProjects": "See our projects",
+    "ref": {
+      "label": "Your request number",
+      "hint": "Mention it when you call us or send more files.",
+      "whatsapp": "Hello Logic Controls, this is about my website request {ref}. I am sending more files.",
+      "emailSubject": "Website request {ref}: more files"
+    },
+    "handoff": "Hello Logic Controls, I am {name} from {company}. I just sent request {ref} ({need}) on your website. Here are the drawings and photos."
   }
 }

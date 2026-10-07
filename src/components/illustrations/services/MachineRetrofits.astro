@@ -48,7 +48,7 @@ const wire = "M248 190H254L284 160H287.5";
     @keyframes rfE{0%,40%{transform:none}85%,100%{transform:rotate(3turn)}}
     @keyframes rfD{0%,40%{transform:none}85%,100%{transform:rotate(1turn)}}
     @keyframes rfBt{0%,40%{stroke-dashoffset:0}85%,100%{stroke-dashoffset:-96}}
-    @media (prefers-reduced-motion:reduce){.lca-rf .lt{opacity:1}}
+    @media (prefers-reduced-motion:reduce){.lca-rf .lt{opacity:1}}.lca-rf:is([data-play=rest],[data-motion=off] *) .lt{opacity:1}
   </style>
 
   <!-- shadows -->

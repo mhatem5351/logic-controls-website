@@ -50,13 +50,19 @@ base.describe("HTTP", { tag: "@desktop-only" }, () => {
     expect(rules.length).toBeGreaterThanOrEqual(20);
   });
 
-  for (const [from, to, status] of rules) {
-    base(`legacy ${from} → ${status} ${to}`, async ({ request }) => {
-      const res = await request.get(from, { maxRedirects: 0 });
-      expect(res.status()).toBe(Number(status));
-      expect(location(res.headers())).toBe(to);
-      if (to !== "/") expect((await request.get(to, { maxRedirects: 0 })).status()).toBe(200);
-    });
+  for (const [rawFrom, rawTo, status] of rules) {
+    // Splat rules (`/zh-cn/*  /zh/:splat`) are checked with a real page below the prefix, and with the bare prefix.
+    const samples = rawFrom.endsWith("/*") ? ["services/", ""] : [null];
+    for (const rest of samples) {
+      const from = rest === null ? rawFrom : rawFrom.replace("*", rest);
+      const to = rest === null ? rawTo : rawTo.replace(":splat", rest);
+      base(`legacy ${from} → ${status} ${to}`, async ({ request }) => {
+        const res = await request.get(from, { maxRedirects: 0 });
+        expect(res.status()).toBe(Number(status));
+        expect(location(res.headers())).toBe(to);
+        if (to !== "/") expect((await request.get(to, { maxRedirects: 0 })).status()).toBe(200);
+      });
+    }
   }
 
   base("a page URL without the trailing slash redirects to the canonical one", async ({ request }) => {

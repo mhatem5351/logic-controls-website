@@ -44,60 +44,49 @@ const tocTitle = c.labels.onThisPage;
 
   <Section class="lc-legal" aria-label={p.h1}>
     <div class="grid gap-10 lg:grid-cols-12 lg:gap-14">
-      {/* ---------- table of contents ---------- */}
+      {/* ---------- table of contents: one list for every viewport — collapsible on phones (with JS; open without),
+           sticky with scroll-spy from 1024px ---------- */}
       <div class="lg:col-span-4 xl:col-span-3">
-        {/* mobile: collapsible */}
-        <details class="group border border-charcoal-200 bg-navy-50 lg:hidden">
-          <summary class="flex min-h-12 cursor-pointer list-none items-center justify-between gap-3 px-4 font-semibold text-navy-950 [&::-webkit-details-marker]:hidden">
-            <span class="flex items-center gap-3">
+        <nav aria-labelledby="toc-title" class="lc-ptoc border border-charcoal-200 bg-navy-50 lg:sticky lg:top-[calc(var(--header-h)+2rem)] lg:border-0 lg:bg-transparent" data-toc data-collapsed>
+          <p id="toc-title" class="lg:mb-4">
+            <button
+              type="button"
+              class="lc-ptoc-btn flex min-h-12 w-full cursor-pointer items-center justify-between gap-3 px-4 text-start font-semibold text-navy-950 lg:hidden"
+              aria-expanded="false"
+              aria-controls="toc-list"
+            >
+              <span class="flex items-center gap-3">
+                <span class="slant-bar text-royal-600" aria-hidden="true"></span>
+                {tocTitle}
+              </span>
+              <Icon name="chevron-down" size={20} class="lc-ptoc-chev text-royal-600" />
+            </button>
+            <span class="lc-ptoc-label hidden items-center gap-3 type-label text-charcoal-600 lg:flex">
               <span class="slant-bar text-royal-600" aria-hidden="true"></span>
               {tocTitle}
             </span>
-            <Icon name="chevron-down" size={20} class="text-royal-600 transition-transform group-open:rotate-180" />
-          </summary>
-          <nav aria-label={tocTitle} class="border-t border-charcoal-200 px-2 py-2">
-            <ol role="list">
-              {
-                sections.map((s) => (
-                  <li>
-                    <a href={`#${s.id}`} class="flex min-h-11 items-center gap-3 px-2 text-[0.9375rem] text-charcoal-700 hover:text-royal-700">
-                      <span class="w-6 shrink-0 font-mono text-xs text-royal-700 ltr" dir="ltr">{s.n}</span>
-                      <span>{s.title}</span>
-                    </a>
-                  </li>
-                ))
-              }
-            </ol>
-          </nav>
-        </details>
-
-        {/* desktop: sticky */}
-        <nav aria-label={tocTitle} class="hidden lg:sticky lg:top-[calc(var(--header-h)+2rem)] lg:block" data-toc>
-          <p class="mb-4 flex items-center gap-3 type-label text-charcoal-600">
-            <span class="slant-bar text-royal-600" aria-hidden="true"></span>
-            {tocTitle}
           </p>
-          <ol role="list" class="border-s border-charcoal-200">
+          <ol id="toc-list" role="list" class="lc-ptoc-list border-t border-charcoal-200 px-2 py-2 lg:border-t-0 lg:border-s lg:p-0">
             {
               sections.map((s) => (
                 <li>
                   <a
                     href={`#${s.id}`}
                     data-toc-link={s.id}
-                    class="lc-toc-link relative -ms-px flex min-h-9 items-baseline gap-3 border-s-2 border-transparent py-1.5 ps-4 text-sm text-charcoal-700 transition-colors hover:border-charcoal-300 hover:text-navy-950"
+                    class="lc-toc-link relative flex min-h-11 items-baseline gap-3 border-s-2 border-transparent py-2.5 ps-2 text-[0.9375rem] text-charcoal-700 transition-colors hover:text-navy-950 lg:-ms-px lg:min-h-9 lg:py-1.5 lg:ps-4 lg:text-sm lg:hover:border-charcoal-300"
                   >
-                    <span class="w-5 shrink-0 font-mono text-xs text-charcoal-600 ltr" dir="ltr">{s.n}</span>
-                    <span>{s.title}</span>
+                    <span class="w-5 shrink-0 font-mono text-xs text-royal-700 ltr lg:text-charcoal-600" dir="ltr">{s.n}</span>
+                    <span set:html={html(locale, s.title)} />
                   </a>
                 </li>
               ))
             }
           </ol>
-          <div class="mt-8 border-t border-charcoal-200 pt-6 text-sm">
+          <div class="mt-8 hidden border-t border-charcoal-200 pt-6 text-sm lg:block">
             <a href={`mailto:${SITE.email}`} class="flex min-h-10 items-center gap-3 text-charcoal-700 hover:text-royal-700">
               <Icon name="mail" size={18} class="text-royal-600" />
               <span class="sr-only">{c.labels.email}{colon(locale)}</span>
-              <span class="ltr" dir="ltr">{SITE.email}</span>
+              <Fragment set:html={ltr(SITE.email)} />
             </a>
             <a href={`tel:${SITE.phone.tel}`} class="flex min-h-10 items-center gap-3 text-charcoal-700 hover:text-royal-700">
               <Icon name="phone" size={18} class="text-royal-600" />
@@ -122,7 +111,7 @@ const tocTitle = c.labels.onThisPage;
                   >
                     {s.n}
                   </span>
-                  <span>{s.title}</span>
+                  <span set:html={html(locale, s.title)} />
                 </h2>
                 <div class="prose-lc mt-5 text-charcoal-700">
                   {s.paragraphs.map((para) => <p set:html={para} />)}
@@ -150,6 +139,18 @@ const tocTitle = c.labels.onThisPage;
 </BaseLayout>
 
 <style>
+  /* Phones (with JS): the list folds under its button. Without JS it simply stays open. */
+  @media (max-width: 63.99rem) {
+    :global(html.js) .lc-ptoc[data-collapsed] .lc-ptoc-list {
+      display: none;
+    }
+  }
+  .lc-ptoc-chev {
+    transition: rotate var(--dur-ui) var(--ease-mech);
+  }
+  .lc-ptoc-btn[aria-expanded="true"] .lc-ptoc-chev {
+    rotate: 180deg;
+  }
   .lc-toc-link[aria-current] {
     border-inline-start-color: var(--color-royal-600);
     color: var(--color-navy-950);
@@ -162,6 +163,14 @@ const tocTitle = c.labels.onThisPage;
   // 30% of the viewport; nothing while the reader is still above the first one).
   const toc = document.querySelector<HTMLElement>("[data-toc]");
   if (toc) {
+    // Phones: the "On this page" button folds / unfolds the list; following a link folds it again.
+    const btn = toc.querySelector<HTMLButtonElement>(".lc-ptoc-btn");
+    const setOpen = (open: boolean) => {
+      toc.toggleAttribute("data-collapsed", !open);
+      btn?.setAttribute("aria-expanded", String(open));
+    };
+    btn?.addEventListener("click", () => setOpen(toc.hasAttribute("data-collapsed")));
+    toc.querySelectorAll("a[data-toc-link]").forEach((a) => a.addEventListener("click", () => btn?.offsetParent && setOpen(false)));
     const links = [...toc.querySelectorAll<HTMLAnchorElement>("[data-toc-link]")];
     const targets = links.map((a) => document.getElementById(a.dataset.tocLink!));
     let ticking = false;

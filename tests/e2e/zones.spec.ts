@@ -46,23 +46,40 @@ test("hover a pin → tooltip with name and distance; leaving hides it", { tag: 
   await expect(tip).toBeHidden();
 });
 
-test("keyboard focus on a pin previews it; Escape hides the tooltip", { tag: "@desktop-only" }, async ({ page }) => {
+test("keyboard: the pins are one Tab stop (arrow keys move along them); focus previews; Escape hides the tooltip", { tag: "@desktop-only" }, async ({ page }) => {
   const block = await openMap(page);
   const tip = block.locator("[data-zm-tip]");
-  // reach the first pin with the keyboard (focus-visible), then move along the pins
+  // reach the pins with the keyboard (focus-visible): one stop, on the home base
   await pin(block, "6th-of-october").focus();
   await page.keyboard.press("Shift+Tab");
   await page.keyboard.press("Tab");
   await expect(pin(block, "6th-of-october")).toBeFocused();
+  await expect(block.locator('button.lc-zm-pin[tabindex="0"]')).toHaveCount(1);
+  // arrows / End move between the zones (roving tabindex) and preview them
+  await page.keyboard.press("ArrowRight");
+  await expect(pin(block, "obour")).toBeFocused();
+  await expect(tip).toBeVisible();
+  await expect(mark(block, "obour")).toHaveAttribute("data-hl", "");
+  await page.keyboard.press("End");
+  await expect(pin(block, "east-port-said")).toBeFocused();
+  await expect(pin(block, "east-port-said")).toHaveAttribute("tabindex", "0");
+  // Tab leaves the toolbar (next: the zone list)
   await page.keyboard.press("Tab");
   const focused = await page.evaluate(() => (document.activeElement as HTMLElement).dataset.zone);
   expect(focused).toBeTruthy();
+  await expect(page.locator(":focus")).toHaveAttribute("data-zm-row", "");
   await expect(tip).toBeVisible();
   await page.keyboard.press("Escape");
   await expect(tip).toBeHidden();
 });
 
-test("select a zone → detail card, CTA with ?location=, two-way list linking, Escape deselects", async ({ page }) => {
+test("pins are named with the number drawn on them (WCAG 2.5.3)", { tag: "@desktop-only" }, async ({ page }) => {
+  const block = await openMap(page);
+  await expect(pin(block, "obour")).toHaveAttribute("aria-label", /^2\. Obour City/);
+  await expect(row(block, "obour")).toHaveAccessibleName(/^2\s*\.\s*Obour City/);
+});
+
+test("select a zone → detail card, CTA with ?location=, two-way list linking, Escape deselects", async ({ page, browserName }) => {
   const block = await openMap(page);
   const panel = block.locator("[data-zm-panel]");
   const card = block.locator('[data-card="obour"]');
@@ -71,24 +88,34 @@ test("select a zone → detail card, CTA with ?location=, two-way list linking, 
   await expect(panel).toHaveAttribute("data-open", "");
   await expect(card).toBeVisible();
   await expect(pin(block, "obour")).toHaveAttribute("aria-expanded", "true");
-  await expect(row(block, "obour")).toHaveAttribute("aria-expanded", "true");
+  // the list row lights with the pin (its own disclosure stays closed)
   await expect(row(block, "obour")).toHaveAttribute("data-sel", "");
+  await expect(row(block, "obour")).toHaveAttribute("aria-expanded", "false");
+  // the trace from our base switches on (amber, solid)
+  await expect(block.locator('.lc-map-links path[data-zone="obour"]')).toHaveCSS("stroke", "rgba(255, 198, 75, 0.9)");
   await expect(block.locator("[data-zm-live]")).not.toBeEmpty();
   const cta = card.locator("a.lc-zm-cta");
   await expect(cta).toHaveAttribute("href", "/en/contact/?location=obour#quote");
 
-  // selecting from the list switches the card
+  // a list row is a disclosure: its own detail (distance + CTA) opens right under it, the map card closes
   await row(block, "ain-sokhna").click();
-  await expect(block.locator('[data-card="ain-sokhna"]')).toBeVisible();
-  await expect(card).toBeHidden();
+  const detail = block.locator('[data-zm-detail="ain-sokhna"]');
+  await expect(detail).toBeVisible();
+  await expect(row(block, "ain-sokhna")).toHaveAttribute("aria-expanded", "true");
+  await expect(detail.locator("a.lc-zm-cta")).toHaveAttribute("href", "/en/contact/?location=ain-sokhna#quote");
+  await expect(panel).not.toHaveAttribute("data-open", "");
   await expect(mark(block, "ain-sokhna")).toHaveAttribute("data-sel", "");
   await expect(pin(block, "obour")).toHaveAttribute("aria-expanded", "false");
-
-  // Escape (focus inside the block) deselects
+  // the CTA is the next Tab stop after the row (WebKit, like Safari, reaches links with Option+Tab)
   await row(block, "ain-sokhna").focus();
+  await page.keyboard.press(browserName === "webkit" ? "Alt+Tab" : "Tab");
+  await expect(detail.locator("a.lc-zm-cta")).toBeFocused();
+
+  // Escape (focus inside the block) deselects, focus back on the row
   await page.keyboard.press("Escape");
-  await expect(panel).not.toHaveAttribute("data-open", "");
-  await expect(pin(block, "ain-sokhna")).toHaveAttribute("aria-expanded", "false");
+  await expect(detail).toBeHidden();
+  await expect(row(block, "ain-sokhna")).toHaveAttribute("aria-expanded", "false");
+  await expect(row(block, "ain-sokhna")).toBeFocused();
 
   // the same control again toggles off; the close button too, returning focus to the control.
   // (The card opens / closes with transitions; each step waits for them, as a person would, so no step lands in the
@@ -100,16 +127,18 @@ test("select a zone → detail card, CTA with ?location=, two-way list linking, 
   await pin(block, "badr").click();
   await expect(panel).not.toHaveAttribute("data-open", "");
   await settle(strip);
-  await row(block, "badr").focus();
+  await pin(block, "badr").focus();
   await page.keyboard.press("Enter");
   await expect(panel).toHaveAttribute("data-open", "");
   await settle(strip);
+  // from the pin, the next Tab stop is the card's close button
+  await page.keyboard.press(browserName === "webkit" ? "Alt+Tab" : "Tab");
   const close = block.locator("[data-zm-close]");
-  await close.focus();
   await expect(close).toBeFocused();
+  await expect(close).toHaveAccessibleName(/zone details/i);
   await page.keyboard.press("Enter");
   await expect(panel).not.toHaveAttribute("data-open", "");
-  await expect(row(block, "badr")).toBeFocused();
+  await expect(pin(block, "badr")).toBeFocused();
 });
 
 test("the CTA opens the quote form with the plant location preselected (Arabic)", async ({ page }) => {

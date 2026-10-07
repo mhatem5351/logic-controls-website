@@ -11,7 +11,8 @@ test("desktop header: every main nav link opens its section and marks it current
   test.skip(isNarrow(page), "desktop navigation is ≥ 1024px");
   await page.goto("/en/");
   const nav = page.locator("header nav").first();
-  await expect(nav.locator("a")).toHaveCount(5);
+  // five top-level links (Services / Industries also have a submenu button and a hidden panel of links)
+  await expect(nav.locator(":scope > ul > li > a")).toHaveCount(5);
   for (const [label, path] of [
     ["Services", "/en/services/"],
     ["Industries", "/en/industries/"],
@@ -26,6 +27,46 @@ test("desktop header: every main nav link opens its section and marks it current
   // a child page marks its section (aria-current="true")
   await page.goto("/en/services/process-control/");
   await expect(page.locator("header nav").first().getByRole("link", { name: "Services", exact: true })).toHaveAttribute("aria-current", "true");
+});
+
+test("desktop header: Services / Industries submenus (disclosure: keyboard, Escape, outside click)", async ({ page }) => {
+  test.skip(isNarrow(page), "desktop navigation is ≥ 1024px");
+  await page.goto("/en/services/process-control/");
+  const btn = page.locator('header nav button[aria-controls="lc-dd-services"]');
+  const panel = page.locator("#lc-dd-services");
+  await expect(btn).toHaveAttribute("aria-expanded", "false");
+  await btn.focus();
+  await page.keyboard.press("Enter");
+  await expect(panel).toBeVisible();
+  await expect(btn).toHaveAttribute("aria-expanded", "true");
+  // every service, the index link and the foreign-manufacturers link; the current page is marked
+  await expect(panel.locator("a")).toHaveCount(10);
+  await expect(panel.locator('a[aria-current="page"]')).toHaveAttribute("href", "/en/services/process-control/");
+  await page.keyboard.press("ArrowDown");
+  await expect(panel.locator("a").first()).toBeFocused();
+  await page.keyboard.press("Escape");
+  await expect(panel).toBeHidden();
+  await expect(btn).toBeFocused();
+  await page.locator('header nav button[aria-controls="lc-dd-industries"]').click();
+  await expect(page.locator("#lc-dd-industries a")).toHaveCount(8);
+  await page.mouse.click(10, 600);
+  await expect(page.locator("#lc-dd-industries")).toBeHidden();
+});
+
+test("phone drawer: Services / Industries expand in place (current section starts open)", async ({ page }) => {
+  test.skip(!isNarrow(page), "the drawer is < 1024px");
+  await page.goto("/en/services/machine-retrofits/");
+  await page.locator(".lc-menu-open").click();
+  const drawer = page.locator("#lc-drawer");
+  const services = drawer.locator('button[aria-controls="lc-acc-services"]');
+  await expect(services).toHaveAttribute("aria-expanded", "true");
+  await expect(drawer.locator("#lc-acc-services a")).toHaveCount(9);
+  await expect(drawer.locator('#lc-acc-services a[aria-current="page"]')).toHaveAttribute("href", "/en/services/machine-retrofits/");
+  const industries = drawer.locator('button[aria-controls="lc-acc-industries"]');
+  await expect(drawer.locator("#lc-acc-industries")).toBeHidden();
+  await industries.click();
+  await expect(industries).toHaveAttribute("aria-expanded", "true");
+  await expect(drawer.locator("#lc-acc-industries a")).toHaveCount(8);
 });
 
 test("phone drawer: opens as a modal, Escape / close button close it, focus returns to the menu button", async ({ page }) => {
@@ -75,7 +116,8 @@ test("skip link: first Tab shows it, Enter moves focus to <main>", async ({ page
   for (const path of ["/en/", "/ar/contact/"]) {
     await page.goto(path);
     await page.keyboard.press(tab(browserName));
-    const skip = page.locator('a[href="#main"]');
+    // the skip link is the first link to #main (the back-to-top button also targets #main)
+    const skip = page.locator('a[href="#main"]').first();
     await expect(skip).toBeFocused();
     await expect(skip).toBeInViewport();
     const box = await skip.boundingBox();
@@ -89,9 +131,8 @@ test("the logo goes home and the quote button opens the form", async ({ page }) 
   await page.goto("/tr/about/");
   await page.locator("header a[aria-label]").first().click();
   await expect(page).toHaveURL("/tr/");
-  if (!isNarrow(page) || (page.viewportSize()?.width ?? 0) >= 640) {
-    await page.locator('header a[href="/tr/contact/#quote"]').filter({ visible: true }).first().click();
-    await expect(page).toHaveURL("/tr/contact/#quote");
-    await expect(page.locator("form#quote")).toBeInViewport();
-  }
+  // every width: "Teklif isteyin" (≥ 640px) or the compact "Teklif" button (phones)
+  await page.locator('header a[href="/tr/contact/#quote"]').filter({ visible: true }).first().click();
+  await expect(page).toHaveURL("/tr/contact/#quote");
+  await expect(page.locator("form#quote")).toBeInViewport();
 });

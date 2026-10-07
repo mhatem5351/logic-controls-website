@@ -22,3 +22,21 @@
 /about          /en/about/        301
 /about/         /en/about/        301
 /about.html     /en/about/        301
+
+# Locale-style aliases people type or share (I18N-22): region / script subtags and upper case go to the site's locale.
+/zh-cn/*        /zh/:splat        301
+/zh-CN/*        /zh/:splat        301
+/zh-hans/*      /zh/:splat        301
+/zh-Hans/*      /zh/:splat        301
+/cn/*           /zh/:splat        301
+/ZH/*           /zh/:splat        301
+/ar-eg/*        /ar/:splat        301
+/ar-EG/*        /ar/:splat        301
+/AR/*           /ar/:splat        301
+/tr-tr/*        /tr/:splat        301
+/tr-TR/*        /tr/:splat        301
+/TR/*           /tr/:splat        301
+/en-us/*        /en/:splat        301
+/en-US/*        /en/:splat        301
+/en-gb/*        /en/:splat        301
+/EN/*           /en/:splat        301

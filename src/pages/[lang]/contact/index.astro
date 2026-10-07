@@ -3,7 +3,8 @@
  * Contact / RFQ. Compact dark header, then the two-step quote form overlapping it (form-first above the fold),
  * sidebar: "What we need to quote" checklist (beside the form on desktop; collapsed right under the form on phones),
  * WhatsApp drawings (email on zh), channels, next steps and the address card. No closing CTA band: every action on
- * it would point back to this page. Turnstile is loaded on this page only.
+ * it would point back to this page. Turnstile (this page only) is loaded by the form script on the first interaction
+ * with the form, not on page load (~800 KB of challenge traffic that most visits never need).
  */
 import BaseLayout from "~/layouts/BaseLayout.astro";
 import Hero from "~/components/Hero.astro";
@@ -14,8 +15,9 @@ import ContactChannels from "~/components/sections/main/ContactChannels.astro";
 import NextSteps from "~/components/sections/main/NextSteps.astro";
 import ChecklistPanel from "~/components/sections/main/ChecklistPanel.astro";
 import { html, colon } from "~/components/sections/main/rich";
-import { getMessages, localeStaticPaths, localePath, LOCALE_META, type Locale } from "~/i18n";
+import { getMessages, localeStaticPaths, type Locale } from "~/i18n";
 import { SITE } from "~/data/site";
+import { ORG_ID, graph, organization, webPage } from "~/lib/jsonld";
 import { whatsappLink, mailtoLink, prefersEmail } from "~/components/nav";
 
 export const getStaticPaths = localeStaticPaths;
@@ -23,55 +25,22 @@ const locale = Astro.params.lang as Locale;
 const t = getMessages(locale);
 const c = t.contact;
 const email = prefersEmail(locale);
-const url = new URL(localePath(locale, "contact"), SITE.url).href;
-const orgId = `${SITE.url}/#organization`;
-
-const jsonLd = {
-  "@context": "https://schema.org",
-  "@type": "ContactPage",
-  "@id": `${url}#page`,
-  url,
-  name: c.seo.title,
-  description: c.seo.description,
-  inLanguage: LOCALE_META[locale].htmlLang,
-  isPartOf: { "@id": `${SITE.url}/#website` },
-  about: { "@id": orgId },
-  mainEntity: {
-    "@type": "Organization",
-    "@id": orgId,
-    name: SITE.name,
-    url: SITE.url,
-    email: SITE.email,
-    telephone: SITE.phone.tel,
-    address: { "@type": "PostalAddress", addressLocality: SITE.address.locality, addressRegion: SITE.address.region, addressCountry: SITE.address.country },
-    contactPoint: [
-      { "@type": "ContactPoint", contactType: "sales", telephone: SITE.phone.tel, email: SITE.email, areaServed: "EG", availableLanguage: ["Arabic", "English"] },
-    ],
-  },
-};
+/* Structured data (src/lib/jsonld.ts): ContactPage whose main entity is the company (full node, with its contact point). */
+const jsonLd = graph(
+  organization(locale),
+  webPage(locale, { type: "ContactPage", path: "contact", name: c.seo.title, description: c.seo.description, about: { "@id": ORG_ID }, mainEntity: { "@id": ORG_ID } }),
+);
 
 /* quick channel pills in the header: WhatsApp first on ar/en/tr, email first on zh */
 const pills = [
-  ...(email ? [] : [{ icon: "whatsapp" as const, label: t.common.labels.whatsapp, value: undefined, href: whatsappLink(t.common.whatsapp.quote), external: true, iconClass: "text-[#25d366]" }]),
+  ...(email ? [] : [{ icon: "whatsapp" as const, label: t.common.labels.whatsapp, value: undefined, href: whatsappLink(t.common.whatsapp.quote), external: true, iconClass: "text-whatsapp-500" }]),
   { icon: "phone" as const, label: t.common.labels.phone, value: SITE.phone.display, href: `tel:${SITE.phone.tel}`, external: false, iconClass: "text-royal-300" },
-  { icon: "mail" as const, label: t.common.labels.email, value: SITE.email, href: mailtoLink(t.ui.email.subject), external: false, iconClass: "text-royal-300" },
+  { icon: "mail" as const, label: t.common.labels.email, value: SITE.email, href: mailtoLink(t.ui.email.subject, { locale, path: "contact" }), external: false, iconClass: "text-royal-300" },
 ];
 if (email) pills.reverse();
 ---
 
 <BaseLayout locale={locale} title={c.seo.title} description={c.seo.description} path="contact" heroDark jsonLd={jsonLd} whatsappMessage={t.common.whatsapp.quote}>
-  <Fragment slot="head">
-    <script is:inline>
-      // Turnstile callbacks (global names referenced by the widget's data-* attributes).
-      window.lcTurnstile = { token: "" };
-      window.lcTsOk = function (token) { window.lcTurnstile.token = token; };
-      window.lcTsErr = function () { window.lcTurnstile.token = ""; };
-      window.lcTsExp = function () { window.lcTurnstile.token = ""; };
-      window.lcTsShow = function () { var el = document.querySelector("[data-ts-label]"); if (el) el.hidden = false; };
-    </script>
-    <script is:inline src="https://challenges.cloudflare.com/turnstile/v0/api.js" async defer></script>
-  </Fragment>
-
   <Hero locale={locale} size="page" title={html(locale, c.h1)} lead={html(locale, c.intro)} primary={false} secondary={false} traces class="lc-contact-hero">
     <Breadcrumbs slot="breadcrumbs" locale={locale} items={[{ label: t.common.breadcrumbs.contact }]} />
     <ul role="list" class="lc-rise mt-7 flex flex-wrap gap-2.5" style="--i:2">

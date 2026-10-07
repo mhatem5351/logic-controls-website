@@ -22,8 +22,9 @@ import FactoryLine from "~/components/illustrations/FactoryLine.astro";
 import ZonesBlock from "~/components/sections/main/ZonesBlock.astro";
 import FounderBlock, { type Founder } from "~/components/sections/main/FounderBlock.astro";
 import { html, emphasize } from "~/components/sections/main/rich";
-import { getMessages, localeStaticPaths, localePath, LOCALE_META, type Locale } from "~/i18n";
+import { getMessages, localeStaticPaths, type Locale } from "~/i18n";
 import { SITE } from "~/data/site";
+import { FOUNDER_ID, ORG_ID, founder as founderNode, graph, organization, webPage } from "~/lib/jsonld";
 import { STATS } from "~/data/stats";
 import { href, whatsappLink, prefersEmail } from "~/components/nav";
 import heroImage from "~/assets/projects/shampoo-filling-delta-wecon/panel.jpg";
@@ -35,9 +36,8 @@ const a = t.about;
 const c = t.common;
 const email = prefersEmail(locale);
 
-/** Optional copy added later by the content team; the block renders only when it exists. */
-const founder = ((a as Record<string, unknown>).founder ?? null) as Founder | null;
-const hasFounder = !!founder?.name;
+const founder: Founder = a.founder;
+const hasFounder = !!founder.name;
 // Section indices follow what is actually rendered.
 let n = 0;
 const idx = () => String(++n).padStart(2, "0");
@@ -57,18 +57,20 @@ const valueIcons: IconName[] = ["check", "file", "shield", "map-pin"];
 const whyPoints = a.why.items.slice(0, 4);
 const processIcons: IconName[] = ["map-pin", "file", "panel", "check", "gauge", "users"];
 
-const pageUrl = new URL(localePath(locale, "about"), SITE.url).href;
-const jsonLd = {
-  "@context": "https://schema.org",
-  "@type": "AboutPage",
-  "@id": `${pageUrl}#webpage`,
-  url: pageUrl,
-  name: a.seo.title,
-  description: a.seo.description,
-  inLanguage: LOCALE_META[locale].htmlLang,
-  isPartOf: { "@id": `${SITE.url}/#website` },
-  about: { "@id": `${SITE.url}/#organization` },
-};
+/* Structured data (src/lib/jsonld.ts): AboutPage about the company, with the founder (Person) as its main entity. */
+const founderLd = await founderNode(locale);
+const jsonLd = graph(
+  organization(locale),
+  founderLd,
+  webPage(locale, {
+    type: "AboutPage",
+    path: "about",
+    name: a.seo.title,
+    description: a.seo.description,
+    about: { "@id": ORG_ID },
+    mainEntity: founderLd ? { "@id": FOUNDER_ID } : { "@id": ORG_ID },
+  }),
+);
 ---
 
 <BaseLayout locale={locale} title={a.seo.title} description={a.seo.description} path="about" heroDark jsonLd={jsonLd} whatsappMessage={c.whatsapp.default}>
@@ -102,7 +104,7 @@ const jsonLd = {
             {a.mission.title}
           </figcaption>
           <blockquote class="mt-6">
-            <p class="type-h3 text-white" style="font-size: clamp(1.25rem, 1.05rem + 0.75vw, 1.75rem); line-height: 1.35" set:html={html(locale, a.mission.text)} />
+            <p class="lc-mission type-h3 text-white" set:html={html(locale, a.mission.text)} />
           </blockquote>
           <Swoosh tone="light" class="mt-8 w-36" />
           <div aria-hidden="true" class="pointer-events-none absolute inset-0 -z-10 bg-blueprint mask-fade-edges"></div>

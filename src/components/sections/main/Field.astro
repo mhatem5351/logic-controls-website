@@ -9,6 +9,7 @@
  * the label is RTL, so the bidi algorithm mirrors them correctly around the Arabic word).
  */
 import type { Locale } from "~/i18n";
+import { toHtml } from "~/lib/text";
 
 interface Props {
   id: string;
@@ -37,6 +38,6 @@ const optionalMarker = optional && (/^[(（].*[)）]$/.test(optional.trim()) ? o
     {optional && !required && <span class:list={["lc-opt", requiredNoJs && "lc-js", open === "（" && "-ms-1.5"]}>{optionalMarker}</span>}
   </label>
   <slot />
-  {help && <p id={`${id}-help`} class="lc-help">{help}</p>}
+  {help && <p id={`${id}-help`} class="lc-help" set:html={toHtml(locale, help)} />}
   <p id={`${id}-error`} class="lc-error" hidden></p>
 </div>

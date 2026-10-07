@@ -2,8 +2,11 @@
 /**
  * Decorative circuit traces (the logo's 45° traces + ring nodes) with CSS-only signal pulses.
  * Anchored to a corner at a fixed pixel size so strokes never distort. Mirrors in RTL.
- * Motion: draw-in once, then amber pulses travel to the ring nodes; disabled for prefers-reduced-motion,
- * paused while offscreen (data-pause-offscreen, BaseLayout).
+ * Motion (motion.css §6): the traces draw in once (bottom bundle from 2.1 s, top bundle from 2.5 s, after the logo
+ * signal), then two rounds of amber pulses run to the ring nodes (first at 3.0 s) and the bundle rests, drawn. A mouse
+ * entering the host section replays one round. Nothing loops forever (WCAG 2.2.2); no filter on the moving dashes
+ * (a drop-shadow made every frame repaint). Still under reduced motion and "Pause animations"; paused offscreen
+ * (data-pause-offscreen, BaseLayout).
  */
 interface Props {
   /** "bottom-start" (default) or "top-end" bundle. */
@@ -16,6 +19,7 @@ const { corner = "bottom-start", tone = "signal", class: className } = Astro.pro
 
 type Trace = { d: string; node: [number, number]; delay: number };
 // Flat bundle: everything lives in the bottom ~80px so it never runs under content.
+// `delay`: pulse offset within the bundle (the first pulse of the page leaves at 3.0 s, see motion.css --p0).
 const BOTTOM: { w: number; h: number; traces: Trace[] } = {
   w: 940,
   h: 140,
@@ -43,6 +47,7 @@ const pos = corner === "top-end" ? "top-0 end-0" : "bottom-0 start-0";
 <svg
   class:list={["lc-traces pointer-events-none absolute", pos, className]}
   data-pause-offscreen
+  data-corner={corner}
   width={set.w}
   height={set.h}
   viewBox={`0 0 ${set.w} ${set.h}`}
@@ -52,17 +57,33 @@ const pos = corner === "top-end" ? "top-0 end-0" : "bottom-0 start-0";
 >
   <g class="lc-traces-flip">
   <g stroke="rgb(150 182 232 / 0.22)" stroke-width="1.25">
-    {set.traces.map((t, i) => <path class="trace" d={t.d} pathLength="100" style={`animation-delay:${i * 0.15}s`} />)}
+    {set.traces.map((t, i) => <path class="trace" d={t.d} pathLength="100" style={`--i:${i}`} />)}
   </g>
-  <g stroke={pulse} stroke-width="2" stroke-linecap="round" style={`filter: drop-shadow(0 0 4px ${pulse})`}>
-    {set.traces.map((t) => <path class="pulse" d={t.d} pathLength="100" style={`animation-delay:${t.delay}s`} />)}
+  <g stroke={pulse} stroke-width="2.25" stroke-linecap="round">
+    {set.traces.map((t) => <path class="pulse" d={t.d} pathLength="100" style={`--d:${t.delay}s`} />)}
   </g>
   <g stroke-width="1.5">
     {
       set.traces.map((t) => (
-        <circle class="node" cx={t.node[0]} cy={t.node[1]} r="6.5" stroke="rgb(150 182 232 / 0.55)" fill={pulse} fill-opacity="0" style={`animation-delay:${t.delay}s`} />
+        <circle class="node" cx={t.node[0]} cy={t.node[1]} r="6.5" stroke="rgb(150 182 232 / 0.55)" fill={pulse} fill-opacity="0" style={`--d:${t.delay}s`} />
       ))
     }
   </g>
   </g>
 </svg>
+
+<script>
+  import { motionOff } from "~/scripts/motion/motion-pref";
+
+  // A mouse entering the section replays one round of pulses once the previous rounds are over (the attribute
+  // alternates between two identical keyframe sets, which restarts the CSS animations; see motion.css §6).
+  const pulsing = (svg: Element) =>
+    svg.getAnimations({ subtree: true }).some((a) => a.playState === "running" && /pulse/.test((a as CSSAnimation).animationName ?? ""));
+  for (const svg of document.querySelectorAll<SVGSVGElement>(".lc-traces")) {
+    const host = svg.closest("section") ?? svg.parentElement;
+    host?.addEventListener("pointerenter", (e) => {
+      if (e.pointerType !== "mouse" || motionOff() || svg.hasAttribute("data-offscreen") || pulsing(svg)) return;
+      svg.dataset.replay = svg.dataset.replay === "1" ? "2" : "1";
+    });
+  }
+</script>

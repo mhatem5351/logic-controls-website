@@ -5,7 +5,7 @@
  */
 import type { Locale } from "~/i18n";
 import Icon from "~/components/Icon.astro";
-import { html } from "./catalog";
+import { html } from "~/lib/text";
 
 interface Props {
   items: string[];
@@ -23,19 +23,19 @@ const pad = (i: number) => String(i + 1).padStart(2, "0");
 <ul role="list" class:list={["grid", columns === 2 ? "gap-x-8 sm:grid-cols-2" : "", ruled ? "gap-y-0" : "gap-y-3", className]}>
   {
     items.map((item, i) => (
-      <li class:list={["flex items-start gap-3", ruled && "border-b border-charcoal-200 py-3.5 in-[.on-dark]:border-white/10"]}>
+      <li class:list={["flex items-start gap-3", ruled && "border-b border-charcoal-200 py-3.5 on-dark:border-white/10"]}>
         {marker === "check" && (
-          <span aria-hidden="true" class="mt-0.5 grid size-6 shrink-0 place-items-center bg-royal-50 text-royal-700 in-[.on-dark]:bg-royal-600/25 in-[.on-dark]:text-royal-300">
+          <span aria-hidden="true" class="mt-0.5 grid size-6 shrink-0 place-items-center bg-royal-50 text-royal-700 on-dark:bg-royal-600/25 on-dark:text-royal-300">
             <Icon name="check" size={16} strokeWidth={2.25} />
           </span>
         )}
-        {marker === "bar" && <span aria-hidden="true" class="slant-bar mt-[0.6em] w-4 text-royal-600 in-[.on-dark]:text-signal-400" />}
+        {marker === "bar" && <span aria-hidden="true" class="slant-bar mt-[0.6em] w-4 text-royal-600 on-dark:text-signal-400" />}
         {marker === "index" && (
-          <span aria-hidden="true" class="mt-0.5 min-w-6 font-mono text-xs leading-6 font-semibold text-royal-600 ltr in-[.on-dark]:text-signal-300" dir="ltr">
+          <span aria-hidden="true" class="mt-0.5 min-w-6 font-mono text-xs leading-6 font-semibold text-royal-600 ltr on-dark:text-signal-300" dir="ltr">
             {pad(i)}
           </span>
         )}
-        <span class="text-charcoal-800 in-[.on-dark]:text-navy-100" set:html={html(item, locale)} />
+        <span class="text-charcoal-800 on-dark:text-navy-100" set:html={html(locale, item)} />
       </li>
     ))
   }

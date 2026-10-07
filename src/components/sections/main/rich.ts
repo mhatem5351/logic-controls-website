@@ -1,9 +1,6 @@
 /**
- * Plain-text → safe HTML helpers for the main pages.
- *
- * Message strings are plain text (CONTENT.md). Components that render with `set:html` (Hero, SectionHeading,
- * CtaBand title, FAQ answers) must receive escaped HTML. The rules (Arabic <bdi> isolation of Latin runs, Chinese
- * word-aware line breaking, codes/brand names that never wrap) live in src/lib/text.ts, shared with the catalog
- * pages and the Card / Chips / FAQ components; this module keeps the (locale, text) call style of the main pages.
+ * @deprecated Re-exports of the text engine for older imports. Import from "~/lib/text" instead (one module, one
+ * argument order: html(locale, text)). Kept so existing imports keep working; see src/lib/text.ts for the rules and
+ * the set:html contract (toHtml / SafeHtml).
  */
-export { esc, ltr, html, plain, rich, emphasize, num, colon, zhWords } from "~/lib/text";
+export { esc, ltr, html, plain, rich, emphasize, colon } from "~/lib/text";

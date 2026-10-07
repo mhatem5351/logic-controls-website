@@ -13,8 +13,10 @@ export interface ArtProps {
   class?: string;
 }
 
-let n = 0;
-/** Per-instance id prefix (ends with "-") so <defs> ids never collide when the same art appears twice on a page. */
+import { uid as baseUid } from "../uid";
+
+/** Per-instance id prefix (ends with "-") so <defs> ids never collide when the same art appears twice on a page.
+ *  Same counter as every other generated id (src/components/uid.ts). */
 export function uid(prefix: string): string {
-  return `${prefix}${(n++).toString(36)}-`;
+  return `${baseUid(prefix)}-`;
 }

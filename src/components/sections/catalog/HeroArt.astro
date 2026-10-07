@@ -1,11 +1,16 @@
 ---
 /**
- * Animated service / industry illustration for <Hero size="page">.
- *  - default (slot="media"): fills the hero's media panel on ≥1024px, above the panel's photo overlays
- *    (z-index inside the media stacking context) so the art keeps its full contrast; the slanted edge and
- *    the header area stay clear. Hidden below 1024px, where the media panel sits behind the copy.
- *  - inline: a smaller copy under the CTAs for < 1024px (default slot), so phones see the art too.
- * The art is decorative (aria-hidden); it pauses offscreen and respects reduced motion (see illustrations/STYLE.md).
+ * Animated service / industry illustration for <Hero size="page">. The art ships ONCE per page (it used to be rendered
+ * twice, once per breakpoint):
+ *  - default (slot="media"): the art itself, filling the hero's media panel on ≥1024px, above the panel's photo
+ *    overlays (z-index inside the media stacking context) so it keeps its full contrast; the slanted edge and the
+ *    header area stay clear. Rendered inline (not lazy): from 1024px it is part of the first screen.
+ *  - inline: a 4:3 slot under the CTAs for < 1024px (default slot). A tiny inline script moves the same <svg> into it
+ *    while the parser is still on the hero (before first paint, so nothing shifts) and back when the viewport crosses
+ *    1024px. Without JS the slot is hidden (the art stays in the hidden media panel).
+ * Render the media one first (the Hero puts its media panel before the copy, so the order holds).
+ * The art is decorative (aria-hidden); it plays two cycles, then rests, and respects reduced motion / "Pause
+ * animations" (see illustrations/STYLE.md).
  */
 import ServiceArt from "~/components/illustrations/ServiceArt.astro";
 import IndustryArt from "~/components/illustrations/IndustryArt.astro";
@@ -18,14 +23,36 @@ const props = Astro.props;
 
 {
   props.inline ? (
-    <div class="mt-10 max-w-[24rem] lg:hidden">
-      {props.kind === "service" ? <ServiceArt slug={props.slug} variant="dark" /> : <IndustryArt slug={props.slug} variant="dark" />}
-    </div>
+    <>
+      <div class="lc-hero-art-slot mt-10 aspect-4/3 w-full max-w-[24rem] lg:hidden" data-hero-art-slot />
+      <script is:inline>
+        (() => {
+          const slot = document.currentScript?.previousElementSibling;
+          const home = document.querySelector("[data-hero-art]");
+          const art = home?.querySelector("svg");
+          if (!slot || !art) return;
+          const mq = matchMedia("(min-width: 64rem)");
+          const place = () => (mq.matches ? home : slot).append(art);
+          place();
+          mq.addEventListener("change", place);
+        })();
+      </script>
+    </>
   ) : (
     <div class="absolute inset-0 z-[1] hidden items-center justify-center pe-(--spacing-gutter) ps-[calc(var(--slant-x)*0.55)] pt-[calc(var(--header-h)+var(--utility-h)+1.5rem)] pb-12 lg:flex">
-      <div class="w-full max-w-[34rem]">
-        {props.kind === "service" ? <ServiceArt slug={props.slug} variant="dark" /> : <IndustryArt slug={props.slug} variant="dark" />}
+      <div class="w-full max-w-[34rem]" data-hero-art>
+        {props.kind === "service" ? (
+          <ServiceArt slug={props.slug} variant="dark" lazy={false} />
+        ) : (
+          <IndustryArt slug={props.slug} variant="dark" lazy={false} />
+        )}
       </div>
     </div>
   )
 }
+
+<style>
+  :global(html:not(.js)) .lc-hero-art-slot {
+    display: none;
+  }
+</style>

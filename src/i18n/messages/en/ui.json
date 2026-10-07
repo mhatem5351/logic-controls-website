@@ -31,7 +31,9 @@
     "learnMore": "Learn more",
     "viewProject": "View project",
     "viewAll": "View all",
-    "inEgyptWhatsapp": "In Egypt? Message us on WhatsApp"
+    "inEgyptWhatsapp": "In Egypt? Message us on WhatsApp",
+    "quoteShort": "Quote",
+    "whatsappShort": "WhatsApp"
   },
   "a11y": {
     "skip": "Skip to content",
@@ -43,7 +45,8 @@
     "breadcrumbs": "Breadcrumb",
     "homeLink": "Logic Controls — homepage",
     "newTab": "opens in a new tab",
-    "currentLanguage": "current language"
+    "submenu": "{label} submenu",
+    "backToTop": "Back to top"
   },
   "whatsapp": {
     "fabLabel": "Chat with an engineer on WhatsApp",
@@ -51,13 +54,22 @@
   },
   "email": {
     "fabLabel": "Email an engineer",
-    "subject": "Automation project inquiry"
+    "subject": "Automation project inquiry",
+    "subjectTopic": "{subject}: {topic}",
+    "body": "Hello Logic Controls,\n\nMachine or line:\nWhat we need:\nPlant location (city or industrial zone):\nTarget date:\n\n[Attach photos of the machine and its nameplates, or drawings, if you have them.]\n\nPage: {page}",
+    "copy": "Copy address",
+    "copied": "Address copied",
+    "openApp": "Open your email app",
+    "useForm": "Use the quote form",
+    "hint": "Using webmail? Copy the address and write to us from your usual inbox."
+  },
+  "demo": {
+    "open": "Try the live demo"
   },
   "contact": {
     "phone": "Phone",
     "email": "Email",
     "whatsapp": "WhatsApp",
-    "address": "Address",
     "addressValue": "6th of October City, Giza, Egypt"
   },
   "footer": {
@@ -79,21 +91,34 @@
   },
   "gallery": {
     "label": "Image viewer",
-    "open": "Open image {n} of {total}",
     "close": "Close image viewer",
     "prev": "Previous image",
     "next": "Next image",
-    "counter": "{n} / {total}"
+    "counter": "{n} / {total}",
+    "counterLong": "Image {n} of {total}",
+    "openSuffix": "(image {n} of {total}, opens full size)"
   },
   "video": {
-    "play": "Play video",
-    "playNamed": "Play video: {title}"
+    "playNamed": "Play video: {title}",
+    "pauseLoop": "Pause background video"
+  },
+  "urgent": {
+    "title": "Machine stopped?",
+    "text": "Do not wait for a reply to the form: call or WhatsApp an engineer now.",
+    "textEmail": "Do not wait for a reply to the form: call an engineer now.",
+    "whatsapp": "WhatsApp now"
   },
   "faq": {
-    "title": "Frequently asked questions"
+    "title": "Frequently asked questions",
+    "more": "Show all questions ({count})"
   },
   "process": {
-    "step": "Step"
+    "step": "Step",
+    "more": "Show all {count} steps"
+  },
+  "motion": {
+    "pause": "Pause animations",
+    "systemReduced": "Animations are off because your device is set to reduce motion."
   },
   "notFound": {
     "title": "Page not found",
