@@ -172,7 +172,7 @@ test("phones: pin hit squares never overlap (all locales, 320 / 360 / 390, Arabi
   }
 });
 
-test("touch: a tap goes to the pin nearest the finger (44px targets overlap in the cluster)", async ({ page, isMobile }) => {
+test("touch: a tap goes to the pin nearest the finger (44px targets overlap in the cluster)", { tag: "@phone" }, async ({ page, isMobile }) => {
   test.skip(!isMobile, "touch screens only");
   const block = await openMap(page);
   const centre = async (z: string) => {

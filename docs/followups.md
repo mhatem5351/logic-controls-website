@@ -55,8 +55,19 @@ Send as one questionnaire:
 - CS2-16: project asset file renames, after round 2. Photo paths are part of a case study's content hash, so run
   `node scripts/content-dates.mjs --write` in the same commit.
 - CODE2-13: the form E2E depends on Turnstile's network: stub `api.js` for most tests, keep one real canary.
-- CODE2-18: split / shard CI (a push run is ≈ 12 min).
-- CODE2-24: knip as a CI gate, after the dead-code cleanup.
+- CODE2-18: split / shard CI (a push run is ≈ 13 min with the @phone subset).
+- CODE3-08: Cloudflare dashboard → Workers & Pages → Analytics Engine: enable it once (free). Until then the last step
+  of `npm run deploy` (`wrangler deploy`) fails on the `CLICKS` binding and clicks are not counted (README → Deploy has
+  the workaround).
+- Head script size: BaseLayout's inline head script ships unminified (comments + indentation, ~9.6 KB raw); with the
+  round-3 view-transition additions the Arabic home's HTML before `<main>` is 14.8 KB gzip, just over a first TCP
+  flight. Minify `is:inline` scripts at build (before integrations/csp-inline-hashes.mjs hashes them).
+- WebKit and speculation rules: Playwright's WebKit 26.6 supports them, and a tap that navigates through the hover /
+  touch prefetch left the page blank about 2–3 times in 100 (URL "", no load event; the round-2 build too; none in 90
+  with the rules stripped; it hit five different tests across ten full runs). The E2E WebKit project now runs
+  without the rules (tests/e2e/fixtures.ts; Chromium and production keep them), except the r3-motion quote-form hold
+  test: without the rules that WebKit does not render at all while the load event is pending. Check real Safari 26
+  on a device: if a tapped link ever stays blank there, limit the prefetch rules to Chromium.
 - CSS consolidation: CODE2-07 (one reduced-motion pattern), CODE2-27, CODE2-28, CODE2-29, CODE2-31.
 - Desktop hero illustration (service / industry detail pages, ≥ 1024 px): on very fast loads Chromium can paint the
   header + the hero's media panel before the hero copy is parsed; the art then moves down once the copy grows the hero

@@ -10,9 +10,17 @@
 //  - malformed tel: / mailto: / wa.me links
 //  - /lab/ or /styleguide/ pages (or links to them) in the production build
 //  - JSON-LD blocks that do not parse
+//  - a srcset with width descriptors (`640w`) and no `sizes` (img / source; `imagesizes` on an image preload): the
+//    browser then assumes 100vw and takes a file sized for the whole screen (PERF3-03: the logo's AVIF <source>)
+//  - client scripts (CODE3-06): a module a built chunk imports (static, dynamic or Vite's preload list) that is not
+//    in dist/, and an inline <script type="module"> other than the components site.ts leaves to Astro on purpose
+//    (`lc-own:`), i.e. a component script that escaped the site module (integrations/site-scripts.mjs)
 //  - CSP (CODE2-01): every page carries exactly one CSP <meta> right after <meta charset> (before any script, style or
-//    link), its script-src has no 'unsafe-inline', and it lists the sha256 hash of every inline script on the page;
-//    no inline event handlers (on…=) anywhere
+//    link), its script-src has no 'unsafe-inline', and its hashes are exactly the page's inline scripts (computed here,
+//    independently of integrations/csp-inline-hashes.mjs: CODE3-06); no inline event handlers (on…=) anywhere
+//  - hero images (CODE3-06, independently of integrations/hero-preload.mjs): at six phone / tablet / desktop viewports
+//    the file each <img fetchpriority="high"> of <main>'s first section takes is the file a <head> preload fetches, no
+//    image preload fetches anything else, hero images are never lazy, and every home page and case study has one
 //  - duplicate <title> / meta description among a locale's indexable pages (CS2-02: titles composed in code included)
 //  - sitemap ↔ dist drift (a sitemap URL without a page; an indexable page missing from the sitemap), a sitemap URL
 //    without <lastmod>, a case study whose Article lacks datePublished ≤ dateModified
@@ -22,8 +30,8 @@
 import { readFileSync, readdirSync, statSync, existsSync } from "node:fs";
 import { join, relative, extname, sep } from "node:path";
 import { fileURLToPath } from "node:url";
+import { createHash } from "node:crypto";
 import { parse } from "node-html-parser";
-import { inlineScriptHashes, parsePolicy } from "../../integrations/csp-inline-hashes.mjs";
 
 const ROOT = fileURLToPath(new URL("../../", import.meta.url));
 const DIST = process.env.DIST_DIR ?? join(ROOT, "dist");
@@ -91,7 +99,12 @@ for (const l of LOCALES) {
   }
   const opts = {};
   for (const name of ["service", "industry", "location"]) {
-    opts[name] = new Set(page.root.querySelectorAll(`select[name=${name}] option`).map((o) => o.getAttribute("value")).filter(Boolean));
+    opts[name] = new Set(
+      page.root
+        .querySelectorAll(`select[name=${name}] option`)
+        .map((o) => o.getAttribute("value"))
+        .filter(Boolean),
+    );
   }
   formOptions.set(l, opts);
 }
@@ -226,35 +239,213 @@ for (const [path, { root, ids }] of pages) {
     }
     if (!resolvePath(new URL(href).pathname)) problem("canonical-or-hreflang-404", path, href);
   }
+
+  // width descriptors need sizes (without it the browser assumes 100vw)
+  for (const el of root.querySelectorAll("img[srcset], source[srcset], link[imagesrcset]")) {
+    const link = el.tagName === "LINK";
+    const set = el.getAttribute(link ? "imagesrcset" : "srcset") ?? "";
+    if (set.trim().startsWith("data:") || !/\s\d+w\s*(,|$)/.test(set)) continue;
+    if (!(el.getAttribute(link ? "imagesizes" : "sizes") ?? "").trim())
+      problem("srcset-without-sizes", path, `<${el.tagName.toLowerCase()}> ${set.split(",")[0].trim().split(/\s+/)[0]}`);
+  }
+}
+
+/* ------------------------------------------------------------------ client scripts: chunks and inline modules */
+
+// Every module a built chunk imports must be in dist/: static imports (`from"./x.js"`, `import"./x.js"`), dynamic ones
+// (`import("./x.js")`) and Vite's preload list (`"_astro/x.js"` in __vite__mapDeps, relative to the site root).
+let chunkRefs = 0;
+for (const f of files.filter((x) => /\/_astro\/[^/]+\.m?js$/.test(rel(x)))) {
+  const r = rel(f);
+  const js = readFileSync(f, "utf8");
+  const specs = [
+    ...[...js.matchAll(/(?:\bfrom|\bimport)\s*\(?\s*["'`](\.{1,2}\/[^"'`]+)["'`]/g)].map((m) => new URL(m[1], SITE + r).pathname),
+    ...[...js.matchAll(/["'`](_astro\/[^"'`]+\.m?js)["'`]/g)].map((m) => "/" + m[1]),
+  ];
+  for (const spec of new Set(specs)) {
+    chunkRefs++;
+    if (!fileSet.has(spec)) problem("missing-chunk", r, spec);
+  }
+}
+// Inline module scripts: only the components site.ts names with `lc-own:`, each recognised by a selector its code
+// looks for (a new lc-own component adds its marker here).
+const OWN_INLINE = { "VideoPlayer.astro": ".lc-video-overlay" };
+const ownInline = [...readFileSync(join(ROOT, "src/scripts/site.ts"), "utf8").matchAll(/lc-own:\s*(\S+\.astro)/g)].map((m) =>
+  m[1].split("/").pop(),
+);
+for (const name of ownInline)
+  if (!OWN_INLINE[name]) problem("lc-own-without-marker", "tests/static/check-dist.mjs", `OWN_INLINE has no marker for ${name}`);
+const markers = ownInline.map((n) => OWN_INLINE[n]).filter(Boolean);
+let inlineModules = 0;
+for (const [path, { root }] of pages) {
+  for (const s of root.querySelectorAll("script")) {
+    if (s.hasAttribute("src") || (s.getAttribute("type") ?? "").trim().toLowerCase() !== "module") continue;
+    inlineModules++;
+    if (!markers.some((m) => s.rawText.includes(m))) problem("stray-inline-module-script", path, s.rawText.trim().slice(0, 100));
+  }
 }
 
 /* ------------------------------------------------------------------ CSP: the meta policy covers every inline script */
 
-const CSP_META = /<meta http-equiv="content-security-policy" content="([^"]*)"\s*\/?>/gi;
+// Independent of integrations/csp-inline-hashes.mjs (CODE3-06), which writes the hashes: the scripts come from the
+// parsed DOM (an element's own `src` attribute, not a regex over the tag), the policy from the <meta> element, and the
+// hash is computed here with node:crypto over the raw text with CR LF / CR turned into LF, as the HTML parser does
+// before the browser hashes a script. A scanner bug in the integration therefore cannot pass both checks.
+const policyOf = (content) =>
+  new Map(
+    content
+      .split(";")
+      .map((d) => d.trim().split(/\s+/))
+      .filter(([name]) => name)
+      .map(([name, ...sources]) => [name.toLowerCase(), sources]),
+  );
+const inlineScriptSources = (root) =>
+  new Set(
+    root
+      .querySelectorAll("script")
+      .filter((s) => !s.hasAttribute("src") && (s.getAttribute("type") ?? "").trim().toLowerCase() !== "application/ld+json" && s.rawText)
+      .map((s) => `'sha256-${createHash("sha256").update(s.rawText.replace(/\r\n?/g, "\n"), "utf8").digest("base64")}'`),
+  );
 let cspPages = 0;
 let cspHashes = 0;
-for (const f of htmlFiles) {
-  const html = readFileSync(f, "utf8");
-  const where = rel(f);
-  const metas = [...html.matchAll(CSP_META)];
+for (const { root, file } of pages.values()) {
+  const where = rel(file);
+  const metas = root
+    .querySelectorAll("meta[http-equiv]")
+    .filter((m) => m.getAttribute("http-equiv").trim().toLowerCase() === "content-security-policy");
   if (metas.length !== 1) {
     problem("csp-meta-count", where, `${metas.length} CSP <meta> elements`);
     continue;
   }
   cspPages++;
-  const head = html.slice(0, metas[0].index);
-  if (/<(script|link|style|base)\b/i.test(head) || !/<meta charset="utf-8">$/i.test(head.trimEnd())) problem("csp-meta-position", where, "not directly after <meta charset>");
-  const scriptSrc = parsePolicy(metas[0][1]).get("script-src");
+  const html = readFileSync(file, "utf8");
+  const head = html.slice(0, html.search(/<meta\s+http-equiv\s*=\s*["']?content-security-policy/i));
+  if (/<(script|link|style|base)\b/i.test(head) || !/<meta charset="utf-8">$/i.test(head.trimEnd()))
+    problem("csp-meta-position", where, "not directly after <meta charset>");
+  const scriptSrc = policyOf(metas[0].getAttribute("content") ?? "").get("script-src");
   if (!scriptSrc) {
     problem("csp-no-script-src", where);
     continue;
   }
   if (scriptSrc.includes("'unsafe-inline'")) problem("csp-unsafe-inline", where);
-  for (const h of inlineScriptHashes(html)) {
+  const inline = inlineScriptSources(root);
+  for (const h of inline) {
     cspHashes++;
     if (!scriptSrc.includes(h)) problem("csp-unhashed-inline-script", where, h);
   }
+  // The integration lists exactly the page's own scripts: a hash with no script behind it means the two disagree.
+  for (const h of scriptSrc) if (/^'sha(256|384|512)-/.test(h) && !inline.has(h)) problem("csp-hash-without-script", where, h);
   for (const m of html.matchAll(/<[a-z][^>]*?\s(on[a-z]+)\s*=/gi)) problem("inline-event-handler", where, m[1]);
+}
+
+/* ------------------------------------------------------------------ hero image preloads */
+
+// Independent of integrations/hero-preload.mjs and of its class selectors (CODE3-06). The hero images are the
+// <img fetchpriority="high"> in the first section of <main>; at each viewport below, the file the browser takes for
+// such an image (its <picture>'s first <source> whose media and type match, srcset × sizes × DPR) must be the file a
+// <head> preload fetches at that viewport, and every image preload must fetch the hero's file. Floor: every home page
+// and every case study has a hero image, eager, so a markup change cannot quietly remove the hint from all pages.
+const HERO_VIEWPORTS = [
+  { width: 360, dpr: 3 },
+  { width: 412, dpr: 2.625 },
+  { width: 768, dpr: 2 },
+  { width: 1024, dpr: 1 },
+  { width: 1440, dpr: 1 },
+  { width: 1920, dpr: 2 },
+];
+const REM = 16;
+const toPx = (n, unit, vp) => n * (unit === "px" ? 1 : unit === "vw" ? vp.width / 100 : REM);
+/** A media query list at a viewport: min/max-width (px, rem, em) and min/max-resolution (dppx, x); other features match. */
+function heroMedia(media, vp) {
+  if (!media?.trim()) return true;
+  return media.split(",").some((q) =>
+    q.split(/\band\b/).every((part) => {
+      const w = /\(\s*(min|max)-width\s*:\s*([\d.]+)(px|rem|em)\s*\)/.exec(part);
+      if (w) return w[1] === "min" ? vp.width >= toPx(+w[2], w[3], vp) : vp.width <= toPx(+w[2], w[3], vp);
+      const r = /\(\s*(min|max)-resolution\s*:\s*([\d.]+)(dppx|x)\s*\)/.exec(part);
+      if (r) return r[1] === "min" ? vp.dpr >= +r[2] : vp.dpr <= +r[2];
+      return true;
+    }),
+  );
+}
+/** A `sizes` length (px / rem / em / vw, calc / min / max) in px at the viewport. */
+function heroLength(expr, vp) {
+  const js = expr
+    .replace(/calc\(/g, "(")
+    .replace(/\b(min|max)\(/g, "Math.$1(")
+    .replace(/([\d.]+)(px|rem|em|vw)/g, (_, n, u) => String(toPx(+n, u, vp)));
+  if (!/^(?:[\d.\s()+\-*/,]|Math\.min|Math\.max)+$/.test(js)) throw new Error(`unsupported sizes length: ${expr}`);
+  return Function(`"use strict"; return (${js});`)();
+}
+function heroSlot(sizes, vp) {
+  for (const entry of (sizes ?? "")
+    .split(/,(?![^(]*\))/)
+    .map((x) => x.trim())
+    .filter(Boolean)) {
+    const m = /((?:calc|min|max)\(.*\)|[\d.]+(?:px|r?em|vw))$/.exec(entry);
+    if (!m) break;
+    const media = entry.slice(0, m.index).trim();
+    if (!media || heroMedia(media, vp)) return heroLength(m[1], vp);
+  }
+  return vp.width;
+}
+/** The srcset candidate for the slot: the smallest width ≥ slot × DPR, else the largest (x / no descriptors: the first). */
+function heroPick(srcset, sizes, vp) {
+  const c = srcset
+    .split(/,(?=\s*(?:\/|https?:|data:))/)
+    .map((x) => x.trim().split(/\s+/))
+    .filter(([u]) => u);
+  if (!c.length || c[0][0].startsWith("data:")) return null;
+  if (!c.every(([, d]) => d?.endsWith("w"))) return c[0][0];
+  const need = heroSlot(sizes, vp) * vp.dpr;
+  c.sort((a, b) => parseFloat(a[1]) - parseFloat(b[1]));
+  return (c.find(([, d]) => parseFloat(d) >= need) ?? c.at(-1))[0];
+}
+/** The file an <img> takes at the viewport (AVIF supported, like every browser the preloads target); null: none. */
+function heroFile(img, vp) {
+  const pic = img.parentNode?.tagName === "PICTURE" ? img.parentNode : null;
+  for (const source of pic?.querySelectorAll("source[srcset]") ?? []) {
+    const type = source.getAttribute("type");
+    if (type && !/^image\/(avif|webp|jpeg|png)$/.test(type)) continue;
+    if (heroMedia(source.getAttribute("media"), vp))
+      return heroPick(source.getAttribute("srcset"), source.getAttribute("sizes") ?? img.getAttribute("sizes"), vp);
+  }
+  return img.getAttribute("srcset")
+    ? heroPick(img.getAttribute("srcset"), img.getAttribute("sizes"), vp)
+    : (img.getAttribute("src") ?? null);
+}
+let heroPages = 0;
+for (const [path, { root }] of pages) {
+  const main = root.querySelector("main");
+  const first = main?.childNodes.find((n) => n.nodeType === 1);
+  const heroes = first?.querySelectorAll("img[fetchpriority=high]") ?? [];
+  const needsHero = /^\/[a-z]{2}\/(?:projects\/[^/]+\/)?$/.test(path);
+  if (needsHero && !heroes.length) problem("hero-image-missing", path, "no <img fetchpriority=high> in the first section of <main>");
+  const preloads = root.querySelectorAll('head link[rel="preload"][as="image"]');
+  if (!heroes.length && !preloads.length) continue;
+  heroPages++;
+  for (const img of heroes) if (img.getAttribute("loading") === "lazy") problem("hero-image-lazy", path, img.getAttribute("src") ?? "");
+  for (const vp of HERO_VIEWPORTS) {
+    const at = `${vp.width}px @${vp.dpr}x`;
+    const want = new Set(heroes.map((img) => heroFile(img, vp)).filter(Boolean));
+    const got = new Set();
+    for (const l of preloads) {
+      if (!heroMedia(l.getAttribute("media"), vp)) continue;
+      const file = l.getAttribute("imagesrcset")
+        ? heroPick(l.getAttribute("imagesrcset"), l.getAttribute("imagesizes"), vp)
+        : l.getAttribute("href");
+      if (file) got.add(file);
+    }
+    for (const f of want)
+      if (!got.has(f))
+        problem(
+          "hero-preload-mismatch",
+          path,
+          `${at}: the hero image takes ${f}, no <head> preload fetches it (preloads: ${[...got].join(", ") || "none"})`,
+        );
+    for (const f of got)
+      if (!want.has(f)) problem("hero-preload-wasted", path, `${at}: a <head> preload fetches ${f}, which no hero image uses`);
+  }
 }
 
 /* ------------------------------------------------------------------ unique titles / descriptions per locale */
@@ -303,16 +494,14 @@ for (const m of sitemap.matchAll(/<url>([\s\S]*?)<\/url>/g)) {
 }
 for (const [p, { root }] of pages) {
   if (!/^\/[a-z]{2}\/projects\/[^/]+\/$/.test(p)) continue;
-  const nodes = root
-    .querySelectorAll('script[type="application/ld+json"]')
-    .flatMap((s) => {
-      try {
-        const o = JSON.parse(s.text);
-        return o["@graph"] ?? [o];
-      } catch {
-        return [];
-      }
-    });
+  const nodes = root.querySelectorAll('script[type="application/ld+json"]').flatMap((s) => {
+    try {
+      const o = JSON.parse(s.text);
+      return o["@graph"] ?? [o];
+    } catch {
+      return [];
+    }
+  });
   const article = nodes.find((n) => n["@type"] === "Article");
   if (!article) {
     problem("case-study-article", p, "no Article node");
@@ -343,7 +532,14 @@ const SECRET_PATTERNS = [
   ["private key block", /-----BEGIN [A-Z ]*PRIVATE KEY-----/],
 ];
 // Values from a local .env (never printed). Public-by-design keys are skipped.
-const PUBLIC_KEYS = new Set(["TURNSTILE_SITE_KEY", "CF_WEB_ANALYTICS_TOKEN", "CF_WEB_ANALYTICS_SITE_TAG", "INDEXNOW_KEY", "CLOUDFLARE_ACCOUNT_ID", "R2_S3_ENDPOINT"]);
+const PUBLIC_KEYS = new Set([
+  "TURNSTILE_SITE_KEY",
+  "CF_WEB_ANALYTICS_TOKEN",
+  "CF_WEB_ANALYTICS_SITE_TAG",
+  "INDEXNOW_KEY",
+  "CLOUDFLARE_ACCOUNT_ID",
+  "R2_S3_ENDPOINT",
+]);
 const envSecrets = [];
 for (const envFile of [".env", ".dev.vars"]) {
   const p = join(ROOT, envFile);
@@ -375,7 +571,8 @@ for (const p of problems) byType[p.type] = (byType[p.type] ?? 0) + 1;
 console.log(
   `dist check: ${pages.size} pages, ${linkCount} links, ${assetCount} asset refs, ${locs.length} sitemap URLs, ` +
     `${scanned} text files scanned for leaks/secrets (${envSecrets.length} local secret values), ` +
-    `CSP meta on ${cspPages} pages covering ${cspHashes} inline scripts.`,
+    `CSP meta on ${cspPages} pages covering ${cspHashes} inline scripts, hero image preloads on ${heroPages} pages, ` +
+    `${chunkRefs} chunk imports, ${inlineModules} inline module scripts (lc-own).`,
 );
 if (problems.length) {
   for (const type of Object.keys(byType)) {

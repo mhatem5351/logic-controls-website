@@ -19,6 +19,7 @@ import { SITE } from "~/data/site";
 import { SERVICE_SLUGS } from "~/data/services";
 import { ZONES } from "~/data/zones";
 import type { ProjectData } from "~/data/projects";
+import { BRANDS, type BrandData, type BrandSlug } from "~/data/technologies";
 import { cleanText, techLabel } from "~/lib/text";
 import { ogCard, ogDefault } from "~/lib/og";
 import { pageDates } from "../../scripts/content-dates.mjs";
@@ -157,6 +158,30 @@ export async function founder(_locale?: Locale): Promise<JsonLdNode | undefined>
     knowsAbout: ["PLC programming", "HMI", "SCADA", "GMP environments"],
   });
 }
+
+/* ------------------------------------------------------------------ platform brands */
+
+/** @id of a platform brand (one node per brand, site-wide: the same id on /technologies/ and in every case study). */
+export const brandId = (slug: BrandSlug) => `${SITE.url}/#brand-${slug}`;
+
+/**
+ * A platform brand in full (CS3-05), for /technologies/ (CollectionPage.about): stable @id, the manufacturer's full
+ * name where "Delta" / "Wecon" alone is ambiguous, and its official site + unambiguous Wikipedia / Wikidata pages as
+ * sameAs, so search engines reconcile it with the right company. Language-neutral: the same node in every locale.
+ */
+export function brandNode(b: BrandData): JsonLdNode {
+  return compact({
+    "@type": "Brand",
+    "@id": brandId(b.slug),
+    name: b.name,
+    alternateName: b.alternateName,
+    url: b.website,
+    sameAs: [b.website, ...b.sameAs],
+  });
+}
+
+/** A brand mentioned elsewhere (case-study Article.mentions): @id + name, the full node lives on /technologies/. */
+export const brandRef = (b: BrandData): JsonLdNode => ({ "@type": "Brand", "@id": brandId(b.slug), name: b.name });
 
 /* ------------------------------------------------------------------ pages */
 
@@ -339,7 +364,7 @@ export function article(
     author: orgRef(),
     publisher: orgRef(),
     about: o.industries.map((i) => ({ "@type": "Thing", name: txt(i.name), url: pageUrl(locale, i.path) })),
-    mentions: SITE.brands.filter((b) => tech.includes(b.toLowerCase())).map((b) => ({ "@type": "Brand", name: b })),
+    mentions: BRANDS.filter((b) => tech.includes(b.name.toLowerCase())).map(brandRef),
     keywords: p.technologies.map((t) => txt(techLabel(locale, t))).join(", "),
     contentLocation: o.location ? { "@type": "Place", name: txt(o.location) } : undefined,
     video: video

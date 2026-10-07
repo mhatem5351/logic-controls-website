@@ -2,6 +2,11 @@
  * Quote form (src/components/sections/main/RfqForm.astro). Imported by that component only, so it ships with the
  * contact page's CSS. Behaviour: src/scripts/rfq-form.ts. Contract and limits: src/lib/rfq-rules.ts.
  */
+/* MOT3-03: no scroll anchor inside the form, so swapping step 1 for step 2 (above the shared consent / actions block)
+   never moves the page; rfq-form.ts goTo() then brings the form into view with one motion. */
+.lc-rfq {
+  overflow-anchor: none;
+}
 .lc-rfq .lc-hp {
   position: absolute !important;
   inline-size: 1px;
@@ -441,7 +446,18 @@ html:not(.js) .lc-rfq .lc-file-input {
   color: var(--color-navy-950);
 }
 
+/* ---------- security check: a third-party box never widens the form (DEV3-02; the script picks "compact" under
+   300 px) ---------- */
+.lc-rfq [data-turnstile] {
+  max-inline-size: 100%;
+  overflow-x: clip;
+}
+
 /* ---------- upload progress ---------- */
+/* the percentage beside the button's label (no gap left behind while there is none) */
+.lc-rfq [data-submit-pct]:empty {
+  display: none;
+}
 .lc-rfq .lc-progress[hidden] {
   display: none;
 }

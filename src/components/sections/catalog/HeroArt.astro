@@ -9,7 +9,13 @@
  *    pushed the page's first content off the first screen, UX2-23). A tiny inline script moves the same <svg> into it
  *    while the parser is still on the hero (before first paint, so nothing shifts) and back when the viewport crosses
  *    1024px. Without JS the slot is hidden (the art stays in the hidden media panel).
+ *    The same script parks the art on its rest frame (ArtFrame's job for other inline art: park={false} here). It runs
+ *    after the hero's copy on purpose: its requestAnimationFrame makes Chrome paint at the parser's next pause, and
+ *    from inside the media panel, which precedes the copy, that painted the art in a hero with no height yet, then
+ *    moved it (desktop CLS 0.05–0.10, PERF3-01).
  * Render the media one first (the Hero puts its media panel before the copy, so the order holds).
+ * `data-art-warm`: the index page's art fragment, which site.ts fetches at idle (with the code that fills it), so going
+ * back / up to the index morphs into a card that already has its picture (MOT3-02). Same URL as lazy-art.ts builds.
  * The art is decorative (aria-hidden); it plays two cycles, then rests, and respects reduced motion / "Pause
  * animations" (see illustrations/STYLE.md).
  */
@@ -17,9 +23,11 @@ import ServiceArt from "~/components/illustrations/ServiceArt.astro";
 import IndustryArt from "~/components/illustrations/IndustryArt.astro";
 import type { ServiceSlug } from "~/data/services";
 import type { IndustrySlug } from "~/data/industries";
+import { ART_VERSION } from "~/components/illustrations/art-version";
 
 type Props = ({ kind: "service"; slug: ServiceSlug } | { kind: "industry"; slug: IndustrySlug }) & { inline?: boolean };
 const props = Astro.props;
+const warm = `/en/art/${props.kind === "service" ? "services" : "industries"}/?v=${encodeURIComponent(ART_VERSION)}`;
 ---
 
 {
@@ -40,16 +48,25 @@ const props = Astro.props;
           };
           place();
           mq.addEventListener("change", place);
+          /* park on the rest frame before the first paint (rAF: also after the move above, which restarts CSS animations) */
+          const d = document.documentElement;
+          if (d.dataset.motion === "off") return;
+          requestAnimationFrame(() => {
+            if (d.dataset.motion === "off" || art.dataset.play !== "rest") return;
+            art.dataset.play = "0";
+            const t = 1e3 * art.dataset.restAt;
+            for (const a of art.getAnimations({ subtree: true })) if (a.effect.target !== art) a.currentTime = t;
+          });
         })();
       </script>
     </>
   ) : (
     <div class="absolute inset-0 z-[1] hidden items-center justify-center pe-(--spacing-gutter) ps-[calc(var(--slant-x)*0.55)] pt-[calc(var(--header-h)+var(--utility-h)+1.5rem)] pb-12 lg:flex">
-      <div class="w-full max-w-[34rem]" data-hero-art>
+      <div class="w-full max-w-[34rem]" data-hero-art data-art-warm={warm}>
         {props.kind === "service" ? (
-          <ServiceArt slug={props.slug} variant="dark" lazy={false} />
+          <ServiceArt slug={props.slug} variant="dark" lazy={false} park={false} />
         ) : (
-          <IndustryArt slug={props.slug} variant="dark" lazy={false} />
+          <IndustryArt slug={props.slug} variant="dark" lazy={false} park={false} />
         )}
       </div>
     </div>

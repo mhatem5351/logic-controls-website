@@ -1,5 +1,6 @@
 /**
- * worker/index.ts — "/" locale redirect and the /api/rfq form handler.
+ * worker/index.ts — "/" locale redirect, the /api/rfq form handler and the /api/evt click counter (with the contract
+ * the browser's analytics script sends, src/scripts/analytics.ts).
  *
  * Runs the real module in Node and calls its fetch() with a mocked env (ASSETS, RFQ_MAIL.send spy) and a mocked global
  * fetch for Turnstile's siteverify. @cloudflare/vitest-pool-workers is not used: its current release (0.22) needs
@@ -10,7 +11,9 @@
 import { readFileSync } from "node:fs";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import worker from "../../worker/index";
-import { REF_RE, RFQ_FILES, RFQ_MAX_BODY } from "../../src/lib/rfq-rules";
+import { EVT_KINDS, EVT_PLACES, EVT_MAX_BODY, REF_RE, RFQ_FILES, RFQ_MAX_BODY, parseEvt } from "../../src/lib/rfq-rules";
+import { EVT_PLACES as CLIENT_EVT_PLACES, evtBody } from "../../src/scripts/analytics";
+import { LOCALES } from "../../src/i18n/config";
 
 const ORIGIN = "https://logic-controls.com";
 const SITEVERIFY = "https://challenges.cloudflare.com/turnstile/v0/siteverify";
@@ -65,6 +68,12 @@ function rfq(fields: Record<string, string>, { json = true, headers = {} as Reco
     body,
     headers: { ...(json ? { Accept: "application/json" } : { Accept: "text/html" }), ...headers },
   });
+}
+
+/** The request as Cloudflare hands it to the Worker: request.cf.country = the visitor's network country. */
+function withCountry(req: Request, country: string) {
+  Object.defineProperty(req, "cf", { value: { country } });
+  return req;
 }
 
 /**
@@ -643,6 +652,51 @@ describe("/api/rfq", () => {
       expect(text).toContain(`Phone ${phone}: No recognisable country code: check the number before calling or messaging (no WhatsApp / call link).`);
       expect(html).toContain("No recognisable country code");
     });
+
+    // UX3-03: the network country (request.cf.country) is printed, and only OFFERS a labelled guess
+    it("names the visitor's network country (never the IP) in every email", async () => {
+      const { env, send } = makeEnv();
+      await call(withCountry(rfq(VALID), "EG"), env);
+      const { text, html } = send.mock.calls[0]![0];
+      expect(text).toMatch(/^Network country: Egypt \(EG\): where the visitor's connection comes from$/m);
+      expect(html).toContain("<b>Network country</b>");
+      expect(text).toContain("Reply on WhatsApp: https://wa.me/201000000000"); // a complete number needs no guess
+      await call(rfq(VALID), env); // no cf (local dev): no row
+      expect(send.mock.calls[1]![0].text).not.toContain("Network country");
+    });
+
+    it.each([
+      ["0501234567", "SA", "966501234567"], // Saudi mobile, local format
+      ["050 123 4567", "AE", "971501234567"], // UAE mobile
+      ["0532 123 45 67", "TR", "905321234567"], // Turkish mobile on the English form
+    ])("%s from a %s network → a guessed link, labelled as a guess", async (phone, cc, guess) => {
+      const { env, send } = makeEnv();
+      await call(withCountry(rfq({ ...VALID, phone, locale: "en" }), cc), env);
+      const { text, html } = send.mock.calls[0]![0];
+      expect(text).toContain(`Phone ${phone}: No recognisable country code. The visitor's network country is`);
+      expect(text).toContain(`so it may be +${guess} (a guess from the network: confirm before calling or messaging).`);
+      expect(text).toContain(`If so, WhatsApp: https://wa.me/${guess}\nCall: +${guess}`);
+      expect(text).not.toContain("Reply on WhatsApp"); // never presented as the visitor's number
+      expect(html).toContain(`<a href="https://wa.me/${guess}">WhatsApp +${guess}</a>`);
+      expect(html).toContain("a guess from the network: confirm before calling or messaging");
+    });
+
+    it.each([
+      ["0501234567", "DE"], // a network country without a known mobile format
+      ["0501234567", "XX"], // Cloudflare: unknown
+      ["0501234567", "T1"], // Cloudflare: Tor
+      ["12345678", "SA"], // not a Saudi mobile format
+    ])("%s from %s → no guess, the number as typed", async (phone, cc) => {
+      const { env, send } = makeEnv();
+      await call(withCountry(rfq({ ...VALID, phone, locale: "en" }), cc), env);
+      const { text, html } = send.mock.calls[0]![0];
+      expect(text).not.toContain("wa.me");
+      expect(html).not.toContain('href="tel:');
+      expect(text).toContain(`Phone ${phone}: No recognisable country code: check the number before calling or messaging (no WhatsApp / call link).`);
+      if (cc === "DE") expect(text).toContain("Visitor's network country: Germany (DE).");
+      else if (cc === "SA") expect(text).toContain("Visitor's network country: Saudi Arabia (SA).");
+      else expect(text).not.toContain("network country"); // "XX" / "T1" are not countries
+    });
   });
 
   describe("attachments", () => {
@@ -730,6 +784,22 @@ describe("/api/rfq", () => {
     it("no-JS form post: 303 back with ?error=attachments", async () => {
       const res = await call(rfq({ ...VALID, locale: "zh" }, { json: false, files: [file("a.exe", "MZ")] }), makeEnv().env);
       expect(res.headers.get("Location")).toBe("/zh/contact/?error=attachments#rfq-error-attachments");
+    });
+
+    it("'Send without the files' after a timed-out upload: the email names the files the visitor left out (DEV3-01)", async () => {
+      const { env, send } = makeEnv();
+      const res = await call(rfq({ ...VALID, [RFQ_FILES.dropped]: `panel.jpg, ${"x".repeat(400)}\r\nBcc: a@b.c` }), env);
+      expect(res.status).toBe(200);
+      const { text, html, attachments } = send.mock.calls[0]![0];
+      expect(attachments).toBeUndefined();
+      const line = text.split("\n").find((l) => l.startsWith("Not uploaded: "))!;
+      expect(line).toMatch(/^Not uploaded: panel\.jpg, x+/); // one line (no header injection), capped
+      expect(line).toContain("(the upload was too slow on the sender's connection, so they sent the request without these files");
+      expect(line.length).toBeLessThan(RFQ_FILES.droppedMax + 200);
+      expect(html).toContain("<b>Not uploaded</b>");
+      // nothing dropped → no line
+      await call(rfq(VALID), env);
+      expect(send.mock.calls[1]![0].text).not.toContain("Not uploaded");
     });
   });
 
@@ -839,6 +909,61 @@ describe("/api/evt → Workers Analytics Engine", () => {
     expect(res.status).toBe(204);
     expect(await res.text()).toBe("");
     expect(writeDataPoint).not.toHaveBeenCalled();
+  });
+
+  // CODE3-02: a body without Content-Length is read only up to the cap (never to its end)
+  const streamed = (bytes: Uint8Array, chunk = 64 * 1024) => {
+    let at = 0;
+    let pulls = 0;
+    const body = new ReadableStream<Uint8Array>({
+      pull(c) {
+        pulls++;
+        if (at >= bytes.length) return c.close();
+        c.enqueue(bytes.subarray(at, at + chunk));
+        at += chunk;
+      },
+    });
+    const req = new Request(`${ORIGIN}/api/evt`, { method: "POST", body, headers: { Origin: ORIGIN }, duplex: "half" } as RequestInit & { duplex: "half" });
+    return { req, read: () => at, pulls: () => pulls };
+  };
+
+  it("a 1 MB body streamed without Content-Length: not counted, and read only up to the cap", async () => {
+    const { env, writeDataPoint } = withClicks();
+    const big = streamed(new TextEncoder().encode(JSON.stringify({ ...OK, pad: "x".repeat(1024 * 1024) })), 256);
+    expect(big.req.headers.get("Content-Length")).toBeNull();
+    const res = await call(big.req, env);
+    expect(res.status).toBe(204);
+    expect(writeDataPoint).not.toHaveBeenCalled();
+    expect(big.read()).toBeLessThanOrEqual(EVT_MAX_BODY + 2 * 256); // stopped right after the cap (+ the stream's read-ahead)
+  });
+
+  it("a small body streamed without Content-Length is counted", async () => {
+    const { env, writeDataPoint } = withClicks();
+    const res = await call(streamed(new TextEncoder().encode(JSON.stringify(OK)), 16).req, env);
+    expect(res.status).toBe(204);
+    expect(writeDataPoint).toHaveBeenCalledOnce();
+  });
+
+  it("the browser script and the Worker share one contract: places, and every beacon body it can send is counted", async () => {
+    expect([...CLIENT_EVT_PLACES]).toEqual([...EVT_PLACES]);
+    const paths = ["/", "/ar/", "/en/contact/", "/zh/contact/thanks/", "/tr/services/control-panels/", "/en/projects/milk-pasteurizer/"];
+    for (const k of EVT_KINDS)
+      for (const p of EVT_PLACES)
+        for (const l of LOCALES)
+          for (const u of paths) {
+            const body = evtBody(k, p, l, u);
+            expect(new TextEncoder().encode(body).length).toBeLessThanOrEqual(EVT_MAX_BODY);
+            expect(parseEvt(JSON.parse(body))).toEqual({ kind: k, place: p, locale: l, path: u });
+          }
+    // and end to end, as navigator.sendBeacon posts it (text/plain Blob)
+    const { env, writeDataPoint } = withClicks();
+    const req = new Request(`${ORIGIN}/api/evt`, {
+      method: "POST",
+      body: new Blob([evtBody("call", "fab", "tr", "/tr/contact/")], { type: "text/plain" }),
+      headers: { Origin: ORIGIN },
+    });
+    expect((await call(req, env)).status).toBe(204);
+    expect(writeDataPoint).toHaveBeenCalledWith({ blobs: ["call", "fab", "tr", "/tr/contact/"], doubles: [1], indexes: ["call"] });
   });
 
   it("works without the binding (local dev / not configured) and never reaches the static assets", async () => {

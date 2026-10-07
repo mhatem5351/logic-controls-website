@@ -41,7 +41,22 @@ function useTestSitekey({ prod, test }: { prod: string; test: string }) {
   addEventListener("DOMContentLoaded", () => (patch(document), mo.disconnect()));
 }
 
+/** WebKit only: the test browser's WebKit (26.x) leaves about 3 in 100 navigations that use a speculation-rules
+ *  prefetch blank (URL "", no load event; the round-2 build too, none in 90 without the rules), so the WebKit project
+ *  runs without the rules (production and Chromium keep them; docs/followups.md). They are dropped before the engine
+ *  sees them: the parser runs a microtask checkpoint, i.e. this observer, before it prepares a parser-inserted script. */
+function dropSpeculationRules() {
+  const mo = new MutationObserver((ms) => {
+    for (const m of ms) for (const n of m.addedNodes) if (n instanceof HTMLScriptElement && n.type === "speculationrules") n.remove();
+  });
+  mo.observe(document, { childList: true, subtree: true });
+  addEventListener("DOMContentLoaded", () => mo.disconnect());
+}
+
 interface Fixtures {
+  /** WebKit: keep the pages' speculation rules (see dropSpeculationRules), for a test that needs WebKit to render
+   *  while the load event is still pending: without the rules that WebKit does not. */
+  keepSpeculationRules: boolean;
   /** Extra console messages (regexps) a test expects, e.g. the 404 resource error. */
   allowConsole: RegExp[];
   /** Collected console errors / page errors of the test's page (third-party noise filtered). */
@@ -50,8 +65,10 @@ interface Fixtures {
 
 export const test = base.extend<Fixtures>({
   allowConsole: [[], { option: true }],
-  context: async ({ context }, use) => {
+  keepSpeculationRules: [false, { option: true }],
+  context: async ({ context, browserName, keepSpeculationRules }, use) => {
     await context.addInitScript(useTestSitekey, { prod: PROD_SITEKEY, test: TEST_SITEKEY });
+    if (browserName === "webkit" && !keepSpeculationRules) await context.addInitScript(dropSpeculationRules);
     await use(context);
   },
   consoleErrors: [

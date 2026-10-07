@@ -6,7 +6,8 @@
  *   /          → 302 to the visitor's language (cookie → Accept-Language → English)
  *   /api/rfq   → quote/contact form: size + type guard, honeypot, validation (src/lib/rfq-rules.ts, shared with the
  *                form), Turnstile, then one email to the owner's verified inbox (send_email binding) with the
- *                visitor's drawings/photos attached (≤ 3 files, ≤ 4 MB in total).
+ *                visitor's drawings/photos attached (≤ 3 files, ≤ 4 MB in total). The email also names the country
+ *                the visitor's connection comes from (request.cf.country, free on every plan; never the IP).
  *   /api/evt   → one anonymous click count (WhatsApp / call / email / quote; src/scripts/analytics.ts) written to
  *                Workers Analytics Engine (binding CLICKS; free on Workers Free: 100,000 data points a day). No
  *                cookies, no IP, no identifier: kind, placement, locale and path only.
@@ -32,8 +33,11 @@ import {
   checkFiles,
   fileExt,
   intlPhone,
+  isNetworkCountry,
   isRfqLocale,
+  networkPhone,
   normalizeRfq,
+  oneLine,
   parseEvt,
   rfqProblems,
   rfqReference,
@@ -206,6 +210,16 @@ const kb = (n: number) => (n >= 1024 * 1024 ? `${(n / 1024 / 1024).toFixed(1)} M
 const SELECTS = new Set(["service", "industry", "timeline", "location", "reply"]);
 const shown = (data: RfqData, key: keyof RfqData) => (SELECTS.has(key) ? (optionLabel(key, data[key]) ?? data[key]) : data[key]);
 
+/** "Saudi Arabia (SA)" for request.cf.country; just the code where the runtime has no region names. */
+function countryName(cc: string): string {
+  try {
+    const name = new Intl.DisplayNames(["en"], { type: "region" }).of(cc);
+    return name && name !== cc ? `${name} (${cc})` : cc;
+  } catch {
+    return cc;
+  }
+}
+
 const BANNERS = {
   urgent: { text: "URGENT: a machine is stopped.", color: "#b42318", bg: "#fdf3f2" },
   likely: { text: "POSSIBLY URGENT: troubleshooting request sent without a timeline. Call first.", color: "#93370d", bg: "#fffaeb" },
@@ -257,6 +271,13 @@ async function handleRfq(req: Request, env: Env): Promise<Response> {
   const urgency = urgencyOf(data);
   const banner = urgency ? BANNERS[urgency] : null;
   const wa = data.phone ? intlPhone(data.phone, { locale, country: data.country, location: data.location }) : null;
+  // UX3-03: where the connection comes from, as Cloudflare reports it. Shown as such, and used only to OFFER a guessed
+  // number (labelled) for a local phone number the rules above could not complete.
+  const cc = (req as Request & { cf?: { country?: unknown } }).cf?.country;
+  const network = isNetworkCountry(cc) ? cc : null;
+  const guess = data.phone && !wa ? networkPhone(data.phone, network) : null;
+  // DEV3-01: files the visitor left out because the upload was too slow on their connection
+  const dropped = oneLine(String(form.get(RFQ_FILES.dropped) ?? "")).slice(0, RFQ_FILES.droppedMax);
   const dirOf = (key: string) => {
     const d = form.get(`${key}.dir`);
     return d === "rtl" || d === "ltr" ? d : "auto";
@@ -265,13 +286,22 @@ async function handleRfq(req: Request, env: Env): Promise<Response> {
   const rows: [label: string, value: string, key: string][] = RFQ_FIELDS.filter(([key]) => data[key]).map(([key, label]) => [label, shown(data, key), key]);
   if (attachments.length) rows.push(["Attachments", attachments.map((a, i) => `${a.filename} (${kb(attachedSizes[i]!)})`).join(", "), "files"]);
   if (skipped.length) rows.push(["Not attached", `${skipped.join(", ")} (the content does not match the file type; ask the sender to email it)`, "skipped"]);
+  if (dropped) rows.push(["Not uploaded", `${dropped} (the upload was too slow on the sender's connection, so they sent the request without these files: ask for them by email or WhatsApp with the reference)`, "dropped"]);
+  if (network) rows.push(["Network country", `${countryName(network)}: where the visitor's connection comes from`, "network"]);
   rows.push(["Consent", "Yes (privacy notice accepted on the form)", "consent"], ["Reference", ref, "ref"]);
 
   const service = data.service ? shown(data, "service") : "Inquiry";
   const flag = urgency === "urgent" ? "[URGENT] " : urgency === "likely" ? "[URGENT?] " : "";
   const subject = `${flag}[Website ${locale.toUpperCase()}] ${service} — ${data.company || data.name} · ${ref}`.slice(0, 200);
   const noCode = "No recognisable country code: check the number before calling or messaging (no WhatsApp / call link).";
-  const actions = wa ? `\n\nReply on WhatsApp: https://wa.me/${wa}\nCall: +${wa}` : data.phone ? `\n\nPhone ${data.phone}: ${noCode}` : "";
+  const guessed = guess && network ? `No recognisable country code. The visitor's network country is ${countryName(network)}, so it may be +${guess} (a guess from the network: confirm before calling or messaging).` : "";
+  const actions = wa
+    ? `\n\nReply on WhatsApp: https://wa.me/${wa}\nCall: +${wa}`
+    : guess
+      ? `\n\nPhone ${data.phone}: ${guessed}\nIf so, WhatsApp: https://wa.me/${guess}\nCall: +${guess}`
+      : data.phone
+        ? `\n\nPhone ${data.phone}: ${noCode}${network ? ` Visitor's network country: ${countryName(network)}.` : ""}`
+        : "";
   const text =
     (banner ? `${banner.text}\n\n` : "") +
     rows.map(([label, value]) => `${label}: ${value}`).join("\n") +
@@ -283,9 +313,11 @@ ${banner ? `<p style="margin:0 0 12px;padding:8px 12px;border-left:4px solid ${b
 ${
   wa
     ? `<p style="margin:0 0 12px"><a href="https://wa.me/${wa}">Reply on WhatsApp</a> &nbsp;·&nbsp; <a href="tel:+${wa}">Call +${wa}</a></p>`
-    : data.phone
-      ? `<p style="margin:0 0 12px;color:#93370d"><b>Phone ${escapeHtml(data.phone)}:</b> ${noCode}</p>`
-      : ""
+    : guess
+      ? `<p style="margin:0 0 12px;color:#93370d"><b>Phone ${escapeHtml(data.phone)}:</b> ${escapeHtml(guessed)} <a href="https://wa.me/${guess}">WhatsApp +${guess}</a> &nbsp;·&nbsp; <a href="tel:+${guess}">Call +${guess}</a></p>`
+      : data.phone
+        ? `<p style="margin:0 0 12px;color:#93370d"><b>Phone ${escapeHtml(data.phone)}:</b> ${noCode}${network ? ` Visitor's network country: ${escapeHtml(countryName(network))}.` : ""}</p>`
+        : ""
 }
 <table cellpadding="6" style="border-collapse:collapse">${rows
     .map(
@@ -326,12 +358,14 @@ async function handleEvt(req: Request, env: Env): Promise<Response> {
   const origin = req.headers.get("Origin");
   if (origin && new URL(req.url).origin !== origin) return NO_CONTENT();
   if (req.headers.get("Sec-Fetch-Site") === "cross-site") return NO_CONTENT();
-  if (Number(req.headers.get("Content-Length") ?? 0) > EVT_MAX_BODY) return NO_CONTENT();
+  if (Number(req.headers.get("Content-Length") ?? 0) > EVT_MAX_BODY || !req.body) return NO_CONTENT();
   let raw: unknown;
   try {
-    const body = await req.text();
-    if (body.length > EVT_MAX_BODY) return NO_CONTENT();
-    raw = JSON.parse(body);
+    // CODE3-02: a body without Content-Length (chunked, or HTTP/2 without the header) is read only up to the cap,
+    // never to its end (it shares the isolate's memory with concurrent /api/rfq uploads)
+    const bytes = await readCapped(req.body, EVT_MAX_BODY);
+    if (!bytes) return NO_CONTENT();
+    raw = JSON.parse(new TextDecoder().decode(bytes));
   } catch {
     return NO_CONTENT();
   }

@@ -11,7 +11,7 @@ import Card from "~/components/Card.astro";
 import Icon from "~/components/Icon.astro";
 import CtaBand from "~/components/CtaBand.astro";
 import IndustryArt from "~/components/illustrations/IndustryArt.astro";
-import { countLabel, industryCopy, industrySlugs, projectCopy, projectsFor, projectsForIndustry, quoteHref, secondaryCta } from "~/components/sections/catalog/catalog";
+import { countLabel, industryCopy, industryProof, industrySlugs, projectCopy, projectsForIndustry, quoteHref, secondaryCta } from "~/components/sections/catalog/catalog";
 import { heading, html } from "~/lib/text";
 import { absUrl, graph, itemList, webPage } from "~/lib/jsonld";
 import { getMessages, localePath, localeStaticPaths, type Locale } from "~/i18n";
@@ -22,6 +22,7 @@ const m = getMessages(locale);
 const idx = m.industries.index;
 const L = m.common.labels;
 const slugs = industrySlugs(locale);
+const proof = industryProof(locale, slugs, 2);
 const wa = m.common.whatsapp.default;
 const [lead, ...rest] = idx.intro;
 
@@ -66,10 +67,9 @@ const jsonLd = graph(
                 headingLevel="h2"
                 links={{
                   label: `${it.navTitle}: ${L.relatedProjects}`,
-                  /* Up to 2 of the industry's case studies (newest first): proof one click from the hub (CS2-08). */
-                  items: projectsFor(locale, projectsForIndustry(s))
-                    .slice(0, 2)
-                    .map((p) => ({ href: localePath(locale, `projects/${p.slug}`), html: heading(locale, projectCopy(locale, p.slug)!.cardTitle) })),
+                  /* Up to 2 of the industry's case studies (relevance first: primary industry, our own control system, no
+                     repeats; catalog.ts industryProof): proof one click from the hub (CS2-08). */
+                  items: proof[s].map((p) => ({ href: localePath(locale, `projects/${p.slug}`), html: heading(locale, projectCopy(locale, p.slug)!.cardTitle) })),
                 }}
               >
                 <Fragment slot="media">

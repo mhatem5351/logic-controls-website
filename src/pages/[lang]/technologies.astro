@@ -26,10 +26,10 @@ import { html, heading } from "~/lib/text";
 import { href, QUOTE_PATH, whatsappLink, prefersEmail, mailtoLink } from "~/components/nav";
 import { getMessages, localePath, localeStaticPaths, type Locale } from "~/i18n";
 import { BRANDS } from "~/data/technologies";
-import { projectCopy, projectsFor } from "~/components/sections/catalog/catalog";
+import { platformProof, projectCopy, projectsFor } from "~/components/sections/catalog/catalog";
 import { projectsOnPlatform } from "~/components/sections/catalog/platforms";
 import { fmt } from "~/components/nav";
-import { absUrl, graph, itemList, webPage } from "~/lib/jsonld";
+import { absUrl, brandNode, graph, itemList, webPage } from "~/lib/jsonld";
 import panelPhoto from "~/assets/projects/pasteurizer-cip-recipes/panel.jpg";
 
 export const getStaticPaths = localeStaticPaths;
@@ -46,10 +46,12 @@ const categories: { key: "drives" | "scada" | "networks" | "signals"; icon: Icon
   { key: "networks", icon: "traces", title: tt.networks.title, text: tt.networks.text, items: tt.networks.items },
   { key: "signals", icon: "gauge", title: tt.signals.title, items: tt.signals.items },
 ];
-/* Case studies per platform (newest first): up to 3 linked by title, then "All <brand> projects (n)". */
+/* Case studies per platform (relevance first, catalog.ts platformProof): up to 3 linked by title (phones: the first
+   one, UX3-05 — the count on "All <brand> projects (n)" says how many more there are), then "All <brand> projects (n)". */
 const portfolio = projectsFor(locale);
 const onPlatform = Object.fromEntries(BRANDS.map((b) => [b.slug, projectsOnPlatform(b.slug, portfolio)]));
 const SHOWN = 3;
+const proof = platformProof(locale, SHOWN);
 const pagePath = localePath(locale, "technologies");
 
 /* Structured data (src/lib/jsonld.ts): the page is about the platform brands; the brand rows as an ItemList. */
@@ -59,7 +61,7 @@ const jsonLd = graph(
     path: "technologies",
     name: tt.seo.title,
     description: tt.seo.description,
-    about: BRANDS.map((b) => ({ "@type": "Brand", name: b.name })),
+    about: BRANDS.map(brandNode),
     mainEntity: itemList(tt.brands.title, BRANDS.map((b) => ({ name: b.name, url: `${absUrl(pagePath)}#${b.slug}` }))),
   }),
 );
@@ -110,8 +112,8 @@ const toc = [
                   {tt.brands.projectsTitle}
                 </p>
                 <ul role="list" class="flex flex-col gap-2 sm:flex-row sm:flex-wrap sm:gap-x-6">
-                  {onPlatform[b.slug]!.slice(0, SHOWN).map((p) => (
-                    <li>
+                  {proof[b.slug]!.map((p, j) => (
+                    <li class:list={[j > 0 && "max-sm:hidden"]}>
                       <a
                         href={localePath(locale, `projects/${p.slug}`)}
                         class="font-semibold text-royal-700 underline decoration-royal-200 underline-offset-4 hover:decoration-royal-600"

@@ -12,8 +12,10 @@ import type { IconName } from "~/components/Icon.astro";
 import type enServices from "~/i18n/messages/en/services.json";
 import type enIndustries from "~/i18n/messages/en/industries.json";
 import type enProjects from "~/i18n/messages/en/projects.json";
+import { BRANDS, type BrandSlug } from "~/data/technologies";
 import { fmt } from "~/components/nav";
 import { contactCta } from "~/components/contact-cta";
+import { brandsInText, projectsOnPlatform } from "./platforms";
 
 /* ------------------------------------------------------------------ icons (data suggests Lucide names; map to our set) */
 
@@ -93,6 +95,72 @@ export function projectsForService(slug: ServiceSlug): ProjectData[] {
   return [...first, ...byService.filter((p) => !featured.includes(p.slug as ProjectSlug))];
 }
 export const projectsForIndustry = (slug: IndustrySlug) => projectsSorted().filter((p) => p.industries.includes(slug));
+
+/* ------------------------------------------------------------------ proof links (CS3-03) */
+
+/**
+ * Our scope included the control system itself (the panel or the PLC / HMI program), not only testing and
+ * commissioning of someone else's: the stronger proof that we automate that kind of machine or platform.
+ */
+const builtControls = (p: ProjectData) => p.services.includes("plc-hmi-programming") || p.services.includes("control-panels");
+/** An earlier tile / row already links this project: it drops below any alternative of the same relevance tier. */
+const REPEAT_PENALTY = 3;
+
+/**
+ * Up to `n` projects for each group (hub tiles, brand rows) in group order, highest score first. A project an earlier
+ * group already shows loses REPEAT_PENALTY, so it is repeated only when no comparable alternative exists. Ties keep the
+ * candidates' own order (newest first, then catalogue order; Array.prototype.sort is stable): deterministic.
+ */
+function pickProof<K extends string>(groups: readonly { key: K; candidates: ProjectData[]; score: (p: ProjectData) => number }[], n: number) {
+  const shown = new Set<string>();
+  const out = {} as Record<K, ProjectData[]>;
+  for (const g of groups) {
+    const rank = (p: ProjectData) => g.score(p) - (shown.has(p.slug) ? REPEAT_PENALTY : 0);
+    out[g.key] = [...g.candidates].sort((a, b) => rank(b) - rank(a)).slice(0, n);
+    out[g.key].forEach((p) => shown.add(p.slug));
+  }
+  return out;
+}
+
+/**
+ * Case studies linked from each industry tile on /industries/ (relevance first, not newest first): a project whose
+ * primary industry is the tile's (+4) before one only cross-tagged with it, a control system we built (+2) before a
+ * commissioning-only job, no repeat across tiles when an alternative exists. Slugs in tile order (the hub's order).
+ */
+export function industryProof(locale: Locale, slugs: readonly IndustrySlug[], n = 2): Record<IndustrySlug, ProjectData[]> {
+  return pickProof(
+    slugs.map((s) => ({
+      key: s,
+      candidates: projectsFor(locale, projectsForIndustry(s)),
+      score: (p: ProjectData) => (p.industries[0] === s ? 4 : 0) + (builtControls(p) ? 2 : 0),
+    })),
+    n,
+  ) as Record<IndustrySlug, ProjectData[]>;
+}
+
+/** The brand's role in a project: its PLC (+3), SCADA (+2), HMI (+1); a drive only: 0 (the platform is someone else's). */
+const ROLE_SCORE: Partial<Record<TechGroup, number>> = { plc: 3, scada: 2, hmi: 1 };
+function platformRole(p: ProjectData, brand: BrandSlug): number {
+  const groups = new Set(p.technologies.filter((t) => brandsInText(t).some((b) => b.slug === brand)).map(techGroup));
+  return [...groups].reduce((sum, g) => sum + (ROLE_SCORE[g] ?? 0), 0);
+}
+
+/**
+ * Case studies linked from each platform row on /technologies/ (relevance first): the brand's role in the project
+ * (its PLC and SCADA before an HMI on another brand's PLC, before a drive), a control system we built (+2) before a
+ * commissioning-only job, no repeat across rows when an alternative exists. Rows in BRANDS order (the page's order).
+ */
+export function platformProof(locale: Locale, n = 3): Record<BrandSlug, ProjectData[]> {
+  const portfolio = projectsFor(locale);
+  return pickProof(
+    BRANDS.map((b) => ({
+      key: b.slug,
+      candidates: projectsOnPlatform(b.slug, portfolio),
+      score: (p: ProjectData) => platformRole(p, b.slug) + (builtControls(p) ? 2 : 0),
+    })),
+    n,
+  );
+}
 
 export function countLabel(locale: Locale, count: number): string {
   const t = getMessages(locale);

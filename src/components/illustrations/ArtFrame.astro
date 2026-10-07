@@ -16,7 +16,7 @@ interface Props extends ArtProps {
   floor?: number | false;
 }
 
-const { uid: u, name, variant, size, label, class: cls, viewBox = "0 0 400 300", floor = 258 } = Astro.props;
+const { uid: u, name, variant, size, label, class: cls, viewBox = "0 0 400 300", floor = 258, park = true } = Astro.props;
 /* Rest frame (s into the master loop) of each piece: where a turn starts and ends (play-when-visible.ts). The tape is
    stopped there instead of swapping to the still pose, so nothing snaps when a loop starts, ends, is replayed or
    evicted (MOT2-03). Chosen per piece as the loop frame closest to its authored still pose (lit outputs, filled
@@ -54,11 +54,12 @@ const a11y = label ? { role: "img" as const, "aria-label": label } : { "aria-hid
   </g>
   <slot />
 </svg>
-{/* Inline art (detail heroes, labelled art) is in the first screen: park it on its rest frame before it is painted, so
-    the scheduler's first turn starts from the frame on screen (lazy art is parked by lazy-art.ts the same way).
-    rAF: after HeroArt's parse-time move into the phone slot (a move restarts CSS animations). Same text everywhere,
-    so the CSP needs one hash. */}
-<script is:inline>(()=>{const e=document.currentScript.previousElementSibling,d=document.documentElement;if(d.dataset.motion==="off"||!e)return;requestAnimationFrame(()=>{if(d.dataset.motion==="off"||e.dataset.play!=="rest")return;e.dataset.play="0";const t=1e3*e.dataset.restAt;for(const a of e.getAnimations({subtree:!0}))if(a.effect.target!==e)a.currentTime=t})})()</script>
+{/* Inline art (labelled art) may be in the first screen: park it on its rest frame before it is painted, so the
+    scheduler's first turn starts from the frame on screen (lazy art is parked by lazy-art.ts the same way). Same text
+    everywhere, so the CSP needs one hash. Not for detail-hero art (park={false}): HeroArt parks it after the hero's
+    copy — a pending rAF here, in the media panel before the copy, made Chrome paint the hero before its copy was
+    parsed, and the art jumped (PERF3-01). */}
+{park && <script is:inline>(()=>{const e=document.currentScript.previousElementSibling,d=document.documentElement;if(d.dataset.motion==="off"||!e)return;requestAnimationFrame(()=>{if(d.dataset.motion==="off"||e.dataset.play!=="rest")return;e.dataset.play="0";const t=1e3*e.dataset.restAt;for(const a of e.getAnimations({subtree:!0}))if(a.effect.target!==e)a.currentTime=t})})()</script>}
 
 <style is:global>
   /* ---- palette (light = default). Tokens come from global.css @theme; hex fallbacks keep the art

@@ -10,9 +10,10 @@
  * data-play when the diagram itself is on screen (the node row, not the intro: ≥ 50% of it on desktop; in the tall
  * vertical layout once the Sensor is 20% above the bottom edge), so cycle 1 starts where the eye is. Until the three
  * cycles have played, every new showing restarts from the Sensor; after the rest, hovering / tapping the diagram (or
- * focus inside it) replays one cycle. In the vertical layout the script also measures where the PLC → Actuator arc
- * starts and ends. Horizontal ≥ 64rem, vertical below. Static under reduced motion / html[data-motion="off"], with
- * every arrowhead drawn. Plain (un-nested) CSS, so browsers without CSS nesting (Firefox ESR 115) animate it too.
+ * focus inside it) replays one cycle. In the vertical layout CSS anchor positioning ties the PLC → Actuator arc to the
+ * two icons (the script measures it where anchors are not supported). Horizontal ≥ 64rem, vertical below. Static
+ * under reduced motion / html[data-motion="off"], with every arrowhead drawn. Plain (un-nested) CSS, so browsers
+ * without CSS nesting (Firefox ESR 115) animate it too.
  */
 import { getMessages, type Locale } from "~/i18n";
 import Icon from "~/components/Icon.astro";
@@ -149,7 +150,8 @@ const ARABIC = /[\u0600-\u06FF]/;
     if (motionOff() || el.dataset.play !== "1" || !rested(el)) return;
     seek(el, (cycles(el) - 1) * cycle(el));
   };
-  // vertical layout: the PLC → Actuator arc runs from the PLC icon's centre to the Actuator icon's centre
+  // vertical layout, without CSS anchor positioning: the PLC → Actuator arc runs from the PLC icon's centre to the
+  // Actuator icon's centre
   const measure = (el: HTMLElement) => {
     const body = el.querySelector<HTMLElement>(".lc-loop-body")!;
     if (wide.matches) return body.removeAttribute("data-byp");
@@ -164,13 +166,16 @@ const ARABIC = /[\u0600-\u06FF]/;
     body.style.setProperty("--byp-h", `${(mid("actuator") - top).toFixed(1)}px`);
     body.setAttribute("data-byp", "");
   };
-  const ro = new ResizeObserver((es) => es.forEach((e) => measure((e.target as HTMLElement).closest<HTMLElement>("[data-loop]")!)));
+  // CSS anchor positioning places the arc by itself (the styles): nothing to measure
+  const ro = CSS.supports("anchor-name: --a")
+    ? undefined
+    : new ResizeObserver((es) => es.forEach((e) => measure((e.target as HTMLElement).closest<HTMLElement>("[data-loop]")!)));
   for (const el of loops) {
     const body = el.querySelector<HTMLElement>(".lc-loop-body")!;
     el.dataset.vis = "0";
     anims(el); // all still pending (paused at 0) here: remember them
     io.observe(body);
-    ro.observe(body);
+    ro?.observe(body);
     // the body is a plain block (never a focus target itself); focusin only fires for content inside it
     body.addEventListener("pointerenter", (e) => e.pointerType !== "touch" && replay(el));
     body.addEventListener("click", () => replay(el));
@@ -426,6 +431,35 @@ const ARABIC = /[\u0600-\u06FF]/;
   }
   .lc-loop-body[data-byp] .lc-loop-byp {
     display: block;
+  }
+  /* The arc from the first frame (MOT3-08): it used to appear ~0.2 s after a jump to the diagram, when the on-demand
+     script had measured it, replacing the HMI → Actuator wire drawn until then (the diagram re-wired itself). Where
+     CSS anchor positioning works, the icons place the arc themselves, with or without JS (the script skips its
+     measure); elsewhere, with JS, that wire is never drawn and the arc joins once measured. */
+  @media (width < 64rem) {
+    html.js .lc-loop-wire[data-w="skip"] {
+      display: none;
+    }
+    @supports (anchor-name: --a) {
+      .lc-loop-body {
+        anchor-scope: --lc-loop-plc, --lc-loop-act;
+      }
+      [data-k="plc"] > .lc-loop-ic {
+        anchor-name: --lc-loop-plc;
+      }
+      [data-k="actuator"] > .lc-loop-ic {
+        anchor-name: --lc-loop-act;
+      }
+      .lc-loop-wire[data-w="skip"] {
+        display: none;
+      }
+      .lc-loop-byp {
+        display: block;
+        top: calc(anchor(--lc-loop-plc center) - 1px);
+        bottom: calc(anchor(--lc-loop-act center) - 1px);
+        height: auto;
+      }
+    }
   }
   /* static arrowheads into the Sensor (return) and into the Actuator (arc), visible in every motion mode */
   .lc-loop-ret::after,

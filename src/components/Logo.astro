@@ -27,12 +27,14 @@ const classes = [...new Set(["block", "h-auto", "select-none", ...(className ?? 
 
 {/* AVIF (WebP in the <img> for the rest) at quality 60 (PERF2-11): the lossy alpha channel made the q90 WebP heavy —
     header 2x 18.5 → 9.4 KB, footer 2x 23.6 → ~11.6 KB, the same pixels at a glance (compared at 3x zoom). The
-    <picture> is display: contents, so the <img> keeps its place in the layout. */}
+    <picture> is display: contents, so the <img> keeps its place in the layout. `sizes` is passed on to the <source>
+    too: without it the AVIF candidates were chosen for 100vw, i.e. the 3x files on every desktop (PERF3-03). */}
 <Picture
   src={src}
   alt={alt}
   width={width}
   widths={widths}
+  sizes={`${width}px`}
   layout="fixed"
   formats={["avif"]}
   fallbackFormat="webp"
@@ -40,5 +42,13 @@ const classes = [...new Set(["block", "h-auto", "select-none", ...(className ?? 
   loading={loading}
   decoding="async"
   class={classes}
-  pictureAttributes={{ class: "contents" }}
+  pictureAttributes={{ class: "lc-logo contents" }}
 />
+
+<style>
+  /* The <picture> is display: contents, so its <source> would become a box of its own in a flex row: Chromium made an
+     empty flex item of it, which centred the drawer's logo (WebKit left it at the start). */
+  :global(.lc-logo > source) {
+    display: none;
+  }
+</style>

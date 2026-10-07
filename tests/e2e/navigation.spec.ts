@@ -159,7 +159,7 @@ test("header actions carry the page context (service preselection; WhatsApp-firs
   expect(wa).toContain("ماكينة متوقفة"); // common.whatsapp.stopped (ar)
 });
 
-test("phone drawer: Services / Industries start collapsed (the actions stay on the first screen) and expand in place", async ({ page }) => {
+test("phone drawer: Services / Industries start collapsed (the actions stay on the first screen) and expand in place", { tag: "@phone" }, async ({ page }) => {
   test.skip(!isNarrow(page), "the drawer is < 1024px");
   await page.goto("/en/services/machine-retrofits/");
   await page.locator(".lc-menu-open").click();
@@ -183,7 +183,7 @@ test("phone drawer: Services / Industries start collapsed (the actions stay on t
   await expect(drawer.locator("#lc-acc-industries a")).toHaveCount(INDUSTRY_SLUGS.length + 1);
 });
 
-test("phone drawer: opens as a modal, Escape / close button close it, focus returns to the menu button", async ({ page }) => {
+test("phone drawer: opens as a modal, Escape / close button close it, focus returns to the menu button", { tag: "@phone" }, async ({ page }) => {
   test.skip(!isNarrow(page), "the drawer is < 1024px");
   await page.goto("/en/");
   const opener = page.locator(".lc-menu-open");
@@ -214,7 +214,7 @@ test("phone drawer: opens as a modal, Escape / close button close it, focus retu
   await expect(page.locator("#lc-drawer")).toBeHidden();
 });
 
-test("phone drawer works in Arabic (RTL)", async ({ page }) => {
+test("phone drawer works in Arabic (RTL)", { tag: "@phone" }, async ({ page }) => {
   test.skip(!isNarrow(page), "the drawer is < 1024px");
   await page.goto("/ar/");
   await page.locator(".lc-menu-open").click();
@@ -226,7 +226,7 @@ test("phone drawer works in Arabic (RTL)", async ({ page }) => {
   await expect(drawer).toBeHidden();
 });
 
-test("phone drawer: a link to the page itself (the quote form on /contact/) closes the sheet before the jump", async ({ page }) => {
+test("phone drawer: a link to the page itself (the quote form on /contact/) closes the sheet before the jump", { tag: "@phone" }, async ({ page }) => {
   test.skip(!isNarrow(page), "the drawer is < 1024px");
   await page.goto("/en/contact/");
   await page.locator(".lc-menu-open").click();
@@ -239,7 +239,7 @@ test("phone drawer: a link to the page itself (the quote form on /contact/) clos
   expect(await page.evaluate(() => getComputedStyle(document.documentElement).overflow)).not.toBe("hidden");
 });
 
-test("phone drawer: restored from the back/forward cache, the sheet is closed", async ({ page }) => {
+test("phone drawer: restored from the back/forward cache, the sheet is closed", { tag: "@phone" }, async ({ page }) => {
   test.skip(!isNarrow(page), "the drawer is < 1024px");
   await page.goto("/en/about/");
   await page.locator(".lc-menu-open").click();
@@ -250,7 +250,7 @@ test("phone drawer: restored from the back/forward cache, the sheet is closed", 
   await expect(page.locator(".lc-menu-open")).toHaveAttribute("aria-expanded", "false");
 });
 
-test("phone drawer on maintenance and support: the two actions are call + WhatsApp ('machine stopped')", async ({ page }) => {
+test("phone drawer on maintenance and support: the two actions are call + WhatsApp ('machine stopped')", { tag: "@phone" }, async ({ page }) => {
   test.skip(!isNarrow(page), "the drawer is < 1024px");
   await page.goto("/en/services/maintenance-support/");
   await page.locator(".lc-menu-open").click();

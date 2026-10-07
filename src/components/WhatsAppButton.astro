@@ -406,19 +406,29 @@ const fabCls = "lc-fab group fixed z-40 grid place-items-center rounded-full tex
       const r = active.getBoundingClientRect();
       return r.width > 0 && overlapsBox(r, homeRect(btn));
     };
-    /** At rest: a 3×3 grid over the button's box grown by `pad` (catches a control that only clips its edge). */
+    /** At rest: a 4×4 grid over the button's box grown by `pad` (catches a control that only clips its edge; samples
+        ~25 px apart, so a 44 px control in between is still hit). A link that wraps can still slip between the samples
+        with only its second line under the button (UX3-04: a case-study link in a list): the controls of each small
+        text block the samples land in are also checked by their own line boxes (getClientRects). */
+    const BLOCKS = "p, li, dd, dt, td, th, figcaption";
     const blocked = (btn: HTMLElement): boolean => {
       const f = homeRect(btn);
       if (!f.width) return false;
       if (focusUnder(btn)) return true;
-      const xs = [f.left - pad + 1, f.left + f.width / 2, f.right + pad - 1];
-      const ys = [f.top - pad + 1, f.top + f.height / 2, f.bottom + pad - 1];
-      for (const x of xs)
-        for (const y of ys)
+      const at = (start: number, size: number) => [0, 1, 2, 3].map((i) => start - pad + 1 + (i * (size + 2 * pad - 2)) / 3);
+      const seen = new Set<Element>();
+      for (const x of at(f.left, f.width))
+        for (const y of at(f.top, f.height))
           for (const el of document.elementsFromPoint(x, y)) {
             if (el === btn || btn.contains(el) || el.closest(".lc-float, .lc-header, dialog[open]")) continue;
             const hit = el.closest<HTMLElement>(AVOID);
             if (hit && overlapsBox(hit.getBoundingClientRect(), f)) return true;
+            const block = el.closest(BLOCKS);
+            if (!block || seen.has(block)) continue;
+            seen.add(block);
+            for (const c of block.querySelectorAll<HTMLElement>(AVOID))
+              if ([...c.getClientRects()].some((r) => r.width > 0 && overlapsBox(r, f)) && c.checkVisibility?.({ visibilityProperty: true }) !== false)
+                return true;
           }
       return false;
     };
@@ -461,7 +471,7 @@ const fabCls = "lc-fab group fixed z-40 grid place-items-center rounded-full tex
     const state = { fab: true, top: true };
     const changedAt = { fab: -Infinity, top: -Infinity };
     let moving = false;
-    let lastY = window.scrollY;
+    let lastY: number | undefined;
     let upTravel = 0;
     let downTravel = 0;
     let goingUp = false;
@@ -508,6 +518,8 @@ const fabCls = "lc-fab group fixed z-40 grid place-items-center rounded-full tex
       root.removeAttribute("data-fab-keep");
       if (state.fab && !mobile.matches) {
         state.fab = false;
+        // held like any change (DWELL): it does not step aside again while the transition is still running
+        changedAt.fab = performance.now();
         fab.removeAttribute("data-hidden");
         docked = true;
         dockedAt = Math.min(dockedAt, performance.now());
@@ -567,7 +579,7 @@ const fabCls = "lc-fab group fixed z-40 grid place-items-center rounded-full tex
       () => {
         // Per event: one scroll offset read, no layout. Direction for back-to-top (≥ 120px up, ≥ 40px down to reset).
         const y = window.scrollY;
-        const dy = y - lastY;
+        const dy = y - (lastY ?? y);
         lastY = y;
         if (dy < 0) {
           upTravel -= dy;
@@ -627,13 +639,23 @@ const fabCls = "lc-fab group fixed z-40 grid place-items-center rounded-full tex
     // Wake-ups for the dock-in moment and the ping.
     if (!docked) wake(DOCK_MS + 20);
     // Persistence across page transitions (MOT2-06): tell the next page whether the button was showing.
+    // Leaving through the open phone drawer, the button is not carried over (it is not lifted above the sheet, MOT3-04).
     addEventListener("pageswap", (e) => {
       try {
-        if ((e as PageSwapEvent).viewTransition) sessionStorage.setItem("lcFab", state.fab ? "" : "1");
+        if ((e as PageSwapEvent).viewTransition)
+          sessionStorage.setItem("lcFab", state.fab || document.querySelector("dialog.lc-drawer[open]") ? "" : "1");
       } catch {}
     });
-    measure();
-    update();
+    // A kept button (the head script set data-fab-keep before any style was computed) is adopted at once, so it never
+    // goes through its hidden state (MOT3-01). The rest waits for the first frame: the scroll offset, the page height
+    // and the hit test read layout, and here, during the site script's evaluation, they would force the page's first
+    // style and layout inside this task (PERF3-05).
+    adoptKept();
+    requestAnimationFrame(() => {
+      lastY ??= window.scrollY;
+      measure();
+      update();
+    });
 
     // Back to top: scroll (instantly while motion is paused) and move focus to the main content. On phones, pages with
     // an "On this page" bar return to that bar, one tap from every section (UX2-13).

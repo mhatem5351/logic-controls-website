@@ -101,7 +101,7 @@ Use this to keep the four languages consistent. "Keep" = write the term in Latin
 | EN term | Keep? | Preferred Arabic |
 |---|---|---|
 | Logic Controls | Keep (Latin) | Logic Controls (transliteration لوجيك كنترولز only where Latin cannot be used) |
-| 6th of October City / New October | — | مدينة السادس من أكتوبر (6 أكتوبر where space is tight) / أكتوبر الجديدة |
+| 6th of October City / New October | — | مدينة السادس من أكتوبر (مدينة 6 أكتوبر where space is tight) / أكتوبر الجديدة. In short labels (hero chips, eyebrows) write «مدينة 6 أكتوبر», never a bare «6 أكتوبر», which reads as the date 6 October |
 | Obour City | — | مدينة العبور |
 | Badr City | — | مدينة بدر |
 | 10th of Ramadan City | — | مدينة العاشر من رمضان |
@@ -215,6 +215,9 @@ error messages, the thanks page and the privacy notice.
 | Case study | مشروع (من مشروعاتنا) | 案例 | Proje (referans proje) |
 | Session storage (form draft) | التخزين المؤقت لجلسة المتصفح (session storage) | 会话存储（session storage） | Oturum depolaması (session storage) |
 | Click counts | إحصاءات النقرات | 点击统计 | Tıklama sayıları / tıklama istatistikleri |
+| Send request / Skip and send now (the form's two send buttons; named in the privacy notice) | «إرسال الطلب» / «تخطَّ وأرسل الآن» | “提交需求” / “跳过并立即提交” | “Talebi gönder” / “Atla ve şimdi gönder” |
+| Send without the files (button after an upload that timed out) | أرسل الطلب دون الملفات | 不附文件直接提交 | Dosyalar olmadan gönder |
+| Not sent with your request (files left out after a slow upload) | لم تُرسَل مع طلبك | 未随需求发送 | Talebinizle birlikte gönderilemeyen dosyalar |
 
 ## Chinese (zh-Hans): conventions and decisions used in `messages/zh/`
 
@@ -281,7 +284,7 @@ error messages, the thanks page and the privacy notice.
 | Did you mean {page}? (404) | 您是不是要找：{page} | Colon form: {page} may be a zh name, a name starting with Latin, or a bare path |
 | Image {n} of {total} (viewer) | 第 {n} 张，共 {total} 张 | The short visible counter stays `{n} / {total}` |
 | Try the live demo | 体验实时演示 | Matches the HMI eyebrow HMI 实时演示 |
-| Submit button named in running text | “提交需求” | Name the button exactly as rendered (privacy notice); photos made smaller = 压缩 |
+| Submit buttons named in running text | “提交需求”或“跳过并立即提交” | Name the buttons exactly as rendered (privacy notice: both send the data); photos made smaller = 压缩 |
 
 **Places.** Sources: Xinhua, China Daily, MOFCOM country guide. Names marked * have no single Chinese-media spelling, so the Latin name follows in brackets.
 
@@ -379,7 +382,7 @@ error messages, the thanks page and the privacy notice.
 | Did you mean {page}? (404) | {page} sayfasını mı arıyordunuz? | {page} is a page-name link or a bare path, so nothing is suffixed to it. Not the search-engine "Bunu mu demek istediniz:" |
 | Image {n} of {total} (gallery, screen readers) | Görsel {n}, toplam {total} · "(görsel {n}, toplam {total}; tam boyutta açılır)" | Not "{n} / {total}" (read aloud as "bölü") and not "{total} görselden {n}." (ordinal dot). The visible counter stays "{n} / {total}" |
 | "Video." at the end of a meta description | Video içerir. | Not "Videolu." |
-| Submit button named in running text | Talebi gönder düğmesi | Name the button exactly as rendered (privacy notice) |
+| Submit buttons named in running text | “Talebi gönder” veya “Atla ve şimdi gönder” düğmesi | Name the buttons exactly as rendered (privacy notice: both send the data) |
 
 **Places.** Sources: Turkish Wikipedia (governorates, 6 Ekim Şehri), Ekonomi Gazetesi and Dünya (10. Ramazan Şehri, Sadat, Sokhna, Qantara Batı). Turkish press has no settled form for Ain Sokhna ("Sokhna", "Ain Sokhna"); "Ayn Suhna" is not in use, so the Latin name is kept.
 

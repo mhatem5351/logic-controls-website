@@ -40,6 +40,7 @@ interface Props {
 }
 const { locale, headingLevel: H = "h3", note = true, compact = false, class: className } = Astro.props;
 const t = getMessages(locale).common.zones;
+const quoteLabel = getMessages(locale).ui.cta.quote;
 const m = t.map;
 const u = uid("zones");
 const cardId = `${u}-card`;
@@ -78,6 +79,9 @@ const numbered = ZONES.map((z, i) => {
     desc: plain(locale, [region, !z.home && distText].filter(Boolean).join(locale === "ar" || locale === "zh" ? comma : ". ")),
     dist,
     cta: z.home ? m.homeCta : fmt(m.cta, { zone: (m.short as Record<string, string>)[z.slug] ?? it.name }),
+    // phones under 430px: "Plan a project in 10th of Ramadan" wrapped to two tight lines in the full-width button (ar
+    // and tr up to 429px, en at 320–360; VIS3-06); the zone is named right above it, so the button says what it does
+    ctaNarrow: z.home ? undefined : quoteLabel,
     href: z.home ? contact : `${contact}?location=${z.slug}#quote`,
     said: plain(locale, fmt(m.selectedPin, { zone: it.name })),
   };
@@ -181,7 +185,14 @@ const distIcon = `<svg viewBox="0 0 24 8" width="24" height="8" aria-hidden="tru
                   </p>
                 )}
                 <Button href={z.href} size="sm" iconEnd="arrow" class="lc-zm-cta">
-                  <Fragment set:html={html(locale, z.cta)} />
+                  {z.ctaNarrow ? (
+                    <>
+                      <span class="max-[26.875rem]:hidden" set:html={html(locale, z.cta)} />
+                      <span class="min-[26.875rem]:hidden" set:html={html(locale, z.ctaNarrow)} />
+                    </>
+                  ) : (
+                    <Fragment set:html={html(locale, z.cta)} />
+                  )}
                 </Button>
               </div>
             ))
@@ -257,7 +268,14 @@ const distIcon = `<svg viewBox="0 0 24 8" width="24" height="8" aria-hidden="tru
                         </p>
                       )}
                       <Button href={z.href} size="sm" iconEnd="arrow" class="lc-zm-cta">
-                        <Fragment set:html={html(locale, z.cta)} />
+                        {z.ctaNarrow ? (
+                          <>
+                            <span class="max-[26.875rem]:hidden" set:html={html(locale, z.cta)} />
+                            <span class="min-[26.875rem]:hidden" set:html={html(locale, z.ctaNarrow)} />
+                          </>
+                        ) : (
+                          <Fragment set:html={html(locale, z.cta)} />
+                        )}
                       </Button>
                     </div>
                   </li>
@@ -317,7 +335,8 @@ const distIcon = `<svg viewBox="0 0 24 8" width="24" height="8" aria-hidden="tru
     cursor: pointer;
     -webkit-tap-highlight-color: transparent;
   }
-  /* below zone-geo.ts HIT_NARROW (map width) the 24px floor would make the cluster's squares overlap: spread them */
+  /* below 336px of map width the 24px floor would make the cluster's squares overlap: spread them (zone-geo.ts
+     HIT_ANCHOR_NARROW) */
   @container (max-width: 335.98px) {
     .lc-zm-pin {
       --ax: var(--axn);

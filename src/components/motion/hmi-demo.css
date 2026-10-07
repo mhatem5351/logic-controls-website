@@ -1,5 +1,7 @@
-/* HmiDemo styles (src/components/motion/HmiDemo.astro). Loaded by a <link> inside the component, not hoisted into
-   <head>: the demo sits below the fold, so its CSS should not hold up the first paint.
+/* HmiDemo styles (src/components/motion/HmiDemo.astro). Requested by the component's bootstrap (bundled into the
+   site module), not hoisted into <head> and not an in-body <link>: the demo sits far below the fold, so its CSS must
+   hold up neither the first paint nor the parser (PERF3-04). Until it has loaded, the demo keeps its place unseen
+   (HmiDemo.astro's <style>, html.js .lc-hmi-wrap:not([data-styled])).
    Motion: nothing here animates on a per-frame loop. Flowing pipes and pump impellers are stepped by the controller
    at 10 Hz (stroke-dashoffset / transform set from hmi-demo.ts); blinks are steps(2); the only tweened animations
    are opacity / scale of pseudo-element rings (composited). Reduced motion and html[data-motion="off"] (the site's
@@ -138,20 +140,46 @@
   background: var(--color-royal-600) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 12'%3E%3Cpath d='M2.6 6.3l2.2 2.2 4.6-4.8' fill='none' stroke='%23fff' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E") center / 72% no-repeat;
   color: transparent;
 }
-.lc-hmi-tour li[data-done] > span:not([class]) {
+.lc-hmi-tour li[data-done] .lc-hmi-stept {
   text-decoration: line-through;
   text-decoration-color: color-mix(in oklab, currentColor 45%, transparent);
 }
-/* "Simulate a fault" while the fault develops: what to watch (static; the TT-102 headline carries the same cue) */
+/* Label and hint share one grid cell as wide as the widest of the label, the label in bold (the weight of the current
+   step) and the hint, and never taller than a plain row: ticking a step or showing the hint changes no line box, so
+   the list keeps its height and the keys below stay put (MOT3-05; the hint used to wrap the list one more line in
+   Arabic / Turkish phones, moving every key under the finger at "Simulate fault" and back at recovery). */
+.lc-hmi-stepl {
+  display: inline-grid;
+  align-items: center;
+}
+.lc-hmi-stepl > * {
+  grid-area: 1 / 1;
+}
+.lc-hmi-stept::after {
+  content: attr(data-b);
+  content: attr(data-b) / "";
+  display: block;
+  height: 0;
+  overflow: hidden;
+  visibility: hidden;
+  font-weight: 700;
+}
+/* "Simulate a fault" while the fault develops: what to watch, over its label (static; the TT-102 headline carries the
+   same cue). No block padding: as tall as the label's line. */
 .lc-hmi-hint {
-  padding: 0.05rem 0.45rem;
+  justify-self: start;
+  padding-inline: 0.45rem;
   border-inline-start: 2px solid var(--color-signal-500);
   background: rgb(255 176 43 / 0.14);
   font-weight: 600;
   white-space: nowrap;
 }
-.lc-hmi-hint[hidden] {
-  display: none;
+.lc-hmi-hint:not([data-on]) {
+  visibility: hidden;
+}
+/* the label stays for screen readers (label, then hint), only out of sight */
+.lc-hmi-stepl:has(> .lc-hmi-hint[data-on]) > .lc-hmi-stept {
+  opacity: 0;
 }
 
 .lc-hmi-foot {

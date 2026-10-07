@@ -22,6 +22,8 @@ interface Props {
   headingLevel?: "h2" | "h3" | "h4";
   /** Load the cover eagerly (first row above the fold). */
   eager?: boolean;
+  /** fetchpriority="high" as well: the card photo is the page's LCP candidate (the first card on a phone, PERF3-02). */
+  priority?: boolean;
   /** How many technology chips to show (two keep the chips on one line, so titles and CTAs line up). */
   maxTags?: number;
   sizes?: string;
@@ -30,7 +32,8 @@ interface Props {
   class?: string;
 }
 
-const { project: p, locale, headingLevel = "h3", eager = false, maxTags = 2, sizes, feature, class: className } = Astro.props;
+const { project: p, locale, headingLevel = "h3", eager = false, priority = false, maxTags = 2, sizes, feature, class: className } = Astro.props;
+const fetchpriority = priority ? ("high" as const) : undefined;
 const t = getMessages(locale).common;
 const c = projectCopy(locale, p.slug);
 const industry = industryCopy(locale, p.industries[0] ?? "");
@@ -67,7 +70,8 @@ const zoom = "transition-[scale] duration-(--dur-section) ease-emph group-hover:
                 formats={["avif", "webp"]}
                 widths={CARD_WIDTHS}
                 sizes={sizes ?? CARD_SIZES_3}
-                loading={eager ? "eager" : "lazy"}
+                loading={eager || priority ? "eager" : "lazy"}
+                fetchpriority={fetchpriority}
                 layout="full-width"
                 class="block h-auto w-full rounded-[2px]"
               />
@@ -86,7 +90,8 @@ const zoom = "transition-[scale] duration-(--dur-section) ease-emph group-hover:
             fit="cover"
             position={p.cover.position}
             sizes={sizes ?? CARD_SIZES_3}
-            loading={eager ? "eager" : "lazy"}
+            loading={eager || priority ? "eager" : "lazy"}
+            fetchpriority={fetchpriority}
             layout="full-width"
             class:list={["size-full object-cover", zoom]}
           />

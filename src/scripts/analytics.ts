@@ -18,8 +18,9 @@
  */
 import type { EvtKind, EvtPlace } from "~/lib/rfq-rules";
 
-/** Same list as rfq-rules EVT_PLACES (types only are imported, so every page does not bundle the form rules). */
-const EVT_PLACES: readonly EvtPlace[] = ["header", "drawer", "hero", "band", "fab", "footer", "form", "contact", "thanks", "body"];
+/** Same list as rfq-rules EVT_PLACES (types only are imported, so every page does not bundle the form rules; a unit
+ *  test keeps the two lists equal: tests/unit/worker.test.ts). */
+export const EVT_PLACES: readonly EvtPlace[] = ["header", "drawer", "hero", "band", "fab", "footer", "form", "contact", "thanks", "body"];
 
 declare global {
   interface Window {
@@ -58,6 +59,9 @@ function placeOf(el: Element): EvtPlace {
   return "body";
 }
 
+/** The beacon's body: what the Worker's parseEvt() (src/lib/rfq-rules.ts) accepts (pinned by tests/unit/worker.test.ts). */
+export const evtBody = (kind: EvtKind, place: EvtPlace, lang: string, path: string) => JSON.stringify({ k: kind, p: place, l: lang, u: path.slice(0, 120) });
+
 function locale(): string {
   const seg = location.pathname.split("/")[1] ?? "";
   return ["en", "ar", "zh", "tr"].includes(seg) ? seg : (document.documentElement.lang || "en").slice(0, 2);
@@ -80,7 +84,7 @@ if (typeof window !== "undefined" && !window.lcEvtReady) {
     if (now - (lastAt.get(key) ?? -Infinity) < REPEAT_MS) return;
     lastAt.set(key, now);
     sent++;
-    const body = JSON.stringify({ k: kind, p: place, l: locale(), u: location.pathname.slice(0, 120) });
+    const body = evtBody(kind, place, locale(), location.pathname);
     try {
       if (navigator.sendBeacon?.(ENDPOINT, new Blob([body], { type: "text/plain" }))) return;
     } catch {}
@@ -102,5 +106,3 @@ if (typeof window !== "undefined" && !window.lcEvtReady) {
     if (d?.k) send(d.k, d.p && (EVT_PLACES as readonly string[]).includes(d.p) ? d.p : "body");
   });
 }
-
-export {};

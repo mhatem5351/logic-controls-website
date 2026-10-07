@@ -38,10 +38,10 @@ export const HIT_ANCHOR: Partial<Record<ZoneSlug, [number, number]>> = {
   "10th-of-ramadan": [0.46, 0.75],
 };
 /**
- * Below HIT_NARROW px of map width, 28 map units are less than the 24px floor the CSS clamps the squares to, so the
- * cluster squares are pushed further apart (checked at 272px, the map on a 320px phone: no overlaps).
+ * Below 336px of map width, 28 map units are less than the 24px floor the CSS clamps the squares to, so the cluster
+ * squares are pushed further apart (checked at 272px, the map on a 320px phone: no overlaps). The 336px breakpoint
+ * lives in ZonesBlock.astro's container query (CSS cannot read a constant from here).
  */
-export const HIT_NARROW = 336;
 export const HIT_ANCHOR_NARROW: Partial<Record<ZoneSlug, [number, number]>> = {
   obour: [0.78, 0.5],
   badr: [0.08, 0.32],

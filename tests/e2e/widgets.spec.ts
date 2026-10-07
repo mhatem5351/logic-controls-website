@@ -200,7 +200,7 @@ test("gallery with one photo: no prev / next or counter, the alt alone is announ
   await expect(dialog.locator("[data-live]")).toHaveText(alt!);
 });
 
-test("gallery (touch): the photo follows the finger, eases back or pages; one tap outside then closes", async ({ page, browserName }) => {
+test("gallery (touch): the photo follows the finger, eases back or pages; one tap outside then closes", { tag: "@phone" }, async ({ page, browserName }) => {
   test.skip(!(page.viewportSize()!.width < 1024), "touch layouts");
   test.skip(browserName === "webkit", "WebKit cannot synthesise touch pointer events in Playwright");
   await page.goto("/en/projects/pasteurizer-cip-recipes/");
@@ -303,7 +303,7 @@ test("FAQ works without JavaScript (native <details>)", { tag: "@desktop-only" }
 test.describe("Q3 pages", () => {
   const width = (page: import("@playwright/test").Page) => page.viewportSize()?.width ?? 1440;
 
-  test("foreign page (phones): the first four needs, 'Show all' reveals the rest and moves focus to it", async ({ page }) => {
+  test("foreign page (phones): the first four needs, 'Show all' reveals the rest and moves focus to it", { tag: "@phone" }, async ({ page }) => {
     test.skip(width(page) >= 640, "the needs list is capped below 640px only");
     await page.goto("/en/foreign-manufacturers/");
     const items = page.locator("#needs ol > li");
@@ -362,7 +362,7 @@ test.describe("Q3 pages", () => {
     }
   });
 
-  test("home HMI teaser (phones / tablets): the heading and lead stay exposed while the demo panel is inert", async ({ page }) => {
+  test("home HMI teaser (phones / tablets): the heading and lead stay exposed while the demo panel is inert", { tag: "@phone" }, async ({ page }) => {
     test.skip(width(page) >= 1024, "the teaser collapses below 1024px only");
     await page.goto("/en/");
     const heading = page.locator("#hmi-demo h2");
@@ -415,7 +415,7 @@ test.describe("Q3 chrome", () => {
     const copy = pop.locator("button[data-copy]");
     await expect(copy).toHaveAccessibleName("复制邮箱地址");
     await copy.click();
-    await expect(page.locator("[data-copy-live]")).toHaveText("邮箱地址已复制");
+    await expect(pop.locator("[data-copy-live]")).toHaveText("邮箱地址已复制");
     await expect(copy).toHaveAccessibleName("复制邮箱地址");
     // keyboard: tabbing on past the panel closes it
     const tab = browserName === "webkit" ? "Alt+Tab" : "Tab";
@@ -450,7 +450,7 @@ test.describe("Q3 chrome", () => {
     expect(wa).toMatch(/control panels/i); // the page's context, not the generic message
   });
 
-  test("floating button: no blinking while a phone scrolls (it holds its state until the page rests)", async ({ page }) => {
+  test("floating button: no blinking while a phone scrolls (it holds its state until the page rests)", { tag: "@phone" }, async ({ page }) => {
     test.skip((page.viewportSize()?.width ?? 1440) >= 1024, "phones / tablets");
     await page.goto("/en/");
     await page.evaluate(() => scrollTo(0, innerHeight));

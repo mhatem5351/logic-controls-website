@@ -211,7 +211,7 @@
       "plc": {
         "label": "PLC",
         "text": "Compares the value with the setpoint and runs the logic: PID, interlocks, sequences.",
-        "spec": "PID · 10 ms scan"
+        "spec": "PID · 10 ms scan time"
       },
       "hmi": {
         "label": "HMI / SCADA",

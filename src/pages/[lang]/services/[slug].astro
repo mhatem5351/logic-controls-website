@@ -23,6 +23,7 @@ import HeroArt from "~/components/sections/catalog/HeroArt.astro";
 import FeatureGrid from "~/components/sections/catalog/FeatureGrid.astro";
 import SpecList from "~/components/sections/catalog/SpecList.astro";
 import RelatedProjects from "~/components/sections/catalog/RelatedProjects.astro";
+import { CARD_WIDTHS } from "~/components/sections/catalog/sizes";
 import LinkTiles from "~/components/sections/catalog/LinkTiles.astro";
 import QuoteCta from "~/components/sections/main/QuoteCta.astro";
 import {
@@ -155,7 +156,10 @@ const jsonLd = graph(
     panels.length > 0 && (
       <Section variant={bg("panels")} id="panels" aria-labelledby="panels-title">
         <SectionHeading id="panels-title" eyebrow={m.common.breadcrumbs.projects} title={html(locale, L.panelsBuilt)} />
-        {/* One per row below 416px (the labels wrap between words, never into the next column); 3 up only for 3+. */}
+        {/* One per row below 416px (the labels wrap between words, never into the next column); 3 up only for 3+.
+            sizes: the measured boxes (en–ar; the root size steps up on large monitors, sizes.ts): two up in the 56rem
+            column 436–463px from 1024, 463–492 at 1920, 491–521 at 2560; three up as a 3-up card grid (DEV3-04); one
+            up on ≥ 2.5x phones ~2x pixels, as every card (sizes.ts, PERF2-10). */}
         <ul role="list" class:list={["mt-10 grid grid-cols-1 gap-x-4 gap-y-8 min-[26rem]:grid-cols-2 sm:gap-x-6", panels.length >= 3 ? "lg:grid-cols-3" : "lg:max-w-4xl"]}>
           {panels.map(({ pr, img }) => (
             <li class="lc-reveal group relative min-w-0 has-[a:focus-visible]:outline-2 has-[a:focus-visible]:outline-offset-4 has-[a:focus-visible]:outline-(--focus)">
@@ -164,11 +168,11 @@ const jsonLd = graph(
                   src={img.image}
                   alt={imageAlt(locale, pr.slug, img.key)}
                   formats={["avif", "webp"]}
-                  widths={[320, 480, 640, 800]}
+                  widths={CARD_WIDTHS}
                   sizes={
                     panels.length >= 3
-                      ? "(min-width: 1280px) 400px, (min-width: 1024px) calc((100vw - 7rem) / 3), (min-width: 416px) calc((100vw - 3rem) / 2), calc(100vw - 2rem)"
-                      : "(min-width: 1024px) 440px, (min-width: 416px) calc((100vw - 3rem) / 2), calc(100vw - 2rem)"
+                      ? "(min-width: 2560px) 475px, (min-width: 1920px) 450px, (min-width: 1280px) 400px, (min-width: 1024px) calc((100vw - 7rem) / 3), (min-width: 416px) calc((100vw - 3rem) / 2), (min-resolution: 2.5dppx) calc(60vw - 1.2rem), calc(100vw - 2rem)"
+                      : "(min-width: 2560px) 505px, (min-width: 1920px) 478px, (min-width: 1024px) 450px, (min-width: 416px) calc((100vw - 3rem) / 2), (min-resolution: 2.5dppx) calc(60vw - 1.2rem), calc(100vw - 2rem)"
                   }
                   loading="lazy"
                   layout="full-width"
@@ -263,9 +267,9 @@ const jsonLd = graph(
       }))}
     />
     <div class="lc-logos mt-16 lg:max-w-[calc(var(--n)*20%)]" style={`--n:${brands.length}`}>
-      {/* Fewer than 5 brands: as many columns as logos from 640px (no lone logo on tablets, no empty 5th cell under the
-          top rule on desktop). */}
-      <LogoWall locale={locale} brands={brands} class={({ 2: "sm:[&_ul]:grid-cols-2", 3: "sm:[&_ul]:grid-cols-3", 4: "sm:[&_ul]:grid-cols-4" } as Record<number, string>)[brands.length]} />
+      {/* Fewer than 5 brands: LogoWall puts them in one row of equal cells from 640px; the wall is only as wide as its
+          cells need on desktop (no empty 5th cell under the top rule). */}
+      <LogoWall locale={locale} brands={brands} />
     </div>
   </Section>
 

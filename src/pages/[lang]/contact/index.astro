@@ -90,7 +90,8 @@ if (email) pills.reverse();
   {/* no aria-label: the form inside is already the "Quote request" landmark (A11Y2-17) */}
   <section class="relative pb-section">
     <div class="wrap grid items-start gap-10 lg:grid-cols-12 lg:gap-10 xl:gap-14">
-      <div class="relative z-10 -mt-14 sm:-mt-16 lg:col-span-7 lg:-mt-20">
+      {/* min-w-0: a wide third-party box in the form (the security check) can never widen the page (DEV3-02) */}
+      <div class="relative z-10 -mt-14 min-w-0 sm:-mt-16 lg:col-span-7 lg:-mt-20">
         <RfqForm locale={locale} />
         <NextSteps locale={locale} class="mt-10 hidden border border-charcoal-200 bg-navy-50/60 p-6 sm:p-8 lg:block" />
       </div>

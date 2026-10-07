@@ -181,7 +181,6 @@ const title = getMessages(locale).common.labels.onThisPage as string;
     };
     row?.addEventListener("scroll", edges, { passive: true });
     if ("ResizeObserver" in window && row) new ResizeObserver(edges).observe(row);
-    edges();
     bar.querySelectorAll<HTMLButtonElement>(".lc-toc-scroll").forEach((btn) =>
       btn.addEventListener("click", () => {
         if (!row) return;
@@ -227,6 +226,10 @@ const title = getMessages(locale).common.labels.onThisPage as string;
       { passive: true },
     );
     desktop.addEventListener("change", () => (update(), edges()));
-    update();
+    // First read in the next frame, not while the site module evaluates (no forced style + layout at start-up).
+    requestAnimationFrame(() => {
+      edges();
+      update();
+    });
   });
 </script>

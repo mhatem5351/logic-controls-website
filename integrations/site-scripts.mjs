@@ -22,10 +22,15 @@
  * it, or an inline module when it is small and imports nothing): nothing breaks when a new script appears; the build
  * lists it (warning, unless site.ts names it in an `lc-own: <file>.astro` comment) and tests/static/check-budgets.mjs
  * counts module scripts per page. Client environment only (dev and build); the server render is untouched.
+ * Only real imports adopt a component (CODE3-03): the entry is parsed, so a commented-out `?lc-script` import leaves
+ * the component to Astro instead of emptying its script with nothing importing the code. The build also fails if an
+ * adopted component's code was never bundled, or if none of Astro's own script entries was emptied (its script id
+ * changed: the code would run twice); tests/static/check-dist.mjs rejects any inline module script but the lc-own ones.
  */
 import { readFileSync, statSync } from "node:fs";
 import { createRequire } from "node:module";
 import { dirname, isAbsolute, join, resolve as resolvePath } from "node:path";
+import { parseSync } from "vite";
 
 const QUERY = "?lc-script";
 /** All script blocks of a component, as one module importing each block in order. */
@@ -34,9 +39,36 @@ const ALL = /^(.*\.astro)\.lc\.ts$/;
 const BLOCK = /^(.*\.astro)\.lc-(\d+)\.ts$/;
 /** Astro's own entry for a component script. */
 const ASTRO_SCRIPT = /^(.*\.astro)\?astro&type=script&index=(\d+)&lang\.ts/;
-const SPECIFIER = /["']([^"'\s]+\.astro)\?lc-script["']/g;
+const SPECIFIER = /^(.+\.astro)\?lc-script$/;
 /** `lc-own: <file>.astro` in an entry file: a component script left to Astro on purpose (no build warning). */
 const OWN = /lc-own:\s*([^\s*]+\.astro)/g;
+
+/**
+ * The `<file>.astro` of every `?lc-script` import (`import "…"` / `import("…")`) in an entry's source — parsed, so
+ * comments and strings never count.
+ * @param {string} src TypeScript source
+ * @param {string} filename for parse errors
+ * @returns {string[]}
+ */
+export function adoptedSpecifiers(src, filename = "entry.ts") {
+  /** @type {string[]} */
+  const out = [];
+  /** @param {unknown} n */
+  const walk = (n) => {
+    if (!n || typeof n !== "object") return;
+    if (Array.isArray(n)) return n.forEach(walk);
+    const node = /** @type {{ type?: string; source?: { type?: string; value?: unknown } }} */ (n);
+    if ((node.type === "ImportDeclaration" || node.type === "ImportExpression") && typeof node.source?.value === "string") {
+      const m = node.source.value.match(SPECIFIER);
+      if (m) out.push(/** @type {string} */ (m[1]));
+    }
+    for (const v of Object.values(n)) walk(v);
+  };
+  const { program, errors } = parseSync(filename, src, { lang: "ts" });
+  if (errors.length) throw new Error(`lc-site-scripts: cannot parse ${filename}: ${errors.map((e) => e.message).join("; ")}`);
+  walk(program);
+  return out;
+}
 
 /**
  * @param {{ entries?: string[]; host?: string }} [options] `entries`: files (relative to the project root) whose
@@ -55,6 +87,10 @@ export default function siteScripts({ entries = ["src/scripts/site.ts"], host = 
   let adopted = { key: "", files: new Set(), own: new Set() };
   /** Component scripts Astro bundled on its own (not adopted): reported once per build. */
   const unadopted = new Set();
+  /** Adopted components whose scripts this build bundled (the ALL module was loaded). */
+  const bundled = new Set();
+  /** Astro script entries of adopted components this build emptied. */
+  let emptied = 0;
 
   const mtime = (/** @type {string} */ f) => {
     try {
@@ -74,9 +110,10 @@ export default function siteScripts({ entries = ["src/scripts/site.ts"], host = 
     for (const f of abs) {
       if (!mtime(f)) continue;
       const src = readFileSync(f, "utf8");
-      const path = (/** @type {string} */ spec) => (spec.startsWith("~/") ? join(root, "src", spec.slice(2)) : resolvePath(dirname(f), spec));
-      for (const [, spec] of src.matchAll(SPECIFIER)) files.add(path(spec));
-      for (const [, spec] of src.matchAll(OWN)) own.add(path(spec));
+      const path = (/** @type {string} */ spec) =>
+        spec.startsWith("~/") ? join(root, "src", spec.slice(2)) : resolvePath(dirname(f), spec);
+      for (const spec of adoptedSpecifiers(src, f)) files.add(path(spec));
+      for (const [, spec] of src.matchAll(OWN)) own.add(path(/** @type {string} */ (spec)));
     }
     adopted = { key, files, own };
     return adopted;
@@ -119,6 +156,7 @@ export default function siteScripts({ entries = ["src/scripts/site.ts"], host = 
       const all = id.match(ALL);
       if (all) {
         const file = /** @type {string} */ (all[1]);
+        bundled.add(file);
         this.addWatchFile(file);
         const scripts = await scriptsOf(file);
         return scripts.map((_, i) => `import ${JSON.stringify(`${file}.lc-${i}.ts`)};`).join("\n") || "export {};";
@@ -143,9 +181,22 @@ export default function siteScripts({ entries = ["src/scripts/site.ts"], host = 
         if (this.environment?.mode === "build" && file !== join(root, host) && !own.has(file)) unadopted.add(file);
         return null;
       }
+      emptied++;
       return { code: "", map: null };
     },
     buildEnd() {
+      // An adopted component whose code no import brought in: its own script was emptied, so it would ship without JS.
+      // (Only in the build that bundled the entry, i.e. that loaded any adopted component.)
+      if (this.environment?.mode === "build" && bundled.size) {
+        const lost = [...scan().files].filter((f) => !bundled.has(f)).map((f) => f.replace(root, "").replace(/^\//, ""));
+        if (lost.length) this.error(`adopted by ${entries.join(", ")} but never bundled (no import reached them): ${lost.join(", ")}`);
+        // The other way round: their code is in the site module, but Astro's own entries for them were never emptied
+        // (its script id no longer matches ASTRO_SCRIPT), so every page would also load and run them a second time.
+        if (!emptied)
+          this.error(
+            `bundled the components ${entries.join(", ")} adopts, but none of Astro's own script entries matched ASTRO_SCRIPT (Astro's script id changed?)`,
+          );
+      }
       if (unadopted.size) {
         const list = [...unadopted].map((f) => f.replace(root, "").replace(/^\//, ""));
         this.warn(`component scripts bundled on their own (not in ${entries.join(", ")}): ${list.join(", ")}`);

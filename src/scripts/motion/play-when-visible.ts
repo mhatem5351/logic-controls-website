@@ -9,8 +9,8 @@
  *    loops are removed (paused loops would still cost time in every frame another piece animates); the next turn
  *    removes them again and seeks the recreated loops to the same loop time, so nothing moves at the swap.
  *    The server-rendered still pose (`data-play="rest"`) is swapped for the rest frame before the piece is first
- *    painted (lazy-art.ts fills a slot and registers it in the same task; ArtFrame parks inline art in the first
- *    animation frame), so with motion on it is never seen. It stays the pose for no-JS, reduced motion and
+ *    painted (lazy-art.ts fills a slot and registers it in the same task; ArtFrame — for detail-hero art HeroArt —
+ *    parks inline art in the first animation frame), so with motion on it is never seen. It stays the pose for no-JS, reduced motion and
  *    "Pause animations" (html[data-motion="off"]), where everything rests and the swap happens once, on request.
  *  - A piece starts when at least 35% of it is in view and a slot is free: at most MAX (2) pieces animate at once, the
  *    others wait in reading order, so a card grid "scans" two at a time, like a PLC scan cycle.
@@ -177,12 +177,14 @@ function primeMany(ps: Piece[], park = true): void {
   if (park) holdMany(done);
 }
 const prime = (p: Piece) => primeMany([p], false);
-/** Pieces registered in the same task (a grid's slots filled together) are primed together, before the next paint. */
+/** Pieces registered before the same frame (a grid's slots filled together) are primed together, before the next
+ *  paint: in that frame's animation callbacks, whose style flush the frame needed anyway, not in the registering task
+ *  (an extra forced style + layout pass while the module evaluates). */
 const primeQueue = new Set<Piece>();
 function primeSoon(p: Piece): void {
   primeQueue.add(p);
   if (primeQueue.size === 1)
-    queueMicrotask(() => {
+    requestAnimationFrame(() => {
       const ps = [...primeQueue];
       primeQueue.clear();
       primeMany(ps);

@@ -62,7 +62,7 @@ integrations/             build hooks, registered in astro.config.mjs
 public/                   copied as is: _headers, _redirects, media/ (versioned videos + posters), icons, robots.txt
 worker/                   index.ts (the Worker: "/", /api/rfq, /api/evt), labels.ts (English option labels for the email)
 scripts/                  check-i18n.mjs (runs before every build), content-dates.mjs (page dates), predeploy.mjs
-                          (deploy gate), indexnow.mjs, screenshot.mjs
+                          (deploy gate), indexnow.mjs (+ indexnow-state.json: the last submission), screenshot.mjs
 tests/
   unit/                   Vitest (see Testing)
   e2e/                    Playwright specs + fixtures (global-setup checks prerequisites)
@@ -121,17 +121,19 @@ Internal pages (`/[lang]/styleguide/`, `/[lang]/lab/*`) only exist in `astro dev
 | `npm run check` | `astro check` + Worker type-check (`tsc -p worker`) + i18n check |
 | `npm run typecheck:worker` | `tsc -p worker` only (`astro check` does not cover `worker/`) |
 | `npm run lint` | ESLint (`eslint.config.mjs`: JS/TS recommended, Astro + jsx-a11y rules, the motion-pref rule above) over src, tests, worker, scripts. Any error fails CI |
+| `npm run lint:dead` | knip (`knip.jsonc`, run through `npx`, pinned): unused files, exports and dependencies. Any finding fails CI. An export used inside its own file is not reported |
 | `npm run format` / `npm run format:check` | Prettier (`prettier.config.mjs`, Astro + Tailwind class sorting). Not run in CI: the codebase predates it, so format files you touch rather than the whole tree |
 | `npm run qa:html` | html-validate over `dist/**/*.html` |
 | `npm test` | `test:unit` + `test:static` (needs a build) |
 | `npm run test:unit` | Vitest: `tests/unit/**/*.test.ts` |
-| `npm run test:static` | `check-i18n` + `astro check` + html-validate (`qa:html`) + `tests/static/check-dist.mjs` |
+| `npm run test:static` | `check-i18n` + `content-dates.mjs --check` + `astro check` + html-validate (`qa:html`) + `tests/static/check-dist.mjs` |
 | `npm run test:budget` | performance budgets over `dist/` (`-- --update` re-baselines, see Budgets) |
 | `npm run test:e2e` | Playwright against `wrangler dev` on port 8788, all three projects (needs a build and `.dev.vars`) |
+| `npm run test:e2e:phone` | the `@phone` tests on `chromium-mobile` (Pixel 7), about a minute: what CI's push run and `npm run deploy` add for phones |
 | `npm run test:visual` | optional screenshot comparison (`@visual`, `chromium-desktop`, local only) |
 | `npm run test:all` | build, then `npm test`, `test:budget`, `test:e2e` |
-| `npm run deploy` | `scripts/predeploy.mjs` → build → `check-dist.mjs` → `test:budget` → `wrangler deploy` (see Deploy) |
-| `npm run indexnow` | submit every sitemap URL to IndexNow (Bing, Yandex…) after a content deploy (reads `INDEXNOW_KEY` from `.env`) |
+| `npm run deploy` | `scripts/predeploy.mjs` → build → `scripts/predeploy.mjs --built` (honesty test, dist crawl, budgets, phone smoke on the new `dist/`) → `wrangler deploy` (see Deploy) |
+| `npm run indexnow` | after a content deploy, submit the URLs whose sitemap `<lastmod>` changed since the last submission to IndexNow (Bing, Yandex…); `-- --dry-run` lists them, `-- --all` sends every URL (reads `INDEXNOW_KEY` from `.env`; see Deploy) |
 
 ## Local development
 
@@ -158,13 +160,16 @@ logic-controls.com; the E2E fixtures swap in the test key. Form emails sent thro
 
 | Suite | Runner | Covers |
 |---|---|---|
-| Unit (`tests/unit`) | Vitest | Text engine (`text.test.ts`, `text-engine.test.ts`: escaping, atoms, Arabic isolates, Chinese breaking, invariants over every message string). Copy contract (`check-i18n.test.ts`, `check-i18n-guards.test.ts`: fixture trees per failure mode). Data and content (`data.test.ts` cross-references / images / alts / videos; `catalog.test.ts`; `honesty.test.ts`, on the built site, skipped without `dist/`). SEO (`seo-registry.test.ts`: OG cards, JSON-LD; `content-dates.test.ts`). Contact (`contact-cta.test.ts`, `contact.test.ts`, `rfq-rules.test.ts`, `rfq-draft.test.ts` + context params, `worker.test.ts`: `/`, `/api/rfq`, `/api/evt`). Client modules (`motion-pref.test.ts`, `zones-map.test.ts`, `hmi-sim.test.ts`, `format.test.ts`) |
-| Static (`npm run test:static`: `check-i18n`, `astro check`, html-validate, then `tests/static/check-dist.mjs`) | node | `check-dist.mjs`: every internal link, asset, `#anchor` and ARIA idref in `dist/` resolves; trailing slashes; no mixed-locale links; contact preselection values exist; tel / mailto / wa.me formats; JSON-LD parses; no `/lab/` or `/styleguide/`. CSP: exactly one CSP `<meta>` right after `<meta charset>`, no `'unsafe-inline'` in `script-src`, every inline script hashed, no inline `on…=` handlers. SEO: unique `<title>` and description per locale; sitemap ↔ pages; every sitemap URL has `<lastmod>`; a case study's Article has `datePublished` ≤ `dateModified`. Leaks: no `client-data` or raw Facebook / Telegram / screenshot file names, no tokens (`cfut_`, `cfat_`, `ghp_`…), no `TURNSTILE_SECRET`, no value from a local `.env` |
+| Unit (`tests/unit`) | Vitest | Text engine (`text.test.ts`, `text-engine.test.ts`: escaping, atoms, Arabic isolates, Chinese breaking, invariants over every message string). Copy contract (`check-i18n.test.ts`, `check-i18n-guards.test.ts`: fixture trees per failure mode). Data and content (`data.test.ts` cross-references / images / alts / videos; `catalog.test.ts`; `honesty.test.ts`, on the built site, skipped without `dist/` except in `npm run deploy`, where a skip refuses the deploy). SEO (`seo-registry.test.ts`: OG cards, JSON-LD; `content-dates.test.ts`, incl. real Prettier runs that must not re-date a page; `indexnow.test.ts`). Build and release (`csp-hashes.test.ts`: the CSP integration's scanner; `predeploy.test.ts`: node_modules ↔ `package-lock.json`). Contact (`contact-cta.test.ts`, `contact.test.ts`, `rfq-rules.test.ts`, `rfq-draft.test.ts` + context params, `worker.test.ts`: `/`, `/api/rfq`, `/api/evt`). Client modules (`motion-pref.test.ts`, `zones-map.test.ts`, `hmi-sim.test.ts`, `format.test.ts`) |
+| Static (`npm run test:static`: `check-i18n`, `astro check`, html-validate, then `tests/static/check-dist.mjs`) | node | `check-dist.mjs`: every internal link, asset, `#anchor` and ARIA idref in `dist/` resolves; trailing slashes; no mixed-locale links; contact preselection values exist; tel / mailto / wa.me formats; JSON-LD parses; no `/lab/` or `/styleguide/`. CSP: exactly one CSP `<meta>` right after `<meta charset>`, no `'unsafe-inline'` in `script-src`, its hashes exactly the page's inline scripts (parsed and hashed here, independently of the integration that writes them), no inline `on…=` handlers. Hero images: at six phone / tablet / desktop viewports, the file each `<img fetchpriority="high">` of `<main>`'s first section takes is the file a `<head>` preload fetches (and no image preload fetches anything else); hero images are never lazy; every home page and case study has one. Responsive images: a srcset with width descriptors always has `sizes` (`imagesizes` on an image preload). Client scripts: every module a built chunk imports (static, dynamic, Vite's preload list) is in `dist/`; no inline module script except the components `site.ts` leaves to Astro (`lc-own:`). SEO: unique `<title>` and description per locale; sitemap ↔ pages; every sitemap URL has `<lastmod>`; a case study's Article has `datePublished` ≤ `dateModified`. Leaks: no `client-data` or raw Facebook / Telegram / screenshot file names, no tokens (`cfut_`, `cfat_`, `ghp_`…), no `TURNSTILE_SECRET`, no value from a local `.env` |
 | Budgets (`tests/static/check-budgets.mjs`) | node | see Budgets below |
-| E2E (`tests/e2e`) | Playwright | `smoke` (every sitemap URL on desktop, one page per type in en + ar on phones: status, `lang` / `dir`, one `h1`, title, description, canonical, hreflang, no console errors); `redirects` (`/` by language and cookie, `_redirects`, trailing slash, headers, 404); `language`; `navigation` (header, drawer, skip link); `rfq` (quote form end to end: validation, steps, Turnstile, the email written and escaped, attachments, preselection, error panel, no-JS round trip); `hmi`; `control-loop`; `zones`; `projects` (filters, case-study pieces); `widgets` (gallery, FAQ); `a11y` (axe, WCAG 2.2 A + AA, every page type × locale, open UI states); `motion` (reduced motion); `visual` (`@visual`, local only) |
+| E2E (`tests/e2e`) | Playwright | `smoke` (every sitemap URL on desktop, one page per type in en + ar on phones: status, `lang` / `dir`, one `h1`, title, description, canonical, hreflang, no console errors); `redirects` (`/` by language and cookie, `_redirects`, trailing slash, headers, 404); `language`; `navigation` (header, drawer, skip link); `rfq` (quote form end to end: validation, steps, Turnstile, the email written and escaped, attachments, preselection, error panel, no-JS round trip); `hmi`; `control-loop`; `zones`; `projects` (filters, case-study pieces); `widgets` (gallery, FAQ); `a11y` (axe, WCAG 2.2 A + AA, every page type × locale, open UI states); `motion` (reduced motion); `r3-guards` (runtime guards: layout shift on load ≤ 0.02 and an eager, high-priority LCP image on six page types; no horizontal overflow under WCAG 1.4.12 text spacing; the copy-address announcement reachable inside the open phone drawer); `visual` (`@visual`, local only) |
 
 Projects: `chromium-desktop` (1440×900), `chromium-mobile` (Pixel 7), `webkit-mobile` (iPhone 15). Tags: `@desktop-only`
-(viewport-independent checks; skipped by the two mobile projects) and `@visual` (excluded unless `VISUAL=1`). The web
+(viewport-independent checks; skipped by the two mobile projects), `@phone` (tests that only run below 1024 px or on
+touch, plus the phone runs of the runtime guards: they skip themselves on the desktop project, so CI's push run and
+`npm run deploy` run them on Pixel 7 with `--grep @phone`; tag every new phone-only test) and `@visual` (excluded
+unless `VISUAL=1`). The web
 server is `wrangler dev --port 8788 --local-protocol https` (self-signed certificate), so it never collides with
 `npm run preview` on 8787 and the production headers (CSP header + the per-page CSP `<meta>`, HSTS) behave as on the
 live site. Reports go to `playwright-report/`, traces to `test-results/`.
@@ -202,56 +207,109 @@ ratchet quietly absorbs creep.
 
 `.github/workflows/ci.yml` runs on pushes to `main`, on pull requests, weekly (Monday 03:00 UTC) and on manual
 dispatch. It skips docs-only changes and cancels a run when a newer push supersedes it. One job on `ubuntu-24.04` with
-Node 24 runs `npm ci`, `npm run lint` + `tsc -p worker`, `npm run build` (Astro's image cache is restored first),
-`npm test`, `npm run test:budget`, installs the Playwright browsers (cached), writes `.dev.vars` with the public test
-secret, then runs the E2E suite with 2 workers and 1 retry: pushes and pull requests run `chromium-desktop` only; the
-weekly and manual runs run all three projects. A "Flaky E2E tests" step lists every test that passed only on retry
-in the run summary (and as a warning). The Playwright report is uploaded only on failure. There is no deploy step and
-no Cloudflare secret in CI. Per the workflow header, a warm push run takes about 12 minutes and the weekly
-cross-browser run about 25, inside the 2,000 free minutes a month GitHub Free gives private repos. Because pushes
-skip the phone projects, run `npm run test:e2e` (all three) locally before a release.
+Node 24 runs `npm ci`, `npm run lint` + `tsc -p worker` + `npm run lint:dead` (knip), `content-dates.mjs --check` (a
+copy change committed without `--write` fails here, before the build), `npm run build` (Astro's image cache is
+restored first), `npm test`, `npm run test:budget`, installs the Playwright browsers (cached), writes `.dev.vars` with
+the public test secret, then runs the E2E suite with 2 workers and 1 retry: pushes and pull requests run
+`chromium-desktop`, then the `@phone` tests on `chromium-mobile` (Pixel 7: the drawer, phone menus and filters, touch,
+the floating button; reports in `playwright-report-phone/`, `test-results-phone/`); the weekly and manual runs run all
+three projects. A "Flaky E2E tests" step lists every test that passed only on retry in the run summary (and as a
+warning). The Playwright report is uploaded only on failure. There is no deploy step and no Cloudflare secret in CI. A
+warm push run takes about 13 minutes and the weekly cross-browser run about 25, inside the 2,000 free minutes a month
+GitHub Free gives private repos. WebKit (iPhone) runs weekly only, so run `npm run test:e2e` (all three) locally
+before a release.
 
 ## Deploy
 
 ```sh
-set -a; source .env; set +a        # CLOUDFLARE_API_TOKEN / CLOUDFLARE_ACCOUNT_ID for wrangler
-npm run deploy                     # gate → build → dist checks → budgets → wrangler deploy (Worker + assets, custom domain)
-npm run indexnow                   # after content changes
+set -a; source .env; set +a        # wrangler's CLOUDFLARE_API_TOKEN / ACCOUNT_ID; GITHUB_TOKEN_PERSONAL for the CI check
+npm run deploy                     # gate → build → checks on the new dist/ + phone smoke → wrangler deploy (Worker + assets, custom domain)
+npm run indexnow                   # after content changes: only the re-dated URLs; then commit scripts/indexnow-state.json
 ```
 
-`npm run deploy` runs `scripts/predeploy.mjs` first, which refuses to deploy when the working tree has uncommitted
-changes (override: `ALLOW_DIRTY_DEPLOY=1`, not recommended), when page dates are stale (`content-dates.mjs --check`),
-or when `check-i18n` or the unit tests fail. Then it builds, runs `tests/static/check-dist.mjs` and `npm run
-test:budget` on the very files it uploads, and runs `wrangler deploy`. The slow suites (`astro check`, E2E) are the
-release checklist's job.
+`npm run deploy` runs `scripts/predeploy.mjs` twice (its header lists every step):
+
+- Before the build it refuses uncommitted changes (`ALLOW_DIRTY_DEPLOY=1` overrides, not recommended), stale page dates
+  (`content-dates.mjs --check`), a `node_modules` that does not match `package-lock.json` (run `npm ci`;
+  `ALLOW_STALE_DEPS=1` overrides), and a failing `check-i18n` or unit test. It warns, without refusing (a hotfix may have
+  to ship first), when HEAD is not on `origin/main`, so CI has not tested the commit, and when CI's run on HEAD is not
+  green (through `gh`; the `.env` token gives it access to the private repo).
+- After the build (`--built`), on the very `dist/` it uploads: the content-honesty test (`tests/unit/honesty.test.ts`;
+  a skipped run refuses), `tests/static/check-dist.mjs`, the budgets, and a phone smoke (`npm run test:e2e:phone`,
+  about a minute; needs `.dev.vars` and `npx playwright install chromium`; `SKIP_PHONE_SMOKE=1` skips it with a
+  warning).
+
+Then it runs `wrangler deploy`. `astro check` and the full E2E run in three browsers stay with CI and the release
+checklist.
+
+The click counter's Analytics Engine binding (`CLICKS` in `wrangler.jsonc`) needs Analytics Engine enabled once on
+the account: dashboard → Workers & Pages → Analytics Engine (free). Until then `wrangler deploy`, the last step, fails
+on that binding. Workaround, after the checks passed: deploy with a temporary copy of `wrangler.jsonc` without the
+`analytics_engine_datasets` block, next to the original (`npx wrangler deploy -c wrangler.tmp.jsonc`, then delete
+it). The Worker treats `CLICKS` as optional, so clicks are simply not counted.
 
 The production Turnstile secret is a Worker secret (`npx wrangler secret put TURNSTILE_SECRET`). Plain vars
 (`OWNER_EMAIL`, `MAIL_FROM`, `ALLOWED_HOSTNAMES`) and the `send_email` destination live in `wrangler.jsonc`. The
 destination must be a verified Email Routing address. A Cloudflare redirect rule sends `www` to the apex domain.
 
+### Rate limiting (Worker routes)
+
+`/`, `/api/rfq` and `/api/evt` run the Worker, and all three share the Workers Free quota of 100,000 requests a day.
+Once it is used up, Cloudflare answers 429 instead of running the Worker until 00:00 UTC: the quote form fails and
+nobody is told. One anonymous loop could get there. The zone's one free WAF rate-limiting rule blocks such a loop at
+the edge, before the Worker runs, so blocked requests do not count against the quota:
+
+| Setting | Value |
+|---|---|
+| Rule | "Protect Worker routes (free-plan 100k/day): /api/* and / per IP" (zone ruleset, phase `http_ratelimit`) |
+| Matches | `starts_with(http.request.uri.path, "/api/") or http.request.uri.path eq "/"` |
+| Counted per | IP address + Cloudflare data centre (`ip.src`, `cf.colo.id`: the characteristics the Free plan allows) |
+| Limit | 30 requests in 10 s, then block (HTTP 429) for 10 s (the Free plan's fixed period and mitigation time) |
+
+A real visitor sends at most 8 click beacons per page view plus one form post, far below the limit. The E2E suite runs
+against local `wrangler dev`, which the rule never sees.
+
+- View or edit: Cloudflare dashboard → logic-controls.com → Security → Security rules → Rate limiting rules. Through
+  the API, with a token that has zone WAF permissions:
+  `GET https://api.cloudflare.com/client/v4/zones/<zone id>/rulesets/phases/http_ratelimit/entrypoint`.
+- Blocked requests: Security → Events, filtered on the rate limiting rules service.
+- A 429 from `/api/rfq` means this rule (it shows in Security → Events) or the daily quota (Workers & Pages →
+  logic-controls-site → Metrics). Either way the form shows its generic error with the WhatsApp / email fallback.
+
 ### Page dates (content-dates)
 
 Sitemap `<lastmod>` and case-study `datePublished` / `dateModified` come from `src/data/content-dates.json`, not from
-git or the build time. Each page is dated by a hash of its own copy subtree, data record and project photos
-(`scripts/content-dates.mjs` header lists what counts); templates, nav, `common.json`, `ui.json` and `seo.json` never
-re-date a page.
+git or the build time. Each page is dated by a hash of the content it shows: its own copy subtree, data record and
+project photos, plus the shared body blocks it renders (the `scripts/content-dates.mjs` header lists what counts).
+Templates, nav, footer, `ui.json`, `seo.json` and `common.json` chrome (labels, breadcrumbs, CTA bands, notes) never
+re-date a page. The shared body blocks a page shows do: the proof figures (`common.stats` + `SITE.projectsCount` /
+`experienceYears` / `brands` + the industry count) on home, about and foreign-manufacturers; `common.zones` +
+`src/data/zones.ts` on the same three; `common.process` on home, about and the services listing; the founder strip on
+home and foreign-manufacturers; `common.quoteChecklist` on contact. Data modules are compared as a token stream, so a
+Prettier pass or a hand reflow never re-dates a page.
 
 - After any copy, data or photo edit: `node scripts/content-dates.mjs --write` and commit
   `src/data/content-dates.json` in the same commit.
-- `--check` lists stale pages and exits 1 (predeploy runs it); `--bootstrap` rebuilds the file from git history
+- `--check` lists stale pages and exits 1 (CI and predeploy run it); `--bootstrap` rebuilds the file from git history
   (refuses on a shallow clone).
+- When the hash definition changes (`ALGO_VERSION`, stored as `"$version"` in the file), `--write` re-dates every page
+  from git history (needs a full clone) instead of stamping every page "now"; `--check` reports the version change.
 - A stale page still builds: it is dated at build time, with one warning, so a change is never understated.
-- After deploying content changes: `npm run indexnow`.
+- After deploying content changes: `npm run indexnow`. It submits only the URLs whose `<lastmod>` changed since the
+  last accepted submission, plus new and removed ones, after checking that the live sitemap equals `dist/`'s. The
+  record is `scripts/indexnow-state.json`: commit it (predeploy refuses a dirty tree). Without that file, or with
+  `-- --all`, every URL is sent; `-- --dry-run` only lists them.
 
 ### Release checklist
 
-1. On a fresh `npm run build`: `npm run lint`, `npm run typecheck:worker`, `npm test`, `npm run test:budget` and
-   `npm run test:e2e` (all three projects) are green.
+1. Pushed, and CI is green on the commit (predeploy warns otherwise). On a fresh `npm run build`: `npm run lint`,
+   `npm run lint:dead`, `npm run typecheck:worker`, `npm test`, `npm run test:budget` and `npm run test:e2e` (all
+   three projects: CI's push run has no WebKit) are green.
 2. `node scripts/content-dates.mjs --check` passes (or `--write` and commit).
 3. `npm run deploy`.
 4. Live spot-check on https://logic-controls.com: home, one case study and contact, in en and ar. The browser console
    is clean, with no Content-Security-Policy violation. Send a test form only when appropriate (it emails the owner).
-5. `npm run indexnow` if content changed.
+5. `npm run indexnow` if content changed, then commit `scripts/indexnow-state.json`.
 6. After enabling ANY Cloudflare dashboard feature, re-check the live console for CSP violations: a feature that
    injects inline scripts (Rocket Loader, Bot Fight Mode's JavaScript detections, Zaraz…) is refused by the per-page
    `<meta>` policy (see `public/_headers`).

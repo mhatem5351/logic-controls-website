@@ -188,7 +188,7 @@ const jsonLd = graph(
               project={p}
               locale={locale}
               maxTags={2}
-              sizes="(min-width: 1280px) 400px, (min-width: 1024px) calc((100vw - 7rem) / 3), (min-width: 768px) 46vw, min(84vw, 24rem)"
+              sizes="(min-width: 2560px) 475px, (min-width: 1920px) 450px, (min-width: 1280px) 400px, (min-width: 1024px) calc((100vw - 7rem) / 3), (min-width: 768px) 46vw, (min-resolution: 2.5dppx) min(50.4vw, 14.4rem), min(84vw, 24rem)"
             />
           </li>
         ))
@@ -256,7 +256,8 @@ const jsonLd = graph(
       <SectionHeading id="industries-title" index="03" eyebrow={c.labels.industries} title={html(locale, h.industries.title)} lead={html(locale, h.industries.intro)} />
       <ViewAll href={href(locale, "industries")} label={h.industries.cta} count={INDUSTRY_SLUGS.length} class="max-lg:hidden" />
     </div>
-    <ul role="list" class="mt-8 grid grid-cols-2 gap-3 sm:grid-cols-4 lg:hidden">
+    {/* 4 per row only from 720px: at 640–719 "Pharmaceutical" was wider than a quarter tile (VIS3-03) */}
+    <ul role="list" class="mt-8 grid grid-cols-2 gap-3 min-[45rem]:grid-cols-4 lg:hidden">
       {
         INDUSTRY_SLUGS.map((slug) => (
           <li class="lc-reveal on-dark group relative flex flex-col justify-between gap-4 bg-navy-950 p-4 text-white has-[a:focus-visible]:outline-2 has-[a:focus-visible]:outline-offset-2 has-[a:focus-visible]:outline-(--focus)">
@@ -264,7 +265,7 @@ const jsonLd = graph(
             <span class="chamfer inline-grid size-10 place-items-center bg-royal-600/25 text-signal-300 [--chamfer:8px]" aria-hidden="true">
               <Icon name={industryIcon(slug)} size={20} />
             </span>
-            <h3 class="text-[0.9375rem] leading-snug font-bold text-white">
+            <h3 class="lc-tile-title text-[0.9375rem] leading-snug font-bold text-white">
               <a href={href(locale, `industries/${slug}`)} class="lc-stretch after:absolute after:inset-0 after:content-['']">
                 {t.industries.items[slug].navTitle}
               </a>
@@ -276,7 +277,7 @@ const jsonLd = graph(
         <span class="chamfer inline-grid size-10 place-items-center bg-royal-600 text-white [--chamfer:8px]" aria-hidden="true">
           <Icon name="plus" size={20} />
         </span>
-        <h3 class="text-[0.9375rem] leading-snug font-bold text-navy-950">
+        <h3 class="lc-tile-title text-[0.9375rem] leading-snug font-bold text-navy-950">
           <a href={`${href(locale, "contact")}?industry=other#quote`} class="lc-stretch after:absolute after:inset-0 after:content-['']">
             {t.contact.form.fields.industry.options.other}
           </a>
@@ -335,7 +336,7 @@ const jsonLd = graph(
   <Section id="why">
     <div class="grid grid-cols-1 gap-10 lg:grid-cols-12 lg:gap-14">
       <div class="lg:col-span-5">
-        <SectionHeading id="why-title" index="04" eyebrow={t.about.why.title} title={html(locale, h.why.title)} swoosh />
+        <SectionHeading id="why-title" index="04" eyebrow={t.about.why.title} title={html(locale, h.why.title)} />
         {/* The machine we automated, not its legacy screen: a busy, saturated HMI capture shown as proof contradicted the
             ISA-101 screens the site sells (VIS2-06). The capture stays in that case study's gallery. */}
         <figure class="mt-10 max-lg:hidden">

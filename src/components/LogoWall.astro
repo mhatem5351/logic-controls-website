@@ -25,6 +25,8 @@ interface Props {
 const locale = (Astro.props.locale ?? Astro.currentLocale ?? "en") as Locale;
 const t = getMessages(locale).ui;
 const { title = t.platforms.title, note = t.platforms.note, brands = SITE.brands, class: className } = Astro.props;
+/** A short wall (service pages with 2–4 platforms): one row of equal cells from 640px (VIS3-02). */
+const oneRow = brands.length <= 4;
 
 // Equal-area sizing: height = sqrt(area / aspect). Siemens (6.27:1) ends up 20px tall, Delta (3.24:1) 28px.
 // Optical corrections on top (VIS2-09): Schneider's thin two-line mark reads small at equal area (×1.18, ~32px),
@@ -56,15 +58,25 @@ const sized = ({ svg, aspect, k = 1, dy = 0 }: { svg: string; aspect: number; k?
   <ul
     role="list"
     style={`--n:${brands.length}`}
-    class="grid grid-cols-2 border-s border-t border-charcoal-200 sm:grid-cols-6 lg:grid-cols-[repeat(var(--n),minmax(0,1fr))] on-dark:border-white/10"
+    class:list={[
+      "grid grid-cols-2 border-s border-t border-charcoal-200 lg:grid-cols-[repeat(var(--n),minmax(0,1fr))] on-dark:border-white/10",
+      oneRow ? "sm:grid-cols-[repeat(var(--n),minmax(0,1fr))]" : "sm:grid-cols-6",
+    ]}
   >
     {
       brands.map((name, i) => {
         const logo = LOGOS[name];
-        // 640–1023px: 3 per row on a 6-column grid; a short last row is stretched to the full width (5 logos = 3 + 2
-        // wide cells), so no row ends in an empty bordered cell (DEV2-08). lg: one cell each.
+        // 640–1023px: up to 4 logos sit in one row of equal cells; more go 3 per row on a 6-column grid, with a short
+        // last row stretched to the full width (5 logos = 3 + 2 wide cells), so no row ends in an empty bordered cell
+        // (DEV2-08). lg: one cell each.
         const rest = brands.length % 3;
-        const span = rest === 2 && i >= brands.length - 2 ? "sm:col-span-3" : rest === 1 && i === brands.length - 1 ? "sm:col-span-6" : "sm:col-span-2";
+        const span = oneRow
+          ? "sm:col-span-1"
+          : rest === 2 && i >= brands.length - 2
+            ? "sm:col-span-3"
+            : rest === 1 && i === brands.length - 1
+              ? "sm:col-span-6"
+              : "sm:col-span-2";
         return (
           <li class:list={[span, "lg:col-span-1", "group grid min-h-24 place-items-center max-sm:last:odd:col-span-2 border-e border-b border-charcoal-200 px-5 py-6 text-charcoal-600 transition-colors duration-(--dur-ui) ease-mech hover:bg-navy-50 hover:text-navy-900 on-dark:border-white/10 on-dark:text-navy-300 on-dark:hover:bg-white/[0.04] on-dark:hover:text-white"]}>
             {logo ? (

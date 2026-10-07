@@ -5,50 +5,68 @@
 //
 // MODEL
 //   Each page has a content hash: the first 16 hex chars of sha256 over a canonical JSON serialization (object keys
-//   sorted, arrays in order, undefined dropped) of that page's OWN content. content-dates.json maps every
+//   sorted, arrays in order, undefined dropped) of the content that page SHOWS. content-dates.json maps every
 //   locale-prefixed path to { hash, modified, published }: published = first time the page's content existed,
-//   modified = last time its hash changed. Keys sorted, 2-space indent, trailing newline.
+//   modified = last time its hash changed. "$version" first (the hash definition, ALGO_VERSION), then the paths sorted,
+//   2-space indent, trailing newline.
 //
-//   Pages, for every locale L in src/i18n/config.ts LOCALES (slug lists read from the data modules with regexes, never
-//   imported; a slug page whose copy or data record is missing in that locale is skipped). Copy = the locale's
+//   Pages, for every locale L in src/i18n/config.ts LOCALES (slug lists read from the data modules' normalized source,
+//   never imported; a slug page whose copy or data record is missing in that locale is skipped). Copy = the locale's
 //   src/i18n/messages/L/<ns>.json; "*" = the slugs in the module's *_SLUGS list that have copy (all items without one):
 //     /L/                           home.json (whole) + services.items[*].{title,summary} + industries.items[*].{title,summary}
 //                                   + projects.items[f].{cardTitle,client,summary} for f in FEATURED_PROJECT_SLUGS, in order
-//     /L/services/                  services.index + services.items[*].{title,summary}
+//                                   + PROOF (with the case-study count) + PLATFORMS + FOUNDER + PROCESS + ZONES
+//     /L/services/                  services.index + services.items[*].{title,summary} + PROCESS
 //     /L/services/<slug>/           services.items[slug] + the slug's object literal in src/data/services.ts
 //     /L/industries/                industries.index + industries.items[*].{title,summary}
 //     /L/industries/<slug>/         industries.items[slug] + the slug's object literal in src/data/industries.ts
 //     /L/projects/                  projects.index + projects.items[*].{cardTitle,client,summary}
 //     /L/projects/<slug>/           projects.items[slug] + the slug's object literal in src/data/projects.ts
 //                                   + git blob ids of every file under src/assets/projects/<slug>/
-//     /L/about/                     about.json            /L/contact/        contact.json
+//     /L/about/                     about.json + PROOF + PROCESS + ZONES + common.company.addressLine (hero chip)
+//     /L/foreign-manufacturers/     foreign.json + PROOF + FOUNDER + ZONES
+//     /L/contact/                   contact.json + common.quoteChecklist (the "What we need to quote" panel)
 //     /L/technologies/              technologies.json + tech.json + src/data/technologies.ts (whole file)
-//     /L/foreign-manufacturers/     foreign.json          /L/privacy/        privacy.json
+//     /L/privacy/                   privacy.json
+//   Shared body blocks (common.json + the data behind them), counted only on the pages above that render them:
+//     PROOF      common.stats + the STATS inputs (src/data/stats.ts): SITE.projectsCount, SITE.experienceYears and
+//                SITE.brands (also the LogoWall names) from src/data/site.ts, the INDUSTRY_SLUGS count; on the home
+//                page also the PROJECT_SLUGS count (its "case studies" figure)
+//     PLATFORMS  common.platforms          PROCESS  common.process ("How we work")
+//     FOUNDER    common.founderStrip + about.founder.{name,role}
+//     ZONES      common.zones + src/data/zones.ts (whole file: slugs, regions, order, home base)
 //   Object literal = the `{…}` enclosing `slug: "<slug>"` (brace matcher that skips strings, template literals and
-//   comments; regex literals are not parsed — data modules have none). Source text from .ts files is compared with
-//   comments removed and whitespace runs collapsed outside strings, so a reformat or a comment edit never re-dates a
-//   page. Asset ids are git blob ids, sha1("blob <bytes>\0" + content), computed from the files themselves so the
-//   working tree and `git ls-tree` at any commit agree without git; dotfiles (.DS_Store) and symlinks are ignored.
+//   comments; regex literals are not parsed — data modules have none). Source from .ts files is compared as a
+//   canonical token stream (normalizeCode): comments and whitespace dropped, strings in one quote style, quoted keys
+//   bare, no trailing commas or semicolons, numbers in shortest form, no leading `|` on a wrapped union. So a Prettier
+//   pass, a hand reflow or a comment edit never re-dates a page, and any change to a value does. Asset ids are git
+//   blob ids, sha1("blob <bytes>\0" + content), computed from the files themselves so the working tree and
+//   `git ls-tree` at any commit agree without git; dotfiles (.DS_Store) and symlinks are ignored.
 //
-//   Deliberately NOT content: templates (src/pages, components, layouts, styles), shared chrome (common.json, ui.json,
-//   seo.json, projects.labels, tech chip labels on case studies) and other records a page merely links to (related
-//   case studies). Search engines want "this page's content changed", not "the site was rebuilt": a nav or layout edit
-//   that re-dates all pages at once is exactly what makes lastmod untrustworthy. Trade-off: a template change that
-//   alters what a page says (a new section) re-dates the page only through the copy that section adds.
+//   Deliberately NOT content: templates (src/pages, components, layouts, styles), shared chrome (nav, footer, ui.json,
+//   seo.json, common.json labels / breadcrumbs / filters / notes / whatsapp messages, the closing CTA bands
+//   common.ctaBand and the quote checklist inside them, form option labels, projects.labels, tech chip labels on case
+//   studies) and other records a page merely links to (related case studies). Search engines want "this page's
+//   content changed", not "the site was rebuilt": a nav or layout edit that re-dates all pages at once is exactly what
+//   makes lastmod untrustworthy. Trade-off: a template change that alters what a page says (a new section) re-dates
+//   the page only through the copy that section adds.
 //
 // BUILD (pageDates / lastModFor; no git, no writes)
-//   Stored hash == current hash → the stored dates. Otherwise (copy edited without refreshing the file, or a page not
-//   in it yet) → modified = this process's start time, published = the stored published or that same time, and ONE
-//   warning per process on stderr. A forgotten refresh therefore never understates a change, and dates never go missing.
-//   The current hashes and the file are read once per process (shared through globalThis, so the copy Astro loads for
-//   astro.config.mjs and the copy bundled into src/lib/jsonld.ts agree, including on the timestamp).
+//   Stored hash == current hash → the stored dates. Otherwise (copy edited without refreshing the file, a page not in
+//   it yet, or a file written by another ALGO_VERSION) → modified = this process's start time, published = the stored
+//   published or that same time, and ONE warning per process on stderr. A forgotten refresh therefore never
+//   understates a change, and dates never go missing. The current hashes and the file are read once per process
+//   (shared through globalThis, so the copy Astro loads for astro.config.mjs and the copy bundled into
+//   src/lib/jsonld.ts agree, including on the timestamp).
 //
 // CLI
 //   node scripts/content-dates.mjs --write      Refresh the file: unchanged hash → keep dates; changed → modified = now;
 //                                               new page → published = modified = now; vanished pages removed.
-//                                               Without a file yet, bootstraps (below).
-//   node scripts/content-dates.mjs --check      Exit 1 listing changed / missing / extra paths; exit 0 when current.
-//                                               Never writes.
+//                                               Without a file yet, or when the file's "$version" is not ALGO_VERSION
+//                                               (the hash definition changed, so no stored hash can match), it
+//                                               bootstraps instead (below): dates stay those of real content changes.
+//   node scripts/content-dates.mjs --check      Exit 1 listing changed / missing / extra paths (or naming a changed
+//                                               hash algorithm); exit 0 when current. Never writes.
 //   node scripts/content-dates.mjs --bootstrap  Rebuild from git history (refuses on a shallow clone): every commit of
 //                                               `git rev-list --reverse HEAD` is hashed from its own blobs (one
 //                                               `git cat-file --batch` for all of them); published = committer date of
@@ -64,9 +82,11 @@ import { fileURLToPath, pathToFileURL } from "node:url";
 
 /** @typedef {{ hash: string, modified: string, published: string }} Entry */
 /** @typedef {Record<string, Entry>} Stored */
+/** @typedef {{ version: number, entries: Stored }} StoredFile */
 /**
  * Everything pageDates() needs. Build: one per repo root, cached for the process. Tests: built from fixtures.
- * @typedef {{ stored: Stored, hashes: Map<string, string>, now: string, onStale?: (ctx: Context) => void }} Context
+ * `version` = the file's hash-algorithm version (absent: current).
+ * @typedef {{ stored: Stored, version?: number, hashes: Map<string, string>, now: string, onStale?: (ctx: Context) => void }} Context
  */
 /**
  * A view of the repository: the working tree, one git commit, or an in-memory fixture. Paths are repo-relative, "/".
@@ -79,6 +99,13 @@ import { fileURLToPath, pathToFileURL } from "node:url";
  */
 
 export const DATES_FILE = "src/data/content-dates.json";
+/**
+ * Version of the hash definition (what pageParts() covers and how source is normalized), stored as "$version" in the
+ * file. Bump it whenever a change would alter hashes of unchanged content: `--write` then re-dates every page from git
+ * history (--bootstrap) instead of stamping them all "now". 1 = round 2 (no "$version" key); 2 = token-stream
+ * normalization + the shared blocks pages render (CODE3-07).
+ */
+const ALGO_VERSION = 2;
 const ASSETS_DIR = "src/assets/projects/";
 const MSG = (/** @type {string} */ locale, /** @type {string} */ ns) => `src/i18n/messages/${locale}/${ns}.json`;
 
@@ -99,7 +126,9 @@ function isoLocal(date = new Date()) {
 /** Shared by every copy of this module in the process (Astro loads it once for the config and bundles it once more). */
 const STATE_KEY = Symbol.for("logic-controls.content-dates");
 /** @type {{ now: string, warned: boolean, contexts: Map<string, Context> }} */
-const state = /** @type {any} */ (globalThis)[STATE_KEY] ?? ((/** @type {any} */ (globalThis))[STATE_KEY] = { now: isoLocal(), warned: false, contexts: new Map() });
+const state =
+  /** @type {any} */ (globalThis)[STATE_KEY] ??
+  (/** @type {any} */ (globalThis)[STATE_KEY] = { now: isoLocal(), warned: false, contexts: new Map() });
 
 /* ------------------------------------------------------------------------------------------------ hashing */
 
@@ -147,7 +176,10 @@ function segments(src) {
   const n = src.length;
   /** brace depth at which each open template `${` began */
   const tpl = [];
-  let depth = 0, start = 0, i = 0, inTpl = false;
+  let depth = 0,
+    start = 0,
+    i = 0,
+    inTpl = false;
   const cut = (/** @type {"code" | "string" | "comment"} */ type, /** @type {number} */ end) => {
     if (end > start) out.push([type, start, end]);
     start = end;
@@ -227,14 +259,17 @@ function scanSource(src) {
 const escapeRe = (/** @type {string} */ s) => s.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
 
 /**
- * Source text of the object literal that contains `slug: "<slug>"` (innermost enclosing braces), or undefined.
+ * Source text of the object literal that contains `slug: "<slug>"` (any quotes, key bare or quoted; innermost enclosing
+ * braces), or undefined.
  * @param {string} src
  * @param {string} slug
  * @param {ReturnType<typeof scanSource>} [scan]
  */
 function extractObjectLiteral(src, slug, scan = scanSource(src)) {
-  const inCode = (/** @type {number} */ i) => scan.segs.some(([t, s, e]) => t === "code" && s <= i && i < e);
-  for (const m of src.matchAll(new RegExp(`\\bslug\\s*:\\s*(["'\`])${escapeRe(slug)}\\1`, "g"))) {
+  // `slug` in code, or a quoted "slug" key whose string starts right there (not text inside a longer string)
+  const inCode = (/** @type {number} */ i) =>
+    scan.segs.some(([t, s, e]) => (t === "code" && s <= i && i < e) || (t === "string" && s === i));
+  for (const m of src.matchAll(new RegExp(`(?:\\bslug|(["'])slug\\1)\\s*:\\s*(["'\`])${escapeRe(slug)}\\2`, "g"))) {
     const at = m.index ?? 0;
     if (!inCode(at)) continue;
     /** @type {[number, number] | undefined} */
@@ -245,30 +280,100 @@ function extractObjectLiteral(src, slug, scan = scanSource(src)) {
   return undefined;
 }
 
+/** A character that can be part of an identifier, keyword or number (two of them in a row need a space between). */
+const WORD = /[\w$\u0080-\uffff]/;
+/** One code token: whitespace (dropped), a number literal (with any suffix: 10n, 0xFF), a word, or one punctuator. */
+const CODE_TOKEN = /\s+|(?:\d[\d_]*(?:\.[\d_]*)?|\.\d[\d_]*)(?:[eE][+-]?\d+)?[\w$]*|[\w$\u0080-\uffff]+|[^\s\w$\u0080-\uffff]/g;
+const SIMPLE_KEY = /^[A-Za-z_$][\w$]*$/;
+/** A `|` / `&` right after one of these can only be the leading marker of a wrapped TS union / intersection. */
+const BEFORE_LEADING_OP = new Set(["=", ":", "(", "<", "[", ","]);
+
 /**
- * Source without comments and with whitespace runs outside strings collapsed to one space (formatting-insensitive).
- * @param {string} src
+ * The value of a '…' / "…" literal's body (escapes decoded), or undefined when it cannot be decoded.
+ * @param {string} body
  */
-function normalizeCode(src) {
-  let out = "", code = "";
-  for (const [type, s, e] of segments(src)) {
-    if (type === "string") {
-      out += code.replace(/\s+/g, " ") + src.slice(s, e);
-      code = "";
-    } else code += type === "comment" ? " " : src.slice(s, e);
+function decodeString(body) {
+  try {
+    return body.replace(/\\(?:u\{([0-9a-fA-F]+)\}|u([0-9a-fA-F]{4})|x([0-9a-fA-F]{2})|(\r\n|[\s\S]))/g, (_, cp, u4, x2, ch) => {
+      if (cp) return String.fromCodePoint(parseInt(cp, 16));
+      if (u4) return String.fromCharCode(parseInt(u4, 16));
+      if (x2) return String.fromCharCode(parseInt(x2, 16));
+      const simple = /** @type {Record<string, string>} */ ({ n: "\n", t: "\t", r: "\r", b: "\b", f: "\f", v: "\v", 0: "\0" });
+      if (Object.hasOwn(simple, ch)) return simple[ch];
+      return /^(?:\r\n|[\n\r\u2028\u2029])$/.test(ch) ? "" : ch; // line continuation; any other escaped char is itself
+    });
+  } catch {
+    return undefined; // e.g. \u{110000}
   }
-  return (out + code.replace(/\s+/g, " ")).trim();
 }
 
 /**
- * `export const NAME[: type] = ["a", "b"]` → ["a", "b"] (like scripts/check-i18n.mjs constList()).
- * @param {string | undefined} src
+ * A plain decimal literal in its shortest form (1.50 → 1.5, 1.0 → 1, .5 → 0.5), as Prettier prints numbers; anything
+ * else (hex, BigInt, separators, exponents, more digits than a double holds exactly) as written.
+ * @param {string} tok
+ */
+function canonicalNumber(tok) {
+  if (!/^(?:\d+(?:\.\d*)?|\.\d+)$/.test(tok) || tok.replace(/\D/g, "").replace(/^0+/, "").length > 15) return tok;
+  return String(Number(tok));
+}
+
+/**
+ * Data-module source as a canonical token stream, so formatting never changes it (a Prettier pass, a hand reflow,
+ * quote style, trailing commas, semicolons, comments) while any change to a value, key or identifier does:
+ *   - comments and whitespace dropped (one space kept only between two word characters: `as const`);
+ *   - '…' and "…" strings → JSON.stringify of their value; a quoted object key that is a plain identifier is bare
+ *     (`"a": 1` ≡ `a: 1`); template literals are kept as written (code inside `${}` normalized);
+ *   - plain decimal numbers in shortest form; `;` dropped; a comma before `}` `]` `)` dropped; the leading `|` / `&`
+ *     Prettier adds to a TS union / intersection it wraps over several lines dropped.
+ * Regex literals are not recognized (data modules have none).
+ * @param {string} src
+ */
+function normalizeCode(src) {
+  /** @type {Array<{ kind: "code" | "string" | "template", text: string }>} */
+  const toks = [];
+  for (const [type, s, e] of segments(src)) {
+    const text = src.slice(s, e);
+    if (type === "comment") continue;
+    if (type === "string") {
+      const q = text[0];
+      if ((q === '"' || q === "'") && text.length >= 2 && text.at(-1) === q) {
+        const value = decodeString(text.slice(1, -1));
+        toks.push(value === undefined ? { kind: "template", text } : { kind: "string", text: value });
+      } else toks.push({ kind: "template", text }); // template literal pieces (and an unterminated string), as written
+      continue;
+    }
+    for (const [t] of text.matchAll(CODE_TOKEN)) if (!/^\s/.test(t)) toks.push({ kind: "code", text: t });
+  }
+  let out = "";
+  const emit = (/** @type {string} */ text) => {
+    if (out && WORD.test(out.at(-1) ?? "") && WORD.test(text[0])) out += " ";
+    out += text;
+  };
+  toks.forEach((tok, i) => {
+    if (tok.kind === "template") return void (out += tok.text);
+    if (tok.kind === "string") {
+      const key = toks[i + 1]?.kind === "code" && toks[i + 1].text === ":" && (out.endsWith("{") || out.endsWith(","));
+      return emit(key && SIMPLE_KEY.test(tok.text) ? tok.text : JSON.stringify(tok.text));
+    }
+    const t = tok.text;
+    if (t === ";") return;
+    if ((t === "}" || t === "]" || t === ")") && out.endsWith(",")) out = out.slice(0, -1);
+    if ((t === "|" || t === "&") && BEFORE_LEADING_OP.has(out.at(-1) ?? "")) return;
+    emit(WORD.test(t[0]) || t[0] === "." ? canonicalNumber(t) : t);
+  });
+  return out;
+}
+
+/**
+ * `export const NAME[: type] = ["a", "b"]` → ["a", "b"] (like scripts/check-i18n.mjs constList()), read from NORMALIZED
+ * source (Reader.code / normalizeCode), so quote style and wrapping never change a slug list.
+ * @param {string | undefined} code
  * @param {string} name
  * @returns {string[]}
  */
-function constList(src, name) {
-  const m = src && new RegExp(`export const ${name}\\b[^=]*=\\s*\\[([^\\]]*)\\]`).exec(src);
-  return m ? [...m[1].matchAll(/"([^"]+)"/g)].map((x) => x[1]) : [];
+function constList(code, name) {
+  const m = code && new RegExp(`export const ${name}\\b[^=]*=\\[([^\\]]*)\\]`).exec(code);
+  return m ? [...m[1].matchAll(/"((?:[^"\\]|\\.)*)"/g)].map((x) => JSON.parse(`"${x[1]}"`)) : [];
 }
 
 /* ------------------------------------------------------------------------------------------------ readers */
@@ -321,7 +426,13 @@ function makeReader(source, { strict = false } = {}) {
         const lit = t === undefined ? undefined : extractObjectLiteral(t, slug, scan(file));
         return lit === undefined ? undefined : normalizeCode(lit);
       }),
-    assets: (slug) => memo(`a:${slug}`, () => source.assets(slug).filter(([rel]) => countedAsset(rel)).sort(byPath)),
+    assets: (slug) =>
+      memo(`a:${slug}`, () =>
+        source
+          .assets(slug)
+          .filter(([rel]) => countedAsset(rel))
+          .sort(byPath),
+      ),
   };
 }
 
@@ -405,6 +516,21 @@ function commitReader(tree, blobs) {
 
 /* ------------------------------------------------------------------------------------------------ pages */
 
+const SITE_FILE = "src/data/site.ts";
+const ZONES_FILE = "src/data/zones.ts";
+
+/**
+ * A member of the SITE literal in src/data/site.ts as normalized source ("50", '["Siemens","Delta"]'), read from the
+ * token stream so its formatting never matters; undefined when absent.
+ * @param {Reader} r
+ * @param {string} key
+ */
+function siteMember(r, key) {
+  const code = r.code(SITE_FILE);
+  const m = code && new RegExp(`[{,]${key}:(\\[[^\\]]*\\]|[^,}]*)`).exec(code);
+  return m ? m[1] : undefined;
+}
+
 /** Collections: copy namespace, data module, slug list, fields a listing card shows. */
 const COLLECTIONS = {
   services: { ns: "services", data: "src/data/services.ts", list: "SERVICE_SLUGS", card: ["title", "summary"] },
@@ -431,7 +557,7 @@ function cards(r, locale, key) {
   const c = COLLECTIONS[key];
   const items = r.json(MSG(locale, c.ns))?.items;
   if (!items || typeof items !== "object") return undefined;
-  const listed = constList(r.text(c.data), c.list);
+  const listed = constList(r.code(c.data), c.list);
   const slugs = (listed.length ? listed : Object.keys(items)).filter((s) => Object.hasOwn(items, s));
   return Object.fromEntries(slugs.map((s) => [s, pick(items[s], c.card)]));
 }
@@ -442,17 +568,54 @@ function cards(r, locale, key) {
  * @returns {string[]}
  */
 function pageList(r) {
-  const locales = constList(r.text("src/i18n/config.ts"), "LOCALES");
+  const locales = constList(r.code("src/i18n/config.ts"), "LOCALES");
   const out = [];
   for (const l of locales) {
     out.push(`/${l}/`);
     for (const [key, c] of Object.entries(COLLECTIONS)) {
       out.push(`/${l}/${key}/`);
-      for (const s of constList(r.text(c.data), c.list)) out.push(`/${l}/${key}/${s}/`);
+      for (const s of constList(r.code(c.data), c.list)) out.push(`/${l}/${key}/${s}/`);
     }
     for (const p of ["about", "contact", "technologies", "foreign-manufacturers", "privacy"]) out.push(`/${l}/${p}/`);
   }
   return out;
+}
+
+/**
+ * Shared blocks that some pages show in their body (see the header): common.json blocks + the language-neutral data
+ * behind them. Each getter is called only for the pages that render that block.
+ * @param {Reader} r
+ * @param {string} l
+ */
+function sharedBlocks(r, l) {
+  const common = () => r.json(MSG(l, "common"));
+  const count = (/** @type {string} */ file, /** @type {string} */ list) => constList(r.code(file), list).length;
+  return {
+    /** Proof figures: common.stats labels + the STATS values (src/data/stats.ts) + the platform names (LogoWall). */
+    proof: (/** @type {{ caseStudies?: boolean }} */ { caseStudies = false } = {}) => ({
+      copy: common()?.stats,
+      projects: siteMember(r, "projectsCount"),
+      experience: siteMember(r, "experienceYears"),
+      brands: siteMember(r, "brands"),
+      industries: count(COLLECTIONS.industries.data, COLLECTIONS.industries.list),
+      caseStudies: caseStudies ? count(COLLECTIONS.projects.data, COLLECTIONS.projects.list) : undefined,
+    }),
+    /** "Where we work": common.zones + src/data/zones.ts (slugs, regions, order, home base). */
+    zones: () => ({ copy: common()?.zones, data: r.code(ZONES_FILE) }),
+    /** "How we work": common.process. */
+    process: () => common()?.process,
+    /** Founder strip: common.founderStrip + the founder's name and role (about.founder, the photo's alt text). */
+    founder: () => {
+      const f = r.json(MSG(l, "about"))?.founder;
+      return { strip: common()?.founderStrip, name: f?.name, role: f?.role };
+    },
+    /** "What we need to quote": common.quoteChecklist. */
+    checklist: () => common()?.quoteChecklist,
+    /** Platforms section heading: common.platforms. */
+    platforms: () => common()?.platforms,
+    /** The address line (about hero chip): common.company.addressLine. */
+    address: () => common()?.company?.addressLine,
+  };
 }
 
 /**
@@ -466,24 +629,33 @@ function pageParts(r, path) {
   if (!m) return undefined;
   const [, l, section, slug] = m;
   const json = (/** @type {string} */ ns) => r.json(MSG(l, ns));
+  const shared = sharedBlocks(r, l);
   if (!section) {
     const home = json("home");
     if (home === undefined) return undefined;
     const projects = json("projects")?.items;
-    const featured = constList(r.text(COLLECTIONS.projects.data), "FEATURED_PROJECT_SLUGS");
+    const featured = constList(r.code(COLLECTIONS.projects.data), "FEATURED_PROJECT_SLUGS");
     return {
       page: "home",
       copy: home,
       services: cards(r, l, "services"),
       industries: cards(r, l, "industries"),
       featured: featured.map((s) => ({ slug: s, ...pick(projects?.[s], COLLECTIONS.projects.card) })),
+      proof: shared.proof({ caseStudies: true }),
+      platforms: shared.platforms(),
+      founder: shared.founder(),
+      process: shared.process(),
+      zones: shared.zones(),
     };
   }
   if (Object.hasOwn(COLLECTIONS, section)) {
     const key = /** @type {Collection} */ (section);
     const c = COLLECTIONS[key];
     const copy = json(c.ns);
-    if (!slug) return copy?.index === undefined ? undefined : { page: `${key}/`, index: copy.index, cards: cards(r, l, key) };
+    if (!slug) {
+      if (copy?.index === undefined) return undefined;
+      return { page: `${key}/`, index: copy.index, cards: cards(r, l, key), process: key === "services" ? shared.process() : undefined };
+    }
     const item = copy?.items?.[slug];
     const data = r.literal(c.data, slug);
     if (item === undefined || data === undefined) return undefined;
@@ -496,7 +668,13 @@ function pageParts(r, path) {
   }
   const ns = /** @type {Record<string, string>} */ (SINGLE)[section];
   const copy = ns ? json(ns) : undefined;
-  return copy === undefined ? undefined : { page: section, copy };
+  if (copy === undefined) return undefined;
+  if (section === "about")
+    return { page: section, copy, proof: shared.proof(), process: shared.process(), zones: shared.zones(), address: shared.address() };
+  if (section === "foreign-manufacturers")
+    return { page: section, copy, proof: shared.proof(), founder: shared.founder(), zones: shared.zones() };
+  if (section === "contact") return { page: section, copy, checklist: shared.checklist() };
+  return { page: section, copy };
 }
 
 /**
@@ -540,27 +718,50 @@ function findRoot() {
 }
 
 /**
+ * The parsed file → its algorithm version ("$version"; a file without one predates versions: 1) and the page entries
+ * (keys that are paths; anything else is metadata, never a page).
+ * @param {Record<string, unknown>} raw
+ * @returns {StoredFile}
+ */
+function splitStored(raw) {
+  const version = typeof raw.$version === "number" ? raw.$version : 1;
+  const entries = /** @type {Stored} */ (Object.fromEntries(Object.entries(raw).filter(([k]) => k.startsWith("/"))));
+  return { version, entries };
+}
+
+/**
+ * The committed file (a missing file is an empty one of the current version).
  * @param {string} root
- * @returns {Stored}
+ * @returns {StoredFile}
  */
 function readStored(root) {
   const file = join(root, DATES_FILE);
-  if (!existsSync(file)) return {};
+  if (!existsSync(file)) return { version: ALGO_VERSION, entries: {} };
   try {
-    return JSON.parse(readFileSync(file, "utf8"));
+    return splitStored(JSON.parse(readFileSync(file, "utf8")));
   } catch (e) {
-    throw new Error(`content-dates: ${DATES_FILE} is not valid JSON (${/** @type {Error} */ (e).message}) — resolve it or run "node scripts/content-dates.mjs --bootstrap"`, { cause: e });
+    throw new Error(
+      `content-dates: ${DATES_FILE} is not valid JSON (${/** @type {Error} */ (e).message}) — resolve it or run "node scripts/content-dates.mjs --bootstrap"`,
+      { cause: e },
+    );
   }
 }
 
+/** Was the context's file written by another version of the hash algorithm (then no stored hash can match)? */
+const otherVersion = (/** @type {Context} */ ctx) => ctx.version !== undefined && ctx.version !== ALGO_VERSION;
+
 /** @param {Context} ctx */
-const staleCount = (ctx) => [...ctx.hashes].filter(([p, h]) => ctx.stored[p]?.hash !== h).length;
+const staleCount = (ctx) => (otherVersion(ctx) ? ctx.hashes.size : [...ctx.hashes].filter(([p, h]) => ctx.stored[p]?.hash !== h).length);
 
 /** @param {Context} ctx */
 function warnOnce(ctx) {
   if (state.warned) return;
   state.warned = true;
-  console.warn(`content-dates: ${staleCount(ctx)} page(s) changed since ${DATES_FILE} was written — run "node scripts/content-dates.mjs --write" and commit it`);
+  console.warn(
+    otherVersion(ctx)
+      ? `content-dates: ${DATES_FILE} was written by hash algorithm v${ctx.version} (this script: v${ALGO_VERSION}), so every page is dated now — run "node scripts/content-dates.mjs --write" and commit it`
+      : `content-dates: ${staleCount(ctx)} page(s) changed since ${DATES_FILE} was written — run "node scripts/content-dates.mjs --write" and commit it`,
+  );
 }
 
 /**
@@ -571,7 +772,8 @@ function defaultContext() {
   const root = findRoot();
   let ctx = state.contexts.get(root);
   if (!ctx) {
-    ctx = { stored: readStored(root), hashes: pageHashes(workingTreeReader(root)), now: state.now, onStale: warnOnce };
+    const { version, entries } = readStored(root);
+    ctx = { stored: entries, version, hashes: pageHashes(workingTreeReader(root)), now: state.now, onStale: warnOnce };
     state.contexts.set(root, ctx);
   }
   return ctx;
@@ -606,7 +808,7 @@ export function pageDates(path, ctx = defaultContext()) {
   const hash = key && ctx.hashes.get(key);
   if (!key || !hash) return {};
   const s = ctx.stored[key];
-  if (s && s.hash === hash) return { published: s.published, modified: s.modified };
+  if (s && s.hash === hash && !otherVersion(ctx)) return { published: s.published, modified: s.modified };
   ctx.onStale?.(ctx);
   return { published: s?.published ?? ctx.now, modified: ctx.now };
 }
@@ -640,7 +842,7 @@ function mergeStored(stored, hashes, now) {
   /** @type {string[]} */
   const added = [];
   for (const [p, hash] of hashes) {
-    const s = stored[p];
+    const s = Object.hasOwn(stored, p) ? stored[p] : undefined;
     if (!s) {
       added.push(p);
       next[p] = { hash, modified: now, published: now };
@@ -652,8 +854,20 @@ function mergeStored(stored, hashes, now) {
       next[p] = { hash, modified: now, published: s.published ?? now };
     }
   }
-  const removed = Object.keys(stored).filter((p) => !hashes.has(p));
+  const removed = Object.keys(stored).filter((p) => p.startsWith("/") && !hashes.has(p));
   return { next, unchanged, changed, added, removed };
+}
+
+/**
+ * What `--check` reports: whether the file was written by another hash-algorithm version (then nothing else can be
+ * compared), else the changed / missing / extra paths.
+ * @param {StoredFile} file
+ * @param {Map<string, string>} hashes
+ */
+function checkStored(file, hashes) {
+  if (file.version !== ALGO_VERSION) return { versionChanged: true, changed: [], added: [], removed: [] };
+  const { changed, added, removed } = mergeStored(file.entries, hashes, "");
+  return { versionChanged: false, changed, added, removed };
 }
 
 /**
@@ -694,16 +908,18 @@ function historyDates(commits, current, now) {
 }
 
 /**
- * The file's text: paths sorted, entries as { hash, modified, published }, 2-space indent, trailing newline.
+ * The file's text: "$version" first, then the paths sorted, entries as { hash, modified, published }, 2-space indent,
+ * trailing newline.
  * @param {Stored} stored
  */
 function serialize(stored) {
   const sorted = Object.fromEntries(
     Object.keys(stored)
+      .filter((p) => p.startsWith("/"))
       .sort()
       .map((p) => [p, { hash: stored[p].hash, modified: stored[p].modified, published: stored[p].published }]),
   );
-  return `${JSON.stringify(sorted, null, 2)}\n`;
+  return `${JSON.stringify({ $version: ALGO_VERSION, ...sorted }, null, 2)}\n`;
 }
 
 /**
@@ -724,8 +940,7 @@ function save(root, stored) {
  * @param {string[]} args
  * @param {string} [input]
  */
-const gitIn = (root, args, input) =>
-  execFileSync("git", args, { cwd: root, input, maxBuffer: 1 << 30, stdio: ["pipe", "pipe", "pipe"] });
+const gitIn = (root, args, input) => execFileSync("git", args, { cwd: root, input, maxBuffer: 1 << 30, stdio: ["pipe", "pipe", "pipe"] });
 
 /**
  * Blob contents for `ids`, from one `git cat-file --batch` process.
@@ -763,15 +978,21 @@ function bootstrap(root, now) {
   try {
     shallow = gitIn(root, ["rev-parse", "--is-shallow-repository"]).toString().trim();
   } catch (e) {
-    throw new Error(`content-dates: --bootstrap needs git history, and ${root} is not a git checkout (${/** @type {Error} */ (e).message.split("\n")[0]})`, { cause: e });
+    throw new Error(
+      `content-dates: --bootstrap needs git history, and ${root} is not a git checkout (${/** @type {Error} */ (e).message.split("\n")[0]})`,
+      { cause: e },
+    );
   }
   if (shallow === "true")
-    throw new Error("content-dates: this clone is shallow, so the history (and every date) would be wrong — run `git fetch --unshallow` first");
+    throw new Error(
+      "content-dates: dating pages from git history needs the full history, and this clone is shallow (every date would be wrong) — run `git fetch --unshallow` first",
+    );
   const current = pageHashes(workingTreeReader(root));
   /** @type {Array<{ sha: string, date: string }>} */
   const log = [];
   const lines = gitIn(root, ["rev-list", "--reverse", "--format=%cI", "HEAD"]).toString().split("\n");
-  for (let i = 0; i + 1 < lines.length; i += 2) if (lines[i].startsWith("commit ")) log.push({ sha: lines[i].slice(7), date: lines[i + 1].trim() });
+  for (let i = 0; i + 1 < lines.length; i += 2)
+    if (lines[i].startsWith("commit ")) log.push({ sha: lines[i].slice(7), date: lines[i + 1].trim() });
   const trees = log.map(({ sha }) => {
     /** @type {Map<string, string>} */
     const tree = new Map();
@@ -797,17 +1018,26 @@ function main(args) {
   const took = () => `${((performance.now() - t0) / 1000).toFixed(2)} s`;
   const root = findRoot();
   const now = state.now;
-  const list = (/** @type {string} */ label, /** @type {string[]} */ paths, out = console.log) => paths.forEach((p) => out(`  ${label.padEnd(8)} ${p}`));
+  const list = (/** @type {string} */ label, /** @type {string[]} */ paths, out = console.log) =>
+    paths.forEach((p) => out(`  ${label.padEnd(8)} ${p}`));
+  const exists = existsSync(join(root, DATES_FILE));
   if (args.includes("--check")) {
-    if (!existsSync(join(root, DATES_FILE))) {
+    if (!exists) {
       console.error(`content-dates: ${DATES_FILE} does not exist — run "node scripts/content-dates.mjs --write" and commit it`);
       return 1;
     }
-    const stored = readStored(root);
-    const { changed, added, removed } = mergeStored(stored, pageHashes(workingTreeReader(root)), now);
+    const file = readStored(root);
+    const { versionChanged, changed, added, removed } = checkStored(file, pageHashes(workingTreeReader(root)));
+    if (versionChanged) {
+      console.error(
+        `content-dates: the page hash algorithm changed (${DATES_FILE} has v${file.version}, this script v${ALGO_VERSION}) — ` +
+          `run "node scripts/content-dates.mjs --write" (it re-dates every page from git history) and commit it`,
+      );
+      return 1;
+    }
     const n = changed.length + added.length + removed.length;
     if (!n) {
-      console.log(`content-dates: ${DATES_FILE} is current (${Object.keys(stored).length} pages, ${took()})`);
+      console.log(`content-dates: ${DATES_FILE} is current (${Object.keys(file.entries).length} pages, ${took()})`);
       return 0;
     }
     console.error(`content-dates: ${DATES_FILE} is out of date (${n} page(s)):`);
@@ -817,14 +1047,29 @@ function main(args) {
     console.error(`run "node scripts/content-dates.mjs --write" and commit it`);
     return 1;
   }
-  if (args.includes("--bootstrap") || (args.includes("--write") && !existsSync(join(root, DATES_FILE)))) {
-    if (!args.includes("--bootstrap")) console.log(`content-dates: no ${DATES_FILE} yet, bootstrapping from git history`);
+  const previous = exists ? readStored(root) : undefined;
+  const migrate = args.includes("--write") && previous !== undefined && previous.version !== ALGO_VERSION;
+  if (args.includes("--bootstrap") || (args.includes("--write") && (!exists || migrate))) {
+    if (!exists && !args.includes("--bootstrap")) console.log(`content-dates: no ${DATES_FILE} yet, bootstrapping from git history`);
+    // A new hash definition makes every stored hash differ from content that did not change: a plain merge would date
+    // every page "now". Re-dating from history under the new definition keeps the dates of what really did not change.
+    if (migrate)
+      console.log(
+        `content-dates: the hash algorithm changed (v${previous.version} → v${ALGO_VERSION}), re-dating every page from git history`,
+      );
     const { next, dirty, commits, head } = bootstrap(root, now);
     const wrote = save(root, next);
     console.log(
       `content-dates: ${Object.keys(next).length} pages dated from ${commits} commits (HEAD ${head?.slice(0, 7)}), ` +
         `${new Set(Object.values(next).map((e) => e.modified)).size} distinct modified dates, ${took()}`,
     );
+    if (previous) {
+      const moved = Object.keys(next).filter((p) => {
+        const o = previous.entries[p];
+        return !o || o.modified !== next[p].modified || o.published !== next[p].published;
+      });
+      console.log(`  ${Object.keys(next).length - moved.length} page(s) keep their dates, ${moved.length} get new ones`);
+    }
     if (dirty.length) {
       console.log(`  ${dirty.length} page(s) differ from HEAD in the working tree (or are new) → modified = ${now}:`);
       list("now", dirty);
@@ -833,7 +1078,7 @@ function main(args) {
     return 0;
   }
   if (args.includes("--write")) {
-    const { next, unchanged, changed, added, removed } = mergeStored(readStored(root), pageHashes(workingTreeReader(root)), now);
+    const { next, unchanged, changed, added, removed } = mergeStored(previous?.entries ?? {}, pageHashes(workingTreeReader(root)), now);
     const wrote = save(root, next);
     console.log(
       `content-dates: ${unchanged.length} unchanged, ${changed.length} changed, ${added.length} new, ${removed.length} removed (${took()})` +
@@ -867,7 +1112,9 @@ export const _internal = {
   segments,
   extractObjectLiteral,
   normalizeCode,
+  decodeString,
   constList,
+  siteMember,
   memoryReader,
   workingTreeReader,
   pageList,
@@ -875,78 +1122,13 @@ export const _internal = {
   pageHashes,
   pagePath,
   mergeStored,
+  checkStored,
   historyDates,
   serialize,
+  splitStored,
   staleCount,
+  ALGO_VERSION,
 };
-
-/* ------------------------------------------------------------------------------------------------ deprecated (git) */
-
-const git = (/** @type {string[]} */ args) =>
-  execFileSync("git", args, { cwd: process.cwd(), encoding: "utf8", maxBuffer: 64e6, stdio: ["ignore", "pipe", "ignore"] });
-
-/** @type {Map<string, string> | null | undefined} file → ISO date of the newest commit that touched it */
-let newest;
-function history() {
-  if (newest !== undefined) return newest;
-  try {
-    if (git(["rev-parse", "--is-shallow-repository"]).trim() === "true") return (newest = null);
-    const out = git(["log", "--format=%x00%cI", "--name-only", "--no-renames"]);
-    newest = new Map();
-    let date = "";
-    for (const line of out.split("\n")) {
-      if (line.startsWith("\0")) date = line.slice(1);
-      else if (line && date && !newest.has(line)) newest.set(line, date);
-    }
-  } catch {
-    newest = null;
-  }
-  return newest;
-}
-
-/**
- * Newest commit date (ISO 8601) among `files` (repo-relative paths; a path ending in "/" matches everything under it).
- * @deprecated Whole-file git dates are too coarse (CS2-04). Use pageDates(path).modified.
- * @param {string[]} files
- * @returns {string | undefined}
- */
-export function lastModified(files) {
-  const h = history();
-  if (!h) return undefined;
-  let best;
-  for (const f of files) {
-    if (f.endsWith("/")) {
-      for (const [k, d] of h) if (k.startsWith(f) && (!best || Date.parse(d) > Date.parse(best))) best = d;
-    } else {
-      const d = h.get(f);
-      if (d && (!best || Date.parse(d) > Date.parse(best))) best = d;
-    }
-  }
-  return best;
-}
-
-const firstCache = new Map();
-/**
- * Date of the first commit whose diff added `needle` to `file` (git pickaxe), e.g. a project's `slug: "…"` line.
- * @deprecated Needs full git history at build time. Use pageDates(path).published.
- * @param {string} file
- * @param {string} needle
- * @returns {string | undefined}
- */
-export function firstCommitted(file, needle) {
-  const key = `${file}\0${needle}`;
-  if (firstCache.has(key)) return firstCache.get(key);
-  let d;
-  if (history()) {
-    try {
-      d = git(["log", "--format=%cI", "--reverse", `-S${needle}`, "--", file]).split("\n")[0]?.trim() || undefined;
-    } catch {
-      d = undefined;
-    }
-  }
-  firstCache.set(key, d);
-  return d;
-}
 
 // Last, so every module-level binding above is initialized before the CLI runs.
 if (isMain()) {

@@ -12,7 +12,10 @@
  *    chips in a panel under the bar (APG disclosure: aria-expanded / aria-controls; one open at a time; Escape closes
  *    and returns focus; an outside click or tabbing out closes; picking a chip applies it and closes the panel).
  *  - Phones and tablets (< 1024px): the groups sit in a collapsed "Filter projects" disclosure (with the number of
- *    active filters and their names); chips wrap onto rows instead of scrolling sideways.
+ *    active filters and their names); chips wrap onto rows instead of scrolling sideways. The open panel is ~900px of
+ *    chips, so a sticky footer shows the live result count ("Show 6 projects", UX3-02): it closes the panel onto the
+ *    results. Its open state is kept in history.state and restored before first paint, so a Back that reloads the page
+ *    (no back/forward cache) restores the scroll offset onto the layout it was saved for (DEV3-05).
  *  - The initial state is applied by an inline script right after the markup, before first paint,
  *    so a filtered deep link never flashes the full list (no layout shift).
  * Options and counts are derived from the data (platforms: catalog/platforms.ts), so new projects, industries,
@@ -70,6 +73,7 @@ const groups = [
   },
 ] as const;
 const total = projects.length;
+const showCount = (n: number) => fmt(n === 1 ? labels.showCountOne : labels.showCount, { count: n });
 const optionCount = (n: number) => fmt(F.optionCount, { projects: countLabel(locale, n) });
 /* Chips: wrapping pills on phones; on desktop, equal tiles in the group's panel (count at the inline end). */
 const chip =
@@ -89,6 +93,8 @@ const panelId = "pf-panel";
   data-opt={F.optionCount}
   data-selected={`${P.open.trimStart()}${F.selected}${P.close}`}
   data-sep={P.listSep}
+  data-show-one={labels.showCountOne}
+  data-show-other={labels.showCount}
 >
   <div class="lc-pf-bar relative flex flex-wrap items-center gap-x-6 border-y border-charcoal-200 py-2 lg:gap-2 lg:py-3">
     <div data-pf-controls class="lc-pf-controls max-lg:w-full lg:contents">
@@ -110,7 +116,7 @@ const panelId = "pf-panel";
                 <span class="sr-only" data-pf-active-sr></span>
               </span>
             </span>
-            <span data-pf-summary hidden class="col-start-2 text-sm font-medium text-charcoal-700"></span>
+            <span data-pf-summary hidden class="col-start-2 text-sm font-medium break-keep text-charcoal-700"></span>
           </span>
           <Icon name="chevron-down" size={20} class="shrink-0 text-royal-600 transition-transform duration-(--dur-ui) ease-mech group-aria-expanded:rotate-180" />
         </button>
@@ -188,6 +194,18 @@ const panelId = "pf-panel";
             </div>
           ))
         }
+        {/* Phones and tablets: the live count at hand while the chips fill the screen; closes the panel onto the results. */}
+        <div class="sticky bottom-0 z-10 border-t border-charcoal-200 bg-white pt-3 pb-[max(0.75rem,env(safe-area-inset-bottom))] lg:hidden" data-fab-avoid>
+          <button
+            type="button"
+            data-pf-done
+            class="inline-flex min-h-12 w-full items-center justify-center gap-2 border border-transparent bg-royal-600 px-4 text-base font-bold text-white transition-colors duration-(--dur-micro) ease-mech hover:bg-royal-700"
+          >
+            <span data-pf-done-label>{showCount(total)}</span>
+            {/* the arrow is mirrored in RTL (Icon), so it turns the other way to point down */}
+            <Icon name="arrow" size={18} class="rotate-90 rtl:-rotate-90" />
+          </button>
+        </div>
       </div>
     </div>
 
@@ -207,10 +225,10 @@ const panelId = "pf-panel";
     </div>
   </div>
 
-  <h2 id="pf-results" class="sr-only">{F.results}</h2>
+  <h2 id="pf-results" class="sr-only" tabindex="-1">{F.results}</h2>
   <ul role="list" aria-labelledby="pf-results" data-pf-grid class="lc-grid-projects mt-8 gap-x-8 gap-y-14">
     {
-      projects.map((p) => (
+      projects.map((p, i) => (
         <li
           data-pf-item
           data-industry={p.industries.join(" ")}
@@ -218,7 +236,9 @@ const panelId = "pf-panel";
           data-platform={platformsOf(p).join(" ")}
           style="view-transition-class: lc-pf"
         >
-          <ProjectCard project={p} locale={locale} headingLevel="h3" />
+          {/* The first card is the phone LCP image (one column: in the first screen under the compact filter bar), the
+              second fills the tablet's first row: not lazy (PERF3-02). */}
+          <ProjectCard project={p} locale={locale} headingLevel="h3" eager={i < 2} priority={i === 0} />
         </li>
       ))
     }
@@ -237,6 +257,29 @@ const panelId = "pf-panel";
   /* No JS → no filters (the full list is shown). The html.js class is set in <head>, so there is no shift. */
   :global(html:not(.js)) .lc-pf-controls {
     display: none;
+  }
+  /* Forced colors (A11Y3-06): the pressed chip's navy fill and amber dot are backgrounds, which forced colors drops, so
+     every chip looked the same. Draw the selection with the system's selection colours (as the HMI demo's keys do). */
+  @media (forced-colors: active) {
+    [data-pf-key][aria-pressed="true"] {
+      forced-color-adjust: none;
+      background: SelectedItem;
+      color: SelectedItemText;
+      border-color: SelectedItem;
+    }
+    [data-pf-key][aria-pressed="true"] [data-pf-n] {
+      color: SelectedItemText;
+    }
+    [data-pf-key] > span:first-child {
+      forced-color-adjust: none;
+      background: GrayText;
+    }
+    [data-pf-key][aria-pressed="true"] > span:first-child {
+      background: SelectedItemText;
+    }
+    [data-pf-open][data-set] {
+      border-width: 2px;
+    }
   }
 </style>
 
@@ -257,6 +300,7 @@ const panelId = "pf-panel";
     const panel = root.querySelector("[data-pf-panel]");
     const activeBadge = root.querySelector("[data-pf-active]");
     const summary = root.querySelector("[data-pf-summary]");
+    const doneLabel = root.querySelector("[data-pf-done-label]");
     const keys = ["industry", "service", "platform"];
     const state = { industry: "", service: "", platform: "" };
     const valid = { industry: {}, service: {}, platform: {} };
@@ -296,6 +340,7 @@ const panelId = "pf-panel";
       if (n % 3 === 1 && n > 1) shown[n - 1].setAttribute("data-c3", "1");
       if (n % 3 === 2 && n > 2) shown[n - 2].setAttribute("data-c3", "2");
       if (countEl) countEl.textContent = label(n);
+      if (doneLabel) doneLabel.textContent = fill((n === 1 ? root.dataset.showOne : root.dataset.showOther) || "{count}", "count", String(n));
       if (empty) empty.hidden = n > 0;
       const on = keys.filter(function (k) { return !!state[k]; });
       if (reset) reset.hidden = !on.length;
@@ -329,10 +374,15 @@ const panelId = "pf-panel";
       if (summary) {
         summary.hidden = !on.length;
         summary.textContent = "";
+        const sep = root.dataset.sep || ", ";
         on.forEach(function (k, i) {
-          if (i) summary.appendChild(document.createTextNode(root.dataset.sep || ", "));
+          // Chinese "、" has no space after it: a zero-width space keeps it a break point under keep-all (I18N3-05).
+          if (i) summary.appendChild(document.createTextNode(/\s$/.test(sep) ? sep : sep + "\u200B"));
           const part = document.createElement("bdi");
           copyLabel(part, current[k]);
+          // A bare <bdi> is dir=auto: an Arabic label that starts with a Latin word ("SCADA وتسجيل البيانات") would be
+          // laid out left to right. Labels take the page's direction; brand names bring their own dir="ltr" (I18N3-01).
+          if (!part.dir) part.dir = document.documentElement.dir || "ltr";
           summary.appendChild(part);
         });
       }
@@ -346,13 +396,34 @@ const panelId = "pf-panel";
     keys.forEach(function (k) { const v = q.get(k); if (v && valid[k][v]) state[k] = v; });
     apply();
 
-    // Phones: the groups open / close under the "Filter projects" button.
+    // Phones: the groups open / close under the "Filter projects" button. The open state rides in history.state, so a
+    // reload or a Back without the back/forward cache reopens it here, before first paint: the browser then restores
+    // the scroll offset onto the same layout (an iPhone otherwise lands a screen below the card the visitor opened).
+    const wide = matchMedia("(min-width: 64rem)");
+    function setPanel(open) {
+      toggle.setAttribute("aria-expanded", String(open));
+      panel.toggleAttribute("data-open", open);
+      try {
+        history.replaceState(Object.assign({}, history.state, { pfOpen: open }), "");
+      } catch (e) {}
+    }
     if (toggle && panel) {
+      if (history.state && history.state.pfOpen && !wide.matches) setPanel(true);
       toggle.addEventListener("click", function () {
-        const open = toggle.getAttribute("aria-expanded") !== "true";
-        toggle.setAttribute("aria-expanded", String(open));
-        panel.toggleAttribute("data-open", open);
+        setPanel(toggle.getAttribute("aria-expanded") !== "true");
       });
+      // "Show 6 projects": close the panel, bring the filter line (summary + count) and the first results into view,
+      // and move focus to the results' heading so Tab continues with the first card. An instant jump: the panel's
+      // collapse already moves the page, so a smooth scroll would first show the middle of the list, then glide back.
+      const done = root.querySelector("[data-pf-done]");
+      const results = root.querySelector("#pf-results");
+      if (done) {
+        done.addEventListener("click", function () {
+          setPanel(false);
+          root.scrollIntoView({ block: "start", behavior: "instant" });
+          if (results) results.focus({ preventScroll: true });
+        });
+      }
     }
 
     // Desktop: one disclosure per group (button → panel under the bar), one open at a time.
@@ -392,7 +463,7 @@ const panelId = "pf-panel";
         if (!a || a === document.body || t.parentElement.contains(a)) t.focus();
       });
       // Crossing the 1024px breakpoint (rotation, resize): the panels' layout changes, so they start closed.
-      matchMedia("(min-width: 64rem)").addEventListener("change", function () { closeAll(); });
+      wide.addEventListener("change", function () { closeAll(); });
     }
 
     // Filter changes animate as a same-document view transition (cards that stay glide to their new cell, the others

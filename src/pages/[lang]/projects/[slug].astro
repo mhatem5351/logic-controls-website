@@ -6,7 +6,8 @@
  * location · year; then the copy's `facts`, a value naming a platform brand linking to /technologies/#brand, plus any
  * technology group the facts do not state; the last cell spans its row, no filler cells) → "At a glance" (first in the
  * story's DOM, shown as the sidebar from 1024px) → Challenge → Solution → Scope → [Technologies used: only without
- * facts] → Result → video (16:9, centred) → gallery (without the hero's cover photo) → previous / next → related
+ * facts] → Result → video (16:9, centred) → gallery (without the hero's cover photo; screen captures whole, in a bezel;
+ * none when the framed hero is the only image, its notes then close the facts) → previous / next → related
  * projects → CTA band. All case-study H2s share one size; the story column has one measure (44rem).
  * Below 1024px the media block (film + photos) comes right after the facts — on a phone the hero photo sits
  * behind the title, so the machine is shown before the story. It is also first in the DOM (reading / tab order
@@ -28,7 +29,7 @@ import TechStack from "~/components/sections/catalog/TechStack.astro";
 import ProjectNav from "~/components/sections/catalog/ProjectNav.astro";
 import RelatedProjects from "~/components/sections/catalog/RelatedProjects.astro";
 import FramedHero from "~/components/sections/catalog/FramedHero.astro";
-import { heroTreatment } from "~/components/sections/catalog/media";
+import { heroTreatment, isScreenGrab } from "~/components/sections/catalog/media";
 import { factPlatformHref, techGroupLabel, techRows } from "~/components/sections/catalog/facts";
 import { techLabel } from "~/lib/text";
 import {
@@ -74,13 +75,30 @@ const video = p.video;
 const vertical = !!video && video.height > video.width;
 /* Optional short visible captions per photo (projects.json → items[slug].imageCaptions[key]). */
 const captions = (c as { imageCaptions?: Record<string, string> }).imageCaptions ?? {};
-const allImages = projectImages(p).map((img) => ({ key: img.key, src: img.image, alt: imageAlt(locale, slug, img.key), caption: captions[img.key] }));
-/* The cover is already the hero photo, so the gallery shows the other photos. It stays only when it is the case
-   study's one photo and there is no film, so every page keeps at least one photo that opens full size. */
+const allImages = projectImages(p).map((img) => ({
+  key: img.key,
+  src: img.image,
+  alt: imageAlt(locale, slug, img.key),
+  caption: captions[img.key],
+  /* screen captures are shown whole in a bezel, never cropped or enlarged (Gallery `screen`, VIS3-01) */
+  screen: isScreenGrab(slug, img.key),
+}));
+/* Hero media: covers that are screen captures or too small for the panel are framed, never stretched (media.ts). */
+const treatment = heroTreatment(p);
+/* The cover is already the hero, so the gallery shows the other photos. A full-bleed cover hero sits cropped behind
+   the title: when it is the case study's one photo and there is no film it stays in the gallery, so the page keeps a
+   photo that opens full size. A framed hero (screen capture, small photo) already shows the whole image, at no more
+   than its own size: it is never repeated below (VIS3-01), so a case study may have no gallery. */
 const otherImages = allImages.filter((img) => img.key !== p.cover.key);
-const images = otherImages.length || video ? otherImages : allImages;
+const images = otherImages.length || video || treatment !== "cover" ? otherImages : allImages;
 const landscapeVideo = !!video && !vertical;
 const showMedia = landscapeVideo || images.length > 0;
+/* Notes under the media. The reference-call offer has its own block in the sidebar, so the confidentiality note stops
+   at its first sentence here (CS3-04: the full one also offered references, the same promise twice). */
+const caseNotes = [
+  { icon: "shield", text: m.projects.notes.anonymised },
+  { icon: "file", text: m.common.notes.photos },
+] as const;
 /* A landscape film with one or two photos: film and photos side by side. Otherwise film, then the photos:
    1 → one centred photo · 2 → two up · 3 → a lead photo + two · 4 → 2 × 2 (big enough to read HMI screens) · 5+ → 3 up. */
 const sideBySide = landscapeVideo && images.length > 0 && images.length <= 2;
@@ -105,8 +123,6 @@ const lastSpan = [
 ].join(" ");
 /* Case studies that also prove the foreign-manufacturers offer (commissioning lines supplied by others). */
 const FOREIGN_PROOF: readonly string[] = ["anaerobic-waste-treatment-commissioning"];
-/* Hero media: covers that are screen captures or too small for the panel are framed, never stretched (media.ts). */
-const treatment = heroTreatment(p);
 const videoTitle = c.videoTitle ?? c.cardTitle;
 
 /* Portfolio order (newest first) for previous / next, wrapping around. */
@@ -252,6 +268,14 @@ const jsonLd = graph(
         </p>
       )
     }
+    {
+      /* No media block (the framed hero is the case study's one image): its notes close the facts instead. */
+      !showMedia && (
+        <div class="mt-5 grid gap-3 text-sm text-charcoal-600 sm:grid-cols-2 sm:gap-8">
+          {caseNotes.map((n) => <p class="flex gap-2.5"><Icon name={n.icon} size={18} class="mt-0.5 shrink-0 text-royal-600" /><span set:html={html(locale, n.text)} /></p>)}
+        </div>
+      )
+    }
   </Section>
 
   <div class="flex flex-col">
@@ -293,8 +317,7 @@ const jsonLd = graph(
             </>
           )}
           <div class:list={["mt-10 grid gap-3 text-sm text-charcoal-600 sm:grid-cols-2 sm:gap-8", !landscapeVideo && galleryCols === 1 ? "mx-auto max-w-3xl" : landscapeVideo && !sideBySide && images.length === 0 && "mx-auto max-w-5xl"]}>
-            <p class="flex gap-2.5"><Icon name="shield" size={18} class="mt-0.5 shrink-0 text-royal-600" /><span set:html={html(locale, m.common.notes.anonymised)} /></p>
-            <p class="flex gap-2.5"><Icon name="file" size={18} class="mt-0.5 shrink-0 text-royal-600" /><span set:html={html(locale, m.common.notes.photos)} /></p>
+            {caseNotes.map((n) => <p class="flex gap-2.5"><Icon name={n.icon} size={18} class="mt-0.5 shrink-0 text-royal-600" /><span set:html={html(locale, n.text)} /></p>)}
           </div>
         </Section>
       )

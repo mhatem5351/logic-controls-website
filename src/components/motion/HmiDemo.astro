@@ -7,8 +7,8 @@
  * - tone: "light" (default, for white / light-grey bands) or "dark" (navy bands) — only affects the text
  *   around the panel; the panel itself is the same device in both.
  * - The panel is a static, fully-rendered SVG/HTML snapshot until the visitor presses a button. A ~1 KB bootstrap
- *   (below) fits the mimic to its width and loads the controller (~8 KB gz) only when the panel comes within ~800px of
- *   the viewport, or on the first touch / focus inside it. It pauses offscreen / in hidden tabs, and with reduced
+ *   (below) requests the demo's stylesheet, fits the mimic to its width and loads the controller (~8 KB gz) only when
+ *   the panel comes within ~800px of the viewport, or on the first touch / focus inside it. It pauses offscreen / in hidden tabs, and with reduced
  *   motion or the site's pause switch (html[data-motion="off"]) the flowing / spinning / blinking turn into static
  *   indicators while the simulation itself still runs on request.
  * - A four-step "Try it" checklist above the screen (Start → Forward → Simulate fault → Acknowledge) ticks itself as
@@ -131,12 +131,9 @@ const STEPS = ["start", "forward", "fault", "ack"] as const;
   data-tone={tone}
   id={id}
 >
-  {/* The demo's stylesheet, here instead of <head> (it is below the fold on most pages): an in-body stylesheet does not
-      hold up the first paint of the page above it. The inline script after it makes every browser pause parsing
-      until the sheet has loaded (script-blocking style sheet), so the demo is never shown unstyled. Kept on purpose
-      (CODE-44): the alternative (preload + swap) needs an inline handler or a placeholder that shifts layout. */}
-  <link rel="stylesheet" href={hmiCss} />
-  <script is:inline>/* parser waits here for the stylesheet above */</script>
+  {/* The demo's stylesheet is requested by the bootstrap below (PERF3-04): an in-body <link> + inline script held the
+      parser, and with it DOMContentLoaded (the header / drawer code), ~0.6 s on slow phones. Without JS: this one. */}
+  <noscript><link rel="stylesheet" href={hmiCss} /></noscript>
   {
     variant === "full" && (
       <header class="lc-hmi-intro">
@@ -171,7 +168,7 @@ const STEPS = ["start", "forward", "fault", "ack"] as const;
     )
   }
 
-  <figure class="lc-hmi" data-hmi data-fresh data-i18n={JSON.stringify(runtime)} aria-labelledby={`${u}-cap`}>
+  <figure class="lc-hmi" data-hmi data-fresh data-css={hmiCss} data-i18n={JSON.stringify(runtime)} aria-labelledby={`${u}-cap`}>
     <!-- "Try it": four steps that tick as the visitor plays (hmi-demo.ts) -->
     <div class="lc-hmi-tour" data-tour>
       <p class="lc-hmi-tour-h" id={`${u}-tour`}><span class="lc-led" aria-hidden="true"></span>{t.tour.label}</p>
@@ -180,13 +177,21 @@ const STEPS = ["start", "forward", "fault", "ack"] as const;
           STEPS.map((k, i) => (
             <li data-step={k}>
               <span class="lc-hmi-stepn" aria-hidden="true">{i + 1}</span>
-              <span>{t.tour[k]}</span>
-              {/* while the fault develops: what to watch (the step stays current until the plant has diverted and recovered) */}
-              {k === "fault" && (
-                <span class="lc-hmi-hint" data-step-hint hidden>
-                  {t.tour.watch}
+              {/* One cell, sized for its longest content (the label in bold, the current step's weight, and the hint):
+                  a step turning current / done or the hint showing never re-wraps the list, so the keys below never
+                  move under the finger (MOT3-05). */}
+              <span class="lc-hmi-stepl">
+                <span class="lc-hmi-stept" data-b={t.tour[k]}>
+                  {t.tour[k]}
                 </span>
-              )}
+                {/* while the fault develops: what to watch, drawn over the label (the step stays current until the plant
+                    has diverted and recovered; screen readers still get the label, then the hint) */}
+                {k === "fault" && (
+                  <span class="lc-hmi-hint" data-step-hint>
+                    {t.tour.watch}
+                  </span>
+                )}
+              </span>
               <span class="lc-hmi-sr" data-step-st />
             </li>
           ))
@@ -393,7 +398,7 @@ const STEPS = ["start", "forward", "fault", "ack"] as const;
         </p>
 
         <!-- command bar (function keys) -->
-        <div class="hs-cmd">
+        <div class="hs-cmd" data-teaser-anchor>
           <div class="hs-seg hs-run" role="group" aria-label={t.controls.run}>
             <button type="button" data-c="start" aria-pressed="false" data-next>
               <svg viewBox="0 0 16 16" aria-hidden="true"><path d="M4.5 3l8 5-8 5z" /></svg>{t.controls.start}
@@ -436,7 +441,7 @@ const STEPS = ["start", "forward", "fault", "ack"] as const;
               <span class="hs-ai-ptr"></span>
             </div>
             <div class="hs-sub" dir="auto">
-              {t.kpi.limit} <b data-v="limit" dir="ltr">≥ {n1(R.limit)} °C</b> · {t.kpi.min} <b data-v="minHold" dir="ltr">{R.hold} s</b>
+              {t.kpi.limit} <b data-v="limit" dir="ltr">≥&nbsp;{n1(R.limit)}&nbsp;°C</b> · {t.kpi.min} <b data-v="minHold" dir="ltr">{R.hold}&nbsp;s</b>
             </div>
             <!-- the cause, while the steam supply is down: reacts within a second of "Simulate fault" -->
             <p class="hs-cause" dir="ltr">
@@ -582,39 +587,75 @@ const STEPS = ["start", "forward", "fault", "ack"] as const;
   </figure>
 </div>
 
+<style is:global>
+  /* Until hmi-demo.css (requested by the bootstrap below) has loaded and the mimic is fitted to it, the demo keeps its
+     place unseen: it is far below the first screen, and an unstyled or unfitted mimic would be worse than a blank. */
+  html.js .lc-hmi-wrap:not([data-styled]) {
+    visibility: hidden;
+  }
+</style>
+
 <script>
-  // Bootstrap (~1 KB): fit the mimic now, load the controller only when the panel is near the viewport or touched.
+  /* Bootstrap (~1 KB): request the demo's stylesheet, fit the mimic once it applies, load the controller only when the
+     panel is near the viewport or touched. */
   import { fitMimic } from "~/scripts/motion/hmi-fit";
+  import { reloadOnce } from "~/scripts/site-load";
 
   type Mod = typeof import("~/scripts/motion/hmi-demo");
-  let mod: Promise<Mod> | undefined;
-  const load = () => (mod ??= import("~/scripts/motion/hmi-demo"));
-  const boot = (fig: HTMLElement) => load().then((m) => m.initHmi(fig));
+  const figs = [...document.querySelectorAll<HTMLElement>("[data-hmi]")];
+  if (figs.length) {
+    // low priority: decoration far below the fold, never in the way of the first screen's image and fonts
+    const css = new Promise<boolean>((done) => {
+      const link = Object.assign(document.createElement("link"), { rel: "stylesheet", href: figs[0]!.dataset.css ?? "", fetchPriority: "low" });
+      link.addEventListener("load", () => done(true), { once: true });
+      link.addEventListener("error", () => done(false), { once: true });
+      document.head.append(link);
+    });
+    let mod: Promise<Mod> | undefined;
+    // a failed import is not memoised: the next press asks again (CODE3-05)
+    const load = () =>
+      (mod ??= import("~/scripts/motion/hmi-demo").catch((e: unknown) => {
+        mod = undefined;
+        throw e;
+      }));
+    const boot = (fig: HTMLElement) => css.then(load).then((m) => m.initHmi(fig));
 
-  for (const fig of document.querySelectorAll<HTMLElement>("[data-hmi]")) {
-    fitMimic(fig);
-    // a press that arrives before the controller: load it, then replay the press
-    const early = (e: Event) => {
-      if (fig.dataset.ready) return;
-      const b = (e.target as Element).closest<HTMLButtonElement>("button[data-c]");
-      if (e.type === "click" && b) {
-        e.stopPropagation();
-        boot(fig).then(() => b.click());
-      } else boot(fig);
-    };
-    fig.addEventListener("click", early, true);
-    fig.addEventListener("focusin", early);
-    fig.addEventListener("pointerdown", early, { passive: true });
-    if ("IntersectionObserver" in window) {
-      const io = new IntersectionObserver(
-        (es) => {
-          if (!es.some((e) => e.isIntersecting)) return;
-          io.disconnect();
-          boot(fig);
-        },
-        { rootMargin: "800px 0px" },
-      );
-      io.observe(fig);
-    } else boot(fig);
+    for (const fig of figs) {
+      /* fitted in the same task the sheet's load event runs in, then shown: no frame of an unfitted mimic. Shown also
+         if the sheet failed (a tab left open across a deploy asks for a file that is gone): the copy and links stay
+         readable rather than an invisible block. */
+      void css.then(() => {
+        fitMimic(fig);
+        fig.closest(".lc-hmi-wrap")?.setAttribute("data-styled", "");
+      });
+      // a press that arrives before the controller: load it, then replay the press
+      const early = (e: Event) => {
+        if (fig.dataset.ready) return;
+        const b = (e.target as Element).closest<HTMLButtonElement>("button[data-c]");
+        if (e.type === "click" && b) {
+          e.stopPropagation();
+          /* the controller could not load (after a deploy, the previous build's chunk is gone): a press means the
+             visitor wants the demo, so reload once to get the current build; else the static panel stays */
+          boot(fig).then(
+            () => b.click(),
+            () => void reloadOnce(),
+          );
+        } else boot(fig).catch(() => {});
+      };
+      fig.addEventListener("click", early, true);
+      fig.addEventListener("focusin", early);
+      fig.addEventListener("pointerdown", early, { passive: true });
+      if ("IntersectionObserver" in window) {
+        const io = new IntersectionObserver(
+          (es) => {
+            if (!es.some((e) => e.isIntersecting)) return;
+            io.disconnect();
+            boot(fig).catch(() => {});
+          },
+          { rootMargin: "800px 0px" },
+        );
+        io.observe(fig);
+      } else boot(fig).catch(() => {});
+    }
   }
 </script>

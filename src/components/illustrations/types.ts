@@ -11,6 +11,11 @@ export interface ArtProps {
   label?: string;
   /** Extra classes on the root <svg>. */
   class?: string;
+  /**
+   * Inline art only: park the piece on its rest frame from a tiny script right after it (default). false: the host
+   * does it later in the page (HeroArt, after the hero's copy: PERF3-01).
+   */
+  park?: boolean;
 }
 
 import { uid as baseUid } from "../uid";

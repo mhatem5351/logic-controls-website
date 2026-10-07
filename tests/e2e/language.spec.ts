@@ -44,7 +44,7 @@ test("the one-tap quick switch (English page → Arabic) keeps the page", { tag:
   expect((await context.cookies()).find((c) => c.name === "lang")?.value).toBe("ar");
 });
 
-test("the drawer's language grid switches too (phones)", async ({ page }) => {
+test("the drawer's language grid switches too (phones)", { tag: "@phone" }, async ({ page }) => {
   test.skip(!isNarrow(page), "drawer is phone / tablet only");
   await page.goto(`/ar/${PATH}`);
   await page.locator(".lc-menu-open").click();
@@ -64,7 +64,7 @@ test("every language link on every page type points to the same page in that lan
   }
 });
 
-test("language menu: opens inside the page gutters on narrow phones, RTL included (never against the screen edge)", async ({ page }) => {
+test("language menu: opens inside the page gutters on narrow phones, RTL included (never against the screen edge)", { tag: "@phone" }, async ({ page }) => {
   test.skip(!isNarrow(page), "the menu variant is < 1024px");
   for (const width of [320, 360]) {
     await page.setViewportSize({ width, height: 740 });

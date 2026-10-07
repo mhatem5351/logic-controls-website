@@ -1,7 +1,8 @@
 ---
 /**
- * Portfolio: hero → filters (industry × service) + project cards → notes → CTA band.
- * Listing page: short hero (one-line lead, no stat strip) so the filters and the first cards show early.
+ * Portfolio: hero → filters (industry × service × platform) + project cards → notes → CTA band.
+ * Listing page: short hero (a short lead: our scope varies, each case study states it, the filters; no stat strip) so
+ * the filters and the first cards show early.
  */
 import BaseLayout from "~/layouts/BaseLayout.astro";
 import Hero from "~/components/Hero.astro";
@@ -20,7 +21,6 @@ export const getStaticPaths = localeStaticPaths;
 const locale = Astro.params.lang as Locale;
 const m = getMessages(locale);
 const idx = m.projects.index;
-const notes = m.common.notes;
 const L = m.common.labels;
 const projects = projectsFor(locale);
 const wa = m.common.whatsapp.default;
@@ -70,7 +70,8 @@ const jsonLd = graph(
           <Icon name="arrow" size={16} class="transition-transform group-hover:translate-x-1 rtl:group-hover:-translate-x-1" />
         </a>
       </div>
-      <p class="flex gap-2.5 text-sm text-charcoal-600 md:pt-2"><Icon name="shield" size={18} class="mt-0.5 shrink-0 text-royal-600" /><span set:html={html(locale, notes.anonymised)} /></p>
+      {/* The first sentence only: the block beside it is the reference offer (CS3-04, no promise twice). */}
+      <p class="flex gap-2.5 text-sm text-charcoal-600 md:pt-2"><Icon name="shield" size={18} class="mt-0.5 shrink-0 text-royal-600" /><span set:html={html(locale, m.projects.notes.anonymised)} /></p>
     </div>
   </Section>
 

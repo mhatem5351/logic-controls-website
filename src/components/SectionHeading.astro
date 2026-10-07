@@ -1,12 +1,12 @@
 ---
 /**
- * Section heading: optional index ("01"), eyebrow with the slanted bar, title, lead, optional swoosh.
- * Colours adapt automatically inside dark sections (.on-dark).
- * Motion (motion.css): the block rises into place on scroll, the eyebrow's slant bar draws, the swoosh wipes in.
+ * Section heading: optional index ("01"), eyebrow with the slanted bar, title, lead.
+ * Colours adapt automatically inside dark sections (.on-dark). No swoosh: it belongs only under the H2 of a closing
+ * CTA band (CtaBand; illustrations/STYLE.md "Motifs", VIS3-08).
+ * Motion (motion.css): the block rises into place on scroll, the eyebrow's slant bar draws.
  */
 import type { Locale } from "~/i18n";
 import { heading, toHtml } from "~/lib/text";
-import Swoosh from "./Swoosh.astro";
 interface Props {
   title: string;
   eyebrow?: string;
@@ -17,13 +17,12 @@ interface Props {
   as?: "h1" | "h2" | "h3";
   /** Visual size, independent of the heading level. */
   size?: "display" | "h1" | "h2" | "h3";
-  swoosh?: boolean;
   id?: string;
   class?: string;
   /** For the typography of a plain-text title / lead (defaults to the page's locale). */
   locale?: Locale;
 }
-const { title, eyebrow, lead, index, align = "start", as: Tag = "h2", size = Tag === "h1" ? "h1" : Tag === "h3" ? "h3" : "h2", swoosh = false, id, class: className } = Astro.props;
+const { title, eyebrow, lead, index, align = "start", as: Tag = "h2", size = Tag === "h1" ? "h1" : Tag === "h3" ? "h3" : "h2", id, class: className } = Astro.props;
 const center = align === "center";
 const locale = (Astro.props.locale ?? Astro.currentLocale) as Locale | undefined;
 ---
@@ -39,7 +38,6 @@ const locale = (Astro.props.locale ?? Astro.currentLocale) as Locale | undefined
     )
   }
   <Tag id={id} class:list={[`type-${size}`, "text-navy-950 on-dark:text-white"]} set:html={heading(locale, title)} />
-  {swoosh && <Swoosh class:list={["mt-4 w-36 sm:w-44", center && "mx-auto"]} />}
   {lead && <p class="mt-5 type-lead text-charcoal-700 on-dark:text-navy-200" set:html={toHtml(locale, lead)} />}
   <slot />
 </header>

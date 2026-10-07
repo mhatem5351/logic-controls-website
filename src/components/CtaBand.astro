@@ -121,10 +121,12 @@ const aside = Astro.slots.has("aside");
           ))
         }
       </div>
+      {/* Touch screens: 44px tall phone / email links (DEV2-07); the taller boxes replace the row gap and part of the top
+          margin, so the line sits where it did. */}
       {
         contactLine && (
-          <p class="mt-8 flex flex-wrap items-center gap-x-6 gap-y-2 text-sm text-navy-200">
-            <a href={telLink()} class="inline-flex min-h-6 items-center gap-2 hover:text-white">
+          <p class="mt-8 flex flex-wrap items-center gap-x-6 gap-y-2 text-sm text-navy-200 pointer-coarse:mt-6 pointer-coarse:gap-y-0">
+            <a href={telLink()} class="inline-flex min-h-6 items-center gap-2 hover:text-white pointer-coarse:min-h-11">
               <Icon name="phone" size={16} class="text-royal-300" />
               <span class="sr-only">
                 {m.common.labels.phone}
@@ -134,7 +136,7 @@ const aside = Astro.slots.has("aside");
                 {SITE.phone.display}
               </span>
             </a>
-            <a href={mailtoLink(t.email.subject, { locale, ...mail })} class="inline-flex min-h-6 items-center gap-2 hover:text-white">
+            <a href={mailtoLink(t.email.subject, { locale, ...mail })} class="inline-flex min-h-6 items-center gap-2 hover:text-white pointer-coarse:min-h-11">
               <Icon name="mail" size={16} class="text-royal-300" />
               <span class="sr-only">
                 {m.common.labels.email}

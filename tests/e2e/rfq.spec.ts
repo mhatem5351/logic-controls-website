@@ -34,6 +34,8 @@ const ZONES_EN = (
   JSON.parse(readFileSync(join(ROOT, "src/i18n/messages/en/common.json"), "utf8")) as { zones: { items: Record<string, { name: string }> } }
 ).zones.items;
 const thanksUrl = (l: string) => new RegExp(`/${l}/contact/thanks/\\?ref=LC-[0-9A-Z]{5}$`);
+/** A file name as the form and the thanks page write it into a sentence: isolated with its own direction (I18N3-02). */
+const iso = (name: string) => `\u2068${name}\u2069`;
 const stampOf = (l: string) => `QA-${l}-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`;
 
 async function openForm(page: Page, url: string) {
@@ -329,7 +331,7 @@ test("attachments: chosen files are listed, limits are explained, and they reach
   await turnstileToken(page);
   await page.locator('[data-actions="2"] [data-submit]').click();
   await page.waitForURL(thanksUrl("en"), { timeout: 20_000 });
-  await expect(page.locator("[data-received]")).toHaveText(EN.thanks.received.replace("{files}", "2.pdf, 3.pdf, 4.pdf")); // UX2-20
+  await expect(page.locator("[data-received]")).toHaveText(EN.thanks.received.replace("{files}", ["2.pdf", "3.pdf", "4.pdf"].map(iso).join(", "))); // UX2-20
   const mail = await findEmail(stamp);
   expect(mail.text).toContain("Attachments: 2.pdf (2 KB), 3.pdf (2 KB), 4.pdf (2 KB)");
   expect(mail.html).toContain('<a href="https://wa.me/201000000000">Reply on WhatsApp</a>');
@@ -364,7 +366,7 @@ test("attachments: a rejected type is named in the error, on the file and in the
   await page
     .locator("#rfq-files")
     .setInputFiles([pdf("drawing.pdf"), { name: "setup.exe", mimeType: "application/octet-stream", buffer: Buffer.from("MZ") }]);
-  const msg = EN.validation.filesType!.replace("{files}", "setup.exe");
+  const msg = EN.validation.filesType!.replace("{files}", iso("setup.exe"));
   await expect(page.locator("#rfq-files-error")).toHaveText(msg);
   await expect(page.locator("#rfq-files")).toHaveAttribute("aria-invalid", "true");
   await expect(page.locator("[data-files-list] li[data-issue=type]")).toContainText("setup.exe");
@@ -420,7 +422,7 @@ test.describe("attachments: per-file answer", () => {
     await page.locator("#rfq-consent").check();
     await turnstileToken(page);
     await page.locator('[data-actions="2"] [data-submit]').click();
-    const msg = EN.validation.filesType!.replace("{files}", "drawing.pdf");
+    const msg = EN.validation.filesType!.replace("{files}", iso("drawing.pdf"));
     await expect(page.locator("[data-alert-list] a")).toHaveText(`${EN.form.fields.files.label}: ${msg}`);
     await expect(page.locator("[data-files-list] li[data-issue=type]")).toHaveCount(1);
     await expect(page.locator("[data-files-list] li[data-issue=type]")).toContainText("drawing.pdf");
@@ -486,7 +488,10 @@ test("upload: progress is shown while files go up on a slow connection (button +
   await expect(page.locator("[data-progress]")).toBeVisible();
   await expect(page.locator("[data-progress]")).toContainText(EN.form.fields.files.keepOpen);
   await expect.poll(async () => Number(await bar.getAttribute("aria-valuenow")), { timeout: 10_000 }).toBeGreaterThan(0);
-  await expect(page.locator('[data-actions="2"] [data-submit-label]')).toHaveText(/^Uploading files… \d+%$/);
+  // A11Y3-03: the percentage is shown beside the label, never part of the focused button's name
+  await expect(page.locator('[data-actions="2"] [data-submit-label]')).toHaveText("Uploading files…");
+  await expect(page.locator('[data-actions="2"] [data-submit-pct]')).toHaveText(/^\s*\d+%$/);
+  await expect(page.locator('[data-actions="2"] [data-submit]')).toHaveAccessibleName("Uploading files…");
   await page.waitForURL(thanksUrl("en"), { timeout: 30_000 });
   await cdp.send("Network.emulateNetworkConditions", { offline: false, latency: 0, downloadThroughput: -1, uploadThroughput: -1 });
   const mail = await findEmail(stamp);
@@ -581,6 +586,8 @@ test("reply channel: Email makes the email required and brings it into step 1; P
   const zh = copy("zh");
   await openForm(page, "/zh/contact/");
   await page.locator("#rfq-reply-phone").check();
+  // the English page's draft (saved 300 ms after its last change) may carry the number over: start without one
+  await page.locator("#rfq-phone").fill("");
   await page.locator("#rfq-name").fill("QA QA");
   await page.locator("#rfq-company").fill("QA");
   await page.locator("#rfq-email").fill("qa@example.com");

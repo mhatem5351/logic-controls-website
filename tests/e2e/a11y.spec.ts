@@ -13,6 +13,11 @@ test.use({ reducedMotion: "reduce" });
 
 async function scan(page: Page) {
   await page.evaluate(() => document.fonts.ready);
+  // The HMI demo's stylesheet is requested by script (PERF3-04) and the demo stays unseen until it applies: scan the
+  // settled page, not the frame it lands in (under reduced motion every property gets a 0.01 ms transition, so the
+  // demo's contents become visible one frame after the demo itself).
+  await page.waitForFunction(() => !document.querySelector(".lc-hmi-wrap:not([data-styled])"));
+  await page.evaluate(() => new Promise((r) => requestAnimationFrame(() => requestAnimationFrame(r))));
   const { violations } = await new AxeBuilder({ page }).withTags(TAGS).exclude(".cf-turnstile").analyze();
   return violations.map((v) => ({
     id: v.id,
@@ -61,7 +66,7 @@ test.describe("axe: open states", () => {
     expect(await scan(page), "zone card open").toEqual([]);
   });
 
-  test("phone drawer open", async ({ page }) => {
+  test("phone drawer open", { tag: "@phone" }, async ({ page }) => {
     test.skip((page.viewportSize()?.width ?? 1440) >= 1024, "the drawer only exists below 1024px");
     await page.goto("/ar/");
     await page.locator(".lc-menu-open").click();

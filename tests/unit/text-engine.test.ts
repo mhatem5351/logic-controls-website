@@ -421,3 +421,78 @@ describe("Chinese: fixed place names stay whole (I18N2-08)", () => {
     }
   });
 });
+
+describe("the SafeHtml registry never depends on render order across locales (CODE3-09)", () => {
+  // Strings no other test renders, so each case starts from a registry that has never seen them.
+  it("html('en', X) then heading('ar', X) gives the Arabic isolate a fresh heading('ar', X) gives", () => {
+    const fresh = '<bdi dir="ltr" lang="en">Zelio</bdi>';
+    expect(html("en", "Zelio")).toBe("Zelio");
+    expect(heading("ar", "Zelio")).toBe(fresh);
+    expect(toHtml("ar", "Zelio")).toBe(fresh);
+  });
+  it("the audit repro: identity outputs of other locales are plain text for the next caller", () => {
+    expect(html("en", "Profibox")).toBe("Profibox");
+    expect(heading("ar", "Profibox")).toBe('<bdi dir="ltr" lang="en">Profibox</bdi>');
+    expect(html("en", "PLC 9001x")).toBe("PLC 9001x");
+    expect(toHtml("ar", "PLC 9001x")).toBe(html("ar", "PLC 9001x"));
+    expect(toHtml("ar", "PLC 9001x")).toContain("<bdi");
+    // markup``, rich() and emphasize() results without markup are plain text too
+    expect(heading("ar", markup`${"Sysmac"}`)).toBe('<bdi dir="ltr" lang="en">Sysmac</bdi>');
+    expect(heading("ar", rich("en", "Omronix", {}))).toBe('<bdi dir="ltr" lang="en">Omronix</bdi>');
+  });
+  it("output with markup or an entity still passes through unchanged, in any locale", () => {
+    for (const r of [html("en", "Siemens S7-1200"), html("en", "R&D"), html("zh", "设备自动化"), heading("tr", "otomatikleştiriyorsunuz ve S7-1200")]) {
+      expect(isSafeHtml(r)).toBe(true);
+      for (const l of ["en", "ar", "zh", "tr"] as const) expect(toHtml(l, r)).toBe(r);
+    }
+  });
+  it("re-rendering an identity output in its own locale changes nothing (pass-through and render agree)", () => {
+    for (const l of ["en", "ar", "zh", "tr"] as const)
+      for (const s of ["PLC", "Profinet", "otomasyon", "تشغيل", "Bir pastörizatörü tarayıcınızdan çalıştırın"]) {
+        const once = html(l, s);
+        expect(toHtml(l, once), `${l}: ${s}`).toBe(once);
+        expect(heading(l, heading(l, s)), `${l}: ${s}`).toBe(heading(l, s));
+      }
+  });
+});
+
+describe("Arabic: a conjunction glued to a word-only name never ends a line alone (I18N3-03)", () => {
+  it("'و⍽SIMATIC HMI' is one no-wrap unit (Chromium breaks before an inline-block even after a no-break space)", () => {
+    const out = heading("ar", `باستخدام Siemens S7-1200 و${NBSP}SIMATIC HMI`);
+    expect(out).toContain(`<span class="lc-nw">و${NBSP}<bdi dir="ltr" class="lc-nws">SIMATIC HMI</bdi></span>`);
+    expect(cleanText(out)).toBe("باستخدام Siemens S7-1200 و SIMATIC HMI");
+  });
+  it("only after a whole conjunction word, and never around a code (codes are not inline-blocks)", () => {
+    expect(html("ar", `بنظام${NBSP}Logic Controls`)).not.toContain('<span class="lc-nw">');
+    expect(html("ar", `و${NBSP}S7-1200`)).not.toContain('<span class="lc-nw">و');
+  });
+});
+
+describe("Chinese: no unbreakable run wider than a phone heading line (I18N3-03)", () => {
+  const HAN_RUN = /[\u3400-\u9FFF\uF900-\uFAFF]{7,}/;
+  it("'四头洗发水灌装机：' breaks between its words; '：' stays on the line of the word before it", () => {
+    const s = "四头洗发水灌装机：全新控制柜、Delta PLC 与阿拉伯语 HMI";
+    expect(zhWords(s).slice(0, 3)).toEqual(["四头", "洗发水", "灌装机："]);
+    const out = html("zh", s);
+    expect(out).toContain(`四头${ZWSP}洗发水${ZWSP}灌装机：${ZWSP}`);
+    expect(out).not.toContain(`${ZWSP}：`);
+  });
+  it("an unknown compound longer than 6 Han characters is halved, never before closing punctuation", () => {
+    const out = html("zh", "泵启停均带定时延时。");
+    expect(out).toBe(`<span class="break-keep">泵启停均带${ZWSP}定时延时。</span>`);
+    expect(cleanText(out)).toBe("泵启停均带定时延时。");
+  });
+  it("every zh message renders with no Han run of more than 6 characters between break opportunities", () => {
+    const bad: string[] = [];
+    const walk = (v: unknown) => {
+      if (typeof v === "string") {
+        // visible text only (a link's hidden "opens in a new tab" hint is not laid out)
+        const text = html("zh", v).replace(/<span class="sr-only">[^<]*<\/span>/g, " ").replace(/<[^>]+>/g, "");
+        for (const piece of text.split(/[\s\u200B]/)) if (HAN_RUN.test(piece)) bad.push(piece);
+      } else if (Array.isArray(v)) v.forEach(walk);
+      else if (v && typeof v === "object") Object.values(v).forEach(walk);
+    };
+    walk(getMessages("zh"));
+    expect(bad).toEqual([]);
+  });
+});

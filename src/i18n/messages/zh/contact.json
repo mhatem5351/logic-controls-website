@@ -22,7 +22,8 @@
       "submit": "提交需求",
       "sending": "正在发送……",
       "sendNow": "跳过并立即提交",
-      "retry": "重试"
+      "retry": "重试",
+      "sendWithoutFiles": "不附文件直接提交"
     },
     "fields": {
       "name": {
@@ -169,7 +170,7 @@
     "filesSize": "文件总大小超过 {max}。请在此移除部分文件，提交后再通过电子邮件发送。确认页面会提供需求编号，发送时请注明。",
     "emailForReply": "请填写电子邮箱，以便我们通过邮件回复您。",
     "phoneForReply": "请填写电话号码，以便我们致电回复您。",
-    "phoneCountry": "请填写国家或地区代码，例如中国 +86、埃及 +20，以免我们拨错号码。",
+    "phoneCountry": "请填写国家或地区代码，例如中国 +86、埃及 +20，以免我们拨错号码。",
     "messageNear": "已输入 {count}/{max} 个字符。"
   },
   "errors": {
@@ -182,7 +183,8 @@
     "attachments": "文件无法接收：可能超出限制（最多 3 个文件，总大小 4 MB），或不是 PDF、JPG、PNG、WebP、ZIP、DWG、DXF 格式。请移除文件后提交需求，再通过电子邮件发送文件。",
     "verificationBlocked": "安全验证无法加载，可能被浏览器插件、防火墙或网络拦截。请刷新页面或更换网络，也可通过下方方式直接联系我们。",
     "handover": "您填写的信息已复制到消息中，无需重新输入。",
-    "timeout": "发送时间过长，已停止。您的网络可能较慢或已中断。请重试，或通过电话、电子邮件联系我们。"
+    "timeout": "发送时间过长，已停止。您的网络可能较慢或已中断。请重试，或通过电话、电子邮件联系我们。",
+    "withoutFiles": "需求会立即提交。文件可稍后通过电子邮件发送，并注明下一页显示的需求编号。"
   },
   "channels": {
     "title": "其他联系方式",
@@ -235,17 +237,21 @@
     },
     "urgentNow": {
       "title": "设备已停机？请立即致电工程师。",
-      "text": "接通后请提供您的需求编号 {ref}。"
+      "text": "接通后请提供您的需求编号 {ref}。",
+      "whatsapp": "您好，Logic Controls。关于需求 {ref}：我们的设备停机了，需要故障排查支持。设备及品牌：\nHello Logic Controls, about request {ref}: my machine is stopped and I need troubleshooting help. Machine and brand:",
+      "emailSubject": "紧急：设备停机（需求 {ref}）"
     },
     "received": "已收到的文件：{files}",
     "skipped": "以下文件未能附加：{files}，因为文件内容与格式不符。请通过电子邮件发送，并注明需求编号。",
     "skippedSome": "部分文件因内容与格式不符而未能附加。请通过电子邮件发送，并注明需求编号。",
+    "dropped": "以下文件未随需求发送：{files}。请通过电子邮件发送，并注明需求编号。",
     "replyBy": "首选联系方式：{channel}",
     "more": {
       "titleMore": "还有其他文件？",
       "title": "有照片或图纸？",
       "text": "请通过电子邮件或 WhatsApp 发送，有助于我们更快准备报价。",
-      "cta": "通过 WhatsApp 发送图纸"
+      "cta": "通过 WhatsApp 发送图纸",
+      "ctaShort": "通过 WhatsApp 发送"
     },
     "backHome": "返回首页",
     "seeProjects": "查看项目案例",

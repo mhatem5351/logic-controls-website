@@ -32,7 +32,8 @@ const company = [
   { label: t.nav.about, path: "about" },
   { label: t.nav.projects, path: "projects" },
   { label: t.nav.technologies, path: "technologies" },
-  { label: t.nav.foreign, path: FOREIGN_PATH },
+  /* the page's own short name (as in its breadcrumb), not the question the header asks: one line in a narrow list */
+  { label: m.common.breadcrumbs.foreign as string, path: FOREIGN_PATH },
   { label: t.nav.contact, path: "contact" },
   { label: t.nav.privacy, path: "privacy" },
 ];
@@ -197,8 +198,6 @@ const mail = mailtoLink(undefined, { locale, path, topic: ctx.topic });
       padding-bottom: max(2.5rem, env(safe-area-inset-bottom, 0px));
     }
   }
-  /* Desktop: the Services column gets the room its longer names need ("PLC and HMI programming", "Testing and
-     commissioning"), so every column keeps one line per item (VIS2-20). */
   @media (min-width: 64rem) and (max-width: 79.99rem) {
     .lc-foot-brand {
       display: grid;
@@ -207,9 +206,23 @@ const mail = mailtoLink(undefined, { locale, path, topic: ctx.topic });
       column-gap: 2.5rem;
     }
   }
+  /* Desktop: Services and Industries as wide as their longest name, so their lists keep one line per item ("PLC and
+     HMI programming", "Packaging and labeling", tr "Endüstriyel çamaşırhane"); Company takes what is left, up to its
+     own longest name (it wraps first when the row is short). Any room left over spreads evenly between the columns.
+     If even the shortest Company column does not fit beside them (WCAG text spacing), it moves to a second row
+     instead of overflowing (VIS2-20, VIS3-07). */
   @media (min-width: 64rem) {
     .lc-foot-nav {
-      grid-template-columns: minmax(0, 1.45fr) minmax(0, 1fr) minmax(0, 0.85fr);
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: space-between;
+    }
+    .lc-foot-nav > * {
+      flex: none;
+    }
+    .lc-foot-nav > :last-child {
+      flex: 1 1 0;
+      max-width: max-content;
     }
   }
   /* Touch screens: 44px rows for the dense link lists (desktop density unchanged). */

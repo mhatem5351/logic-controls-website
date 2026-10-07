@@ -9,6 +9,7 @@
  */
 import { readFileSync } from "node:fs";
 import { describe, expect, it } from "vitest";
+import { getMessages, LOCALES } from "~/i18n";
 import {
   EVT_KINDS,
   EVT_PLACES,
@@ -25,9 +26,11 @@ import {
   fillHref,
   hrefSlot,
   intlPhone,
+  isNetworkCountry,
   isValidEmail,
   isValidPhone,
   multiLine,
+  networkPhone,
   normalizeRfq,
   oneLine,
   parseEvt,
@@ -142,6 +145,32 @@ describe("phone", () => {
     ["02 2345 6789", { locale: "en" }, null],
     ["abc", {}, null],
   ] as const)("intlPhone(%j, %j) → %j", (raw, ctx, out) => expect(intlPhone(raw, ctx)).toBe(out));
+
+  // UX3-03: a guess from the visitor's network country (request.cf.country), offered to the owner as such
+  it.each([
+    ["0501234567", "SA", "966501234567"],
+    ["050 123 4567", "SA", "966501234567"],
+    ["501234567", "SA", "966501234567"], // without the trunk 0
+    ["٠٥٠١٢٣٤٥٦٧", "SA", "966501234567"], // Arabic-Indic digits
+    ["055 123 4567", "AE", "971551234567"],
+    ["0531234567", "AE", null], // 053 is not a UAE mobile prefix
+    ["0532 123 45 67", "TR", "905321234567"],
+    ["01001234567", "EG", "201001234567"],
+    ["138 0013 8000", "CN", "8613800138000"],
+    ["02 2345 6789", "EG", null], // mobiles only: a landline could be anywhere in the country's numbering
+    ["0501234567", "DE", null], // no known format for that country
+    ["0501234567", "XX", null], // Cloudflare: unknown
+    ["0501234567", "T1", null], // Cloudflare: Tor
+    ["0501234567", undefined, null],
+    ["+966501234567", "SA", null], // already international: intlPhone() handles it, no guess
+    ["00966501234567", "SA", null],
+    ["12", "SA", null],
+  ] as const)("networkPhone(%j, %j) → %j", (raw, cc, out) => expect(networkPhone(raw, cc)).toBe(out));
+
+  it("isNetworkCountry: ISO codes only", () => {
+    expect(["SA", "EG", "DE"].every(isNetworkCountry)).toBe(true);
+    expect([undefined, "", "XX", "T1", "sa", "SAU", 1].some(isNetworkCountry)).toBe(false);
+  });
 });
 
 describe("email", () => {
@@ -373,4 +402,24 @@ describe("hand-over links (fillHref)", () => {
   it("sessionStorage keys are distinct", () => {
     expect(new Set(Object.values(RFQ_SESSION)).size).toBe(Object.keys(RFQ_SESSION).length);
   });
+});
+
+describe("thanks page: urgent hand-off texts (I18N3-07)", () => {
+  /** The prompt the visitor completes ("Machine and brand:"): the last sentence of a line, ending with a colon. */
+  const prompt = (line: string) => /[^.。]*[:：]$/.exec(line)?.[0].trim();
+  for (const l of LOCALES) {
+    it(`${l}: every language line names the request first and ends with the same prompt as the plain "machine stopped" message`, () => {
+      const m = getMessages(l);
+      const urgent = m.contact.thanks.urgentNow.whatsapp.split("\n");
+      const stopped = m.common.whatsapp.stopped.split("\n");
+      expect(urgent).toHaveLength(stopped.length); // tr / zh: the local line, then the English one
+      urgent.forEach((line, i) => {
+        expect(line).toContain("{ref}");
+        expect(line.indexOf("{ref}")).toBeLessThan(line.length / 2);
+        expect(prompt(line)).toBe(prompt(stopped[i]!));
+        expect(prompt(line)).toBeTruthy();
+      });
+      expect(m.contact.thanks.urgentNow.emailSubject).toContain("{ref}");
+    });
+  }
 });

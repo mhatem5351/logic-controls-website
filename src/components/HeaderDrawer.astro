@@ -22,7 +22,7 @@ import ChromeIcon from "./ChromeIcon.astro";
 import LanguageSwitcher from "./LanguageSwitcher.astro";
 import CopyEmail from "./CopyEmail.astro";
 import MotionToggle from "./MotionToggle.astro";
-import { contactCta, pageContact } from "./contact-cta";
+import { contactCta, narrowWhatsapp, pageContact } from "./contact-cta";
 import { serviceIcon, industryIcon } from "./sections/catalog/catalog";
 import { colon, ltr } from "~/lib/text";
 import { MAIN_NAV, FOREIGN_PATH, href, currentState, whatsappLink, mailtoLink, prefersEmail, prefersWhatsapp, serviceNav, industryNav, fmt } from "./nav";
@@ -61,16 +61,21 @@ interface Action {
 const contactAction: Action =
   contact.kind === "email" ? { href: contact.href, label: contact.label, icon: "mail" } : { href: contact.href, label: contact.label, icon: "whatsapp", external: true };
 const quoteAction: Action = { href: ctx.quote, label: t.cta.quote, arrow: true };
-const actions: Action[] = ctx.urgent
+/* The sheet is at most 26rem wide: a WhatsApp action takes the locale's short label when the full one would wrap
+   (tr, VIS3-06). */
+const pair: Action[] = ctx.urgent
   ? [{ href: telLink(), label: m.common.labels.callEngineer as string, icon: "phone" }, contactAction]
   : waFirst
     ? [{ href: wa, label: t.cta.whatsapp, icon: "whatsapp", external: true }, quoteAction]
     : [quoteAction, contactAction];
+const actions = pair.map((a) => (a.icon === "whatsapp" ? { ...a, label: narrowWhatsapp(locale, a.label) ?? a.label } : a));
 ---
 
 <dialog id="lc-drawer" class="lc-drawer on-dark bg-navy-950 text-navy-100" aria-label={t.a11y.menu}>
   <div class="flex min-h-full flex-col">
-    <div class="flex h-14 shrink-0 items-center justify-between border-b border-white/10 px-5">
+    {/* .lc-drawer-bar: following a link from the sheet, this bar crossfades into the new page's header (BaseLayout,
+        MOT3-04); its own background makes that layer opaque. */}
+    <div class="lc-drawer-bar flex h-14 shrink-0 items-center justify-between border-b border-white/10 bg-navy-950 px-5">
       <Logo variant="dark" width={104} alt="Logic Controls" loading="lazy" />
       {/* `autofocus` is the HTML way to set a modal dialog's initial focus (as in Header / Gallery; the rule is off for
           this file in eslint.config.mjs). */}
@@ -194,12 +199,12 @@ const actions: Action[] = ctx.urgent
               {urgent.title}
             </p>
             <div class="flex gap-2">
-              <a href={telLink()} class="lc-tel-label inline-flex min-h-11 items-center gap-1.5 border border-white/20 px-3 text-sm font-semibold text-white hover:border-white/50">
+              <a href={telLink()} class="lc-tel-label inline-flex min-h-11 items-center gap-1.5 border border-white/20 px-3 text-sm font-semibold whitespace-nowrap text-white hover:border-white/50">
                 <ChromeIcon name="phone" size={16} class="text-royal-300" />
                 {t.cta.call}
               </a>
               {!email && (
-                <a href={urgent.wa} target="_blank" rel="noopener" class="inline-flex min-h-11 items-center gap-1.5 border border-white/20 px-3 text-sm font-semibold text-white hover:border-white/50">
+                <a href={urgent.wa} target="_blank" rel="noopener" class="inline-flex min-h-11 items-center gap-1.5 border border-white/20 px-3 text-sm font-semibold whitespace-nowrap text-white hover:border-white/50">
                   <ChromeIcon name="whatsapp" size={16} class="text-whatsapp-500" />
                   {t.cta.whatsappShort}
                   <span class="sr-only">({t.a11y.newTab})</span>
@@ -301,6 +306,13 @@ const actions: Action[] = ctx.urgent
   }
   :global(html:has(.lc-drawer[open])) {
     overflow: hidden;
+  }
+  /* 320px phones: the full-width actions keep their one-line labels ("WhatsApp an engineer", ar) with less side
+     padding (they are centred anyway). */
+  @media (max-width: 22.49rem) {
+    .lc-drawer .lc-btn[data-size="lg"] {
+      padding-inline: 1rem;
+    }
   }
 
   /* Accordions: the chevron turns (the svg comes from <Icon>, hence :global) and the list drops in. */

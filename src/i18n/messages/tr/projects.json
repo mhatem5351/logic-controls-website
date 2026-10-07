@@ -2,16 +2,17 @@
   "index": {
     "seo": {
       "title": "Mısır'da Otomasyon Projeleri ve Uygulamalar | Logic Controls",
-      "description": "Mısır'da tasarladığımız, programladığımız ve devreye aldığımız kontrol sistemleri: pastörizatör, tablet kaplama, dolum, etiketleme, beton santrali."
+      "description": "Mısır'daki tesislerden otomasyon projeleri: pastörizatör, tablet kaplama, dolum, etiketleme. Kapsamımız PLC programlamadan eksiksiz sistemlere uzanır."
     },
     "h1": "Mısır'daki otomasyon projelerimiz",
     "intro": [
-      "Mısır'daki tesisler için tasarladığımız, programladığımız ve devreye aldığımız kontrol sistemleri. Her proje sayfası ihtiyacı, iş kapsamımızı ve kullanılan teknolojiyi gösterir.",
-      "Sizinkine benzer bir makine bulmak için sektöre veya hizmete göre filtreleyin."
+      "Mısır'daki tesisler için projelerimiz: PLC programlama ya da devreye alma işlerinden eksiksiz sistemlere. Her projede kapsamımız belirtilir. Sektöre, hizmete veya platforma göre filtreleyin."
     ]
   },
   "labels": {
     "countOne": "{count} proje",
+    "showCount": "{count} projeyi göster",
+    "showCountOne": "{count} projeyi göster",
     "techGroups": {
       "plc": "PLC",
       "hmi": "HMI",
@@ -19,6 +20,9 @@
       "drives": "Sürücüler ve hareket kontrolü",
       "other": "Pano ve ağ bileşenleri"
     }
+  },
+  "notes": {
+    "anonymised": "Müşteri adları gizlilik nedeniyle paylaşılmamaktadır."
   },
   "items": {
     "beverage-syrup-jet-mixing": {

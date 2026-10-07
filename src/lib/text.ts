@@ -21,7 +21,8 @@
  *   Isolate controls (LRI…PDI) already in the copy are dropped and replaced by these rules.
  *   A conjunction / preposition only glues FORWARD: "S7-1200⍽و⍽WinCC" is normalised to "S7-1200 و⍽WinCC", so two
  *   atoms are never fused into one unbreakable run (check-i18n also rejects the backward glue in the copy).
- * - Chinese: breaks only between words (Intl.Segmenter + merge rules, U+200B + `word-break: keep-all`), a number
+ * - Chinese: breaks only between words (Intl.Segmenter + merge rules, U+200B + `word-break: keep-all`; a merged run of
+ *   more than 6 Han characters is halved, so no unbreakable piece is wider than a phone heading line), a number
  *   stays with the measure word after it ("50 多个项目" never breaks after "50"), a closing-punctuation cluster
  *   ("）、", "）；") never splits (WebKit's keep-all breaker would start a line with "、"), nor does "（" from the Latin
  *   word after it (WebKit would end a line with "（"), and "——" / "……" never start a line (they are kept on one line
@@ -39,9 +40,10 @@
  *
  * ── set:html contract (CODE-02, CODE2-03) ───────────────────────────────────────────────────────────────────────
  * html(), heading(), rich(), emphasize(), ltr(), markup`` and toHtml() return `SafeHtml`: escaped HTML, ready for
- * set:html. The brand is real at run time: the engine records every value it returns, and only a recorded value is
- * ever passed through as HTML. Everything else is plain text and is escaped — even a string that looks like HTML
- * ("<2 bar>", "R&amp;D"). Nothing guesses from the content.
+ * set:html. The brand is real at run time: the engine records every value it returns with markup or an entity, and
+ * only a recorded value is ever passed through as HTML. Everything else is plain text and is escaped — even a string
+ * that looks like HTML ("<2 bar>", "R&amp;D"). Nothing guesses from the content. A result without markup reads like
+ * the plain text it came from and is rendered again by the next caller, with that caller's locale (CODE3-09).
  * - A component that renders a text prop with set:html calls `toHtml(locale, prop)` (body text) or
  *   `heading(locale, prop)` (headings, titles, short labels): plain text → rendered; SafeHtml → passed through
  *   (never double-escaped).
@@ -66,16 +68,24 @@ import { EXTERNAL_HOSTS } from "./link-policy.mjs";
 export type SafeHtml = string & { readonly __safeHtml: true };
 
 /**
- * Every string this module has returned as HTML. toHtml() / heading() / rich() / markup`` / emphasize() treat a value
- * as HTML only when it is in this set; any other string is plain text and gets escaped. Strings are deduplicated and
- * the set only ever holds rendered site copy, so it stays small (a few thousand entries per locale).
+ * Every string with markup or an entity this module has returned as HTML. toHtml() / heading() / rich() / markup`` /
+ * emphasize() treat a value as HTML only when it is in this set; any other string is plain text and gets escaped.
+ * A result without either ("Profinet", "PLC" from html("en", …)) is not recorded: it reads exactly like the plain text
+ * it came from, so it is plain text wherever it goes next and gets the locale rules of the caller that renders it —
+ * heading("ar", "Profinet") isolates it in <bdi dir="ltr" lang="en"> whatever another locale's page rendered first
+ * (CODE3-09: a string-only registry made that depend on the build's page order). Strings are deduplicated and the set
+ * only ever holds rendered site copy, so it stays small (a few thousand entries per locale).
  */
 const ISSUED = new Set<string>();
+const MARKUP = /[<&]/;
 const safe = (s: string): SafeHtml => {
-  ISSUED.add(s);
+  if (MARKUP.test(s)) ISSUED.add(s);
   return s as SafeHtml;
 };
-/** Was this value produced by the engine (html(), heading(), rich(), emphasize(), ltr(), markup``, toHtml())? */
+/**
+ * Must this value be passed through as HTML: engine output (html(), heading(), rich(), emphasize(), ltr(), markup``,
+ * toHtml()) that carries markup or an entity? Escaping a value without either changes nothing, so it is plain text.
+ */
 export const isSafeHtml = (value: unknown): value is SafeHtml => typeof value === "string" && ISSUED.has(value);
 
 const ESC: Record<string, string> = { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" };
@@ -332,7 +342,19 @@ function arIsolate(run: string, open = "", close = ""): string {
   return `<bdi dir="ltr"${lang}${nws}>${esc(open + run + close)}</bdi>`;
 }
 
+/**
+ * "و⍽<bdi class="lc-nws">SIMATIC HMI</bdi>": a conjunction / preposition glued forward to a word-only name. In a
+ * heading the name is an inline-block (global.css PK5), and Chromium breaks before an inline-block even after a no-break
+ * space, so a card title ended a line with a lone "و" (I18N3-03 scan). The pair goes in one no-wrap span; the name still
+ * wraps inside when it alone is wider than the line.
+ */
+const AR_LINK_NWS = new RegExp(`(^|[\\s>])((?:${AR_LINK})${NBSP})(<bdi [^>]*class="lc-nws"[^>]*>[^<]*</bdi>)`, "g");
+
 function arHtml(text: string): string {
+  return arRuns(text).replace(AR_LINK_NWS, `$1<span class="lc-nw">$2$3</span>`);
+}
+
+function arRuns(text: string): string {
   let out = "";
   let last = 0;
   for (const m of text.matchAll(new RegExp(`${PAREN_SRC}|${LATIN_RUN_SRC}`, "g"))) {
@@ -381,9 +403,11 @@ const QUANTITY = /(?:^|[^\p{L}\p{N}\-.\u2011])\d+(?:[.,]\d+)?\+?%?$/u;
 let segmenter: Intl.Segmenter | undefined;
 /**
  * Chinese words kept whole although Intl.Segmenter splits them (WebKit then breaks "新 | 十月城"): the place names of
- * the zone map and addresses (common.json zones.items, I18N2-08). Longest first.
+ * the zone map and addresses (common.json zones.items, I18N2-08), and machine terms it does not know, which it splits
+ * into single characters that zhTokens() would merge into one long run: with them a compound breaks between its words
+ * ("四头 | 洗发水 | 灌装机：", I18N3-03). Longest first.
  */
-const ZH_WORDS = ["十月六日城", "新十月城"];
+const ZH_WORDS = ["十月六日城", "新十月城", "洗发水", "灌装", "包衣", "蒸煮", "旋盖", "贴标"];
 const ZH_WORDS_RE = new RegExp(ZH_WORDS.sort((a, b) => b.length - a.length).join("|"), "g");
 
 interface Tok {
@@ -476,6 +500,21 @@ function zhTokens(text: string): Tok[] {
 const OPENING_LATIN = /([（「『【《“‘]+)([A-Za-z0-9][A-Za-z0-9.+-]*|[^\s<>&;\u200B\u00A0（「『【《“‘])/g;
 const OPENING_ATOM = /([（「『【《“‘]+)<span class="(lc-nw(?: lc-nws)?)">/g;
 
+/**
+ * Longest run of Han characters kept unbreakable. A longer run (single characters of an unknown compound, merged by
+ * zhTokens()) is wider than a 320px heading line at display sizes (9 × 34px > 288px), and the browser's emergency
+ * break then cuts it anywhere, even before "：" (I18N3-03). CLREQ allows a break between any two Han characters, so
+ * such a run gets break opportunities that halve it until no piece is longer than this; punctuation stays glued to
+ * the character before it.
+ */
+const ZH_MAX_RUN = 6;
+const ZH_LONG_RUN = new RegExp(`[\\u3400-\\u9FFF\\uF900-\\uFAFF]{${ZH_MAX_RUN + 1},}`, "g");
+const halveRun = (run: string): string => {
+  if (run.length <= ZH_MAX_RUN) return run;
+  const mid = Math.ceil(run.length / 2);
+  return halveRun(run.slice(0, mid)) + ZWSP + halveRun(run.slice(mid));
+};
+
 /** Chinese text → word tokens joined by U+200B (no wrapper). */
 function zhInner(text: string): string {
   const toks = zhTokens(text);
@@ -490,7 +529,9 @@ function zhInner(text: string): string {
       .replace(DASH_RUN, (m, c: string | undefined, d: string, at: number) =>
         // nothing before the run (start of the text): leave it; after markup / an entity: a WORD JOINER holds it
         c ? `<span class="lc-nw">${c}${d}</span>` : at === 0 ? m : `${WJ}${d}`,
-      );
+      )
+      // Han runs never occur inside a tag or an entity, so this only ever splits text
+      .replace(ZH_LONG_RUN, halveRun);
   });
   return html;
 }

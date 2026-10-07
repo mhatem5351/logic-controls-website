@@ -335,6 +335,12 @@
 ::view-transition-group(lc-fab) {
   z-index: 4;
 }
+/* The floating button showing on both pages, but the new page's is not parsed yet at the reveal (a browser without
+   the head script's render blocking): the old one stays in place, opaque, until the transition ends and the new one
+   (kept shown, data-fab-keep) takes over — no fade-out and pop-in (MOT3-01). */
+:root:active-view-transition-type(lc-fab-hold)::view-transition-old(lc-fab) {
+  animation: none;
+}
 /* While a transition runs (html[data-vting], both pages) the header is captured as its own layer, and a layer has no
    backdrop to blur: the bar is opaque instead of frosted, so the page never reads sharply through it. Afterwards the
    frosted glass eases back in through the header's own transition (MOT2-05). The transparent state over a dark hero
@@ -635,10 +641,6 @@
       animation: lc-wipe var(--ease-inout) both;
       animation-timeline: view();
       animation-range: entry 0% contain 40px;
-    }
-    .lc-head .lc-swoosh {
-      animation-timeline: --lc-head;
-      animation-range: entry 40% contain 40px;
     }
     .lc-band .lc-swoosh {
       animation-timeline: --lc-band;

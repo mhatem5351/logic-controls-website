@@ -216,7 +216,7 @@ export function initHmi(fig: HTMLElement): void {
       const tx = tour[k] ? `${T.comma}${T.tour.done}` : "";
       if (st && st.textContent !== tx) st.textContent = tx;
     }
-    if (stepHint) stepHint.hidden = !(cur === "fault" && faultClicked);
+    if (stepHint) attr(stepHint, "data-on", cur === "fault" && faultClicked ? "" : null);
     if (tourN) {
       const n = cur ? STEPS.indexOf(cur) + 1 : STEPS.length;
       const tx = `${n}/${STEPS.length}`;
@@ -331,8 +331,8 @@ export function initHmi(fig: HTMLElement): void {
     set("stoLvl", f1((s.stoL / 2000) * 100));
     set("litres", f1(s.litres));
     set("batch", `B-${s.batch}`);
-    set("limit", `≥ ${f1(R.limit)} °C`);
-    set("minHold", `${R.hold} s`);
+    set("limit", `≥\u00a0${f1(R.limit)}\u00a0°C`); // no-break: the unit never wraps alone (I18N3-06)
+    set("minHold", `${R.hold}\u00a0s`);
     set("fdvTxt", s.fwd ? T.mimic.forward : T.mimic.divert);
     set("outLbl", cip ? T.mimic.drain : T.mimic.storage);
     set("mode", cip ? "CIP" : s.manual ? T.mode.manual : T.mode.auto);
@@ -868,7 +868,7 @@ export function initHmi(fig: HTMLElement): void {
   });
 
   // Initial paint of the static snapshot (localised values, recipe data).
-  set("limit", `≥ ${f1(RECIPES.milk.limit)} °C`);
+  set("limit", `≥\u00a0${f1(RECIPES.milk.limit)}\u00a0°C`);
   clockNow();
   render();
   reserveMsg();

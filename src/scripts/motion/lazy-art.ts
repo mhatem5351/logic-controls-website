@@ -13,6 +13,8 @@
  * running transition — and is cleared from that same node when the transition ends.
  * The filled piece joins the play scheduler in the same task, so its first painted frame is already its rest frame;
  * a slot filled while on screen fades in (MOT2-21) instead of popping.
+ * The card a view transition is morphing into (back / up from its detail page; site.ts imports this module at once
+ * then) is filled first, at high priority, without waiting for the observer: the flight lands on its picture (MOT3-02).
  */
 import { motionOff } from "./motion-pref";
 import { playWhenVisible } from "./play-when-visible";
@@ -24,10 +26,11 @@ const KEEP = new Set(["class", "style", "data-variant", "aria-hidden", "role", "
 const docs = new Map<string, Promise<Document | null>>();
 let seq = 0;
 
-function fragment(kind: string, v: string): Promise<Document | null> {
+/** The URL is also built by HeroArt.astro (`data-art-warm`, a detail page warms its index page's fragment): keep both alike. */
+function fragment(kind: string, v: string, priority: "low" | "high"): Promise<Document | null> {
   let doc = docs.get(kind);
   if (!doc) {
-    doc = fetch(`/en/art/${kind}/?v=${encodeURIComponent(v)}`, { priority: "low" } as RequestInit)
+    doc = fetch(`/en/art/${kind}/?v=${encodeURIComponent(v)}`, { priority } as RequestInit)
       .then((r) => (r.ok ? r.text() : Promise.reject(new Error(String(r.status)))))
       .then((html) => new DOMParser().parseFromString(html, "text/html"))
       .catch(() => {
@@ -51,9 +54,9 @@ function reid(svg: Element, from: string, to: string) {
   }
 }
 
-async function fill(slot: SVGSVGElement, inView: boolean) {
+async function fill(slot: SVGSVGElement, inView: boolean, priority: "low" | "high" = "low") {
   const [kind = "", slug = ""] = (slot.dataset.artSrc ?? "").split("/");
-  const doc = await fragment(kind, slot.dataset.artV ?? "");
+  const doc = await fragment(kind, slot.dataset.artV ?? "", priority);
   const src = doc?.querySelector(`[data-slug="${CSS.escape(slug)}"] > svg`);
   if (!src || !slot.isConnected || !slot.hasAttribute("data-art-src")) return;
   const art = document.importNode(src, true) as SVGSVGElement;
@@ -89,6 +92,11 @@ function scan() {
     },
     { rootMargin: ROOT_MARGIN },
   );
+  const morph = document.querySelector<SVGSVGElement>('svg[data-art-src][style*="view-transition-name"]:not([data-art-watch])');
+  if (morph) {
+    morph.setAttribute("data-art-watch", "");
+    void fill(morph, true, "high");
+  }
   document.querySelectorAll<SVGSVGElement>("svg[data-art-src]:not([data-art-watch])").forEach((el) => {
     el.setAttribute("data-art-watch", "");
     io!.observe(el);

@@ -2,15 +2,17 @@
 /**
  * Site header.
  *  - Utility bar (≥1024px): "Setting up in Egypt?" link (not on the zh / tr home page, whose hero leads with it), phone,
- *    email, full language list. Scrolls away.
+ *    email, full language list, pause animations. Scrolls away. One line always: a row wider than the bar (long labels
+ *    with user text spacing) drops the switch's label, then the address text, as below 1280px.
  *  - Main bar (sticky; static on short landscape phones): logo, 5 nav items, language menu (< 1024px), the primary
  *    action, menu button.
  *  - Services and Industries are disclosure menus (APG "disclosure navigation menu" with top-level links): the label
  *    stays a link to the index page, the chevron button next to it shows / hides the full list (all 8 services /
  *    7 industries). Click, Enter, Space toggle; ArrowDown opens and moves into the list; Escape (from anywhere on the
  *    page) closes it and returns focus to the chevron if focus was inside; moving focus away or clicking outside closes
- *    it. Mouse only: resting on an item opens it after a short intent delay (instantly when another menu is already
- *    open — the panels swap without stacking), and leaving closes it after a grace period. A click on a chevron whose
+ *    it. Mouse only: resting on an item opens it after a short intent delay (also when another menu is already open —
+ *    the panels then swap without stacking; never while the pointer is heading for the open panel, "menu aim"), and
+ *    leaving closes it after a grace period. A click on a chevron whose
  *    menu hover opened (or was about to open) keeps it open and pins it, instead of toggling it shut. After Escape,
  *    hover does not re-open that menu until the pointer has left it (WCAG 1.4.13).
  *  - Primary action: "Request a quote" (en/tr/zh; "Quote" on phones) — WhatsApp on Arabic pages (WhatsApp-first), with
@@ -115,11 +117,12 @@ const oemLabel = m.foreign.oem?.eyebrow as string | undefined;
           <span class="sr-only">{t.contact.phone}{colon(locale)}</span>
           <span class="ltr" dir="ltr">{SITE.phone.display}</span>
         </a>
-        {/* 1024–1279: the envelope alone (the address stays its accessible name), so the bar keeps one line. */}
+        {/* 1024–1279 (and a row too wide for its bar, data-tight="2"): the envelope alone (the address stays its
+            accessible name), so the bar keeps one line. */}
         <a href={mail} class="inline-flex min-h-6 items-center gap-2 transition-colors hover:text-white pointer-coarse:-my-1 pointer-coarse:min-h-11">
           <ChromeIcon name="mail" size={14} class="text-royal-300" />
           <span class="sr-only">{t.contact.email}{colon(locale)}</span>
-          <span class="max-xl:sr-only" set:html={ltr(SITE.email)} />
+          <span class="lc-util-mail max-xl:sr-only" set:html={ltr(SITE.email)} />
         </a>
         <span class="h-4 w-px bg-white/15" aria-hidden="true"></span>
         <LanguageSwitcher locale={locale} path={path} variant="inline" class="-mx-2" />
@@ -329,6 +332,17 @@ const oemLabel = m.foreign.oem?.eyebrow as string | undefined;
       white-space: nowrap;
     }
   }
+  /* A row wider than its bar from 1280px (long labels with WCAG text spacing, A11Y3-05; set by the script below): the
+     same compact forms as below 1280px, the pause switch's label first, then the address. Both stay accessible names. */
+  .lc-util[data-tight] :global(.lc-util-mt .lc-mt-label),
+  .lc-util[data-tight="2"] .lc-util-mail {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
+  }
 
   /* Hover: a slanted bar slides in from the inline start and leaves towards the inline end (origin flips).
      Current section: a separate amber bar (.lc-nav-ind) that view-transitions along the nav between pages. */
@@ -458,6 +472,29 @@ const oemLabel = m.foreign.oem?.eyebrow as string | undefined;
   if (header && !header.hasAttribute("data-ready")) {
     header.setAttribute("data-ready", "");
 
+    /* Utility bar (A11Y3-05): one nowrap row, sized for the default text. When its content is wider than the bar
+       (Turkish labels with WCAG text spacing), it steps down to the compact forms (data-tight, CSS above). Its groups
+       are observed too: their width follows the text (spacing, a late font). The fit runs in the next frame, never
+       inside the observer callback, so its own size change is reported normally rather than as a resize loop. */
+    const util = header.querySelector<HTMLElement>(".lc-util");
+    if (util && "ResizeObserver" in window) {
+      const over = () => util.scrollWidth > util.clientWidth + 1;
+      const fit = () => {
+        util.removeAttribute("data-tight");
+        if (!over()) return;
+        util.dataset.tight = "1";
+        if (over()) util.dataset.tight = "2";
+      };
+      let queued = 0;
+      let shown = false;
+      const ro = new ResizeObserver((entries) => {
+        // below 1024px the bar is not rendered (width 0): nothing to fit, and no layout read on phones
+        for (const e of entries) if (e.target === util) shown = e.contentRect.width > 0;
+        if (shown) queued ||= requestAnimationFrame(() => ((queued = 0), fit()));
+      });
+      for (const el of [util, ...util.children]) ro.observe(el);
+    }
+
     // Transparent → solid once the page scrolls (only matters over a dark hero).
     if (header.hasAttribute("data-hero")) {
       let ticking = false;
@@ -465,7 +502,9 @@ const oemLabel = m.foreign.oem?.eyebrow as string | undefined;
         header.toggleAttribute("data-scrolled", window.scrollY > 24);
         ticking = false;
       };
-      update();
+      // First read in the first frame: during the site script's evaluation it would force the page's first style and
+      // layout inside that task (PERF3-05). The frame is painted with the right state either way.
+      requestAnimationFrame(update);
       window.addEventListener(
         "scroll",
         () => {
@@ -532,6 +571,37 @@ const oemLabel = m.foreign.oem?.eyebrow as string | undefined;
     const hoverable = matchMedia("(hover: hover) and (pointer: fine)");
     const OPEN_MS = 140;
     const CLOSE_MS = 260;
+    const armOpen = (it: Item) => {
+      clearTimeout(it.openTimer);
+      it.openTimer = window.setTimeout(() => setOpen(it, true, "hover"), OPEN_MS);
+    };
+    const armClose = (it: Item) => {
+      clearTimeout(it.closeTimer);
+      it.closeTimer = window.setTimeout(() => {
+        if (!it.li.contains(document.activeElement)) setOpen(it, false);
+      }, CLOSE_MS);
+    };
+    /* Menu aim (UX3-01): the way from "Services" to the top of its right-hand column crosses "Industries". While the
+       pointer is heading for the open panel (its path, extended, meets the panel's top edge), the item it passes over
+       neither opens nor lets the open one close: their timers restart on every move (≥ 4 px, so a resting hand's
+       jitter does not count). The swap happens once the pointer rests on the other item, or turns away. */
+    let last: { x: number; y: number } | null = null;
+    header.addEventListener("pointermove", (e) => {
+      const open = items.find(isOpen);
+      if (e.pointerType !== "mouse" || !open) return void (last = null);
+      const p = { x: e.clientX, y: e.clientY };
+      const from = last;
+      if (from && (p.x - from.x) ** 2 + (p.y - from.y) ** 2 < 16) return;
+      last = p;
+      if (!from || p.y <= from.y || (!items.some((it) => it.openTimer) && !open.closeTimer)) return;
+      const r = open.panel.getBoundingClientRect();
+      if (p.y >= r.top) return;
+      const x = p.x + ((p.x - from.x) * (r.top - p.y)) / (p.y - from.y);
+      if (x < r.left || x > r.right) return;
+      for (const it of items) if (it.openTimer) armOpen(it);
+      if (open.closeTimer) armClose(open);
+    });
+    header.addEventListener("pointerleave", () => (last = null));
 
     for (const it of items) {
       const { li, btn, panel } = it;
@@ -573,9 +643,9 @@ const oemLabel = m.foreign.oem?.eyebrow as string | undefined;
         clearTimeout(it.closeTimer);
         it.closeTimer = 0;
         if (it.noHover || isOpen(it)) return;
-        // Already browsing the menus: swap at once; otherwise wait for the pointer to rest.
-        if (items.some((o) => o !== it && isOpen(o))) setOpen(it, true, "hover");
-        else it.openTimer = window.setTimeout(() => setOpen(it, true, "hover"), OPEN_MS);
+        // Wait for the pointer to rest, also when another menu is open (a pointer on its way to that menu's panel
+        // only passes over this item; see menu aim above). Reaching the open panel leaves this item: the timer stops.
+        armOpen(it);
       });
       li.addEventListener("pointerleave", (e) => {
         if (e.pointerType !== "mouse") return;
@@ -583,10 +653,7 @@ const oemLabel = m.foreign.oem?.eyebrow as string | undefined;
         it.openTimer = 0;
         it.noHover = false;
         // Only a menu that hover opened closes on leave; a pinned one waits for Escape, an outside click or focus-out.
-        if (isOpen(it) && it.by === "hover")
-          it.closeTimer = window.setTimeout(() => {
-            if (!li.contains(document.activeElement)) setOpen(it, false);
-          }, CLOSE_MS);
+        if (isOpen(it) && it.by === "hover") armClose(it);
       });
     }
     document.addEventListener("click", (e) => {

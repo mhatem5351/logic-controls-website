@@ -7,7 +7,8 @@
  * While collapsed, only the interactive part (`interactive`, a selector inside the slot; default: the whole slot) is
  * inert, so its controls are not reachable while you cannot use them — the block's heading and lead stay in the
  * accessibility tree (screen-reader users navigating by headings still find the section).
- * The demo component itself is untouched; this only wraps it from the page side.
+ * The demo component itself is untouched; this only wraps it from the page side (it may mark its control group with
+ * `data-teaser-anchor`: on short screens the expand scrolls that group into view, see below).
  */
 import { getMessages, type Locale } from "~/i18n";
 import Icon from "~/components/Icon.astro";
@@ -89,7 +90,17 @@ const t = getMessages(locale).ui;
         target.tabIndex = -1;
         target.focus({ preventScroll: true });
       }
-      target.scrollIntoView({ block: "start", behavior: scrollBehavior() });
+      /* Short screens (< 720px): the block's top under the header left its controls on the bottom edge (the next
+         ones below the fold, the floating button over the first) (MOT3-09). Instead: the focused control at ~60% of
+         the height, higher if the slot's control group ([data-teaser-anchor]) would end in the floating button's
+         corner (the bottom 5.5rem), never in the top 20% (under the header). */
+      if (first && innerHeight < 720) {
+        const f = first.getBoundingClientRect();
+        const a = (target.querySelector<HTMLElement>("[data-teaser-anchor]") ?? first).getBoundingClientRect();
+        const rem = parseFloat(getComputedStyle(document.documentElement).fontSize) || 16;
+        const dy = Math.min(Math.max(f.top - innerHeight * 0.6, a.bottom - (innerHeight - 5.5 * rem)), a.top - innerHeight * 0.2);
+        scrollTo({ top: scrollY + dy, behavior: scrollBehavior() });
+      } else target.scrollIntoView({ block: "start", behavior: scrollBehavior() });
     });
   });
 </script>

@@ -1,0 +1,9 @@
+// Dead-code gate: `npm run lint:dead` (CI runs it after ESLint). Knip's Astro, Vitest, Playwright and ESLint plugins
+// find the pages, tests and configs; the entries below are what runs by hand (CLI scripts, the one-off brand asset
+// generators) or is read by a tool knip has no plugin for (html-validate). An export used inside its own file is not
+// reported: helpers exported for a test or a type that documents a signature are fine.
+{
+  "$schema": "https://unpkg.com/knip@6/schema-jsonc.json",
+  "entry": ["scripts/*.mjs", ".htmlvalidate.mjs", "src/assets/brand/tools/*.{mjs,cjs}"],
+  "ignoreExportsUsedInFile": true,
+}

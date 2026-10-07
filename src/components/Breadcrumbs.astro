@@ -38,14 +38,15 @@ const ld = breadcrumbList(locale, trail);
         const last = i === trail.length - 1;
         return (
           /* The chevron and its crumb never part (flex-nowrap). On phones the current crumb (the H1 right below repeats
-             it) is clamped to one line instead of wrapping under a dangling chevron (VIS2-23). Touch: 44 px targets
-             whose extra height is taken back by negative margins, so the row keeps its height (DEV2-07). */
+             it) is clamped to one line instead of wrapping under a dangling chevron (VIS2-23); in RTL its Latin runs
+             are never cut (style below). Touch: 44 px targets whose extra height is taken back by negative margins,
+             so the row keeps its height (DEV2-07). */
           <li class:list={["flex min-w-0 flex-nowrap items-center gap-1.5", last && "max-sm:max-w-full"]}>
             {i > 0 && <Icon name="chevron-right" size={14} class="shrink-0 opacity-60" />}
             {last || c.path === undefined ? (
               <span
                 aria-current={last ? "page" : undefined}
-                class:list={[last && "min-w-0 font-semibold text-navy-900 max-sm:truncate on-dark:text-white"]}
+                class:list={[last && "lc-crumb-cur min-w-0 font-semibold text-navy-900 max-sm:truncate on-dark:text-white"]}
                 set:html={toHtml(locale, c.label)}
               />
             ) : (
@@ -62,3 +63,14 @@ const ld = breadcrumbList(locale, trail);
   </ol>
   {jsonLd && <script type="application/ld+json" set:html={JSON.stringify(ld).replace(/</g, "\\u003c")} />}
 </nav>
+
+<style>
+  /* RTL phones (VIS3-09, I18N3-04): the ellipsis takes the glyphs at the line's visual end, which inside an embedded
+     Latin run is its START ("…iemens S7-1200", "…econ PLC"). Atomic there, a brand name or code is shown whole or not
+     at all, so the crumb ends on a word boundary before it. */
+  @media (max-width: 39.99rem) {
+    :global([dir="rtl"]) .lc-crumb-cur :global(:is(bdi, [dir="ltr"], .lc-nw)) {
+      display: inline-block;
+    }
+  }
+</style>

@@ -125,6 +125,15 @@ export function contactCta(locale: Locale, opts: { whatsapp?: string; mail?: Omi
     : { label: ui.cta.whatsapp, href: whatsappLink(opts.whatsapp ?? ui.whatsapp.message), kind: "whatsapp" };
 }
 
+/**
+ * The locale's short WhatsApp label for narrow containers (VIS2-21: tr "WhatsApp'tan yazın" for "Bir mühendise
+ * WhatsApp'tan yazın"), when it is clearly shorter than `label`; undefined when the full label is short enough already.
+ */
+export function narrowWhatsapp(locale: Locale, label: string): string | undefined {
+  const narrow = getMessages(locale).ui.cta.whatsappNarrow;
+  return narrow && label.length > narrow.length + 6 ? narrow : undefined;
+}
+
 export interface PlacedCta {
   cta: Cta;
   kind: CtaKind;
@@ -155,10 +164,9 @@ export function placeCtas(
     .filter((c): c is Cta => !!c)
     .map((c) => (mail && plainMailto(c) ? { ...c, href: mailtoLink(getMessages(locale).ui.email.subject, { locale, ...mail }) } : c));
   if (prefersWhatsapp(locale) && list.length === 2 && ctaKind(list[0]!) === "form" && ctaKind(list[1]!) === "whatsapp") list.reverse();
-  const narrowWa = getMessages(locale).ui.cta.whatsappNarrow;
   return list.map((cta, i) => {
     const kind = ctaKind(cta);
-    const narrow = kind === "whatsapp" && narrowWa && cta.label.length > narrowWa.length + 6 ? narrowWa : undefined;
+    const narrow = kind === "whatsapp" ? narrowWhatsapp(locale, cta.label) : undefined;
     const filled = i === 0 && list.length > 0;
     const icon: IconName | undefined = kind === "whatsapp" ? "whatsapp" : kind === "email" ? "mail" : kind === "phone" ? "phone" : undefined;
     return {

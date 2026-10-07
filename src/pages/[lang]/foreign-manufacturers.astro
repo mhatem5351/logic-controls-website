@@ -430,13 +430,14 @@ const jsonLd = graph(
   {/* ---------- 08 FAQ ---------- */}
   <Section variant="muted" id="faq" aria-labelledby="faq-title">
     <div class="grid grid-cols-1 gap-10 lg:grid-cols-12 lg:gap-14">
-      <div class="lg:col-span-4">
+      {/* 5/7 below 1280px: in a 4/12 column "manufacturers" was wider than the H2's line at 1024–1180 (VIS3-04) */}
+      <div class="lg:col-span-5 xl:col-span-4">
         <div class="lg:sticky lg:top-[calc(var(--header-h)+2rem)]">
           <SectionHeading id="faq-title" index={I.faq} eyebrow={c.labels.faq} title={html(locale, f.faq.title)} />
           <Button href={quoteHref} variant="secondary" iconEnd="arrow" class="mt-8">{f.hero.ctaPrimary}</Button>
         </div>
       </div>
-      <FAQ class="lg:col-span-8" items={f.faq.items.map((x) => ({ q: x.q, a: html(locale, x.a) }))} openFirst />
+      <FAQ class="lg:col-span-7 xl:col-span-8" items={f.faq.items.map((x) => ({ q: x.q, a: html(locale, x.a) }))} openFirst />
     </div>
   </Section>
 

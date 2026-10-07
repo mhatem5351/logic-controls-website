@@ -27,7 +27,7 @@
         "Your email address, if you give it",
         "Your industry, plant location and timeline, if you give them",
         "The description of your machine or project",
-        "Your country, and the language of the page you used",
+        "Your country, the language of the page you used, and the country your internet connection comes from (Cloudflare tells us only the country, not your IP address)",
         "Files you attach (drawings, photos, documents). They are emailed to our company inbox together with your request; this website does not keep them. Large photos are made smaller in your browser before they are sent."
       ]
     },
@@ -37,7 +37,7 @@
         "To protect the form from spam, Cloudflare Turnstile processes technical information from your browser, such as your IP address and browser characteristics, to confirm that a person is sending it.",
         "We measure visits with Cloudflare Web Analytics. It does not use cookies and does not build profiles of individual visitors. We see only totals, such as page views.",
         "We count clicks on our WhatsApp, phone, email and quote buttons. For each click we record only which button it was, where it is on the page, and the page and its language. This uses Cloudflare Workers Analytics Engine, without cookies, without your IP address and without anything that identifies you. If your browser asks websites not to track you (Do Not Track or Global Privacy Control), nothing is counted.",
-        "While you fill in the quote form, what you type is kept in your browser's session storage for that tab only, so it is not lost if you switch the page language. It stays on your device until you press Send, and it is deleted once the request is sent or when you close the tab. Files and your consent are never kept there. After sending, the confirmation page reads your request number, your name and the file names from that storage once, to prepare its links, and then deletes them."
+        "While you fill in the quote form, what you type is kept in your browser's session storage for that tab only, so it is not lost if you switch the page language. It stays on your device until you press “Send request” or “Skip and send now”, and it is deleted once the request is sent or when you close the tab. Files and your consent are never kept there. After sending, the confirmation page reads your request number, your name and the file names from that storage once, to prepare its links, and then deletes them."
       ],
       "items": []
     },

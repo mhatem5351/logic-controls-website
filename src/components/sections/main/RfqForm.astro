@@ -10,7 +10,8 @@
  * need", preferred reply channel (choosing Email brings the email field up here and makes it required; Phone call /
  * WhatsApp make the phone required); 2) optional project details and up to 3 files (added pick by pick or dropped,
  * large photos reduced in the browser) — linked error summary, Turnstile loaded on the first interaction, upload with
- * progress and a stall timeout, inline success → thanks page, and a pre-filled WhatsApp/email hand-over if sending fails.
+ * progress and a stall timeout, inline success → thanks page, and a pre-filled WhatsApp/email hand-over if sending fails
+ * (after a timed-out upload also "Send without the files").
  * "Machine stopped?" (timeline "urgent" or the troubleshooting service) shows a call-now panel with a "a machine is
  * stopped now" switch (sets the timeline, so "Skip and send now" requests are flagged [URGENT] too).
  */
@@ -40,8 +41,9 @@ const email = prefersEmail(locale);
 const siteKey = import.meta.env.DEV ? "1x00000000000000000000AA" : SITE.turnstileSiteKey;
 const thanks = localePath(locale, "contact/thanks");
 const privacyHref = localePath(locale, "privacy");
+/* The link text goes through the text engine too (I18N3-05: zh word breaks, never inside 隐私政策). */
 const consentHtml = rich(locale, fields.consent.text, {
-  link: markup`<a href="${privacyHref}" class="font-semibold text-royal-600 underline underline-offset-2 hover:text-royal-800">${fields.consent.linkText}</a>`,
+  link: markup`<a href="${privacyHref}" class="font-semibold text-royal-600 underline underline-offset-2 hover:text-royal-800">${html(locale, fields.consent.linkText)}</a>`,
 });
 const counter = (current: number) => fmt(f.steps.counter, { current, total: 2 });
 /** "4 MB" as an LTR isolate, so RTL text never reorders it to "MB 4". */
@@ -188,14 +190,27 @@ const NOJS_ERRORS = ["invalid", "attachments", "verification", "send"] as const;
               </a>
             </p>
             <p class="mt-2 text-charcoal-600">{t.contact.errors.handover}</p>
-            <button
-              type="button"
-              class="mt-3 inline-flex min-h-11 items-center gap-2 border border-danger-700 bg-white px-4 font-bold text-danger-700 hover:bg-danger-700 hover:text-white"
-              data-retry
-              hidden
-            >
-              {f.buttons.retry}
-            </button>
+            <p class="mt-3 flex flex-wrap gap-3">
+              <button
+                type="button"
+                class="inline-flex min-h-11 items-center gap-2 border border-danger-700 bg-white px-4 font-bold text-danger-700 hover:bg-danger-700 hover:text-white"
+                data-retry
+                hidden
+              >
+                {f.buttons.retry}
+              </button>
+              {/* after a timed-out upload with files (DEV3-01): the same request, without them */}
+              <button
+                type="button"
+                class="inline-flex min-h-11 items-center gap-2 border border-charcoal-500 bg-white px-4 font-bold text-navy-950 hover:border-navy-950"
+                aria-describedby="rfq-send-bare-note"
+                data-send-bare
+                hidden
+              >
+                {f.buttons.sendWithoutFiles}
+              </button>
+            </p>
+            <p id="rfq-send-bare-note" class="mt-2 text-charcoal-600" data-send-bare-note hidden>{t.contact.errors.withoutFiles}</p>
           </div>
         </div>
       </div>
@@ -288,11 +303,12 @@ const NOJS_ERRORS = ["invalid", "attachments", "verification", "send"] as const;
               maxlength={RFQ_MAX.phone}
               dir="ltr"
               aria-invalid="false"
-              aria-describedby="rfq-phone-help rfq-phone-hint rfq-phone-error"
+              aria-describedby="rfq-phone-help rfq-phone-error"
               data-phone
               data-base-required={String(!email)}
             />
-            {/* no recognisable country code (a local number from abroad): a hint, never an error */}
+            {/* no recognisable country code (a local number from abroad): a hint, never an error. The script adds it to
+                the field's description (and says it once) only while it is shown (A11Y3-02). */}
             <p id="rfq-phone-hint" class="lc-hint" data-phone-hint hidden set:html={html(locale, t.contact.validation.phoneCountry)} />
           </Field>
           {
@@ -473,11 +489,12 @@ const NOJS_ERRORS = ["invalid", "attachments", "verification", "send"] as const;
                 <span>{f.urgentStopped}</span>
               </label>
             </div>
+            {/* 44 px tall on touch screens (DEV2-07); compact with a mouse */}
             <div class="flex flex-wrap items-center gap-2">
-              <Button href={telLink()} size="sm" icon="phone">{t.common.labels.callEngineer}</Button>
+              <Button href={telLink()} size="sm" icon="phone" class="pointer-coarse:min-h-11">{t.common.labels.callEngineer}</Button>
               {
                 !email && (
-                  <Button href={whatsappLink(t.common.whatsapp.stopped)} size="sm" variant="on-dark" icon="whatsapp" iconClass="text-whatsapp-500" external>
+                  <Button href={whatsappLink(t.common.whatsapp.stopped)} size="sm" variant="on-dark" icon="whatsapp" iconClass="text-whatsapp-500" external class="pointer-coarse:min-h-11">
                     {urgent.whatsapp}
                   </Button>
                 )
@@ -539,12 +556,14 @@ const NOJS_ERRORS = ["invalid", "attachments", "verification", "send"] as const;
           >
             <Icon name="send" size={16} />
             <span data-submit-label>{f.buttons.sendNow}</span>
+            {/* upload percentage: shown, not part of the button's name (A11Y3-03; the progressbar carries it) */}
+            <span data-submit-pct aria-hidden="true"></span>
           </button>
         </div>
         {/* actions — step 2 / no-JS */}
         <div class="mt-7 flex flex-wrap items-center gap-x-5 gap-y-3" data-actions="2" data-fab-avoid>
           <Button type="submit" size="lg" icon="send" class="max-sm:w-full" data-submit>
-            <span data-submit-label>{f.buttons.submit}</span>
+            <span data-submit-label>{f.buttons.submit}</span><span data-submit-pct aria-hidden="true"></span>
           </Button>
           <button
             type="button"
@@ -565,7 +584,7 @@ const NOJS_ERRORS = ["invalid", "attachments", "verification", "send"] as const;
         </div>
         <p class="mt-5 flex items-start gap-2 text-xs text-charcoal-600">
           <Icon name="shield" size={16} class="mt-px shrink-0 text-royal-600" />
-          {f.privacyNote}
+          <span set:html={html(locale, f.privacyNote)} />
         </p>
       </div>
     </div>

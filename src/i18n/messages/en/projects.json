@@ -2,16 +2,17 @@
   "index": {
     "seo": {
       "title": "Automation Projects & Case Studies in Egypt | Logic Controls",
-      "description": "Control systems we designed, programmed and commissioned in Egypt: pasteurizers, tablet coating, filling, labeling, batching plants and more."
+      "description": "Case studies from plants in Egypt: pasteurizers, tablet coating, filling, labeling, batching. Each states our scope, from PLC programming to complete systems."
     },
     "h1": "Automation projects and case studies in Egypt",
     "intro": [
-      "Control systems we designed, programmed and commissioned for plants in Egypt. Each case study shows the challenge, our scope and the technology used.",
-      "Filter by industry or service to find a machine like yours."
+      "Case studies from plants in Egypt, ranging from PLC programming or commissioning to complete systems, each with our exact scope. Filter by industry, service or platform."
     ]
   },
   "labels": {
     "countOne": "{count} project",
+    "showCount": "Show {count} projects",
+    "showCountOne": "Show {count} project",
     "techGroups": {
       "plc": "PLC",
       "hmi": "HMI",
@@ -19,6 +20,9 @@
       "drives": "Drives and motion",
       "other": "Panel and network"
     }
+  },
+  "notes": {
+    "anonymised": "Client names are withheld for confidentiality."
   },
   "items": {
     "beverage-syrup-jet-mixing": {

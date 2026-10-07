@@ -332,6 +332,9 @@ function init(root: HTMLElement) {
   // Escape: the tooltip goes from anywhere (WCAG 1.4.13); the selection when focus is in the block (or nowhere)
   document.addEventListener("keydown", (e) => {
     if (e.key !== "Escape") return;
+    // a pending hover intent / focus fall-back (settle) must not bring the tooltip back right after
+    clearTimeout(timer);
+    clearTimeout(intent);
     preview("");
     const a = document.activeElement;
     if (sel && (root.contains(a) || a === document.body)) close();

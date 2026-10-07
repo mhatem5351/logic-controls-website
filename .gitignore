@@ -14,7 +14,9 @@ dist/
 /client-data/
 # test output (Playwright / Lighthouse); visual baselines are machine-local
 /test-results/
+/test-results-phone/
 /playwright-report/
+/playwright-report-phone/
 /playwright-report-json/
 /blob-report/
 /tests/e2e/__screenshots__/

@@ -22,7 +22,8 @@
       "submit": "Talebi gönder",
       "sending": "Gönderiliyor…",
       "sendNow": "Atla ve şimdi gönder",
-      "retry": "Tekrar deneyin"
+      "retry": "Tekrar deneyin",
+      "sendWithoutFiles": "Dosyalar olmadan gönder"
     },
     "fields": {
       "name": {
@@ -182,7 +183,8 @@
     "attachments": "Dosyalar kabul edilemedi: sınırı aşıyor olabilir (en fazla 3 dosya, toplam 4 MB) ya da PDF, JPG, PNG, WebP, ZIP, DWG veya DXF dosyası olmayabilir. Dosyaları kaldırıp talebi gönderin, ardından dosyaları e-posta veya WhatsApp ile iletin.",
     "verificationBlocked": "Güvenlik kontrolü yüklenemedi. Bir tarayıcı eklentisi, güvenlik duvarı veya ağınız engelliyor olabilir. Sayfayı yenileyin ya da başka bir ağ deneyin veya aşağıdaki seçeneklerle bize doğrudan ulaşın.",
     "handover": "Bilgileriniz mesaja kopyalandı, yeniden yazmanız gerekmez.",
-    "timeout": "Gönderim çok uzun sürdüğü için durduruldu. Bağlantınız yavaş olabilir ya da kesilmiş olabilir. Lütfen tekrar deneyin veya bize başka bir yoldan ulaşın."
+    "timeout": "Gönderim çok uzun sürdüğü için durduruldu. Bağlantınız yavaş olabilir ya da kesilmiş olabilir. Lütfen tekrar deneyin veya bize başka bir yoldan ulaşın.",
+    "withoutFiles": "Talebiniz hemen gönderilir. Dosyaları daha sonra, bir sonraki sayfada göreceğiniz talep numarasını belirterek WhatsApp'tan veya e-postayla gönderin."
   },
   "channels": {
     "title": "Bize ulaşmanın diğer yolları",
@@ -235,17 +237,21 @@
     },
     "urgentNow": {
       "title": "Makineniz mi durdu? Hemen mühendisimizi arayın.",
-      "text": "Görüşmede {ref} numaralı talebinizi belirtin."
+      "text": "Görüşmede {ref} numaralı talebinizi belirtin.",
+      "whatsapp": "Merhaba Logic Controls, {ref} numaralı talebimle ilgili: makinem durdu, arıza tespiti ve giderme desteğine ihtiyacım var. Makine ve marka:\nHello Logic Controls, about request {ref}: my machine is stopped and I need troubleshooting help. Machine and brand:",
+      "emailSubject": "Acil: makine durdu ({ref} numaralı talep)"
     },
     "received": "Alınan dosyalar: {files}",
     "skipped": "Şu dosyalar eklenemedi: {files}. İçerikleri dosya türüyle uyuşmuyor. Lütfen talep numaranızı belirterek WhatsApp'tan veya e-postayla gönderin.",
     "skippedSome": "Bazı dosyaların içeriği dosya türüyle uyuşmadığı için eklenemedi. Lütfen talep numaranızı belirterek WhatsApp'tan veya e-postayla gönderin.",
+    "dropped": "Talebinizle birlikte gönderilemeyen dosyalar: {files}. Lütfen bu dosyaları talep numaranızı belirterek WhatsApp'tan veya e-postayla gönderin.",
     "replyBy": "Tercih ettiğiniz kanal: {channel}",
     "more": {
       "titleMore": "Göndereceğiniz başka dosya var mı?",
       "title": "Fotoğraf veya çiziminiz mi var?",
       "text": "WhatsApp'tan veya e-postayla gönderin. Teklifi daha hızlı hazırlamamıza yardımcı olur.",
-      "cta": "Çizimleri WhatsApp'tan gönderin"
+      "cta": "Çizimleri WhatsApp'tan gönderin",
+      "ctaShort": "WhatsApp'tan gönderin"
     },
     "backHome": "Ana sayfaya dön",
     "seeProjects": "Projelerimizi inceleyin",

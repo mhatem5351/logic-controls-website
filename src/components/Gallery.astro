@@ -4,6 +4,8 @@
  *  - Thumbnails: each link is named by its photo's alt text plus "(image 2 of 4, opens full size)" (visually hidden),
  *    so a screen reader hears what each photo shows. An optional short `caption` is shown under the thumbnail.
  *  - Layouts: `columns` 1-4 (two columns on phones from 2 images), or `lead` (3 images: one large + two stacked).
+ *  - Photos are cropped to the thumbnail box at build time; an item marked `screen` (an HMI / SCADA capture) is shown
+ *    whole in a device bezel on the blueprint ground, at its own aspect and never wider than its own pixels.
  *  - Lightbox: the photo always fits the screen (never cropped, never scrolls), caption below it, prev/next buttons,
  *    arrow keys (mirrored in RTL), swipe on touch, Esc / tap outside the photo to close. Each change is announced
  *    ("Image 3 of 4: <alt>"); the page behind does not scroll (global.css) and focus returns to the opening thumbnail.
@@ -31,6 +33,11 @@ interface Item {
   alt: string;
   /** Short visible caption (≤ 60 characters); the alt text is used in the lightbox when absent. */
   caption?: string;
+  /**
+   * A screen capture exported from the HMI / SCADA (catalog/media.ts isScreenGrab), not a photo: shown whole, at its own
+   * aspect, in a device bezel on the blueprint ground, never wider than its own pixels (VIS3-01). Photos are cropped.
+   */
+  screen?: boolean;
 }
 interface Props {
   images: Item[];
@@ -67,8 +74,31 @@ const SIZES = {
   side: "(min-width: 1280px) 410px, (min-width: 640px) calc((100vw - 5rem) * 0.34), calc((100vw - 3rem) / 2)",
 } as const;
 const thumbSizes = (i: number) => sizes ?? (isLead ? (i === 0 ? SIZES.lead : SIZES.side) : SIZES[columns]);
-/* A 960 step: the 820px lead (1x) and the 410px side photos (2x) take 960w instead of jumping to 1200w. */
-const thumbWidths = [320, 480, 640, 800, 960, 1200];
+/* A 960 step: the 820px lead (1x) and the 410px side photos (2x) take 960w instead of jumping to 1200w. 1600: a 2x
+   screen's one-up (768px) and two-up (612–736px) photos and the lead get a 2x file where the photo has the pixels. */
+const thumbWidths = [320, 480, 640, 800, 960, 1200, 1600];
+const TOP = thumbWidths.at(-1)!;
+/* Candidate widths up to `max` (never past it: no upscaled file), plus `max` itself below the top step. */
+const upTo = (max: number) => [...new Set([...thumbWidths.filter((w) => w <= max), ...(max < TOP ? [max] : [])])];
+/* Photos: cropped at build time to the thumbnail's box (the largest 4:3 / 1:1 box the photo holds, centre), so each
+   srcset width describes the pixels actually shown and a 2x screen gets a 2x file. Before, the box cropped the full
+   photo in CSS: a 2.3:1 photo showed 59% of a 640w file, upscaled 1.75x (VIS3-01). */
+const ratio = crop === "square" ? 1 : 4 / 3;
+const cropOf = (src: ImageMetadata) => {
+  const width = Math.min(src.width, Math.floor(src.height * ratio));
+  return { width, height: Math.round(width / ratio), widths: upTo(width) };
+};
+/* One-column gallery: a screen capture's box follows the capture (no letterbox). In a grid it keeps the 4:3 cell, so
+   rows line up with the photos. */
+const single = columns === 1 && !isLead;
+/* Bezel (global.css .lc-card-bezel: 6px sides, 19px top + chin) around a capture of aspect `a`: as wide as the frame
+   allows (88% of a 4:3 cell, and short enough to keep 8% above and below), never wider than the capture's own pixels. */
+const bezelWidth = (src: ImageMetadata) => {
+  const own = `${src.width + 12}px`;
+  if (single) return `min(100%, ${own})`;
+  const a = (src.width / src.height).toFixed(3);
+  return `min(88%, calc((${Math.round(84 / ratio)}% - 19px) * ${a} + 12px), ${own})`;
+};
 ---
 
 <div class:list={["lc-gallery", className]} data-gallery={id}>
@@ -82,21 +112,47 @@ const thumbWidths = [320, 480, 640, 800, 960, 1200];
           data-caption={img.caption ?? ""}
           class:list={[
             "group relative block overflow-hidden bg-navy-950",
-            crop === "square" ? "aspect-square" : "aspect-[4/3]",
+            img.screen && single ? "grid place-items-center p-4 sm:p-8" : crop === "square" ? "aspect-square" : "aspect-[4/3]",
             /* The lead fills the two rows the thumbnails define (out of the flow, so its photo can't stretch them). */
             isLead && i === 0 && "sm:absolute sm:inset-0 sm:aspect-auto",
           ]}
         >
-          <Picture
-            src={img.src}
-            alt={img.alt}
-            formats={["avif", "webp"]}
-            widths={thumbWidths}
-            sizes={thumbSizes(i)}
-            loading="lazy"
-            layout="full-width"
-            class="size-full object-cover transition-[scale,opacity] duration-(--dur-section) ease-emph group-hover:scale-[1.04] group-hover:opacity-90"
-          />
+          {img.screen ? (
+            <>
+              <span aria-hidden="true" class="absolute inset-0 bg-blueprint opacity-60" />
+              <span class:list={["grid w-full place-items-center", !single && "absolute inset-0"]}>
+                <span
+                  class="lc-card-bezel relative block transition-[scale,opacity] duration-(--dur-section) ease-emph group-hover:scale-[1.04] group-hover:opacity-90"
+                  style={`width:${bezelWidth(img.src)}`}
+                >
+                  <Picture
+                    src={img.src}
+                    alt={img.alt}
+                    formats={["avif", "webp"]}
+                    widths={upTo(img.src.width)}
+                    sizes={thumbSizes(i)}
+                    loading="lazy"
+                    layout="full-width"
+                    class="block h-auto w-full rounded-[2px]"
+                  />
+                </span>
+              </span>
+            </>
+          ) : (
+            <Picture
+              src={img.src}
+              alt={img.alt}
+              formats={["avif", "webp"]}
+              widths={cropOf(img.src).widths}
+              width={cropOf(img.src).width}
+              height={cropOf(img.src).height}
+              fit="cover"
+              sizes={thumbSizes(i)}
+              loading="lazy"
+              layout="full-width"
+              class="size-full object-cover transition-[scale,opacity] duration-(--dur-section) ease-emph group-hover:scale-[1.04] group-hover:opacity-90"
+            />
+          )}
           <span class="sr-only"> {fmt(t.gallery.openSuffix, { n: i + 1, total })}</span>
           <span
             aria-hidden="true"

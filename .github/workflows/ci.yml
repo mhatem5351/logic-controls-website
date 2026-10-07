@@ -1,9 +1,9 @@
 # CI: build + unit / static / budget checks + Playwright E2E against the real Workers runtime (wrangler dev).
 # No deploy and no Cloudflare secrets: the E2E run uses Cloudflare's PUBLIC Turnstile test keys and wrangler's local
 # simulation of every binding (send_email writes to .wrangler/tmp/email).
-# Cost: GitHub Free includes 2,000 Actions minutes / month for private repos. A push run (desktop Chromium E2E,
-# warm caches) is ≈ 12 min on the 2-vCPU runner; the weekly full cross-browser run ≈ 25 min. Superseded runs are
-# cancelled and docs-only changes do not run at all.
+# Cost: GitHub Free includes 2,000 Actions minutes / month for private repos. A push run (desktop Chromium E2E plus
+# the @phone subset on Pixel 7, warm caches) is ≈ 13 min on the 2-vCPU runner; the weekly full cross-browser run
+# ≈ 25 min. Superseded runs are cancelled and docs-only changes do not run at all.
 name: CI
 
 on:
@@ -48,10 +48,16 @@ jobs:
       - name: Install dependencies
         run: npm ci --no-audit --no-fund
 
-      # ESLint (src, tests, worker, scripts; ~3 s) and the Worker's own type-check (astro check excludes worker/).
-      # Prettier is not gated here: the codebase predates it (`npm run format:check` is available locally).
-      - name: Lint + worker typecheck
-        run: npm run lint && npx tsc -p worker
+      # ESLint (src, tests, worker, scripts; ~3 s), the Worker's own type-check (astro check excludes worker/) and the
+      # dead-code gate (knip, knip.jsonc; ~4 s). Prettier is not gated here: the codebase predates it
+      # (`npm run format:check` is available locally).
+      - name: Lint + worker typecheck + dead code
+        run: npm run lint && npx tsc -p worker && npm run lint:dead
+
+      # src/data/content-dates.json must match the content (a copy PR without `--write` fails here, at PR time, instead of
+      # shipping build-time dates); ~0.1 s, before the slow build.
+      - name: Page dates current
+        run: node scripts/content-dates.mjs --check
 
       # Astro's image + font cache (node_modules/.astro): ~800 AVIF/WebP/JPEG variants take minutes to encode cold.
       # Astro keys entries by content, so any older cache is a safe starting point (restore-keys).
@@ -114,24 +120,41 @@ jobs:
       # Pushes/PRs: desktop Chromium (the full spec set, ~half the time). Weekly schedule and manual runs: all three
       # projects (desktop Chromium, Pixel 7, iPhone 15 WebKit). Run `npm run test:e2e` locally before deploying.
       - name: E2E
+        id: e2e
         env:
           E2E_ARGS: ${{ (github.event_name == 'schedule' || github.event_name == 'workflow_dispatch') && ' ' || '--project=chromium-desktop' }}
         run: npm run test:e2e -- $E2E_ARGS
 
+      # Pushes/PRs also run the phone-only tests (tag @phone: the menu drawer, the phone language menu and project
+      # filters, touch gallery and map, the floating button, the phone runtime guards) on Pixel 7, ~1-2 min: on the
+      # desktop project they skip themselves, so without this step they would only run weekly (CODE3-04). Runs even
+      # when the desktop step failed, so one push reports both; its reports go to separate folders.
+      - name: E2E phone subset (Pixel 7, @phone)
+        if: ${{ !cancelled() && steps.e2e.outcome != 'skipped' && github.event_name != 'schedule' && github.event_name != 'workflow_dispatch' }}
+        env:
+          PLAYWRIGHT_JSON_OUTPUT_FILE: playwright-report-json/results-phone.json
+          PLAYWRIGHT_HTML_OUTPUT_DIR: playwright-report-phone
+        run: npm run test:e2e -- --project=chromium-mobile --grep @phone --output=test-results-phone
+
       # Tests that failed first and passed on the retry: listed in the run summary (and as a warning), never silent.
       - name: Flaky E2E tests
-        if: always() && hashFiles('playwright-report-json/results.json') != ''
+        if: always() && hashFiles('playwright-report-json/*.json') != ''
         run: |
           node -e '
-            const r = require("./playwright-report-json/results.json");
-            const out = [];
-            const walk = (s, path) => {
-              for (const c of s.suites ?? []) walk(c, [...path, c.title]);
-              for (const sp of s.specs ?? []) for (const t of sp.tests ?? []) if (t.status === "flaky") out.push(`${[...path, sp.title].filter(Boolean).join(" › ")} [${t.projectName}]`);
-            };
-            walk(r, []);
-            console.log(`### E2E: ${r.stats.expected} passed, ${r.stats.unexpected} failed, ${r.stats.flaky} flaky, ${r.stats.skipped} skipped`);
-            for (const f of out) { console.log(`- flaky: ${f}`); console.error(`::warning::flaky E2E test: ${f}`); }
+            const fs = require("fs");
+            for (const file of ["results.json", "results-phone.json"]) {
+              if (!fs.existsSync(`playwright-report-json/${file}`)) continue;
+              const r = require(`./playwright-report-json/${file}`);
+              const out = [];
+              const walk = (s, path) => {
+                for (const c of s.suites ?? []) walk(c, [...path, c.title]);
+                for (const sp of s.specs ?? []) for (const t of sp.tests ?? []) if (t.status === "flaky") out.push(`${[...path, sp.title].filter(Boolean).join(" › ")} [${t.projectName}]`);
+              };
+              walk(r, []);
+              const run = file === "results.json" ? "E2E" : "E2E phone subset";
+              console.log(`### ${run}: ${r.stats.expected} passed, ${r.stats.unexpected} failed, ${r.stats.flaky} flaky, ${r.stats.skipped} skipped`);
+              for (const f of out) { console.log(`- flaky: ${f}`); console.error(`::warning::flaky E2E test: ${f}`); }
+            }
           ' >> "$GITHUB_STEP_SUMMARY"
 
       - name: Upload Playwright report
@@ -142,5 +165,7 @@ jobs:
           path: |
             playwright-report/
             test-results/
+            playwright-report-phone/
+            test-results-phone/
           retention-days: 7
           if-no-files-found: ignore

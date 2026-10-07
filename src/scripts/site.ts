@@ -52,7 +52,24 @@ if (matchMedia("(any-hover: hover)").matches) idle(".lc-traces", () => import("~
 // Near the viewport (1000px) or on first touch / focus.
 near("[data-lca]", () => import("~/components/illustrations/ArtFrame.astro?lc-script"));
 near("[data-loop]", () => import("~/components/motion/ControlLoop.astro?lc-script"));
-near("[data-zones]", () => import("~/components/sections/main/ZonesBlock.astro?lc-script"));
-near("[data-gallery]", () => import("~/components/Gallery.astro?lc-script"));
-// Lazy illustration fragments: not before the load event (PERF2-07), then as their slots come near.
-afterLoad(() => near("svg[data-art-src]", () => import("~/components/illustrations/LazyArt.astro?lc-script")));
+// Small, and a replayed tap expands content: also at idle, so a tap rarely has to wait (PERF3-07).
+near("[data-zones]", () => import("~/components/sections/main/ZonesBlock.astro?lc-script"), { idle: true });
+near("[data-gallery]", () => import("~/components/Gallery.astro?lc-script"), { idle: true });
+
+// Lazy illustration fragments: not before the load event (PERF2-07), then as their slots come near. Except the card a
+// view transition is morphing into (back / up from its detail page; BaseLayout names it at pagereveal, which comes
+// before or after this module): at once, so the flight lands on its picture, not on an empty box (MOT3-02).
+const lazyArt = () => import("~/components/illustrations/LazyArt.astro?lc-script");
+const morph = () => {
+  if (!document.querySelector('svg[data-art-src][style*="view-transition-name"]')) return false;
+  void lazyArt().catch(() => {});
+  return true;
+};
+if (!morph()) addEventListener("pagereveal", morph, { once: true });
+afterLoad(() => near("svg[data-art-src]", lazyArt));
+// A detail page warms what going back / up to its index needs: the index's art fragment (~15 KB, cached as immutable)
+// and the code that fills the cards. Not with Save-Data.
+const saveData = (navigator as Navigator & { connection?: { saveData?: boolean } }).connection?.saveData;
+const warm = (url = "") => fetch(url, { priority: "low" } as RequestInit).then((r) => r.arrayBuffer());
+if (!saveData)
+  idle("[data-art-warm]", () => Promise.all([warm(document.querySelector<HTMLElement>("[data-art-warm]")?.dataset.artWarm), lazyArt()]));

@@ -155,7 +155,8 @@ const beaconHost = `/^(www\\.)?${new URL(SITE.url).hostname.replace(/\./g, "\\."
       for pageswap / pagereveal, which fire before the first frame of a cross-document view transition. Names are set
       only for that one navigation (unique, cheap) and cleared when it ends:
         both pages: header, floating button, nav indicator → "lc-header" / "lc-fab" / "lc-nav-ind" (only while the
-          transition runs: a permanent name would make the header a backdrop root and kill its frosted glass)
+          transition runs: a permanent name would make the header a backdrop root and kill its frosted glass); leaving
+          through the open phone drawer, only the drawer's top bar → "lc-header" (nothing above the modal sheet)
         pageswap (old page): the clicked card's art/photo → "lc-media"; going back / up: the hero's art, or its photo
           alone ("lc-media") with its scrims as separate layers above it ("lc-hs0…"), and its copy ("lc-copy-out")
         pagereveal (new page): the hero art, phone photo band or desktop photo (+ scrims) and copy → "lc-media" /
@@ -165,10 +166,12 @@ const beaconHost = `/^(www\\.)?${new URL(SITE.url).hostname.replace(/\./g, "\\."
       lc-back (history back), lc-lang (language switch), lc-dark (a dark hero is the first screen: navy backdrop down
       to the hero's bottom edge, --vt-hero-b), lc-photo / lc-photo-out (a hero photo is the new / old side of the morph:
       clipped to the hero's slant), lc-orphan (old hero with no counterpart: leaves quickly), lc-hold (the new hero
-      photo is still loading: the old picture stays until the new one can cover it).
+      photo is still loading: the old picture stays until the new one can cover it), lc-fab-hold (the kept floating
+      button is not parsed yet: the old one stays until the end).
       html[data-vting] while the transition runs (both pages): the header bar is opaque instead of frosted (a named
       element has no backdrop to blur). html[data-fab-keep]: the floating button was showing on the old page, so the
-      new page shows it from the first frame (WhatsAppButton adopts that state).
+      new page shows it from its first style on (set here, before any page script; WhatsAppButton adopts that state).
+      Same-site arrivals with the HTML at hand wait for the whole document before the first frame (<link rel=expect>).
       clear() also drops any of these names left on a node by name, so a stale one can never reach the next transition.
       html[data-vt]: this page arrived through a view transition (hero entrances don't replay). With motion off the
       transition is skipped. Also pauses looping decoration ([data-pause-offscreen]) while it is offscreen.
@@ -188,6 +191,22 @@ const beaconHost = `/^(www\\.)?${new URL(SITE.url).hostname.replace(/\./g, "\\."
           if (!off) {
             if (!S.lcIntro) { d.dataset.intro = ""; S.lcIntro = 1; }
             if (!S.lcPing) d.dataset.fabPing = ""; /* WhatsAppButton sets S.lcPing once its ping has played */
+            /* the floating button was showing on the page we came from: kept from the very first style on, so a script
+               that runs before pagereveal never sees it hidden (its entrance would play inside the transition) */
+            if (S.lcFab && matchMedia("(min-width: 64rem)").matches) d.dataset.fabKeep = "";
+          }
+        } catch {}
+        /* Arriving from a page of this site with the HTML already here (prefetched or cached): the first frame waits
+           until the document is parsed (#lc-end, the last element of <body>, on every page), so the transition starts
+           with the whole page: the floating button exists to keep, and the rest of the page is not parsed and laid
+           out inside the animation (MOT3-01). Never on a first visit, an arrival from another site, a reload, or
+           HTML still coming over the network; the browser lifts it at the end of parsing in any case. */
+        try {
+          const a = window.navigation?.activation, n = performance.getEntriesByType("navigation")[0];
+          if (!off && a?.from && a.navigationType !== "reload" && /^(navigational-prefetch|cache)$/.test(n?.deliveryType) && "onpagereveal" in window) {
+            const l = document.createElement("link");
+            l.rel = "expect"; l.href = "#lc-end"; l.setAttribute("blocking", "render");
+            document.head.append(l);
           }
         } catch {}
         const path = (u) => new URL(u, location.href).pathname;
@@ -205,7 +224,8 @@ const beaconHost = `/^(www\\.)?${new URL(SITE.url).hostname.replace(/\./g, "\\."
             document.dispatchEvent(new Event("lc:vt-end")); /* play-when-visible starts waiting illustrations now */
           }
           delete d.dataset.fabKeep;
-          d.style.removeProperty("--vt-hero-b");
+          /* --vt-hero-b stays: inherited from <html>, removing it would restyle the whole page in the transition's last
+             frame; it is only read under lc-dark, and rewritten at each reveal */
         };
         const card = (p) => [...document.querySelectorAll("[data-vt-href]")].find((el) => path(el.dataset.vtHref) === p && vis(art(el)));
         const chrome = () => {
@@ -238,6 +258,15 @@ const beaconHost = `/^(www\\.)?${new URL(SITE.url).hostname.replace(/\./g, "\\."
           t.ready.catch(() => {});
           if (d.dataset.motion === "off") return t.skipTransition();
           try {
+            /* A link in the open phone drawer (MOT3-04): the modal sheet covers the page, and named layers paint above the
+               old page's snapshot (top layer included), so nothing of the page is named. Only the sheet's own top bar,
+               when the sheet spans the screen: it crossfades into the new page's header. */
+            const m = document.querySelector("dialog.lc-drawer[open]");
+            if (m) {
+              d.dataset.vting = "";
+              if (m.getBoundingClientRect().width >= innerWidth - 1) name(m.querySelector(".lc-drawer-bar"), "lc-header");
+              return;
+            }
             chrome();
             if (!a?.entry?.url) return;
             const p = path(a.entry.url), c = card(p);
@@ -253,17 +282,20 @@ const beaconHost = `/^(www\\.)?${new URL(SITE.url).hostname.replace(/\./g, "\\."
         addEventListener("pagereveal", (e) => {
           const t = e.viewTransition, a = window.navigation?.activation, from = a?.from?.url, here = location.pathname;
           clear();
-          if (!t) return;
-          if (d.dataset.motion === "off") {
+          if (t && d.dataset.motion === "off") {
             t.ready.catch(() => {});
             t.skipTransition();
-          } else {
+          } else if (t) {
             d.dataset.vt = "";
             try {
               const ty = t.types, add = (x) => ty?.add(x);
               const [dir, to] = (S.lcDir || "").split(" "), [upKind, up] = (S.lcUp || "").split(" ");
               add("lc-page");
-              if (S.lcFab && matchMedia("(min-width: 64rem)").matches) d.dataset.fabKeep = "";
+              if (S.lcFab && matchMedia("(min-width: 64rem)").matches) {
+                d.dataset.fabKeep = "";
+                /* not parsed yet (no render blocking in this browser): the old button stays put until the transition ends */
+                if (!document.querySelector(".lc-fab")) add("lc-fab-hold");
+              }
               if (to === here) add("lc-" + dir);
               if (a?.navigationType === "traverse" && a.entry.index < a.from?.index) add("lc-back");
               if (from && path(from).split("/")[1] !== here.split("/")[1]) add("lc-lang");
@@ -271,6 +303,7 @@ const beaconHost = `/^(www\\.)?${new URL(SITE.url).hostname.replace(/\./g, "\\."
                 add("lc-dark");
                 const b = document.querySelector(".lc-hero")?.getBoundingClientRect().bottom;
                 if (b > 0 && b < innerHeight) d.style.setProperty("--vt-hero-b", Math.round(b) + "px");
+                else d.style.removeProperty("--vt-hero-b");
               }
               if (up === here && upKind === "photo") add("lc-photo-out");
               chrome();
@@ -378,7 +411,8 @@ const beaconHost = `/^(www\\.)?${new URL(SITE.url).hostname.replace(/\./g, "\\."
         />
       )
     }
-    {/* Last in the document, so its rules win ties with the screen styles above. */}
-    <link rel="stylesheet" href={printCss} media="print" />
+    {/* Last in the document, so its rules win ties with the screen styles above. id="lc-end": the end of the document
+        for the head script's render-blocking <link rel="expect"> (keep it last, on every page). */}
+    <link rel="stylesheet" href={printCss} media="print" id="lc-end" />
   </body>
 </html>

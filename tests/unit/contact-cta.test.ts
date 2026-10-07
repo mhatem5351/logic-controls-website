@@ -8,7 +8,7 @@
  * (pageContact and mailtoLink: tests/unit/contact.test.ts.)
  */
 import { describe, expect, it } from "vitest";
-import { contactCta, ctaKind, pageTopic, placeCtas, type Cta } from "~/components/contact-cta";
+import { contactCta, ctaKind, narrowWhatsapp, pageTopic, placeCtas, type Cta } from "~/components/contact-cta";
 import { SITE } from "~/data/site";
 import { getMessages, type Locale } from "~/i18n";
 
@@ -142,6 +142,25 @@ describe("placeCtas", () => {
     expect(mail).toMatchObject({ kind: "email", filled: false, icon: "mail" });
     expect(query(mail!.cta.href, "subject")).toBe(`${getMessages("zh").ui.email.subject}：控制柜`);
     expect(query(mail!.cta.href, "body")).toContain(`${SITE.url}/zh/services/control-panels/`);
+  });
+});
+
+describe("narrowWhatsapp (VIS2-21 / VIS3-06: drawer, hero and CTA band on narrow widths)", () => {
+  it("tr: the long 'WhatsApp an engineer' label has a clearly shorter form", () => {
+    const tr = getMessages("tr").ui.cta;
+    expect(narrowWhatsapp("tr", tr.whatsapp)).toBe(tr.whatsappNarrow);
+    expect(tr.whatsappNarrow.length).toBeLessThan(tr.whatsapp.length - 6);
+  });
+  for (const locale of ["en", "ar", "zh"] as const) {
+    it(`${locale}: the label is short enough already (no swap)`, () => {
+      expect(narrowWhatsapp(locale, getMessages(locale).ui.cta.whatsapp)).toBeUndefined();
+    });
+  }
+  it("placeCtas uses the same rule for WhatsApp actions only", () => {
+    const tr = getMessages("tr").ui.cta;
+    const [form, wa] = placeCtas("tr", FORM, { label: tr.whatsapp, href: WA.href });
+    expect(wa!.narrow).toBe(tr.whatsappNarrow);
+    expect(form!.narrow).toBeUndefined();
   });
 });
 

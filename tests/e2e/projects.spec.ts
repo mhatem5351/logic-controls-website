@@ -204,7 +204,7 @@ test("desktop: one compact filter bar; each group's button discloses its chips (
   await expect(shown(page)).toHaveCount(await items(page).count());
 });
 
-test("phones and tablets: the filters sit in a disclosure that names the active filters; chips wrap, nothing scrolls sideways", async ({ page }) => {
+test("phones and tablets: the filters sit in a disclosure that names the active filters; chips wrap, nothing scrolls sideways", { tag: "@phone" }, async ({ page }) => {
   test.skip(isDesktop(page), "from 1024px each group has its own button in the filter bar");
   await page.goto("/en/projects/?industry=pharmaceutical");
   const toggle = filtersToggle(page);

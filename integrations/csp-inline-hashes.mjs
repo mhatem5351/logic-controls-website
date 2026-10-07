@@ -13,7 +13,8 @@
  * Fails closed (CODE2-01): the build throws when a page has inline scripts but no CSP <meta> to complete, when a page
  * carries more than one, when the <meta> has no script-src directive, when script-src would allow 'unsafe-inline', or
  * when a rewritten page does not list a hash for every inline script it contains. A page without inline scripts and
- * without a <meta> (none today) is only counted. tests/static/check-dist.mjs re-checks the same contract on dist/.
+ * without a <meta> (none today) is only counted. tests/static/check-dist.mjs re-checks the contract on dist/ with its
+ * own HTML parser and hashing (CODE3-06), so a scanner bug here cannot pass both checks.
  */
 import { createHash } from "node:crypto";
 import { readFile, readdir, writeFile } from "node:fs/promises";
@@ -23,12 +24,19 @@ import { fileURLToPath } from "node:url";
 const META = /<meta http-equiv="content-security-policy" content="([^"]*)"\s*\/?>/gi;
 const SCRIPT = /<script\b([^>]*)>([\s\S]*?)<\/script>/gi;
 
-/** sha256 CSP sources of the page's executable inline scripts (no src, not JSON-LD, not empty). */
+/** A whole attribute name (`src`, not `data-src`): `\b` alone would also match after the `-` of a data-*-src. */
+const SRC_ATTR = /(?:^|\s)src\s*=/i;
+const JSON_LD = /(?:^|\s)type\s*=\s*["']?application\/ld\+json/i;
+
+/**
+ * sha256 CSP sources of the page's executable inline scripts (no src, not JSON-LD, not empty). The body is hashed as
+ * the browser sees it: the HTML parser turns CR LF and a lone CR into LF before the script's text is hashed.
+ */
 export function inlineScriptHashes(/** @type {string} */ html) {
   const hashes = new Set();
   for (const [, attrs, body] of html.matchAll(SCRIPT)) {
-    if (/\bsrc\s*=/i.test(attrs) || /type\s*=\s*["']?application\/ld\+json/i.test(attrs) || !body) continue;
-    hashes.add(`'sha256-${createHash("sha256").update(body).digest("base64")}'`);
+    if (SRC_ATTR.test(attrs) || JSON_LD.test(attrs) || !body) continue;
+    hashes.add(`'sha256-${createHash("sha256").update(body.replace(/\r\n?/g, "\n")).digest("base64")}'`);
   }
   return hashes;
 }
@@ -59,7 +67,10 @@ export function completePage(/** @type {string} */ html, /** @type {string} */ f
     .filter(Boolean);
   const at = directives.findIndex((d) => /^script-src\s/i.test(d) || d.toLowerCase() === "script-src");
   if (at < 0) throw new Error(`csp: ${file} CSP <meta> has no script-src directive`);
-  const sources = directives[at].split(/\s+/).slice(1).filter((x) => !x.startsWith("'sha"));
+  const sources = directives[at]
+    .split(/\s+/)
+    .slice(1)
+    .filter((x) => !x.startsWith("'sha"));
   if (sources.includes("'unsafe-inline'")) throw new Error(`csp: ${file} script-src allows 'unsafe-inline'`);
   directives[at] = ["script-src", ...sources, ...hashes].join(" ");
   const meta = `<meta http-equiv="content-security-policy" content="${directives.join("; ")};">`;
@@ -94,7 +105,9 @@ export default function cspInlineHashes() {
           await writeFile(path, out);
           pages++;
         }
-        logger.info(`inline script hashes: ${pages} pages, ${scripts} hashes${bare ? `; ${bare} page(s) without CSP meta and without inline scripts` : ""}`);
+        logger.info(
+          `inline script hashes: ${pages} pages, ${scripts} hashes${bare ? `; ${bare} page(s) without CSP meta and without inline scripts` : ""}`,
+        );
       },
     },
   };

@@ -917,7 +917,11 @@
 
 /* ==== PK5 type ==== (text engine hooks: src/lib/text.ts)
    - Any heading: a word or atom wider than its line breaks instead of overflowing, and only then (`break-word` does
-     not lower min-content, so grids and cards keep their widths). Covers zoom / WCAG 1.4.12 text spacing.
+     not lower min-content, so grids and cards keep their widths). It is the safety net for zoom, enlarged system text
+     and WCAG 1.4.12 text spacing, never the layout: at default sizes no heading word is wider than its line, on any
+     page, locale or width from 320px (I18N3-03; tests/e2e/r3-r4-pages.spec.ts keeps it so). Headings do not
+     hyphenate English automatically: with `text-wrap: balance` that put hyphens into short headings at every width
+     ("What commis-sioning covers"); narrow columns and sizes are fixed instead. Card and tile titles do (below).
    - Turkish: heading() inserts soft hyphens (U+00AD) at syllable boundaries in words of 13+ letters, never leaving
      fewer than 3 letters on either side ("otomatik-leştiriyorsunuz" at a line end), in display text only (headings,
      card titles, FAQ questions). Body text carries none: WebKit breaks at U+00AD even under `hyphens: none`.
@@ -938,6 +942,17 @@
   :lang(tr) :is(h1, h2, h3, h4, .type-display, .type-h1, .type-h2, .type-h3, .type-h4) {
     -webkit-hyphens: manual;
     hyphens: manual;
+  }
+  /* Phones under 360px: the fluid H1 size left a 288px line 1–15px too narrow for a whole word — "Troubleshooting,"
+     (en) and the gloss "(Testing & Commissioning)" in the Arabic H1 (its 6.25% larger root) were cut. One step down
+     there; from 360px nothing changes (the fluid size is 34px at 360 either way). */
+  @media (max-width: 22.49rem) {
+    :root {
+      --text-h1: 2rem;
+    }
+    :root:lang(ar) {
+      --text-h1: 1.9375rem;
+    }
   }
 }
 @layer components {
@@ -1154,6 +1169,14 @@
     -webkit-hyphens: auto;
     hyphenate-limit-chars: 10 4 4;
   }
+  /* English: only words of 12+ letters, 5+ on each side ("Pharma-ceutical"): with 10 the balanced titles hyphenated
+     words that fit the next line ("Troubleshooting, mainte-nance and support" at 390 and 1024, R4-pages scan). WebKit
+     has no word-length limit: 5 before and 6 after keep "mainte-nance", "tem-perature" and "au-tomation" whole there. */
+  :is(.lc-card-title, .lc-tile-title):where(:lang(en)) {
+    hyphenate-limit-chars: 12 5 5;
+    -webkit-hyphenate-limit-before: 5;
+    -webkit-hyphenate-limit-after: 6;
+  }
   .lc-card-title:where(:lang(ar), :lang(zh-Hans)) {
     line-height: 1.45;
   }
@@ -1162,7 +1185,6 @@
   .lc-tile-title:where(:lang(en)) {
     hyphens: auto;
     -webkit-hyphens: auto;
-    hyphenate-limit-chars: 10 4 4;
   }
   .lc-tile-title:where(:lang(ar)) {
     overflow-wrap: normal;

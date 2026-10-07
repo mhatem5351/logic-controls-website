@@ -7,7 +7,8 @@
  *   name, company, phone, email, reply (preferred channel: whatsapp | phone | email), country, location, service,
  *   industry, timeline, message, page, locale, consent=yes,
  *   files (0–3 attachments, multipart only), honeypot lc_hp, cf-turnstile-response,
- *   name.dir / company.dir / message.dir (the browser's `dirname`: "ltr" | "rtl").
+ *   name.dir / company.dir / message.dir (the browser's `dirname`: "ltr" | "rtl"),
+ *   dropped (names of the files the visitor left out after a timed-out upload: "Send without the files").
  * A request needs a name, a phone OR an email (zh visitors may give only an email), the contact detail its preferred
  * reply channel needs (email → an email address; phone call / WhatsApp → a phone number), consent, and a Turnstile
  * token.
@@ -95,6 +96,10 @@ export const RFQ_FILES = {
     dwg: "application/octet-stream",
     dxf: "application/octet-stream",
   } as Record<string, string>,
+  /** Text field: the files the visitor left out because the upload was too slow ("Send without the files",
+   *  DEV3-01), comma separated; the owner's email names them. One line, at most `droppedMax` characters. */
+  dropped: "dropped",
+  droppedMax: 300,
 } as const;
 export const RFQ_FILES_ACCEPT = Object.keys(RFQ_FILES.types)
   .map((e) => `.${e}`)
@@ -293,6 +298,32 @@ export function intlPhone(raw: string, ctx: PhoneContext = {}): string | null {
   }
 }
 
+/** Mobile formats a visitor types without the country code, by the country their connection comes from. */
+const NETWORK_MOBILE: Record<string, { dial: string; mobile: RegExp[] }> = {
+  ...Object.fromEntries((Object.keys(DIAL) as PhoneCountry[]).map((c) => [c, { dial: DIAL[c], mobile: NATIONAL[c].mobile }])),
+  SA: { dial: "966", mobile: [/^0?(5\d{8})$/] }, // 05x xxx xxxx
+  AE: { dial: "971", mobile: [/^0?(5[024568]\d{7})$/] }, // 050 / 052 / 054 / 055 / 056 / 058 + 7 digits
+};
+/** "SA", "AE"…: a real ISO country, not Cloudflare's "XX" (unknown) or "T1" (Tor). */
+export const isNetworkCountry = (cc: unknown): cc is string => typeof cc === "string" && /^[A-Z]{2}$/.test(cc) && cc !== "XX";
+
+/**
+ * UX3-03: a GUESS for the owner, never applied silently. When intlPhone() cannot tell the country, a local mobile
+ * number that matches the format of the country the visitor's connection comes from (the Worker's
+ * request.cf.country) may be from there: the owner's email offers it labelled "guessed from the network: confirm".
+ * Null when that country is unknown, not covered, or the number is not one of its mobile formats.
+ */
+export function networkPhone(raw: string, network: string | null | undefined): string | null {
+  const c = compactPhone(raw);
+  const country = isNetworkCountry(network) ? NETWORK_MOBILE[network] : undefined;
+  if (!country || !PHONE_RE.test(c) || /^(\+|00)/.test(c)) return null;
+  for (const re of country.mobile) {
+    const m = re.exec(c);
+    if (m) return country.dial + m[1]!;
+  }
+  return null;
+}
+
 /* ------------------------------------------------------------------ whole request */
 
 export type RfqProblem = "name" | "contact" | "phone" | "email" | "reply" | "consent";
@@ -333,7 +364,6 @@ export function urgencyOf(data: Pick<RfqData, "timeline" | "service">): Urgency 
   if (!data.timeline && URGENT_SERVICES.includes(data.service)) return "likely";
   return "";
 }
-export const isUrgent = (data: Pick<RfqData, "timeline">) => data.timeline === URGENT_TIMELINE;
 
 /* ------------------------------------------------------------------ hand-over: form → thanks page, links */
 

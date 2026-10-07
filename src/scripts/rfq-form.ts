@@ -10,14 +10,15 @@
  *   or WhatsApp make the phone number required. Same rule on the Worker (rfqProblems).
  *   Attachments: each pick (or drop) adds to the list, every file can be removed, large photos are reduced in the
  *   browser (≤ 2000 px, JPEG), each file's type and content are checked when it is added (errors are announced), and
- *   the upload shows progress, gives up when it stalls, and can be retried without choosing the files again.
+ *   the upload shows progress, gives up when it stalls, and can be retried without choosing the files again — or,
+ *   after a timeout, sent without the files (the owner's email names them).
  *   Context: ?service= / ?industry= / ?location= / ?timeline= preselect; ?project=<slug> and ?intent=reference
  *   explain what the visitor came for and start the description for them (src/lib/context-params.ts: the same list
  *   the language switcher carries over).
  * Limits and validation rules come from src/lib/rfq-rules.ts (the Worker uses the same module).
  * The values the visitor typed or chose (not files, not consent, not defaults they never touched) are kept as a draft
  * in sessionStorage, so switching the page language keeps them (rules: src/scripts/rfq-draft.ts); on success the draft
- * is cleared and a short summary ({ref, name, company, need, files, skipped, reply, urgent}) is handed to the thanks
+ * is cleared and a short summary ({ref, name, company, need, files, skipped, dropped, reply, urgent}) is handed to the thanks
  * page, which deletes it once read. Back from the thanks page (back/forward cache) brings a fresh form, never the
  * "sent" overlay.
  * Hand-over links (WhatsApp / email) are templates rendered by the server with the site's link builders
@@ -94,6 +95,8 @@ export interface RfqSent {
   need: string;
   files: string[];
   skipped: string[];
+  /** Left out by the visitor after a timed-out upload ("Send without the files"): to send by email / WhatsApp. */
+  dropped?: string[];
   reply: string;
   urgent: "urgent" | "likely" | "";
 }
@@ -120,10 +123,13 @@ const TS_GIVE_UP_MS = 12_000;
 const IMAGE_REDUCE_OVER = 600 * 1024;
 const IMAGE_MAX_SIDE = 2000;
 const IMAGE_QUALITY = 0.82;
-/** Upload watchdog: no progress for STALL_MS (or no answer AFTER_UPLOAD_MS after the last byte), or TOTAL_MS overall. */
+/**
+ * Upload watchdog: no upload progress for STALL_MS, or no answer AFTER_UPLOAD_MS after the last byte. There is no
+ * overall limit while the upload keeps moving (DEV3-01): photos are sent from the machine, where the uplink is
+ * weakest, and a slow upload that progresses still arrives; the visitor sees the bar move.
+ */
 const STALL_MS = 30_000;
 const AFTER_UPLOAD_MS = 45_000;
-const TOTAL_MS = 150_000;
 
 const store = {
   get: (k: string) => {
@@ -143,10 +149,14 @@ const store = {
 const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
 /** "614 KB", "1.9 MB", "4 MB", as an LTR isolate (Arabic text would otherwise show "MB 4"). */
 const LRI = String.fromCharCode(0x2066);
+const FSI = String.fromCharCode(0x2068);
 const PDI = String.fromCharCode(0x2069);
 const NBSP = String.fromCharCode(0xa0); // "4 MB" never splits across lines
 const mb = (n: number) =>
   LRI + (n === 0 ? `0${NBSP}KB` : n < 1024 * 1024 ? `${Math.max(1, Math.round(n / 1024))}${NBSP}KB` : `${(n / 1024 / 1024).toFixed(1).replace(/\.0$/, "")}${NBSP}MB`) + PDI;
+/** File names in a sentence: each one isolated with its own direction (first strong character), so in Arabic text
+ *  "تقرير.pdf، IMG_2041.jpg" never merges into one LTR run that tears an extension from its name (I18N3-02). */
+const nameList = (names: readonly string[], sep: string) => names.map((n) => FSI + n + PDI).join(sep);
 /** A label used before a colon: "What do you need?" → "What do you need". */
 const bare = (label: string) => label.trim().replace(/[?？؟:：]\s*$/, "");
 /** One announcement per change: clear, then set on the next frame (screen readers skip text set in the same task). */
@@ -384,7 +394,7 @@ export function enhance(form: HTMLFormElement) {
   let items: Item[] = [];
   const fileMessage = (problem: FileProblem) =>
     problem === "type"
-      ? fmt(i18n.validation.filesType!, { files: items.filter((i) => i.issue === "type").map((i) => i.file.name).join(i18n.listSep) })
+      ? fmt(i18n.validation.filesType!, { files: nameList(items.filter((i) => i.issue === "type").map((i) => i.file.name), i18n.listSep) })
       : problem === "count"
         ? fmt(i18n.validation.filesCount!, { max: RFQ_FILES.maxCount })
         : fmt(i18n.validation.filesSize!, { max: mb(RFQ_FILES.maxTotal) });
@@ -393,8 +403,11 @@ export function enhance(form: HTMLFormElement) {
     if (el instanceof HTMLInputElement && el.type === "checkbox") return el.checked || !el.required ? "" : i18n.validation.consent!;
     if (el instanceof HTMLInputElement && el.type === "radio") return "";
     if (el instanceof HTMLInputElement && el.type === "file") {
-      // a type problem: by extension (here) or as the Worker answered for a file (issue "type")
-      const problem = items.some((i) => i.issue === "type") ? "type" : checkFiles(items.map((i) => i.file));
+      // a type problem: by extension (here) or as the Worker answered for a file (issue "type"). Photos still being
+      // reduced do not count towards the size yet (DEV3-03: "larger than 4 MB" must not flash for photos about to fit);
+      // the count is final from the start.
+      if (items.some((i) => i.issue === "type")) return fileMessage("type");
+      const problem = items.length > RFQ_FILES.maxCount ? "count" : checkFiles(items.filter((i) => !i.preparing).map((i) => i.file));
       return problem ? fileMessage(problem) : "";
     }
     const v = el.value.trim();
@@ -473,15 +486,21 @@ export function enhance(form: HTMLFormElement) {
   }
 
   /* ---------- phone: no usable country code → a gentle hint (never blocking; UX2-02) ---------- */
-  function phoneCountryHint() {
+  // A11Y3-02: the hint is part of the field's description only while it is shown, and said once when it appears
+  // (not on load, for a number restored from the draft).
+  function phoneCountryHint(speak = true) {
     if (!phoneHint) return;
     const v = phone.value.trim();
     const ctx = { locale: i18n.locale, country: $<HTMLInputElement>("[name='country']")?.value, location: select("location")?.value };
-    phoneHint.hidden = !(v && isValidPhone(v) && !intlPhone(v, ctx));
+    const show = !!(v && isValidPhone(v) && !intlPhone(v, ctx));
+    const was = !phoneHint.hidden;
+    phoneHint.hidden = !show;
+    phone.setAttribute("aria-describedby", ["rfq-phone-help", show && phoneHint.id, "rfq-phone-error"].filter(Boolean).join(" "));
+    if (speak && show && !was) announce(live, phoneHint.textContent?.trim() ?? "");
   }
-  $<HTMLInputElement>("[name='country']")?.addEventListener("change", phoneCountryHint);
-  select("location")?.addEventListener("change", phoneCountryHint);
-  if (phone.value) phoneCountryHint();
+  $<HTMLInputElement>("[name='country']")?.addEventListener("change", () => phoneCountryHint());
+  select("location")?.addEventListener("change", () => phoneCountryHint());
+  if (phone.value) phoneCountryHint(false);
 
   // Character counter for the description (shown near the limit; announced once at 90 % and once over the limit).
   // Also run once at start, silently: a description restored from the draft (or started by ?project=) may be long.
@@ -525,15 +544,20 @@ export function enhance(form: HTMLFormElement) {
   }
   function summaryText() {
     if (!items.length) return "";
-    const total = items.reduce((n, i) => n + i.file.size, 0);
-    return fmt(i18n.files.summary, { count: items.length, max: RFQ_FILES.maxCount, size: mb(total), maxSize: mb(RFQ_FILES.maxTotal) });
+    // the total is known once every photo is reduced (DEV3-03)
+    const total = items.some((i) => i.preparing) ? "…" : mb(items.reduce((n, i) => n + i.file.size, 0));
+    return fmt(i18n.files.summary, { count: items.length, max: RFQ_FILES.maxCount, size: total, maxSize: mb(RFQ_FILES.maxTotal) });
   }
   /** What a screen reader hears after a change: the error, else the per-file problems, else the new count. */
+  let filesLiveTimer = 0;
   function announceFiles() {
     if (!filesLive || !fileInput) return;
     const err = check(fileInput);
     const notes = items.filter((i) => i.issue).map((i) => pair(i.file.name, fileNote(i)));
     announce(filesLive, [err, ...notes].filter(Boolean).join(" ") || summaryText());
+    // A11Y3-03: said once, then gone (browse mode would otherwise read the error twice: here and under the field)
+    clearTimeout(filesLiveTimer);
+    filesLiveTimer = window.setTimeout(() => (filesLive.textContent = ""), 5000);
   }
   function renderFiles() {
     if (!fileInput || !fileList || !fileSummary) return;
@@ -613,7 +637,8 @@ export function enhance(form: HTMLFormElement) {
         pending = pending.filter((p) => p !== job);
         if (!items.includes(it)) return;
         renderFiles();
-        if (fileInput.getAttribute("aria-invalid") === "true" || submitted) show(fileInput, check(fileInput));
+        // the size check waited for the reduced photos (DEV3-03): it runs now, as it ran at once for the other files
+        if (!pending.length || fileInput.getAttribute("aria-invalid") === "true" || submitted) show(fileInput, check(fileInput));
         if (!pending.length) announceFiles();
       });
     }
@@ -684,6 +709,13 @@ export function enhance(form: HTMLFormElement) {
   /* ---------- alert panel ---------- */
   const fallback = $("[data-alert-fallback]")!;
   const retry = $<HTMLButtonElement>("[data-retry]")!;
+  /** "Send without the files" (DEV3-01): offered when an upload with files timed out. */
+  const sendBare = $<HTMLButtonElement>("[data-send-bare]");
+  const sendBareNote = $("[data-send-bare-note]");
+  /** Files the visitor left out that way: the request says so (the owner's email names them). */
+  let dropped: string[] = [];
+  /** …minus any the visitor has added back since. */
+  const droppedNames = () => dropped.filter((n) => !items.some((i) => i.file.name === n));
 
   /** The visitor's request as plain text, to hand over to WhatsApp or email without retyping. */
   function handover(): string {
@@ -703,7 +735,7 @@ export function enhance(form: HTMLFormElement) {
     $$<HTMLAnchorElement>("a[data-href-tpl]").forEach((a) => (a.href = fillHref(a.dataset.hrefTpl!, { text })));
   }
 
-  function alertShow(opts: { title: string; html?: string; list?: { el: Control; msg: string }[]; fallback?: boolean; retry?: boolean }) {
+  function alertShow(opts: { title: string; html?: string; list?: { el: Control; msg: string }[]; fallback?: boolean; retry?: boolean; bare?: boolean }) {
     $("[data-alert-title]")!.textContent = opts.title;
     const text = $("[data-alert-text]")!;
     text.innerHTML = opts.html ?? ""; // engine output from the page's own messages (errorsHtml), never visitor input
@@ -728,6 +760,8 @@ export function enhance(form: HTMLFormElement) {
     if (opts.fallback) fillFallback();
     fallback.hidden = !opts.fallback;
     retry.hidden = !opts.retry;
+    if (sendBare) sendBare.hidden = !opts.bare;
+    if (sendBareNote) sendBareNote.hidden = !opts.bare;
     alertBox.hidden = false;
   }
   const alertHide = () => (alertBox.hidden = true);
@@ -738,7 +772,14 @@ export function enhance(form: HTMLFormElement) {
   /** `detail`: another errors.* key for the text (verificationBlocked, timeout). */
   function serverError(code: string, detail?: string) {
     const c = (["invalid", "attachments", "verification", "send", "unknown"].includes(code) ? code : "unknown") as Code;
-    alertShow({ title: i18n.errors.title!, html: i18n.errorsHtml[detail ?? c], fallback: true, retry: c === "verification" || c === "send" || c === "unknown" });
+    alertShow({
+      title: i18n.errors.title!,
+      html: i18n.errorsHtml[detail ?? c],
+      fallback: true,
+      retry: c === "verification" || c === "send" || c === "unknown",
+      // a slow connection that cannot carry the files can still carry the request (DEV3-01)
+      bare: detail === "timeout" && items.length > 0,
+    });
     focusAlert();
   }
   function invalid(bad: { el: Control; msg: string }[]) {
@@ -748,14 +789,15 @@ export function enhance(form: HTMLFormElement) {
 
   /* ---------- steps ---------- */
   /**
-   * MOT2-24: one motion per step change. Already in view → no scroll; far away (more than a screen) or motion paused →
-   * an instant jump, then the step slides in; close → a short smooth scroll, and the slide waits for it to end.
+   * MOT2-24 / MOT3-03: one motion per step change. Already in view → no scroll; motion paused, or more than a quarter
+   * screen away → an instant jump, then the step slides in (a long smooth scroll back up reads as the page running
+   * away: on a phone the form's top is always well above the screen after step 1); close → a short smooth scroll, and
+   * the slide waits for it to end. `top`: the target's position measured before the steps were swapped.
    */
-  function bringIntoView(target: HTMLElement) {
-    const top = target.getBoundingClientRect().top;
+  function bringIntoView(target: HTMLElement, top = target.getBoundingClientRect().top) {
     const margin = parseFloat(getComputedStyle(target).scrollMarginTop) || 0;
     if (top >= margin - 8 && top < innerHeight * 0.45) return;
-    if (motionOff() || Math.abs(top) > innerHeight) {
+    if (motionOff() || Math.abs(top - margin) > innerHeight * 0.25) {
       target.scrollIntoView({ behavior: "auto", block: "start" });
       return;
     }
@@ -771,6 +813,9 @@ export function enhance(form: HTMLFormElement) {
   }
   function goTo(n: number, focus = true) {
     if (n !== step) form.dataset.stepDir = n > step ? "next" : "prev"; // motion only (CSS), never on load
+    // MOT3-03: where the form is BEFORE the panels swap (rfq-form.css also turns scroll anchoring off in the form,
+    // so the swap itself never moves the page)
+    const formTop = form.getBoundingClientRect().top;
     step = n;
     panels.forEach((p) => p.toggleAttribute("data-active", Number(p.dataset.step) === n));
     tabs.forEach((tab) => {
@@ -790,7 +835,8 @@ export function enhance(form: HTMLFormElement) {
       const legend = panels[n - 1]?.querySelector<HTMLElement>("legend");
       legend?.focus({ preventScroll: true });
       // landscape phones (short viewports): bring the step's first fields into view, not the form's title and stepper
-      bringIntoView(innerHeight < 520 && legend ? legend : form);
+      if (innerHeight < 520 && legend) bringIntoView(legend);
+      else bringIntoView(form, formTop);
     }
   }
   goTo(1, false);
@@ -826,7 +872,8 @@ export function enhance(form: HTMLFormElement) {
       widget = ts.render(tsSlot, {
         sitekey: tsSlot.dataset.sitekey,
         language: tsSlot.dataset.language,
-        size: "flexible",
+        // "flexible" is 300 px at least: on 320–360 px phones the interactive check would widen the page (DEV3-02)
+        size: tsSlot.clientWidth < 300 ? "compact" : "flexible",
         appearance: "interaction-only",
         callback: (t: string) => ((token = t), (tsError = false)),
         "error-callback": () => ((token = ""), (tsError = true), true),
@@ -885,7 +932,8 @@ export function enhance(form: HTMLFormElement) {
     if (widget !== undefined) window.turnstile?.reset(widget);
   }
 
-  retry.addEventListener("click", () => {
+  /** "Try again" / "Send without the files": a fresh security check, then the same submit as before. */
+  function resubmit() {
     alertHide();
     if (tsState === "failed") {
       // start over: the next loadTurnstile() loads api.js again if it never arrived, or only renders again if it did
@@ -901,7 +949,18 @@ export function enhance(form: HTMLFormElement) {
       else document.querySelector(`script[src='${TS_SRC}']`)?.remove();
     } else resetTurnstile();
     tsError = false;
-    form.requestSubmit(lastSubmitter instanceof HTMLButtonElement && form.contains(lastSubmitter) ? lastSubmitter : undefined);
+    const submitter = lastSubmitter instanceof HTMLButtonElement && form.contains(lastSubmitter) ? lastSubmitter : undefined;
+    // the button that had focus is hidden with the alert: focus the one that now says "Sending…"
+    (submitter && !submitter.closest("[hidden]") ? submitter : $<HTMLElement>(`[data-actions='${step}'] [data-submit]`))?.focus({ preventScroll: true });
+    form.requestSubmit(submitter);
+  }
+  retry.addEventListener("click", resubmit);
+  sendBare?.addEventListener("click", () => {
+    dropped = [...new Set([...dropped, ...items.map((i) => i.file.name)])];
+    items = [];
+    renderFiles();
+    if (fileInput) show(fileInput, "");
+    resubmit();
   });
 
   /* ---------- submit ---------- */
@@ -909,11 +968,23 @@ export function enhance(form: HTMLFormElement) {
     sending = on;
     form.toggleAttribute("data-sending", on);
     $$("[data-submit-label]").forEach((l, i) => (l.textContent = on ? i18n.sending : i === 0 ? i18n.sendNow : i18n.submit));
+    $$("[data-submit-pct]").forEach((p) => (p.textContent = ""));
     $$("[data-submit]").forEach((b) => b.setAttribute("aria-disabled", String(on)));
     if (on) live.textContent = i18n.sending;
+    // A11Y3-03: after a failure the status region must not keep saying "Sending…" (the alert says what happened)
+    else if (live.textContent === i18n.sending || live.textContent === i18n.waiting) live.textContent = "";
     if (!on && progress) progress.hidden = true;
   };
-  /** Upload progress (only shown when files go with the request): button label + bar. */
+  /**
+   * Upload progress (only shown when files go with the request): the bar, and the percentage beside the button's
+   * label. A11Y3-03: the focused button's accessible name stays "Uploading files…" (the number is aria-hidden; the
+   * progressbar carries it), so screen readers do not read out every percent.
+   */
+  const uploading = (() => {
+    const tpl = i18n.files.uploading;
+    const m = /(\s*)([%٪]?)\{percent\}([%٪]?)/.exec(tpl);
+    return m ? { label: (tpl.slice(0, m.index) + tpl.slice(m.index + m[0].length)).trim(), pct: (n: number) => `${m[1]}${m[2]}${n}${m[3]}` } : { label: tpl, pct: () => "" };
+  })();
   const setProgress = (fraction: number) => {
     if (!progress) return;
     const pct = Math.min(100, Math.round(fraction * 100));
@@ -921,21 +992,20 @@ export function enhance(form: HTMLFormElement) {
     const bar = progress.querySelector<HTMLElement>("[role='progressbar']");
     bar?.setAttribute("aria-valuenow", String(pct));
     bar?.style.setProperty("--p", `${pct}%`);
-    const label = fmt(i18n.files.uploading, { percent: pct });
-    $$("[data-submit-label]").forEach((l) => (l.textContent = label));
+    $$("[data-submit-label]").forEach((l) => l.textContent !== uploading.label && (l.textContent = uploading.label));
+    $$("[data-submit-pct]").forEach((p) => (p.textContent = uploading.pct(pct)));
   };
 
   type Answer = { status: number; json: { ok?: boolean; error?: string; ref?: string; skipped?: string[]; problem?: FileProblem; files?: string[] } | null };
-  /** POST with upload progress and a watchdog (UX2-04): a stalled or endless request rejects with "timeout". */
+  /** POST with upload progress and a watchdog (UX2-04, DEV3-01): a stalled upload, or no answer after it, rejects
+   *  with "timeout"; an upload that keeps moving is never cut short. */
   function post(data: FormData, withFiles: boolean): Promise<Answer> {
     return new Promise((resolve, reject) => {
       const xhr = new XMLHttpRequest();
-      const start = Date.now();
-      let last = start;
+      let last = Date.now();
       let uploaded = !withFiles;
       const watchdog = window.setInterval(() => {
-        const now = Date.now();
-        if (now - start > TOTAL_MS || now - last > (uploaded ? AFTER_UPLOAD_MS : STALL_MS)) xhr.abort();
+        if (Date.now() - last > (uploaded ? AFTER_UPLOAD_MS : STALL_MS)) xhr.abort();
       }, 1000);
       const end = () => clearInterval(watchdog);
       xhr.open("POST", form.action);
@@ -998,6 +1068,8 @@ export function enhance(form: HTMLFormElement) {
     data.set("cf-turnstile-response", t);
     data.delete(RFQ_FILES.field);
     for (const it of items) data.append(RFQ_FILES.field, it.file, it.file.name);
+    const left = droppedNames();
+    if (left.length) data.set(RFQ_FILES.dropped, left.join(", "));
     let answer: Answer;
     try {
       answer = await post(data, items.length > 0);
@@ -1037,6 +1109,7 @@ export function enhance(form: HTMLFormElement) {
       need: valueOf(select("service")!),
       files: items.map((i) => i.file.name).filter((n) => !skipped.includes(n)),
       skipped,
+      dropped: droppedNames(),
       reply: (() => {
         const chip = $<HTMLInputElement>("input[name='reply']:checked");
         return chip ? valueOf(chip) : "";

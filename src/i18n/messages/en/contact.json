@@ -22,7 +22,8 @@
       "submit": "Send request",
       "sending": "Sending…",
       "sendNow": "Skip and send now",
-      "retry": "Try again"
+      "retry": "Try again",
+      "sendWithoutFiles": "Send without the files"
     },
     "fields": {
       "name": {
@@ -182,7 +183,8 @@
     "attachments": "We could not accept the files: they may be over the limit (3 files, 4 MB in total) or not a PDF, JPG, PNG, WebP, ZIP, DWG or DXF file. Remove them and send the request, then send the files by email or WhatsApp.",
     "verificationBlocked": "The security check could not load. A browser extension, a firewall or your network may be blocking it. Reload the page or try another network, or contact us directly below.",
     "handover": "Your details are copied into the message, so you do not need to type them again.",
-    "timeout": "Sending took too long and was stopped. Your connection may be slow or interrupted. Please try again, or contact us another way."
+    "timeout": "Sending took too long and was stopped. Your connection may be slow or interrupted. Please try again, or contact us another way.",
+    "withoutFiles": "The request is sent right away. Send the files afterwards on WhatsApp or by email, with the request number shown on the next page."
   },
   "channels": {
     "title": "Other ways to reach us",
@@ -237,15 +239,19 @@
       "title": "Have photos or drawings?",
       "titleMore": "More files to send?",
       "text": "Send them on WhatsApp or by email. They help us prepare the quote faster.",
-      "cta": "Send drawings on WhatsApp"
+      "cta": "Send drawings on WhatsApp",
+      "ctaShort": "Send on WhatsApp"
     },
     "urgentNow": {
       "title": "Is a machine stopped? Call an engineer now.",
-      "text": "Mention your request number {ref} when we answer."
+      "text": "Mention your request number {ref} when we answer.",
+      "whatsapp": "Hello Logic Controls, about request {ref}: my machine is stopped and I need troubleshooting help. Machine and brand:",
+      "emailSubject": "Urgent: machine stopped (request {ref})"
     },
     "received": "Files received: {files}",
     "skipped": "We could not attach: {files}. Their content did not match the file type. Please send them on WhatsApp or by email with your request number.",
     "skippedSome": "Some files could not be attached because their content did not match the file type. Please send them on WhatsApp or by email with your request number.",
+    "dropped": "Not sent with your request: {files}. Please send these files on WhatsApp or by email with your request number.",
     "replyBy": "Preferred channel: {channel}",
     "backHome": "Back to home",
     "seeProjects": "See our projects",
