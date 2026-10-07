@@ -6,7 +6,7 @@
  * Contract (multipart/form-data or x-www-form-urlencoded):
  *   name, company, phone, email, reply (preferred channel: whatsapp | phone | email), country, location, service,
  *   industry, timeline, message, page, locale, consent=yes,
- *   files (0–3 attachments, multipart only), honeypot company_website, cf-turnstile-response,
+ *   files (0–3 attachments, multipart only), honeypot lc_hp, cf-turnstile-response,
  *   name.dir / company.dir / message.dir (the browser's `dirname`: "ltr" | "rtl").
  * A request needs a name, a phone OR an email (zh visitors may give only an email), an email when the visitor asks for
  * replies by email, consent, and a Turnstile token.

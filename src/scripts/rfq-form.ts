@@ -118,7 +118,7 @@ export function enhance(form: HTMLFormElement) {
   message.removeAttribute("maxlength"); // the counter + validation message replace the hard stop (paste stays visible)
 
   const controls = (scope: ParentNode) =>
-    [...scope.querySelectorAll<Control>("input:not([type=hidden]):not([name=company_website]), select, textarea")].filter(
+    [...scope.querySelectorAll<Control>("input:not([type=hidden]):not([name=lc_hp]), select, textarea")].filter(
       (el) => !el.closest("[data-turnstile]"),
     );
 

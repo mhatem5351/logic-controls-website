@@ -195,7 +195,7 @@ async function handleRfq(req: Request, env: Env): Promise<Response> {
   const locale: Locale = isRfqLocale(posted) ? posted : refererLocale(req);
 
   // Honeypot: real people never fill this hidden field. Pretend success so bots learn nothing.
-  if (String(form.get("company_website") ?? "").trim()) return reply(req, locale, 200, { ref: rfqReference() });
+  if (String(form.get("lc_hp") ?? "").trim()) return reply(req, locale, 200, { ref: rfqReference() });
 
   const data = normalizeRfq((k) => form.get(k));
   if (rfqProblems(data, form.get("consent")).length) return reply(req, locale, 422, { error: "invalid" });

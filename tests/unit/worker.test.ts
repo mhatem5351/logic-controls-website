@@ -246,7 +246,7 @@ describe("/api/rfq", () => {
   describe("honeypot", () => {
     it("pretends success (JSON, with a reference) and sends nothing", async () => {
       const { env, send } = makeEnv();
-      const res = await call(rfq({ ...VALID, company_website: "http://spam.example" }), env);
+      const res = await call(rfq({ ...VALID, lc_hp: "http://spam.example" }), env);
       expect(res.status).toBe(200);
       const body = (await res.json()) as { ok: boolean; ref: string };
       expect(body.ok).toBe(true);
@@ -256,14 +256,14 @@ describe("/api/rfq", () => {
     });
     it("pretends success (form post → 303 to the thanks page of the form's language)", async () => {
       const { env, send } = makeEnv();
-      const res = await call(rfq({ ...VALID, locale: "zh", company_website: "x" }, { json: false }), env);
+      const res = await call(rfq({ ...VALID, locale: "zh", lc_hp: "x" }, { json: false }), env);
       expect(res.status).toBe(303);
       expect(res.headers.get("Location")).toMatch(/^\/zh\/contact\/thanks\/\?ref=LC-[0-9A-Z]{5}$/);
       expect(send).not.toHaveBeenCalled();
     });
     it("a whitespace-only honeypot is not a bot", async () => {
       const { env, send } = makeEnv();
-      await call(rfq({ ...VALID, company_website: "   " }), env);
+      await call(rfq({ ...VALID, lc_hp: "   " }), env);
       expect(send).toHaveBeenCalledOnce();
     });
   });

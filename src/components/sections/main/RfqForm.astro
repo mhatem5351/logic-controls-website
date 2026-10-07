@@ -90,10 +90,11 @@ const NOJS_ERRORS = ["invalid", "attachments", "verification", "send"] as const;
   <div data-rfq-body>
     <input type="hidden" name="locale" value={locale} />
     <input type="hidden" name="page" value={localePath(locale, "contact")} data-page-field />
-    {/* honeypot: hidden from people and assistive tech, bots fill it */}
+    {/* honeypot: hidden from people and assistive tech, bots fill it. Deliberately neutral name/label: anything
+        browsers recognise (company, website, url…) can be autofilled with real data and silently drop a real lead. */}
     <div class="lc-hp" aria-hidden="true">
-      <label for="rfq-company-website">Website</label>
-      <input id="rfq-company-website" type="text" name="company_website" tabindex="-1" autocomplete="off" />
+      <label for="rfq-hp">Leave this field empty</label>
+      <input id="rfq-hp" type="text" name="lc_hp" tabindex="-1" autocomplete="off" data-1p-ignore data-lpignore="true" />
     </div>
 
     {/* ---------- header ---------- */}

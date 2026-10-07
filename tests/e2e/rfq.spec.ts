@@ -199,7 +199,7 @@ test.describe("without JavaScript", () => {
     await page.goto("/ar/contact/");
     // the field names come from the rendered no-JS form, so a renamed field breaks this test, not the inbox
     const names = await page.locator("form[data-rfq] [name]").evaluateAll((els) => els.map((e) => e.getAttribute("name")));
-    for (const n of ["name", "company", "phone", "email", "service", "industry", "location", "timeline", "country", "message", "locale", "page", "company_website", "consent"]) {
+    for (const n of ["name", "company", "phone", "email", "service", "industry", "location", "timeline", "country", "message", "locale", "page", "lc_hp", "consent"]) {
       expect(names, n).toContain(n);
     }
     const stamp = stampOf("nojs");
@@ -208,7 +208,7 @@ test.describe("without JavaScript", () => {
       form: {
         locale: "ar",
         page: "/ar/contact/",
-        company_website: "",
+        lc_hp: "",
         name: `<img src=x onerror=alert(1)> ${stamp}`,
         company: "مصنع الاختبار",
         phone: "+20 100 000 0000",
