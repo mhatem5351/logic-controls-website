@@ -247,11 +247,8 @@ kept. Files Cloudflare already holds are not uploaded again. `astro check` and t
 with CI and the release checklist.
 
 The click counter's Analytics Engine binding (`CLICKS` in `wrangler.jsonc`) needs Analytics Engine enabled once on
-the account: dashboard → Workers & Pages → Analytics Engine (free). Until then `wrangler deploy`, the last step, fails
-on that binding. Workaround, after the checks passed: deploy with a temporary copy of `wrangler.jsonc` without the
-`analytics_engine_datasets` block, next to the original (`npx wrangler deploy -c wrangler.tmp.jsonc`, then delete
-it, then `node scripts/keep-previous-assets.mjs --save`). The `dist/` already carries the previous assets from the
-failed run. The Worker treats `CLICKS` as optional, so clicks are simply not counted.
+the account (dashboard → Workers & Pages → Analytics Engine, free). It was enabled on 2026-10-07, so `wrangler deploy`
+uploads the binding with everything else. The Worker still treats `CLICKS` as optional (no binding, no count).
 
 The production Turnstile secret is a Worker secret (`npx wrangler secret put TURNSTILE_SECRET`). Plain vars
 (`OWNER_EMAIL`, `MAIL_FROM`, `ALLOWED_HOSTNAMES`) and the `send_email` destination live in `wrangler.jsonc`. The
@@ -352,11 +349,12 @@ not counted).
 | `blob3` | locale: `en`, `ar`, `zh`, `tr` |
 | `blob4` | page path, e.g. `/ar/services/control-panels/` |
 
-Query it with the SQL API (an API token with **Account Analytics: Read**; the account ID is in `.env`):
+`npm run clicks` prints the last 7 days per language, kind and placement (`npm run clicks -- 30 --pages`: 30 days, per
+page). Underneath it is the SQL API; the token needs **Account Analytics: Read**, which `CLOUDFLARE_API_TOKEN` in `.env` has:
 
 ```sh
 curl -s "https://api.cloudflare.com/client/v4/accounts/$CLOUDFLARE_ACCOUNT_ID/analytics_engine/sql" \
-  -H "Authorization: Bearer $CLOUDFLARE_ANALYTICS_TOKEN" \
+  -H "Authorization: Bearer $CLOUDFLARE_API_TOKEN" \
   --data "SELECT blob3 AS locale, blob1 AS kind, blob2 AS placement, SUM(_sample_interval) AS clicks
           FROM lc_clicks
           WHERE timestamp > NOW() - INTERVAL '7' DAY
@@ -378,7 +376,6 @@ with WhatsApp / call clicks per locale to see which channel each audience prefer
 | `CLOUDFLARE_ACCOUNT_TOKEN_OLD` | legacy account token (no zone permissions) |
 | `TURNSTILE_SITE_KEY`, `TURNSTILE_SECRET` | Turnstile widget (the site key is public and also in `src/data/site.ts`) |
 | `CF_WEB_ANALYTICS_TOKEN`, `CF_WEB_ANALYTICS_SITE_TAG` | Web Analytics (the beacon token is public) |
-| `CLOUDFLARE_ANALYTICS_TOKEN` | optional, to create: read-only token (Account Analytics: Read) for the click-count query above |
 | `INDEXNOW_KEY` | `npm run indexnow` (the key file is `public/<key>.txt`) |
 | `R2_ACCESS_KEY_ID`, `R2_SECRET_ACCESS_KEY`, `R2_S3_ENDPOINT` | R2 credentials (R2 is not used by the site) |
 | `GITHUB_TOKEN_PERSONAL` | pushing to the private GitHub repo |

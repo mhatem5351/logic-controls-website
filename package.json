@@ -18,6 +18,7 @@
     "format:check": "prettier --check .",
     "deploy": "node scripts/predeploy.mjs && npm run build && node scripts/predeploy.mjs --built && node scripts/keep-previous-assets.mjs && wrangler deploy && node scripts/keep-previous-assets.mjs --save",
     "qa:html": "html-validate \"dist/**/*.html\"",
+    "clicks": "node --env-file=.env scripts/clicks.mjs",
     "indexnow": "node --env-file=.env scripts/indexnow.mjs",
     "test": "npm run test:unit && npm run test:static",
     "test:unit": "vitest run",
