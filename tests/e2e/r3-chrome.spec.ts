@@ -40,10 +40,17 @@ async function recordMenus(page: Page) {
 async function moveTo(page: Page, x: number, y: number, steps = 1) {
   await page.mouse.move(x, y, { steps });
   await expect
-    .poll(() => page.evaluate(([x, y]) => {
-      const [px, py] = (window as unknown as { __lcAt: [number, number] }).__lcAt;
-      return Math.abs(px - x) <= 1 && Math.abs(py - y) <= 1;
-    }, [x, y]), { intervals: [10, 25, 50, 100] })
+    .poll(
+      () =>
+        page.evaluate(
+          ([x, y]) => {
+            const [px, py] = (window as unknown as { __lcAt: [number, number] }).__lcAt;
+            return Math.abs(px - x) <= 1 && Math.abs(py - y) <= 1;
+          },
+          [x, y],
+        ),
+      { intervals: [10, 25, 50, 100] },
+    )
     .toBe(true);
 }
 const swaps = (page: Page) => page.evaluate(() => (window as unknown as { __lcSwaps: number }).__lcSwaps);
@@ -57,7 +64,9 @@ const STEP_MS = 50;
 
 for (const locale of ["en", "ar"] as const)
   for (const width of [1440, 1024])
-    test(`[${locale} ${width}px] Services menu: a diagonal path from the label (or chevron) to any item keeps it open (UX3-01)`, async ({ page }) => {
+    test(`[${locale} ${width}px] Services menu: a diagonal path from the label (or chevron) to any item keeps it open (UX3-01)`, async ({
+      page,
+    }) => {
       test.skip(isNarrow(page), "desktop navigation is ≥ 1024px");
       test.setTimeout(120_000); // 13 paths of 12 moves, each one handled before the clock goes on
       await page.setViewportSize({ width, height: 900 });
@@ -148,7 +157,8 @@ test.describe("404", () => {
 function watchExpect() {
   const life = { added: -1, removed: -1, responseEnd: -1, deliveryType: "" };
   (window as unknown as { __life: typeof life }).__life = life;
-  const isExpect = (n: Node) => n instanceof HTMLLinkElement && n.rel === "expect";
+  // the transition's link (#lc-end); the hero one (#lc-hero-end) is on every load by design
+  const isExpect = (n: Node) => n instanceof HTMLLinkElement && n.rel === "expect" && n.getAttribute("href") === "#lc-end";
   const save = () => (sessionStorage.__r3expect = JSON.stringify(life));
   new MutationObserver((ms) => {
     for (const m of ms) {
@@ -166,7 +176,9 @@ function watchExpect() {
 }
 type Life = { added: number; removed: number; responseEnd: number; deliveryType: string };
 
-test("same-site navigation (desktop): the floating button exists at the reveal and stays fully shown through the transition (MOT3-01)", async ({ page }) => {
+test("same-site navigation (desktop): the floating button exists at the reveal and stays fully shown through the transition (MOT3-01)", async ({
+  page,
+}) => {
   test.skip(isNarrow(page), "the button is carried across pages from 1024px");
   await page.addInitScript(watchExpect);
   await page.addInitScript(() => {
@@ -236,10 +248,12 @@ test("same-site navigation (desktop): the floating button exists at the reveal a
   const done = JSON.parse(await page.evaluate(() => sessionStorage.__r3expect!)) as Life;
   expect(done.removed - done.added, "the render-blocking link's lifetime (ms)").toBeGreaterThanOrEqual(580);
   expect(done.removed - done.added, "the render-blocking link's lifetime (ms)").toBeLessThan(5_000);
-  expect(await page.locator('link[rel="expect"]').count()).toBe(0);
+  expect(await page.locator('link[rel="expect"][href="#lc-end"]').count()).toBe(0);
 });
 
-test("an arrival from the HTTP cache (only parsing left) waits for the whole document, with no cap (MOT3-01 / MOT4-01)", async ({ page }) => {
+test("an arrival from the HTTP cache (only parsing left) waits for the whole document, with no cap (MOT3-01 / MOT4-01)", async ({
+  page,
+}) => {
   test.skip(isNarrow(page), "render blocking is only used from 64rem");
   await page.addInitScript(watchExpect);
   await page.addInitScript(() =>
@@ -256,62 +270,77 @@ test("an arrival from the HTTP cache (only parsing left) waits for the whole doc
   expect((JSON.parse(await page.evaluate(() => sessionStorage.__r3expect!)) as Life).removed, "not taken out by a timer").toBe(-1);
 });
 
-test("phones: a same-site arrival never waits for the whole document (no render-blocking link below 64rem, PSC4-04)", { tag: "@phone" }, async ({
-  page,
-}) => {
-  test.skip(!isNarrow(page), "phone widths");
-  await page.addInitScript(() => {
-    new MutationObserver((ms) => {
-      if (ms.some((m) => [...m.addedNodes].some((n) => n instanceof HTMLLinkElement && n.rel === "expect"))) sessionStorage.__r4expect = "added";
-    }).observe(document, { childList: true, subtree: true });
-  });
-  await page.goto("/en/about/");
-  await page.evaluate(() => delete sessionStorage.__r4expect);
-  const home = page.locator('main a[href="/en/"], footer a[href="/en/"]').first();
-  await home.scrollIntoViewIfNeeded();
-  await home.tap();
-  await page.waitForURL("**/en/");
-  await page.waitForLoadState("load");
-  expect(await page.evaluate(() => sessionStorage.__r4expect ?? "")).toBe("");
-});
+test(
+  "phones: a same-site arrival never waits for the whole document (no render-blocking link below 64rem, PSC4-04)",
+  { tag: "@phone" },
+  async ({ page }) => {
+    test.skip(!isNarrow(page), "phone widths");
+    await page.addInitScript(() => {
+      new MutationObserver((ms) => {
+        const isEnd = (n: Node) => n instanceof HTMLLinkElement && n.rel === "expect" && n.getAttribute("href") === "#lc-end";
+        if (ms.some((m) => [...m.addedNodes].some(isEnd))) sessionStorage.__r4expect = "added";
+      }).observe(document, { childList: true, subtree: true });
+    });
+    await page.goto("/en/about/");
+    await page.evaluate(() => delete sessionStorage.__r4expect);
+    const home = page.locator('main a[href="/en/"], footer a[href="/en/"]').first();
+    await home.scrollIntoViewIfNeeded();
+    await home.tap();
+    await page.waitForURL("**/en/");
+    await page.waitForLoadState("load");
+    expect(await page.evaluate(() => sessionStorage.__r4expect ?? "")).toBe("");
+  },
+);
 
 /* ------------------------------------------------------------------ MOT3-04 drawer → page */
 
-test("phone drawer: following a link from it names only the drawer's bar (no header / floating button over the sheet, MOT3-04)", { tag: "@phone" }, async ({ page }) => {
-  test.skip(!isNarrow(page), "the drawer is < 1024px");
-  await page.addInitScript(() => {
-    // registered after the head script's own pageswap listener, so it sees the names that one set
-    addEventListener("DOMContentLoaded", () =>
-      addEventListener("pageswap", (e) => {
-        const name = (sel: string) => document.querySelector<HTMLElement>(sel)?.style.viewTransitionName ?? "";
-        sessionStorage.__r3swap = JSON.stringify({
-          vt: !!(e as Event & { viewTransition?: unknown }).viewTransition,
-          header: name(".lc-header"),
-          fab: name(".lc-fab"),
-          bar: name(".lc-drawer-bar"),
-          lcFab: sessionStorage.lcFab ?? null,
-        });
-      }),
-    );
-  });
-  await page.goto("/en/about/");
-  await page.evaluate(() => scrollTo(0, 1600));
-  await page.locator(".lc-menu-open").click();
-  const drawer = page.locator("#lc-drawer");
-  await expect(drawer).toBeVisible();
-  // the logo sits at the bar's start edge (it was centred by an empty <source> box in Chromium)
-  // (one measurement for both: the sheet may still be sliding in)
-  const inset = await drawer.locator(".lc-drawer-bar").evaluate((bar) => bar.querySelector("img")!.getBoundingClientRect().left - bar.getBoundingClientRect().left);
-  expect(Math.abs(inset - 20)).toBeLessThanOrEqual(2);
-  await drawer.getByRole("link", { name: "Projects", exact: true }).click();
-  await page.waitForURL("**/en/projects/");
-  const swap = JSON.parse((await page.evaluate(() => sessionStorage.__r3swap)) ?? "null") as { vt: boolean; header: string; fab: string; bar: string; lcFab: string | null } | null;
-  test.skip(!swap?.vt, "no cross-document view transition in this engine");
-  expect(swap!.header, "the page header is not lifted above the closing sheet").toBe("");
-  expect(swap!.fab, "the floating button is not lifted above the closing sheet").toBe("");
-  expect(swap!.bar, "the sheet's own bar crossfades into the new header").toBe("lc-header");
-  expect(swap!.lcFab, "the next page does not force the button on").toBe("");
-});
+test(
+  "phone drawer: following a link from it names only the drawer's bar (no header / floating button over the sheet, MOT3-04)",
+  { tag: "@phone" },
+  async ({ page }) => {
+    test.skip(!isNarrow(page), "the drawer is < 1024px");
+    await page.addInitScript(() => {
+      // registered after the head script's own pageswap listener, so it sees the names that one set
+      addEventListener("DOMContentLoaded", () =>
+        addEventListener("pageswap", (e) => {
+          const name = (sel: string) => document.querySelector<HTMLElement>(sel)?.style.viewTransitionName ?? "";
+          sessionStorage.__r3swap = JSON.stringify({
+            vt: !!(e as Event & { viewTransition?: unknown }).viewTransition,
+            header: name(".lc-header"),
+            fab: name(".lc-fab"),
+            bar: name(".lc-drawer-bar"),
+            lcFab: sessionStorage.lcFab ?? null,
+          });
+        }),
+      );
+    });
+    await page.goto("/en/about/");
+    await page.evaluate(() => scrollTo(0, 1600));
+    await page.locator(".lc-menu-open").click();
+    const drawer = page.locator("#lc-drawer");
+    await expect(drawer).toBeVisible();
+    // the logo sits at the bar's start edge (it was centred by an empty <source> box in Chromium)
+    // (one measurement for both: the sheet may still be sliding in)
+    const inset = await drawer
+      .locator(".lc-drawer-bar")
+      .evaluate((bar) => bar.querySelector("img")!.getBoundingClientRect().left - bar.getBoundingClientRect().left);
+    expect(Math.abs(inset - 20)).toBeLessThanOrEqual(2);
+    await drawer.getByRole("link", { name: "Projects", exact: true }).click();
+    await page.waitForURL("**/en/projects/");
+    const swap = JSON.parse((await page.evaluate(() => sessionStorage.__r3swap)) ?? "null") as {
+      vt: boolean;
+      header: string;
+      fab: string;
+      bar: string;
+      lcFab: string | null;
+    } | null;
+    test.skip(!swap?.vt, "no cross-document view transition in this engine");
+    expect(swap!.header, "the page header is not lifted above the closing sheet").toBe("");
+    expect(swap!.fab, "the floating button is not lifted above the closing sheet").toBe("");
+    expect(swap!.bar, "the sheet's own bar crossfades into the new header").toBe("lc-header");
+    expect(swap!.lcFab, "the next page does not force the button on").toBe("");
+  },
+);
 
 /* ------------------------------------------------------------------ A11Y3-01 / A11Y3-05 */
 
@@ -338,7 +367,11 @@ for (const width of [1366, 1440])
     await expect(util).toHaveAttribute("data-tight", /^[12]$/);
     const r = await page.evaluate(() => {
       const t = document.querySelector(".lc-util-mt [data-motion-toggle]")!.getBoundingClientRect();
-      return { over: document.documentElement.scrollWidth - document.documentElement.clientWidth, right: t.right, vw: document.documentElement.clientWidth };
+      return {
+        over: document.documentElement.scrollWidth - document.documentElement.clientWidth,
+        right: t.right,
+        vw: document.documentElement.clientWidth,
+      };
     });
     expect(r.over, "no sideways scroll").toBeLessThanOrEqual(0);
     expect(r.right, "the pause switch is on screen").toBeLessThanOrEqual(r.vw);
@@ -348,7 +381,9 @@ for (const width of [1366, 1440])
 
 /* ------------------------------------------------------------------ PERF3-03 logo candidates */
 
-test("logo: the AVIF <source> carries the same sizes as the <img>, so each screen density gets its own file (PERF3-03)", async ({ page }) => {
+test("logo: the AVIF <source> carries the same sizes as the <img>, so each screen density gets its own file (PERF3-03)", async ({
+  page,
+}) => {
   await page.goto("/en/about/");
   const r = await page.evaluate(() => {
     const img = document.querySelector<HTMLImageElement>("header img")!;
@@ -357,7 +392,14 @@ test("logo: the AVIF <source> carries the same sizes as the <img>, so each scree
       const [url, w] = c.trim().split(/\s+/);
       return { url: new URL(url!, location.href).href, w: parseInt(w!, 10) };
     });
-    return { sizes: src.getAttribute("sizes"), imgSizes: img.getAttribute("sizes"), cur: img.currentSrc, cands, dpr: devicePixelRatio, cssW: parseInt(img.getAttribute("width")!, 10) };
+    return {
+      sizes: src.getAttribute("sizes"),
+      imgSizes: img.getAttribute("sizes"),
+      cur: img.currentSrc,
+      cands,
+      dpr: devicePixelRatio,
+      cssW: parseInt(img.getAttribute("width")!, 10),
+    };
   });
   expect(r.sizes).toBe(r.imgSizes);
   expect(r.sizes).toBe(`${r.cssW}px`);
@@ -369,62 +411,75 @@ test("logo: the AVIF <source> carries the same sizes as the <img>, so each scree
 
 /* ------------------------------------------------------------------ UX3-04 floating button over a wrapped link */
 
-test("phone: the floating button steps aside when a wrapped case-study link's line is under it (UX3-04)", { tag: "@phone" }, async ({ page }) => {
-  test.skip(!isNarrow(page), "phone layout");
-  await page.addInitScript(() => {
-    try {
-      sessionStorage.lcIntro = 1;
-      sessionStorage.lcPing = 1;
-    } catch {}
-  });
-  await page.goto("/en/technologies/");
-  const fab = page.locator(".lc-fab");
-  const target = await page.evaluate(() => {
-    const f = document.querySelector<HTMLElement>(".lc-fab")!;
-    const b = f.getBoundingClientRect();
-    const ty = parseFloat(getComputedStyle(f).translate.split(" ")[1] ?? "0") || 0;
-    const mid = (b.top + b.bottom) / 2 - ty;
-    for (const a of document.querySelectorAll<HTMLAnchorElement>("main li a[href*='/projects/']")) {
-      const rects = [...a.getClientRects()].filter((r) => r.width > 0);
-      if (rects.length < 2) continue;
-      // a later line of the wrapped link that reaches under the button
-      const line = rects.slice(1).findLast((r) => r.right > b.left + 8 && r.left < b.right - 8);
-      if (line) return { dy: line.top + line.height / 2 - mid, href: a.getAttribute("href") };
-    }
-    return null;
-  });
-  test.skip(!target, "no wrapped case-study link reaches under the button at this width");
-  await page.evaluate((dy) => scrollBy(0, dy), target!.dy);
-  await expect(fab, `the button covers ${target!.href}`).toHaveAttribute("data-hidden", "", { timeout: 4_000 });
-});
+test(
+  "phone: the floating button steps aside when a wrapped case-study link's line is under it (UX3-04)",
+  { tag: "@phone" },
+  async ({ page }) => {
+    test.skip(!isNarrow(page), "phone layout");
+    await page.addInitScript(() => {
+      try {
+        sessionStorage.lcIntro = 1;
+        sessionStorage.lcPing = 1;
+      } catch {}
+    });
+    await page.goto("/en/technologies/");
+    const fab = page.locator(".lc-fab");
+    const target = await page.evaluate(() => {
+      const f = document.querySelector<HTMLElement>(".lc-fab")!;
+      const b = f.getBoundingClientRect();
+      const ty = parseFloat(getComputedStyle(f).translate.split(" ")[1] ?? "0") || 0;
+      const mid = (b.top + b.bottom) / 2 - ty;
+      for (const a of document.querySelectorAll<HTMLAnchorElement>("main li a[href*='/projects/']")) {
+        const rects = [...a.getClientRects()].filter((r) => r.width > 0);
+        if (rects.length < 2) continue;
+        // a later line of the wrapped link that reaches under the button
+        const line = rects.slice(1).findLast((r) => r.right > b.left + 8 && r.left < b.right - 8);
+        if (line) return { dy: line.top + line.height / 2 - mid, href: a.getAttribute("href") };
+      }
+      return null;
+    });
+    test.skip(!target, "no wrapped case-study link reaches under the button at this width");
+    await page.evaluate((dy) => scrollBy(0, dy), target!.dy);
+    await expect(fab, `the button covers ${target!.href}`).toHaveAttribute("data-hidden", "", { timeout: 4_000 });
+  },
+);
 
 /* ------------------------------------------------------------------ VIS3-06 drawer labels */
 
-test("phone drawer: the action labels stay on one line (tr short WhatsApp label; 320 px in en / ar) (VIS3-06)", { tag: "@phone" }, async ({ page }) => {
-  test.skip(!isNarrow(page), "the drawer is < 1024px");
-  for (const [locale, width] of [["tr", 0], ["en", 320], ["ar", 320], ["tr", 320]] as const) {
-    if (width) await page.setViewportSize({ width, height: 700 });
-    await page.goto(`/${locale}/about/`);
-    await page.locator(".lc-menu-open").click();
-    const drawer = page.locator("#lc-drawer");
-    await expect(drawer).toBeVisible();
-    const lines = await drawer.evaluate((d) =>
-      [...d.querySelectorAll<HTMLElement>(".lc-btn[data-size='lg'] .lc-btn-label, .lc-tel-label")].map((el) => {
-        const tops = new Set<number>();
-        const walk = document.createTreeWalker(el, NodeFilter.SHOW_TEXT);
-        for (let n = walk.nextNode(); n; n = walk.nextNode()) {
-          if (!n.textContent?.trim() || n.parentElement?.closest(".sr-only")) continue;
-          const range = document.createRange();
-          range.selectNodeContents(n);
-          for (const r of range.getClientRects()) if (r.width > 1) tops.add(Math.round(r.top / 6));
-        }
-        return { text: el.textContent!.trim().replace(/\s+/g, " "), lines: tops.size };
-      }),
-    );
-    for (const l of lines) expect.soft(l.lines, `${locale} ${width || "device"}px: "${l.text}"`).toBe(1);
-    await page.keyboard.press("Escape");
-  }
-});
+test(
+  "phone drawer: the action labels stay on one line (tr short WhatsApp label; 320 px in en / ar) (VIS3-06)",
+  { tag: "@phone" },
+  async ({ page }) => {
+    test.skip(!isNarrow(page), "the drawer is < 1024px");
+    for (const [locale, width] of [
+      ["tr", 0],
+      ["en", 320],
+      ["ar", 320],
+      ["tr", 320],
+    ] as const) {
+      if (width) await page.setViewportSize({ width, height: 700 });
+      await page.goto(`/${locale}/about/`);
+      await page.locator(".lc-menu-open").click();
+      const drawer = page.locator("#lc-drawer");
+      await expect(drawer).toBeVisible();
+      const lines = await drawer.evaluate((d) =>
+        [...d.querySelectorAll<HTMLElement>(".lc-btn[data-size='lg'] .lc-btn-label, .lc-tel-label")].map((el) => {
+          const tops = new Set<number>();
+          const walk = document.createTreeWalker(el, NodeFilter.SHOW_TEXT);
+          for (let n = walk.nextNode(); n; n = walk.nextNode()) {
+            if (!n.textContent?.trim() || n.parentElement?.closest(".sr-only")) continue;
+            const range = document.createRange();
+            range.selectNodeContents(n);
+            for (const r of range.getClientRects()) if (r.width > 1) tops.add(Math.round(r.top / 6));
+          }
+          return { text: el.textContent!.trim().replace(/\s+/g, " "), lines: tops.size };
+        }),
+      );
+      for (const l of lines) expect.soft(l.lines, `${locale} ${width || "device"}px: "${l.text}"`).toBe(1);
+      await page.keyboard.press("Escape");
+    }
+  },
+);
 
 /* ------------------------------------------------------------------ VIS3-07 footer columns */
 
@@ -458,14 +513,35 @@ for (const width of [1280, 1440])
 
 /* ------------------------------------------------------------------ VIS3-09 / I18N3-04 Arabic phone breadcrumb */
 
-test("Arabic phone breadcrumb: a Latin brand name in the clamped crumb is whole or left out, never cut (VIS3-09)", { tag: "@phone" }, async ({ page }) => {
-  test.skip(!isNarrow(page), "the crumb is clamped below 640px");
-  await page.goto("/ar/projects/concrete-batching-plant-scada/");
-  const cur = page.locator('nav [aria-current="page"]').first();
-  const r = await cur.evaluate((el) => ({
-    clamped: el.scrollWidth > el.clientWidth,
-    isolates: [...el.querySelectorAll("bdi, [dir='ltr']")].map((b) => getComputedStyle(b).display),
-  }));
-  expect(r.isolates.length).toBeGreaterThan(0);
-  for (const d of r.isolates) expect(d, "Latin runs are atomic in the clamped crumb").toBe("inline-block");
+test(
+  "Arabic phone breadcrumb: a Latin brand name in the clamped crumb is whole or left out, never cut (VIS3-09)",
+  { tag: "@phone" },
+  async ({ page }) => {
+    test.skip(!isNarrow(page), "the crumb is clamped below 640px");
+    await page.goto("/ar/projects/concrete-batching-plant-scada/");
+    const cur = page.locator('nav [aria-current="page"]').first();
+    const r = await cur.evaluate((el) => ({
+      clamped: el.scrollWidth > el.clientWidth,
+      isolates: [...el.querySelectorAll("bdi, [dir='ltr']")].map((b) => getComputedStyle(b).display),
+    }));
+    expect(r.isolates.length).toBeGreaterThan(0);
+    for (const d of r.isolates) expect(d, "Latin runs are atomic in the clamped crumb").toBe("inline-block");
+  },
+);
+
+test("every load: the first frame waits for the end of the hero (#lc-hero-end, the hero's last child), so a slow parser never paints a half-built hero", async ({
+  page,
+}) => {
+  for (const path of ["/en/", "/ar/services/process-control/", "/en/projects/beverage-syrup-jet-mixing/", "/tr/contact/"]) {
+    await page.goto(path);
+    const r = await page.evaluate(() => {
+      const end = document.getElementById("lc-hero-end");
+      return {
+        link: !!document.querySelector('head link[rel="expect"][href="#lc-hero-end"][blocking="render"]'),
+        inHero: !!end?.parentElement?.matches("section.lc-hero") && end === end.parentElement.lastElementChild,
+        unique: document.querySelectorAll("#lc-hero-end").length === 1,
+      };
+    });
+    expect(r, path).toEqual({ link: true, inHero: true, unique: true });
+  }
 });

@@ -1,5 +1,6 @@
 # Generated / vendored / not ours
 dist/
+.deploy-prev/
 .astro/
 .wrangler/
 node_modules/

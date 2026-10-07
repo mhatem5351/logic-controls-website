@@ -60,6 +60,17 @@
       if (!(n.responseEnd > 0)) setTimeout(() => l.remove(), 600);
     }
   } catch {}
+  /* Every load: the first frame waits until the hero is parsed (#lc-hero-end, the last child of <Hero>). A slow parser
+     otherwise paints a half-built hero, and its media panel and art move as the copy arrives (desktop CLS up to 0.06
+     on a slow CI runner). The hero is the page's first content, so the wait is a few kB of parsing. Only Chromium
+     honours it; on a page without a hero (the 404) the browser lifts it at the end of parsing. */
+  try {
+    const h = document.createElement("link");
+    h.rel = "expect";
+    h.href = "#lc-hero-end";
+    h.setAttribute("blocking", "render");
+    document.head.append(h);
+  } catch {}
   const path = (u) => new URL(u, location.href).pathname;
   const depth = (p) => p.split("/").length;
   const vis = (el) => {
