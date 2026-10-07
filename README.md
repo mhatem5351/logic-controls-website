@@ -239,14 +239,19 @@ npm run indexnow                   # after content changes: only the re-dated UR
   about a minute; needs `.dev.vars` and `npx playwright install chromium`; `SKIP_PHONE_SMOKE=1` skips it with a
   warning).
 
-Then it runs `wrangler deploy`. `astro check` and the full E2E run in three browsers stay with CI and the release
-checklist.
+Then it runs `wrangler deploy`, wrapped by `scripts/keep-previous-assets.mjs`. Before the upload, that script copies
+the last deployed build's hashed `/_astro` files into `dist/`. HTML served from the previous build for a few seconds
+after a deploy (edge propagation, a tab opened earlier) still finds its CSS, scripts and images. After a successful
+upload, `--save` remembers this build's own files in `.deploy-prev/` (gitignored), so only one previous build is
+kept. Files Cloudflare already holds are not uploaded again. `astro check` and the full E2E run in three browsers stay
+with CI and the release checklist.
 
 The click counter's Analytics Engine binding (`CLICKS` in `wrangler.jsonc`) needs Analytics Engine enabled once on
 the account: dashboard → Workers & Pages → Analytics Engine (free). Until then `wrangler deploy`, the last step, fails
 on that binding. Workaround, after the checks passed: deploy with a temporary copy of `wrangler.jsonc` without the
 `analytics_engine_datasets` block, next to the original (`npx wrangler deploy -c wrangler.tmp.jsonc`, then delete
-it). The Worker treats `CLICKS` as optional, so clicks are simply not counted.
+it, then `node scripts/keep-previous-assets.mjs --save`). The `dist/` already carries the previous assets from the
+failed run. The Worker treats `CLICKS` as optional, so clicks are simply not counted.
 
 The production Turnstile secret is a Worker secret (`npx wrangler secret put TURNSTILE_SECRET`). Plain vars
 (`OWNER_EMAIL`, `MAIL_FROM`, `ALLOWED_HOSTNAMES`) and the `send_email` destination live in `wrangler.jsonc`. The

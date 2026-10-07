@@ -16,7 +16,7 @@
     "lint:dead": "npx -y knip@6.40.0 --no-progress",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
-    "deploy": "node scripts/predeploy.mjs && npm run build && node scripts/predeploy.mjs --built && wrangler deploy",
+    "deploy": "node scripts/predeploy.mjs && npm run build && node scripts/predeploy.mjs --built && node scripts/keep-previous-assets.mjs && wrangler deploy && node scripts/keep-previous-assets.mjs --save",
     "qa:html": "html-validate \"dist/**/*.html\"",
     "indexnow": "node --env-file=.env scripts/indexnow.mjs",
     "test": "npm run test:unit && npm run test:static",

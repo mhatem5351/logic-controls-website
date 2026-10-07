@@ -5,6 +5,8 @@ node_modules/
 dist/
 .wrangler/
 .astro/
+# the previous deploy's hashed assets, kept online for one more deploy (scripts/keep-previous-assets.mjs)
+.deploy-prev/
 .DS_Store
 .playwright-mcp/
 # local-only inputs
